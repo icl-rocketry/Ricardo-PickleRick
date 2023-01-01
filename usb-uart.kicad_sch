@@ -764,7 +764,7 @@
     (uuid feb26ecb-9193-46ea-a41b-d09305bf0a3e)
   )
 
-  (label "Data+" (at 134.62 134.62 90)
+  (label "Data+" (at 132.08 134.62 90)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 12422a89-3d0c-485c-9386-f77121fd68fd)
   )
@@ -780,7 +780,7 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 5cf2db29-f7ab-499a-9907-cdeba64bf0f3)
   )
-  (label "Data-" (at 132.08 134.62 90)
+  (label "Data-" (at 134.62 134.62 90)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 7d34f6b1-ab31-49be-b011-c67fe67a8a56)
   )
