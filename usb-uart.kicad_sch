@@ -875,7 +875,7 @@
     (uuid 00000000-0000-0000-0000-000061988c49)
     (property "Reference" "J5" (id 0) (at 103.0478 82.1182 0))
     (property "Value" "USB_C_Receptacle_USB2.0" (id 1) (at 103.0478 84.4296 0))
-    (property "Footprint" "Connector_USB:USB_C_Receptacle_GCT_USB4085" (id 2) (at 104.14 104.14 0)
+    (property "Footprint" "Connector_USB:USB_C_Receptacle_Palconn_UTC16-G" (id 2) (at 104.14 104.14 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "https://www.usb.org/sites/default/files/documents/usb_type-c.zip" (id 3) (at 104.14 104.14 0)

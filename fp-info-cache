@@ -1,4 +1,4 @@
-19928972198368932
+19940693698052108
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -84602,6 +84602,13 @@ DIO_V3PAN50-M3_I
 2
 2
 iclr
+GCT_USB4110-GF-A_REVB
+
+
+0
+16
+16
+iclr
 INDC1006X60N
 
 
@@ -84699,6 +84706,13 @@ PQFN50P300X300X100-16N
 0
 16
 16
+iclr
+PXP01230QLJ
+SOT8002-1
+MOSFET (P-Channel)
+0
+9
+9
 iclr
 QFN28G_0.5-5X5MM
 
@@ -84819,12 +84833,40 @@ SOT95P280X145-6N
 6
 6
 iclr
+SOTFL50P160X60-8N
+DRL0008A
+Integrated Circuit
+0
+8
+8
+iclr
+SR0502CTG
+SOT-143
+TVS Diode (Uni-directional)
+0
+4
+4
+iclr
+SRP5050FA5R6M
+SRP5050FA-5R6M-2
+Inductor
+0
+2
+2
+iclr
 SiC437BEDT1GE3
 SiC437BED-T1-GE3-7
 Integrated Circuit
 0
 30
 30
+iclr
+SmallerSolderJP
+Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator
+resistor
+0
+2
+2
 iclr
 TO127P457X1016X2052-7P
 
@@ -84902,6 +84944,13 @@ Integrated Circuit
 0
 9
 9
+iclr
+XDCR_DPS310
+
+
+0
+8
+8
 iclr
 iclr_logo
 
