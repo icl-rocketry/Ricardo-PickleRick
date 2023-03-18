@@ -64,7 +64,7 @@
       36
     ],
     "visible_layers": "003dd30_ffffffff",
-    "zone_display_mode": 1
+    "zone_display_mode": 0
   },
   "meta": {
     "filename": "PickleRick.kicad_prl",
