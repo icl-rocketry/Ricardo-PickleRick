@@ -38,7 +38,6 @@
       8,
       9,
       10,
-      11,
       12,
       13,
       14,
@@ -63,8 +62,8 @@
       35,
       36
     ],
-    "visible_layers": "003dd30_ffffffff",
-    "zone_display_mode": 0
+    "visible_layers": "003dd10_ffffffff",
+    "zone_display_mode": 1
   },
   "meta": {
     "filename": "PickleRick.kicad_prl",
