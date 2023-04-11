@@ -1688,9 +1688,6 @@
   (junction (at 85.09 95.25) (diameter 0) (color 0 0 0 0)
     (uuid 5d6d126c-6e1d-4607-9d90-f2f91cb02204)
   )
-  (junction (at 25.4 40.64) (diameter 0) (color 0 0 0 0)
-    (uuid 6050dc8e-973e-4ae7-8da3-87b705fa9b06)
-  )
   (junction (at 209.55 90.17) (diameter 0) (color 0 0 0 0)
     (uuid 6ab2e37d-e69a-4fb2-9463-7b4ed38461ab)
   )
@@ -4916,32 +4913,6 @@
       (project "PickleRick"
         (path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
           (reference "#PWR0116") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "Connector:Conn_01x02_Male") (at 25.4 35.56 270) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
-    (uuid fab405cf-f70f-4690-9813-95b24512f89a)
-    (property "Reference" "J8" (at 26.67 34.9249 90)
-      (effects (font (size 1.27 1.27)) (justify left))
-    )
-    (property "Value" "DeployLipo" (at 26.67 37.4649 90)
-      (effects (font (size 1.27 1.27)) (justify left))
-    )
-    (property "Footprint" "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-3-2-5.08_1x02_P5.08mm_Horizontal" (at 25.4 35.56 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "~" (at 25.4 35.56 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid fa792221-2e7b-4776-a58f-ae6989c16e05))
-    (pin "2" (uuid e064dfaf-58d6-4d40-b7df-147d84d4a03a))
-    (instances
-      (project "PickleRick"
-        (path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-          (reference "J8") (unit 1)
         )
       )
     )
