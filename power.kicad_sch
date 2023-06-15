@@ -4105,7 +4105,7 @@
     (property "Reference" "C33" (at 128.27 100.9713 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "12nF" (at 128.27 103.5113 0)
+    (property "Value" "22nF" (at 128.27 103.5113 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "Capacitor_SMD:C_0402_1005Metric" (at 125.73 101.6 0)
