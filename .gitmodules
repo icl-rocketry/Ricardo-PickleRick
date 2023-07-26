@@ -11,5 +11,5 @@
 	path = Firmware/components/ArduinoJson
 	url = https://github.com/bblanchon/ArduinoJson.git
 [submodule "Firmware/components/arduino-esp32"]
-	path = Firmware/components/arduino-esp32
+	path = Firmware/components/arduino
 	url = https://github.com/espressif/arduino-esp32.git
