@@ -69,16 +69,17 @@ namespace SensorStructs
         uint8_t second;
     };
 
-    struct BATT_t{
+    struct V_RAIL_t{
         /**
-         * @brief Battery types
-         * 0 = Local Battery
-         * 1 = PDU idk this needs to be put on the todo 
-         * 
+         * @brief Voltage in mV
          * 
          */
-        uint8_t type;
         uint16_t volt;
+        
+        /**
+         * @brief Percentage in reference to max voltage expeceted 
+         * 
+         */
         uint16_t percent;
     };
 

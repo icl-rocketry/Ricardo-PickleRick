@@ -51,7 +51,7 @@ struct RadioConfig
 class Radio : public RnpInterface
 {
 public:
-    Radio(SPIClass &spi, Types::CoreTypes:: &systemstatus, RADIO_MODE mode = RADIO_MODE::SIMPLE, int cs,int reset, int dio, uint8_t id = 2, std::string name = "Radio");
+    Radio(SPIClass &spi, Types::CoreTypes::SystemStatus_t &systemstatus, RADIO_MODE mode = RADIO_MODE::SIMPLE, int cs,int reset, int dio, uint8_t id = 2, std::string name = "Radio");
     void setup() override;
 
     void sendPacket(RnpPacket &data) override;
@@ -67,7 +67,7 @@ private:
     RadioConfig _config;
 
     SPIClass &_spi;              // pointer to spi class
-    SystemStatus &_systemstatus; // pointer to system status object
+    Types::CoreTypes::SystemStatus_t &_systemstatus; // pointer to system status object
 
     const int csPin;
     const int resetPin;
