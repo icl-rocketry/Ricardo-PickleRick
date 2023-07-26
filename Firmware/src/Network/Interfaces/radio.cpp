@@ -7,8 +7,10 @@
 
 #include <LoRa.h>
 
-#include "Storage/systemstatus.h"
-#include "flags.h"
+// #include "Storage/systemstatus.h"
+// #include "flags.h"
+#include <Config/types.h>
+#include <Config/systemflags_config.h>
 
 #include <memory>
 #include <vector>

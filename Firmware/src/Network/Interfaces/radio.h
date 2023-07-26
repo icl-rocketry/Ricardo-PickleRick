@@ -1,21 +1,25 @@
 #pragma once
-
-#include <Arduino.h>
-#include <SPI.h>
-
-#include "Storage/systemstatus.h"
-
-#include <libriccore/riccorelogging.h>
-
+//c++ stl
 #include <memory>
 #include <vector>
 #include <string>
 #include <queue>
+//arduino + esp32 
+#include <Arduino.h>
+#include <SPI.h>
 
-#include <LoRa.h>
+//Ric libraries
+#include <libriccore/riccorelogging.h>
 
 #include <librnp/rnp_interface.h>
 #include <librnp/rnp_packet.h>
+
+// /lib
+#include <LoRa.h>
+
+
+#include <Config/types.h>
+#include <Config/systemflags_config.h>
 
 enum class RADIO_MODE : uint8_t
 {
@@ -47,7 +51,7 @@ struct RadioConfig
 class Radio : public RnpInterface
 {
 public:
-    Radio(SPIClass &spi, SystemStatus &systemstatus, RADIO_MODE mode = RADIO_MODE::SIMPLE, int cs,int reset, int dio, uint8_t id = 2, std::string name = "Radio");
+    Radio(SPIClass &spi, Types::CoreTypes:: &systemstatus, RADIO_MODE mode = RADIO_MODE::SIMPLE, int cs,int reset, int dio, uint8_t id = 2, std::string name = "Radio");
     void setup() override;
 
     void sendPacket(RnpPacket &data) override;

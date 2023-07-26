@@ -156,7 +156,7 @@ void LoRaClass::end()
   sleep();
 
   // stop SPI
-  _spi->end();
+  // _spi->end(); wtf is the point of this smh
 }
 
 int LoRaClass::beginPacket(int implicitHeader)
