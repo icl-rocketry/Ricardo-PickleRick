@@ -1,0 +1,15 @@
+[submodule "Firmware/components/libriccore"]
+	path = Firmware/components/libriccore
+	url = git@github.com:icl-rocketry/libriccore.git
+[submodule "Firmware/components/librnp"]
+	path = Firmware/components/librnp
+	url = git@github.com:icl-rocketry/librnp.git
+[submodule "Firmware/components/librrc"]
+	path = Firmware/components/librrc
+	url = git@github.com:icl-rocketry/librrc.git
+[submodule "Firmware/components/ArduinoJson"]
+	path = Firmware/components/ArduinoJson
+	url = https://github.com/bblanchon/ArduinoJson.git
+[submodule "Firmware/components/arduino-esp32"]
+	path = Firmware/components/arduino-esp32
+	url = https://github.com/espressif/arduino-esp32.git
