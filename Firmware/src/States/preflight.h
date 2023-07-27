@@ -1,13 +1,10 @@
-/**
- * @file idle.h
- * @author Kiran de Silva (kd619@ic.ac.uk)
- * @brief Example implementation of a state. Note the initialize and exit methods do not need to be reimplemented if not needed. However enusre the parent functions are called if they are!
- * @version 0.1
- * @date 2023-06-20
- * 
- * @copyright Copyright (c) 2023
- * 
- */
+/*
+State when rocket is not in flight. Allows resetting and intilization of all sensors and check all snesors for anomalies. 
+Allows flash system operation to dump/reformat of onboard and sd card.
+If serial input detected switches to usb mode.
+Transtion to countdown state happens through lora command
+*/
+
 #pragma once
 
 #include <memory>
@@ -19,15 +16,15 @@
 #include "Config/systemflags_config.h"
 #include "Config/types.h"
 
-class Idle : public Types::CoreTypes::State_t
+class Preflight : public Types::CoreTypes::State_t
 {
     public:
         /**
-         * @brief Idle state constructor. All states require the systemstatus object to be passed in, as well as any other system level objects required. For example, if
+         * @brief Preflight state constructor. All states require the systemstatus object to be passed in, as well as any other system level objects required. For example, if
          * we want to control the available commands, we need to pass in the command handler from the riccoresystem.
          * 
          */
-        Idle(Types::CoreTypes::SystemStatus_t& systemtatus, Types::CoreTypes::CommandHandler_t& commandhandler);
+        Preflight(Types::CoreTypes::SystemStatus_t& systemtatus, Types::CoreTypes::CommandHandler_t& commandhandler);
 
         /**
          * @brief Perform any initialization required for the state
@@ -51,5 +48,4 @@ class Idle : public Types::CoreTypes::State_t
 
     private:
         Types::CoreTypes::CommandHandler_t& _commandhandler;
-        uint32_t prevLogMessageTime;
 };

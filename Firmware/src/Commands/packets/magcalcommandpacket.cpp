@@ -1,6 +1,8 @@
 #include "magcalcommandpacket.h"
-#include "rnp_packet.h"
-#include "Commands/commandHandler.h"
+
+#include <librnp/rnp_packet.h>
+#include <librnp/rnp_serializer.h>
+
 
 
 
@@ -9,7 +11,7 @@ MagCalCommandPacket::~MagCalCommandPacket()
 
 MagCalCommandPacket::MagCalCommandPacket(uint8_t _command):
 RnpPacket(0,
-          static_cast<uint8_t>(CommandHandler::PACKET_TYPES::MAGCAL),
+          10,
           size()),
 command(_command)
 {};

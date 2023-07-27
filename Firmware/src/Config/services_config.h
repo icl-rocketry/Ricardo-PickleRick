@@ -19,6 +19,7 @@ namespace Services{
      * 
      */
     enum class ID:uint8_t{
+        HITL = 3,
         DeploymentHandler = 4,
         EngineHandler = 5
     };

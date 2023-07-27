@@ -1,7 +1,7 @@
 #pragma once
 
-#include "rnp_packet.h"
-#include "rnp_serializer.h"
+#include <librnp/rnp_packet.h>
+#include <librnp/rnp_serializer.h>
 
 #include <default_packets/simplecommandpacket.h>
 

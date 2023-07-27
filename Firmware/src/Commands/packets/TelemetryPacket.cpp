@@ -1,7 +1,7 @@
 #include "TelemetryPacket.h"
 
-#include "rnp_networkmanager.h"
-#include "rnp_packet.h"
+#include <librnp/rnp_packet.h>
+#include <librnp/rnp_serializer.h>
 
 #include <vector>
 

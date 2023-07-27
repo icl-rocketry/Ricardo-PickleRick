@@ -4,5 +4,7 @@
         "*.ipp": "cpp",
         "core": "cpp",
         "eigen": "cpp"
-    }
+    },
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs":"active"
 }
