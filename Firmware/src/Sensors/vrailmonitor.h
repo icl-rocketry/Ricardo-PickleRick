@@ -1,10 +1,6 @@
-
 #pragma once
 
 #include "sensorStructs.h"
-
-
-
 
 class VRailMonitor
 {
@@ -39,8 +35,12 @@ private:
      * 
      */
     static constexpr auto LOG_TARGET = RicCoreLoggingConfig::LOGGERS::SYS;
-    const std::string _name;
 
+    /**
+     * @brief Name of voltage rail for logging purposes
+     * 
+     */
+    const std::string _name;
     /**
      * @brief Pin to read voltage
      * 

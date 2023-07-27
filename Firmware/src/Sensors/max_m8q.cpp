@@ -1,7 +1,5 @@
 #include "max_m8q.h"
 
-#include "flags.h"
-#include "config.h"
 
 
 #include <Wire.h>
@@ -9,18 +7,19 @@
 
 
 
-#include "Storage/systemstatus.h"
-#include "Storage/logController.h"
+#include <libriccore/riccorelogging.h>
+
+#include "Config/types.h"
+#include "Config/systemflags_config.h"
 
 #include "sensorStructs.h"
 
 
 
-Max_M8Q::Max_M8Q(TwoWire& wire, SystemStatus& systemstatus, LogController& logcontroller) :
+Max_M8Q::Max_M8Q(TwoWire& wire, Types::CoreTypes::SystemStatus_t& systemstatus) :
     gnss(),
     _wire(wire),
     _systemstatus(systemstatus),
-    _logcontroller(logcontroller)
 {}
 
 void Max_M8Q::setup()
@@ -29,13 +28,13 @@ void Max_M8Q::setup()
         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_GPS,"GPS I2C not found at address");
         _i2cerror = true;
     }else{
-        _logcontroller.log("Max_M8Q Initialized");   
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Max_M8Q Initialized");   
         _i2cerror = false;
     }
     //turn off nmea messaging
     gnss.setI2COutput(COM_TYPE_UBX);
     if (!gnss.setDynamicModel(DYN_MODEL_AIRBORNE4g)){
-        _logcontroller.log("GPS failed to set dynamics model");
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("GPS failed to set dynamics model");
     } 
     gnss.setNavigationFrequency(10); //Set output to 10 times a second
     gnss.setAutoPVT(true);

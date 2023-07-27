@@ -6,14 +6,16 @@
 #include <string.h>
 
 #include "sensorStructs.h"
-#include "Storage/logController.h"
-#include "Storage/systemstatus.h"
+
+#include <libriccore/riccorelogging.h>
+#include "Config/types.h"
+#include "Config/systemflags_config.h"
 
 #include <Eigen/Core>
 
 #include <Preferences.h>
 
-MMC5983MA::MMC5983MA(SPIClass &spi, uint8_t cs, SystemStatus &systemstatus, LogController &logcontroller) : 
+MMC5983MA::MMC5983MA(SPIClass &spi, uint8_t cs, Types::CoreTypes::SystemStatus_t &systemstatus) : 
 _useSPI(true),
 _spi(&spi),
 _settings(10000000, MSBFIRST, SPI_MODE0),
@@ -22,7 +24,6 @@ _wire(nullptr),
 _scl(0),
 _sda(0),
 _systemstatus(systemstatus),
-_logcontroller(logcontroller),
 _magCal({1,
             0,
             0,
@@ -30,7 +31,7 @@ _magCal({1,
             Eigen::Vector3f{{0, 0, 0}}}) // default for mag biases
 {};
 
-MMC5983MA::MMC5983MA(TwoWire &wire, uint8_t scl, uint8_t sda,SPIClass &spi, uint8_t cs,SystemStatus &systemstatus, LogController &logcontroller):
+MMC5983MA::MMC5983MA(TwoWire &wire, uint8_t scl, uint8_t sda,SPIClass &spi, uint8_t cs,Types::CoreTypes::SystemStatus_t &systemstatus):
 _useSPI(false),
 _spi(&spi),
 _cs(cs),
@@ -38,7 +39,6 @@ _wire(&wire),
 _scl(scl),
 _sda(sda),
 _systemstatus(systemstatus),
-_logcontroller(logcontroller),
 _magCal({1,
         0,
         0,
@@ -75,7 +75,7 @@ void MMC5983MA::setup(const std::array<uint8_t,3>& axesOrder,const std::array<bo
     axeshelper.setOrder(axesOrder);
     axeshelper.setFlip(axesFlip);
 
-    _logcontroller.log("MMC5983MA Initialized");
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("MMC5983MA Initialized");
 
 }
 
@@ -219,25 +219,25 @@ void MMC5983MA::writeMagCal()
     Preferences pref;
 
     if (!pref.begin("MAG")){
-        _logcontroller.log("nvs failed to start. Can't write calbration offsets");
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs failed to start. Can't write calbration offsets");
         return;
     }   
 
-    if (!pref.putFloat("F",_magCal.fieldMagnitude)){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("I",_magCal.inclination)){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("D",_magCal.declination)){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("A11",_magCal.A_1(0,0))){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("A12",_magCal.A_1(0,1))){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("A12",_magCal.A_1(0,2))){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("A21",_magCal.A_1(1,0))){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("A22",_magCal.A_1(1,1))){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("A22",_magCal.A_1(1,2))){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("A31",_magCal.A_1(2,0))){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("A32",_magCal.A_1(2,1))){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("A32",_magCal.A_1(2,2))){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("b1",_magCal.b(0))){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("b2",_magCal.b(1))){_logcontroller.log("nvs error while writing");};
-    if (!pref.putFloat("b3",_magCal.b(2))){_logcontroller.log("nvs error while writing");};
+    if (!pref.putFloat("F",_magCal.fieldMagnitude)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("I",_magCal.inclination)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("D",_magCal.declination)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("A11",_magCal.A_1(0,0))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("A12",_magCal.A_1(0,1))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("A12",_magCal.A_1(0,2))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("A21",_magCal.A_1(1,0))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("A22",_magCal.A_1(1,1))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("A22",_magCal.A_1(1,2))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("A31",_magCal.A_1(2,0))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("A32",_magCal.A_1(2,1))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("A32",_magCal.A_1(2,2))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("b1",_magCal.b(0))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("b2",_magCal.b(1))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("b3",_magCal.b(2))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
     
  
 
@@ -248,7 +248,7 @@ void MMC5983MA::loadMagCal()
     Preferences pref;
 
     if (!pref.begin("MAG",true)){
-        _logcontroller.log("nvs failed to start");
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs failed to start");
         return;
     }  
 

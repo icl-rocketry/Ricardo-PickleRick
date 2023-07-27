@@ -1,22 +1,20 @@
 #include "ms5607.h"
 
-#include "config.h"
-#include "ricardo_pins.h"
-
 #include <Arduino.h>
 #include <SPI.h>
 
-#include "Storage/systemstatus.h"
-#include "Storage/logController.h"
+#include <libriccore/riccorelogging.h>
+#include "Config/types.h"
+#include "Config/systemflags_config.h"
+
 #include "sensorStructs.h"
 
 #include <string>
 
 
-MS5607::MS5607(SPIClass& spi,SystemStatus& systemstatus,LogController& logcontroller,uint8_t cs):
+MS5607::MS5607(SPIClass& spi,Types::CoreTypes::SystemStatus_t& systemstatus,uint8_t cs):
 _spi(spi),
 _systemstatus(systemstatus),
-_logcontroller(logcontroller),
 _cs(cs)
 {};
 

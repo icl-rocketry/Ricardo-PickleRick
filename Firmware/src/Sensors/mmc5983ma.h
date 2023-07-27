@@ -20,8 +20,8 @@
 #include "config.h"
 
 #include "sensorStructs.h"
-#include "Storage/logController.h"
-#include "Storage/systemstatus.h"
+
+#include "Config/types.h"
 
 #include "Helpers/axeshelper.h"
 
@@ -46,7 +46,7 @@ class MMC5983MA{
          * @param logcontroller 
          * @param cs 
          */
-        MMC5983MA(SPIClass& spi,uint8_t cs,SystemStatus& systemstatus,LogController& logcontroller);
+        MMC5983MA(SPIClass& spi,uint8_t cs,Types::CoreTypes::SystemStatus_t& systemstatus);
 
         /**
          * @brief Construct a new MMC5983MA object using i2c bus 
@@ -60,7 +60,7 @@ class MMC5983MA{
          * @param scl 
          * @param sda 
          */
-        MMC5983MA(TwoWire &wire, uint8_t scl, uint8_t sda,SPIClass &spi, uint8_t cs,SystemStatus &systemstatus, LogController &logcontroller);
+        MMC5983MA(TwoWire &wire, uint8_t scl, uint8_t sda,SPIClass &spi, uint8_t cs,Types::CoreTypes::SystemStatus_t &systemstatus);
 
 
 
@@ -82,10 +82,8 @@ class MMC5983MA{
         const uint8_t _scl;
         const uint8_t _sda;
 
-        SystemStatus& _systemstatus;
-        LogController& _logcontroller;
-        
-        
+        Types::CoreTypes::SystemStatus_t& _systemstatus;
+    
 
         AxesHelper<> axeshelper;
 

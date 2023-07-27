@@ -21,15 +21,17 @@
 #include "config.h"
 
 #include "sensorStructs.h"
-#include "Storage/logController.h"
-#include "Storage/systemstatus.h"
+
+#include <libriccore/riccorelogging.h>
+
+#include "Config/types.h"
 
 #include "Helpers/axeshelper.h"
 
 
 class ICM_20608{
     public:
-        ICM_20608(SPIClass& spi,SystemStatus& systemstatus,LogController& logcontroller,uint8_t cs);
+        ICM_20608(SPIClass& spi,Types::CoreTypes::SystemStatus_t& systemstatus,uint8_t cs);
 
         void setup(const std::array<uint8_t,3>& axesOrder, const std::array<bool,3> axesFlip);
 
@@ -62,8 +64,7 @@ class ICM_20608{
     private:
 
         SPIClass& _spi;
-        SystemStatus& _systemstatus;
-        LogController& _logcontroller;
+        Types::CoreTypes::SystemStatus_t& _systemstatus;
         const uint8_t _cs;
         SPISettings _settings;
 

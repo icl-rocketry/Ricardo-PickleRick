@@ -1,5 +1,5 @@
 #include "sensors.h"
-#include "stateMachine.h"
+
 
 #include <SPI.h>
 #include <Wire.h>
@@ -7,21 +7,21 @@
 #include <functional>
 #include <ArduinoJson.h>
 
-#include <rnp_networkmanager.h>
-#include <rnp_packet.h>
+#include <librnp/rnp_networkmanager.h>
+#include <librnp/rnp_packet.h>
 
-#include "Storage/logController.h"
-#include "Storage/systemstatus.h"
+#include <libriccore/riccorelogging.h>
 
-#include <default_packets/simplecommandpacket.h>
+
+#include <librnp/default_packets/simplecommandpacket.h>
 
 #include "Helpers/jsonconfighelper.h"
 
 
 //config
-#include "ricardo_pins.h"
-#include "config.h"
-#include "flags.h"
+#include "Config/types.h"
+#include "Config/systemflags_config.h"
+#include "Config/pinmap_config.h"
 
 #include "packets/hitlpacket.h"
 //indivudal sensor classes
@@ -30,21 +30,19 @@
 #include "ms5607.h"
 #include "icm_20608.h"
 #include "h3lis331dl.h"
+#include "vrailmonitor.h"
 
-#include "battery.h"
-
-Sensors::Sensors(SPIClass& spi,TwoWire& I2C,SystemStatus& systemstatus,LogController& logcontroller) :
+Sensors::Sensors(SPIClass& spi,TwoWire& I2C,Types::CoreTypes::SystemStatus_t& systemstatus) :
     _systemstatus(systemstatus),
     I2C_2(1),
-    gps(I2C,systemstatus,logcontroller),
-    baro(spi,systemstatus,logcontroller,BaroCs),
-    accelgyro(spi,systemstatus,logcontroller,ImuCs_1),
-    accel(spi,systemstatus,logcontroller,ImuCs_2),
+    gps(I2C,systemstatus),
+    baro(spi,systemstatus,PinMap::BaroCs),
+    accelgyro(spi,systemstatus,PinMap::ImuCs_1),
+    accel(spi,systemstatus,PinMap::ImuCs_2),
     // mag(spi,MagCs,systemstatus,logcontroller), // SPI constructor
-    mag(I2C_2,H_SCLK,H_MOSI,spi,MagCs,systemstatus,logcontroller),
-    batt(systemstatus,logcontroller,BattVolt),
-    logcontroller(logcontroller)
-    
+    mag(I2C_2,PinMap::H_SCLK,PinMap::H_MOSI,spi,PinMap::MagCs,systemstatus),
+    logicrail("Logic Rail",PinMap::BattVolt,9.22,8.79),
+ 
 {}
 
 void Sensors::setup(JsonObjectConst config){
@@ -60,12 +58,20 @@ void Sensors::setup(JsonObjectConst config){
     setIfContains(config,"Y_FLIP",axesFlip[1],false);
     setIfContains(config,"Z_FLIP",axesFlip[2],false);
 
+    uint16_t logicMaxVoltage = 4200;
+    uint16_t logicLowVoltage = 3400;
+    uint16_t logicMinVoltage = 3200;
+
+    setIfContains(config,"LOGIC_MAX_VOLTAGE",logicMaxVoltage,false);
+    setIfContains(config,"LOGIC_LOW_VOLTAGE",logicLowVoltage,false);
+    setIfContains(config,"LOGIC_MIN_VOLTAGE",logicMinVoltage,false);
+
     gps.setup();
     baro.setup();
     accelgyro.setup(axesOrder,axesFlip);
     accel.setup(axesOrder,axesFlip);
     mag.setup(axesOrder,axesFlip);
-    batt.setup();
+    logicrail.setup(logicMaxVoltage,logicLowVoltage,logicMinVoltage);
     
     
 };
@@ -189,13 +195,13 @@ void Sensors::hitlCommandHandler(RnpPacketSerialized& packet)
         case static_cast<uint8_t>(HITL_COMMANDS::HITL_ENABLE):
         {
             _hitlEnabled = true;
-            logcontroller.log("HITL Enabled!");
+            RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("HITL Enabled!");
             return;
         }
         case static_cast<uint8_t>(HITL_COMMANDS::HITL_DISABLE):
         {
             _hitlEnabled = false;
-            logcontroller.log("HITL Disabled!");
+            RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("HITL Disabled!");
             return;
         }
         default:

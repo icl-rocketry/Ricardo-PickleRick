@@ -5,8 +5,7 @@
 #include <Eigen/Geometry>
 #include <Eigen/Sparse>
 
-#include "Storage/logController.h"
-#include "Storage/systemstatus.h"
+
 #include "sensorStructs.h"
 
 class LocalizationKF

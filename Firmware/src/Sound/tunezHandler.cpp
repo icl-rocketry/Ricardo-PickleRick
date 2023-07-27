@@ -3,7 +3,7 @@
 #include "driver/ledc.h"
 #include "Melodies/melodyClass.h"
 #include <vector>
-#include "ricardo_pins.h"
+#include "Config/pinmap_config.h"
 
 
 TunezHandler::TunezHandler()
@@ -14,7 +14,7 @@ TunezHandler::TunezHandler()
 void TunezHandler::setup()
 {
     ledcSetup(0,0,8);
-    ledcAttachPin(Buzzer,0);
+    ledcAttachPin(PinMap::Buzzer,0);
     ledcWrite(0,_volume); //max volume
     ledcWriteTone(0,0); //write 0 hz so no noise
 

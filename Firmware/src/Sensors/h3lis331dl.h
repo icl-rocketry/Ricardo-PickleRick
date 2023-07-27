@@ -12,22 +12,21 @@
  * 
  */
 
-#include <Arduino.h>
 
 #include <SPI.h>
 
-#include "config.h"
-
 #include "sensorStructs.h"
-#include "Storage/logController.h"
-#include "Storage/systemstatus.h"
+
+#include <libriccore/riccorelogging.h>
+
+#include "Config/types.h"
 
 #include "Helpers/axeshelper.h"
 
 
 class H3LIS331DL{
     public:
-        H3LIS331DL(SPIClass& spi,SystemStatus& systemstatus,LogController& logcontroller,uint8_t cs);
+        H3LIS331DL(SPIClass& spi,Types::CoreTypes::SystemStatus_t& systemstatus,uint8_t cs);
 
         void setup(const std::array<uint8_t,3>& axesOrder,const std::array<bool,3>& axesFlip);
 
@@ -37,8 +36,7 @@ class H3LIS331DL{
     
 
         SPIClass& _spi;
-        SystemStatus& _systemstatus;
-        LogController& _logcontroller;
+        Types::CoreTypes::SystemStatus_t& _systemstatus;
         const uint8_t _cs;
 
         AxesHelper<> axeshelper;

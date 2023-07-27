@@ -1,15 +1,17 @@
-#ifndef ESTIMATOR_H
-#define ESTIMATOR_H
-#include <Arduino.h>
-#include "sensorStructs.h"
-#include "MadgwickAHRS.h"
-#include "localizationkf.h"
-#include "sensors.h"
-#include "Storage/systemstatus.h"
-
-
+#pragma once
 
 #include <ArduinoJson.h>
+
+#include "MadgwickAHRS.h"
+
+#include "Config/types.h"
+
+#include "localizationkf.h"
+
+#include "sensors.h"
+#include "sensorStructs.h"
+
+
 
 enum class ESTIMATOR_STATE: uint8_t{
     NOMINAL,
@@ -27,7 +29,7 @@ enum class ESTIMATOR_STATE: uint8_t{
 
 class Estimator{
     public:
-        Estimator(SystemStatus& systemstatus);   
+        Estimator(Types::CoreTypes::SystemStatus_t& systemstatus);   
         
         void setup();
         void update(const SensorStructs::raw_measurements_t& raw_sensors);
@@ -48,7 +50,7 @@ class Estimator{
         
     private:
         // stateMachine* _sm;//pointer to statemachine object
-        SystemStatus& _systemstatus;
+        Types::CoreTypes::SystemStatus_t& _systemstatus;
 
         SensorStructs::state_t state;
 
@@ -89,6 +91,3 @@ class Estimator{
          */
         void predictLocalizationKF(const float& dt);
 };
-
-
-#endif

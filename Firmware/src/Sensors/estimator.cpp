@@ -1,20 +1,21 @@
 #include "estimator.h"
-#include "stateMachine.h"
+
+#include <string>
 #include "math.h"
 
-#include "flags.h"
 #include "Eigen/Eigen"
-#include <string>
-
-#include "sensors.h"
-#include "Storage/systemstatus.h"
-
-#include <libriccore/riccorelogging.h>
-
 
 #include <ArduinoJson.h>
+#include <libriccore/riccorelogging.h>
 
-Estimator::Estimator(SystemStatus &systemstatus) : _systemstatus(systemstatus),
+#include "Config/types.h"
+#include "Config/systemflags_config.h"
+
+#include "sensors.h"
+
+
+
+Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus) : _systemstatus(systemstatus),
                                                    update_frequency(5000), // 200Hz update
                                                    _homeSet(false),
                                                    madgwick(0.5f, 0.005f) // beta | gyroscope sample time step (s)

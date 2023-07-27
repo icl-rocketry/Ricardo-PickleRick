@@ -20,12 +20,11 @@
 #include <ArduinoJson.h>
 
 
-#include <rnp_networkmanager.h>
-#include <rnp_packet.h>
+#include <librnp/rnp_networkmanager.h>
+#include <librnp/rnp_packet.h>
 
 
-#include "Storage/logController.h"
-#include "Storage/systemstatus.h"
+#include "Config/types.h"
 #include "sensorStructs.h"
 
 
@@ -35,12 +34,12 @@
 #include "icm_20608.h"
 #include "h3lis331dl.h"
 #include "mmc5983ma.h"
-#include "battery.h"
+#include "vrailmonitor.h"
 
 class Sensors
 {
 public:
-    Sensors(SPIClass &spi, TwoWire &I2C, SystemStatus &systemstatus, LogController &logcontroller);
+    Sensors(SPIClass &spi, TwoWire &I2C, Types::CoreTypes::SystemStatus_t &systemstatus);
 
     void setup(JsonObjectConst config);
     void update();
@@ -61,7 +60,7 @@ public:
 
 private:
     SensorStructs::raw_measurements_t sensors_raw;
-    SystemStatus& _systemstatus;
+    Types::CoreTypes::SystemStatus_t& _systemstatus;
     TwoWire I2C_2;
 
     Max_M8Q gps;
@@ -69,7 +68,7 @@ private:
     ICM_20608 accelgyro;
     H3LIS331DL accel;
     MMC5983MA mag;
-    Battery batt;
+    VRailMonitor logicrail;
 
     /**
      * @brief Handle fake sensor data packets from hardware in the loop service
@@ -82,5 +81,4 @@ private:
 
     void hitlUpdateSensorError(uint8_t sensor_state,SYSTEM_FLAG flag);
 
-    LogController& logcontroller;
 };

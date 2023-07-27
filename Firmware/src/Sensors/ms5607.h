@@ -3,8 +3,8 @@
 #include <Arduino.h>
 #include <SPI.h>
 
-#include "Storage/systemstatus.h"
-#include "Storage/logController.h"
+#include "Config/types.h"
+
 #include "sensorStructs.h"
 
 
@@ -12,7 +12,7 @@
 
 class MS5607{
     public:
-        MS5607(SPIClass& spi,SystemStatus& systemstatus,LogController& logcontroller,uint8_t cs);
+        MS5607(SPIClass& spi,Types::CoreTypes::SystemStatus_t& systemstatus,uint8_t cs);
         void setup();
         void update(SensorStructs::BARO_t& barodata);
 
@@ -30,8 +30,8 @@ class MS5607{
         //pointer to spi object
         SPIClass& _spi;
         //pointer to system status object
-        SystemStatus& _systemstatus;
-        LogController& _logcontroller;
+        Types::CoreTypes::SystemStatus_t& _systemstatus;
+
         const uint8_t _cs;
 
 

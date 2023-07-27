@@ -12,7 +12,8 @@ _name(vrail_name),
 _pin(pin),
 factor(((r1+r2)/r2) * (3300.f / 4095.f)),
 _maxVoltage(0),
-_lowVoltage(0)
+_lowVoltage(0),
+_minVoltage(0)
 {};
 
 void VRailMonitor::setup(uint16_t maxVoltage, uint16_t lowVoltage,uint16_t minVoltage){

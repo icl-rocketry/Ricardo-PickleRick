@@ -1,9 +1,20 @@
 #include "h3lis331dl.h"
 
-H3LIS331DL::H3LIS331DL(SPIClass& spi,SystemStatus& systemstatus,LogController& logcontroller,uint8_t cs):
+#include <SPI.h>
+
+#include "sensorStructs.h"
+
+#include <libriccore/riccorelogging.h>
+
+#include "Config/types.h"
+#include "Config/systemflags_config.h"
+
+#include "Helpers/axeshelper.h"
+
+
+H3LIS331DL::H3LIS331DL(SPIClass& spi,Types::CoreTypes::SystemStatus_t& systemstatus,uint8_t cs):
 _spi(spi),
 _systemstatus(systemstatus),
-_logcontroller(logcontroller),
 _cs(cs)// update with correct chip select
 {};
 
@@ -27,7 +38,7 @@ void H3LIS331DL::setup(const std::array<uint8_t,3>& axesOrder, const std::array<
     axeshelper.setOrder(axesOrder);
     axeshelper.setFlip(axesFlip);
 
-    _logcontroller.log("H3LIS331DL Initialized");
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("H3LIS331DL Initialized");
 
 }
 

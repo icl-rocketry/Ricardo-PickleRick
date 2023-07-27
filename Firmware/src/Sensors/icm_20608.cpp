@@ -4,9 +4,14 @@
 #include <SPI.h>
 #include <string>
 
+#include <libriccore/riccorelogging.h>
+
+#include "Config/types.h"
+#include "Config/systemflags_config.h"
+
 #include <Preferences.h>
 
-ICM_20608::ICM_20608(SPIClass& spi,SystemStatus& systemstatus,LogController& logcontroller,uint8_t cs):
+ICM_20608::ICM_20608(SPIClass& spi,Types::CoreTypes::SystemStatus_t& systemstatus,uint8_t cs):
 _spi(spi),
 _systemstatus(systemstatus),
 _logcontroller(logcontroller),
@@ -47,7 +52,7 @@ void ICM_20608::setup(const std::array<uint8_t,3>& axesOrder, const std::array<b
     axeshelper.setOrder(axesOrder);
     axeshelper.setFlip(axesFlip);
 
-    _logcontroller.log("IMU Initialized");
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("IMU Initialized");
 
 }
 
@@ -250,16 +255,16 @@ void ICM_20608::writeAccelGyroBias(){
     Preferences pref;
 
     if (!pref.begin("IMU1")){
-        _logcontroller.log("nvs failed to start. Can't write calbration offsets");
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs failed to start. Can't write calbration offsets");
         return;
     }   
    
-    if (!pref.putShort("gxBias",offset_gx)){_logcontroller.log("nvs error while writing");};
-    if (!pref.putShort("gyBias",offset_gy)){_logcontroller.log("nvs error while writing");};
-    if (!pref.putShort("gzBias",offset_gz)){_logcontroller.log("nvs error while writing");};
-    if (!pref.putShort("axBias",offset_ax)){_logcontroller.log("nvs error while writing");};
-    if (!pref.putShort("ayBias",offset_ay)){_logcontroller.log("nvs error while writing");};
-    if (!pref.putShort("azBias",offset_az)){_logcontroller.log("nvs error while writing");};
+    if (!pref.putShort("gxBias",offset_gx)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putShort("gyBias",offset_gy)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putShort("gzBias",offset_gz)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putShort("axBias",offset_ax)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putShort("ayBias",offset_ay)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putShort("azBias",offset_az)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
     
 
 }
@@ -268,7 +273,7 @@ void ICM_20608::loadAccelGyroBias(){
     Preferences pref;
 
     if (!pref.begin("IMU1",true)){
-        _logcontroller.log("nvs failed to start");
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs failed to start");
         return;
     }
 
