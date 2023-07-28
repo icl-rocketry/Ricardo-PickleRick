@@ -1,23 +1,25 @@
 
 #include "preflight.h"
 #include "launch.h"
-#include "stateMachine.h"
 
-#include "rnp_default_address.h"
-#include "rnp_routingtable.h"
+
+#include <librnp/rnp_default_address.h>
+#include <librnp/rnp_routingtable.h>
 
 #include "Sound/Melodies/melodyLibrary.h"
 
-#include "flags.h"
+#include "Config/systemflags_config.h"
+#include "Config/types.h"
 
-Preflight::Preflight(stateMachine* sm):
-State(sm,SYSTEM_FLAG::STATE_PREFLIGHT)
-{
-    
-};
+#include "system.h"
 
-void Preflight::initialise(){
-    State::initialise();
+Preflight::Preflight(System& system):
+State(SYSTEM_FLAG::STATE_PREFLIGHT,system.systemstatus),
+_system(system)
+{};
+
+void Preflight::initialize(){
+    State::initialize();
     //load the rocket routing table
 
     RoutingTable flightRouting;
@@ -40,25 +42,25 @@ void Preflight::initialise(){
     flightRouting.setRoute(19,Route{3,2,{}});
     flightRouting.setRoute(20,Route{3,2,{}});
     
-    _sm->networkmanager.setRoutingTable(flightRouting);
-    _sm->networkmanager.updateBaseTable(); // save the new base table
+    _system.networkmanager.setRoutingTable(flightRouting);
+    _system.networkmanager.updateBaseTable(); // save the new base table
 
-    _sm->networkmanager.setAddress(static_cast<uint8_t>(DEFAULT_ADDRESS::ROCKET));
+    _system.networkmanager.setAddress(static_cast<uint8_t>(DEFAULT_ADDRESS::ROCKET));
     
-    _sm->networkmanager.enableAutoRouteGen(false);
-    _sm->networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST,{1,3});
+    _system.networkmanager.enableAutoRouteGen(false);
+    _system.networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST,{1,3});
     
 
-    _sm->tunezhandler.play(MelodyLibrary::zeldatheme,true);
+    _system.tunezhandler.play(MelodyLibrary::zeldatheme,true);
 
 };
 
 
-State* Preflight::update(){
-    return this;
+Types::CoreTypes::State_ptr_t Preflight::update(){
+    return nullptr;
 };
 
-void Preflight::exitstate(){
-    State::exitstate();
-    _sm->tunezhandler.clear();
+void Preflight::exit(){
+    State::exit();
+    _system.tunezhandler.clear();
 };

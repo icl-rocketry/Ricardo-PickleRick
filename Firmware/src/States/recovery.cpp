@@ -1,33 +1,34 @@
-#include "Arduino.h"
 #include "recovery.h"
 
-#include "flags.h"
-#include "stateMachine.h"
+#include "system.h"
+#include "Config/types.h"
+#include "Config/systemflags_config.h"
 
 #include "Sound/Melodies/melodyLibrary.h"
 
 
-Recovery::Recovery(stateMachine* sm):
-State(sm,SYSTEM_FLAG::STATE_RECOVERY)
+Recovery::Recovery(System& system):
+State(SYSTEM_FLAG::STATE_RECOVERY,system.systemstatus),
+_system(system)
 {};
 
-void Recovery::initialise(){
-    State::initialise();
-    _sm->tunezhandler.play(MelodyLibrary::zeldatheme,true); // play startup sound
-    _sm->enginehandler.shutdownAllEngines();
+void Recovery::initialize(){
+    State::initialize();
+    _system.tunezhandler.play(MelodyLibrary::zeldatheme,true); // play startup sound
+    _system.enginehandler.shutdownAllEngines();
 };
 
 
-State* Recovery::update(){
+Types::CoreTypes::State_ptr_t Recovery::update(){
 
-    _sm->enginehandler.update();
-    _sm->controllerhandler.update(_sm->estimator.getData());
-    _sm->eventhandler.update(_sm->estimator.getData());
+    _system.enginehandler.update();
+    _system.controllerhandler.update(_system.estimator.getData());
+    _system.eventhandler.update(_system.estimator.getData());
     
-    return this;
+    return nullptr;
 };
 
-void Recovery::exitstate(){
-    State::exitstate();
-    _sm->tunezhandler.clear(); // stop looping zelda
+void Recovery::exit(){
+    State::exit();
+    _system.tunezhandler.clear(); // stop looping zelda
 };

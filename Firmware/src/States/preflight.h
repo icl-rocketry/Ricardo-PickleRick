@@ -10,8 +10,8 @@ Transtion to countdown state happens through lora command
 #include <memory>
 
 #include <libriccore/fsm/state.h>
-#include <libriccore/systemstatus/systemstatus.h>
-#include <libriccore/commands/commandhandler.h>
+
+#include "system.h"
 
 #include "Config/systemflags_config.h"
 #include "Config/types.h"
@@ -24,7 +24,7 @@ class Preflight : public Types::CoreTypes::State_t
          * we want to control the available commands, we need to pass in the command handler from the riccoresystem.
          * 
          */
-        Preflight(Types::CoreTypes::SystemStatus_t& systemtatus, Types::CoreTypes::CommandHandler_t& commandhandler);
+        Preflight(System& system);
 
         /**
          * @brief Perform any initialization required for the state
@@ -47,5 +47,5 @@ class Preflight : public Types::CoreTypes::State_t
         void exit() override;
 
     private:
-        Types::CoreTypes::CommandHandler_t& _commandhandler;
+        System& _system;
 };

@@ -9,8 +9,8 @@ State which deploys chutes after rocket has reached apogee.
 #include <memory>
 
 #include <libriccore/fsm/state.h>
-#include <libriccore/systemstatus/systemstatus.h>
-#include <libriccore/commands/commandhandler.h>
+
+#include "system.h"
 
 #include "Config/systemflags_config.h"
 #include "Config/types.h"
@@ -23,7 +23,7 @@ class Recovery : public Types::CoreTypes::State_t
          * we want to control the available commands, we need to pass in the command handler from the riccoresystem.
          * 
          */
-        Recovery(Types::CoreTypes::SystemStatus_t& systemtatus, Types::CoreTypes::CommandHandler_t& commandhandler);
+        Recovery(System& system);
 
         /**
          * @brief Perform any initialization required for the state
@@ -46,5 +46,5 @@ class Recovery : public Types::CoreTypes::State_t
         void exit() override;
 
     private:
-        Types::CoreTypes::CommandHandler_t& _commandhandler;
+        System& _system;
 };

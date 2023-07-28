@@ -21,9 +21,9 @@ Flight::Flight(System &system) : State(SYSTEM_FLAG::STATE_FLIGHT, system.systems
                                  // apogeedetect(200,_system.logcontroller)
                                  {};
 
-void Flight::initialise()
+void Flight::initialize()
 {
-    State::initialise();
+    State::initialize();
 };
 
 Types::CoreTypes::State_ptr_t Flight::update()
