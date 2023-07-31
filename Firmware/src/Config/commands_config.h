@@ -19,7 +19,7 @@ namespace Commands
         Nocommand = 0,
         Launch = 1, 
         Reset = 2,
-        Abort = 3,
+        Launch_Abort = 3,
         Set_Home = 4,
         Start_Logging = 5,
         Stop_Logging = 6,
@@ -38,11 +38,11 @@ namespace Commands
         Ignition = 69,
         Enter_Debug = 100,
         Enter_Preflight = 101,
-        Enter_Countdown = 103,
+        Enter_Launch = 103,
         Enter_Flight = 104,
         Enter_Recovery = 105,
         Exit_Debug = 106,
-        Exit_to_Debug = 107,
+        Flight_Abort = 120,
         Free_Ram = 250
     };
 
@@ -51,7 +51,7 @@ namespace Commands
     inline std::unordered_map<ID, std::function<void(ForwardDecl_SystemClass &, const RnpPacketSerialized &)>> command_map{
         {ID::Launch, LaunchCommand},
         {ID::Reset, ResetCommand},
-        {ID::Abort, AbortCommand},
+        {ID::Launch_Abort, LaunchAbortCommand},
         {ID::Set_Home, SetHomeCommand},
         {ID::Start_Logging, StartLoggingCommand},
         {ID::Stop_Logging, StopLoggingCommand},
@@ -68,12 +68,12 @@ namespace Commands
         {ID::Reset_Localization, ResetLocalizationCommand},
         {ID::Enter_Debug, EnterDebugCommand},
         {ID::Enter_Preflight, EnterPreflightCommand},
-        {ID::Enter_Countdown, EnterCountdownCommand},
+        {ID::Enter_Launch, EnterLaunchCommand},
         {ID::Enter_Flight, EnterFlightCommand},
         {ID::Enter_Recovery, EnterRecoveryCommand},
         {ID::Exit_Debug, ExitDebugCommand},
-        {ID::Exit_to_Debug, ExitDebugCommand},
-        {ID::Free_Ram, FreeRamCommand}};
+        {ID::Free_Ram, FreeRamCommand},
+        {ID::Flight_Abort, FlightAbortCommand}};
 
 
 

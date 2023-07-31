@@ -2,6 +2,8 @@
 
 #include "sensorStructs.h"
 
+#include <libriccore/riccorelogging.h>
+
 class VRailMonitor
 {
 public:

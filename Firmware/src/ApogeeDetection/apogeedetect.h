@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector> 
+#include <queue>
 #include <algorithm>
 #include <array>
 #include <Eigen/Dense>

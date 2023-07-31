@@ -19,7 +19,7 @@
 
 #include "Config/pinmap_config.h"
 
-Radio::Radio(SPIClass& spi, Types::CoreTypes::SystemStatus_t& systemstatus,RADIO_MODE mode,int cs,int reset, int dio,uint8_t id,std::string name):
+Radio::Radio(SPIClass& spi, int cs,int reset, int dio,Types::CoreTypes::SystemStatus_t& systemstatus,RADIO_MODE mode,uint8_t id,std::string name):
 RnpInterface(id,name),
 _config(defaultConfig),
 _spi(spi),

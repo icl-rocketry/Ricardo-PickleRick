@@ -9,6 +9,7 @@
 
 #include "Config/systemflags_config.h"
 #include "Config/types.h"
+#include "Config/commands_config.h"
 
 #include "system.h"
 
@@ -24,6 +25,8 @@ Flight::Flight(System &system) : State(SYSTEM_FLAG::STATE_FLIGHT, system.systems
 void Flight::initialize()
 {
     State::initialize();
+    _system.commandhandler.enableCommands({Commands::ID::Flight_Abort});
+    
 };
 
 Types::CoreTypes::State_ptr_t Flight::update()
@@ -65,6 +68,7 @@ Types::CoreTypes::State_ptr_t Flight::update()
 void Flight::exit()
 {
     State::exit();
+    _system.commandhandler.resetCommands();
 };
 
 // bool Flight::apogeeDetect(){ // 20hz

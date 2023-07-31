@@ -22,7 +22,7 @@ namespace Commands{
     
     void LaunchCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void ResetCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void AbortCommand(ForwardDecl_SystemClass& system, const  RnpPacketSerialized& packet);
+    void LaunchAbortCommand(ForwardDecl_SystemClass& system, const  RnpPacketSerialized& packet);
     void SetHomeCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void StartLoggingCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void StopLoggingCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
@@ -41,16 +41,14 @@ namespace Commands{
     void IgnitionCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void EnterDebugCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void EnterPreflightCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    // void EnterGroundstationCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void EnterCountdownCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void EnterLaunchCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void EnterFlightCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void EnterRecoveryCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void ExitDebugCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void ExitToDebugCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void EngineInfoCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void SetThrottleCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void PyroInfoCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void FireInfoCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void FreeRamCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-
+    void FlightAbortCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
 }

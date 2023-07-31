@@ -10,6 +10,7 @@
 
 #include "Config/types.h"
 #include "Config/systemflags_config.h"
+#include "Config/commands_config.h"
 
 Launch::Launch(System &system) : State(SYSTEM_FLAG::STATE_LAUNCH, system.systemstatus),
                                  _system(system){};
@@ -18,6 +19,9 @@ void Launch::initialize()
 {
     State::initialize();
 
+    _system.commandhandler.enableCommands({Commands::ID::Ignition,
+                                           Commands::ID::Launch_Abort});
+                                           
     _system.tunezhandler.play(MelodyLibrary::confirmation);
 
     // arm deployers and engines
@@ -64,4 +68,6 @@ Types::CoreTypes::State_ptr_t Launch::update()
 void Launch::exit()
 {
     State::exit();
+    _system.commandhandler.resetCommands();
+
 };

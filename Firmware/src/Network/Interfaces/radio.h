@@ -16,8 +16,7 @@
 
 // /lib
 #include <LoRa.h>
-
-
+ 
 #include <Config/types.h>
 #include <Config/systemflags_config.h>
 
@@ -51,7 +50,7 @@ struct RadioConfig
 class Radio : public RnpInterface
 {
 public:
-    Radio(SPIClass &spi, Types::CoreTypes::SystemStatus_t &systemstatus, RADIO_MODE mode = RADIO_MODE::SIMPLE, int cs,int reset, int dio, uint8_t id = 2, std::string name = "Radio");
+    Radio(SPIClass &spi, int cs,int reset, int dio, Types::CoreTypes::SystemStatus_t &systemstatus, RADIO_MODE mode = RADIO_MODE::SIMPLE,  uint8_t id = 2, std::string name = "Radio");
     void setup() override;
 
     void sendPacket(RnpPacket &data) override;
@@ -90,5 +89,5 @@ private:
     static constexpr int turnTimeout = 250;
     bool _received;
 
-    static constexpr RadioConfig defaultConfig{868e6,0xF3,500e3,7};
+    static constexpr RadioConfig defaultConfig{static_cast<long>(868E6),0xF3,static_cast<long>(500E3),7};
 };

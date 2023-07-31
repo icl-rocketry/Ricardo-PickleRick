@@ -90,7 +90,7 @@ namespace SensorStructs
         MAG_3AXIS_t mag;
         BARO_t baro;
         GPS_t gps;
-        BATT_t batt;
+        V_RAIL_t logicrail;
 
         uint64_t system_time;
     };

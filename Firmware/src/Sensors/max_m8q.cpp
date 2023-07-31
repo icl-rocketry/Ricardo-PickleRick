@@ -19,7 +19,7 @@
 Max_M8Q::Max_M8Q(TwoWire& wire, Types::CoreTypes::SystemStatus_t& systemstatus) :
     gnss(),
     _wire(wire),
-    _systemstatus(systemstatus),
+    _systemstatus(systemstatus)
 {}
 
 void Max_M8Q::setup()

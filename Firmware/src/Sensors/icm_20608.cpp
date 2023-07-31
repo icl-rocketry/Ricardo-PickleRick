@@ -14,7 +14,6 @@
 ICM_20608::ICM_20608(SPIClass& spi,Types::CoreTypes::SystemStatus_t& systemstatus,uint8_t cs):
 _spi(spi),
 _systemstatus(systemstatus),
-_logcontroller(logcontroller),
 _cs(cs), // update this with proper config value
 _settings(8000000,MSBFIRST,SPI_MODE0)
 {}

@@ -3,7 +3,7 @@
 #include <librnp/rnp_packet.h>
 #include <librnp/rnp_serializer.h>
 
-#include <default_packets/simplecommandpacket.h>
+#include <librnp/default_packets/simplecommandpacket.h>
 
 #include <Eigen/Core>
 

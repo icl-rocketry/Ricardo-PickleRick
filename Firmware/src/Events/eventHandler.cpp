@@ -72,7 +72,7 @@ action_t EventHandler::configureAction(JsonVariantConst actions){
 
     if (actions.is<JsonObject>()){
 
-        JsonObjectConst actionJson = actions.as<JsonObject>();
+        auto actionJson = actions.as<JsonObjectConst>();
         std::string actionType = actionJson["type"];
         int actionID = actionJson["id"];
         int actionParam = actionJson["param"];
@@ -102,7 +102,7 @@ action_t EventHandler::configureAction(JsonVariantConst actions){
     }else if (actions.is<JsonArray>()) {
         std::vector<action_t> action_vec;
 
-        for (JsonObjectConst action : actions.as<JsonArray>()) {
+        for (JsonObjectConst action : actions.as<JsonArrayConst>()) {
             action_vec.push_back(configureAction(action));
         }
 
@@ -131,18 +131,18 @@ condition_t EventHandler::configureCondition(JsonVariantConst condition, uint8_t
     if (condition.is<JsonObject>())
     {
 
-        auto conditionJson = condition.as<JsonObject>();
+        auto conditionJson = condition.as<JsonObjectConst>();
 
         if (conditionJson.containsKey("condition")){
 
-            auto subconditionarray = conditionJson["condition"];
+            auto subconditionarray = conditionJson["condition"].as<JsonArrayConst>(); // required explict cast to JsonArray type
             size_t arraysize = subconditionarray.size();
 
             if (arraysize == 0){
                 throw std::runtime_error("EventHandler no conditions provided"); // we can fail safe here by returning false
             }
             if (arraysize == 1){
-                return configureCondition(subconditionarray.getElement(0),recursion_level); // no change to recursion depth
+                return configureCondition(subconditionarray[0],recursion_level); // no change to recursion depth
             }
 
             conditionOperator_t op;
@@ -161,7 +161,7 @@ condition_t EventHandler::configureCondition(JsonVariantConst condition, uint8_t
             _decisiontree += "  (";
             #endif
 
-            auto conditionCombination = configureCondition(subconditionarray.getElement(0),recursion_level + 1);
+            auto conditionCombination = configureCondition(subconditionarray[0],recursion_level + 1);
             
             for (int i = 1; i < arraysize;i++){
                 #ifdef _RICDEBUG
@@ -171,7 +171,7 @@ condition_t EventHandler::configureCondition(JsonVariantConst condition, uint8_t
                 #endif
 
                 conditionCombination = ConditionCombination(conditionCombination,
-                                                             configureCondition(subconditionarray.getElement(i),recursion_level + 1),
+                                                             configureCondition(subconditionarray[i],recursion_level + 1),
                                                              op);
                 #ifdef _RICDEBUG
                 _decisiontree += " ) ";

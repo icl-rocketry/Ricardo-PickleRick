@@ -16,13 +16,15 @@
 #include <vector>
 #include <utility>
 
-#include <rnp_networkmanager.h>
+#include <librnp/rnp_networkmanager.h>
 #include <ArduinoJson.h>
 
 #include "Controller/controllable.h"
 
-#include <rnp_networkcallbackmap.h>
+#include <librnp/rnp_networkcallbackmap.h>
 #include <librrc/rocketcomponent.h>
+
+#include <libriccore/riccorelogging.h>
 
 enum class ENGINE_RUN_STATE : uint8_t
 {

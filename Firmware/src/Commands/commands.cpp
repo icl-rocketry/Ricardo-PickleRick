@@ -11,20 +11,30 @@
 
 #include "commands.h"
 
+#include <memory>
+
 #include <librnp/rnp_packet.h>
 #include <librnp/rnp_interface.h>
+#include <librnp/rnp_networkmanager.h>
 #include <libriccore/commands/commandhandler.h>
 
-#include "Commands/packets/magcalcommandpacket.h"
-#include "Commands/packets/TelemetryPacket.h"
+#include "packets/magcalcommandpacket.h"
+#include "packets/TelemetryPacket.h"
 
 #include "system.h"
 
+#include "States/launch.h"
+#include "States/preflight.h"
+#include "States/flight.h"
+#include "States/recovery.h"
+#include "States/debug.h"
+
+#include "Config/services_config.h"
 
 
 void Commands::LaunchCommand(System& system, const RnpPacketSerialized& packet) 
 {
-	system.statemachine.changeState(new Launch(&system));
+	system.statemachine.changeState(std::make_unique<Launch>(system));
 }
 
 void Commands::ResetCommand(System& system, const RnpPacketSerialized& packet) 
@@ -32,7 +42,7 @@ void Commands::ResetCommand(System& system, const RnpPacketSerialized& packet)
 	ESP.restart(); 
 }
 
-void Commands::AbortCommand(System& system,const  RnpPacketSerialized& packet) 
+void Commands::LaunchAbortCommand(System& system,const  RnpPacketSerialized& packet) 
 {
 	// if(system.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_LAUNCH)){
 	// 	//check if we are in no abort time region
@@ -43,6 +53,15 @@ void Commands::AbortCommand(System& system,const  RnpPacketSerialized& packet)
 	// 	//might be worth waiting for acceleration to be 0 after rocket engine cut
 	// 	system.statemachine.changeState(new Recovery(&system));
 	// }
+	system.statemachine.changeState(std::make_unique<Preflight>(system));
+	//TODO log
+
+}
+
+void Commands::FlightAbortCommand(System& system, const RnpPacketSerialized& packet)
+{
+	//flight abort
+	//TODO log
 }
 
 void Commands::SetHomeCommand(System& system, const RnpPacketSerialized& packet) 
@@ -77,12 +96,12 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 	auto raw_sensors = system.sensors.getData();
 	auto estimator_state = system.estimator.getData();
 
-	telemetry.header.type = static_cast<uint8_t>(CommandHandler::PACKET_TYPES::TELEMETRY_RESPONSE);
+	telemetry.header.type = 101;
 	telemetry.header.source = system.networkmanager.getAddress();
 	// this is not great as it assumes a single command handler with the same service ID
 	// would be better if we could pass some context through the function paramters so it has an idea who has called it
 	// or make it much clearer that only a single command handler should exist in the system
-	telemetry.header.source_service = system.commandhandler.getServieID();
+	telemetry.header.source_service = static_cast<uint8_t>(DEFAULT_SERVICES::COMMAND);
 	telemetry.header.destination = commandpacket.header.source;
 	telemetry.header.destination_service = commandpacket.header.source_service;
 	telemetry.header.uid = commandpacket.header.uid; 
@@ -134,8 +153,8 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 	telemetry.baro_press = raw_sensors.baro.press;
 	telemetry.baro_alt = raw_sensors.baro.alt;
 
-	telemetry.batt_voltage = raw_sensors.batt.volt;
-	telemetry.batt_percent= raw_sensors.batt.percent;
+	telemetry.batt_voltage = raw_sensors.logicrail.volt;
+	telemetry.batt_percent= raw_sensors.logicrail.percent;
 
 	telemetry.launch_lat = estimator_state.gps_launch_lat;
 	telemetry.launch_lng = estimator_state.gps_launch_long;
@@ -202,9 +221,10 @@ void Commands::CalibrateAccelGyroBiasCommand(System& system, const RnpPacketSeri
 void Commands::CalibrateMagFullCommand(System& system, const RnpPacketSerialized& packet) 
 {
 
-	//check packet type received
-	if (packet.header.type != static_cast<uint8_t>(CommandHandler::PACKET_TYPES::MAGCAL)){
+	//check mag cal (id 10) packet type received
+	if (packet.header.type != 10){
 		//incorrect packet type received do not deserialize
+		//TODO log
 		return;
 	}
 
@@ -234,43 +254,39 @@ void Commands::IgnitionCommand(System& system, const RnpPacketSerialized& packet
 
 void Commands::EnterDebugCommand(System& system, const RnpPacketSerialized& packet) 
 {
+	
+	system.statemachine.changeState(std::make_unique<Debug>(system));
 
-	system.statemachine.changeState(new Debug(&system));
-	system.systemstatus.newFlag(SYSTEM_FLAG::DEBUG);
 }
 
 void Commands::EnterPreflightCommand(System& system, const RnpPacketSerialized& packet) 
 {
 
-	system.statemachine.changeState(new Preflight(&system));
+	system.statemachine.changeState(std::make_unique<Preflight>(system));
 }
 
 
-void Commands::EnterCountdownCommand(System& system, const RnpPacketSerialized& packet) 
+void Commands::EnterLaunchCommand(System& system, const RnpPacketSerialized& packet) 
 {
-	system.statemachine.changeState(new Launch(&system));
+	system.statemachine.changeState(std::make_unique<Launch>(system));
 }
 
 void Commands::EnterFlightCommand(System& system, const RnpPacketSerialized& packet) 
 {
-	system.statemachine.changeState(new Flight(&system));
+	system.statemachine.changeState(std::make_unique<Flight>(system));
 }
 
 void Commands::EnterRecoveryCommand(System& system, const RnpPacketSerialized& packet) 
 {
-	system.statemachine.changeState(new Recovery(&system));
+	system.statemachine.changeState(std::make_unique<Recovery>(system));
 }
 
 void Commands::ExitDebugCommand(System& system, const RnpPacketSerialized& packet) 
 {
-	system.statemachine.changeState(new Debug(&system));
-	system.systemstatus.deleteFlag(SYSTEM_FLAG::DEBUG);
-	system.statemachine.changeState(new Preflight(&system));
-}
 
-void Commands::ExitToDebugCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	system.statemachine.changeState(new Debug(&system));
+	system.statemachine.changeState(std::make_unique<Debug>(system));
+	system.systemstatus.deleteFlag(SYSTEM_FLAG::DEBUG); // delete system flag to signify exiting debug mode
+	system.statemachine.changeState(std::make_unique<Preflight>(system));
 }
 
 

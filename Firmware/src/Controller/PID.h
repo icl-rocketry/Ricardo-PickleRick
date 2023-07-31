@@ -14,7 +14,7 @@
 class PID : public Controller {
 public:
 	PID(uint8_t id,float Kp, float Ki, float Kd,float setpoint,Controllable* doohickey, uint32_t update_interval = 0):
-		Controller(id,doohickey, logcontroller, update_interval),
+		Controller(id,doohickey, update_interval),
 		_Kp(Kp),
 		_Ki(Ki),
 		_Kd(Kd),

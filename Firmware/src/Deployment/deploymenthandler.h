@@ -16,6 +16,8 @@
 #include <librrc/configurabledynamichandler.h>
 #include <librrc/networkeddynamichandler.h>
 
+#include <libriccore/riccorelogging.h>
+
 
 
 
