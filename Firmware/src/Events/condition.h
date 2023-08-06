@@ -45,8 +45,8 @@ class Condition{
 
     private:
         flightVariableFunc_t _flightVariable;
-        int _flightVariableIndex;
-        float _threshold;
+        const int _flightVariableIndex;
+        const float _threshold;
         flightVariableOperator_t _op;
         
 };

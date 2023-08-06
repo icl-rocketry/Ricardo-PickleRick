@@ -4,7 +4,6 @@
 
 #include <libriccore/riccoresystem.h>
 
-#include <HardwareSerial.h>
 
 #include "Config/systemflags_config.h"
 #include "Config/commands_config.h"
@@ -31,9 +30,17 @@
 
 #include <ArduinoJson.h>
 
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+static constexpr int VSPI_BUS_NUM = 0;
+static constexpr int HSPI_BUS_NUM = 1;
+#else
+static constexpr int VSPI_BUS_NUM = VSPI;
+static constexpr int HSPI_BUS_NUM = HSPI;
+#endif
+
 System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabledCommands, Serial),
-                   vspi(VSPI),
-                   hspi(HSPI), // CHANGE FOR esp32s3
+                   vspi(VSPI_BUS_NUM),
+                   hspi(HSPI_BUS_NUM), // CHANGE FOR esp32s3
                    I2C(0),
                    radio(hspi,  PinMap::LoraCs, PinMap::LoraReset, -1, systemstatus, RADIO_MODE::TURN_TIMEOUT,  2),
                    canbus(systemstatus, PinMap::TxCan, PinMap::RxCan, 3),
@@ -92,12 +99,12 @@ void System::systemUpdate()
 
 void System::setupSPI()
 {
-    vspi.begin();
+    vspi.begin(PinMap::V_SCLK,PinMap::V_MISO,PinMap::V_MOSI);
     vspi.setFrequency(1000000);
     vspi.setBitOrder(MSBFIRST);
     vspi.setDataMode(SPI_MODE0);
 
-    hspi.begin();
+    hspi.begin(PinMap::H_SCLK,PinMap::H_MISO,PinMap::H_MOSI);
     hspi.setFrequency(8000000);
     hspi.setBitOrder(MSBFIRST);
     hspi.setDataMode(SPI_MODE0);

@@ -5,7 +5,14 @@
  */
 #pragma once
 
-namespace PinMap{
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+namespace PinMap = PickleRickV2Pins;
+#else
+namespace PinMap = PickleRickV1Pins;
+#endif
+
+
+namespace PickleRickV1Pins{
     static constexpr int BaroCs = 2;
     static constexpr int LoraReset = 4;
     static constexpr int LoraCs = 5;
@@ -32,16 +39,49 @@ namespace PinMap{
     static constexpr int TxCan = 32;
     static constexpr int RxCan = 33;
 
-    // static constexpr int TxCan = 27;
-    // static constexpr int RxCan = 14;
-
-
-    // static constexpr int TxCan = 33;
-    // static constexpr int RxCan = 32;
     static constexpr int SdDet_1 = 34;
     static constexpr int SdDet_2 = 35;
     static constexpr int BattVolt = 36;
     static constexpr int LoraInt = 39;
 };
+
+namespace PickleRickV2Pins{
+    static constexpr int BaroCs = 14;
+
+    static constexpr int LoraReset = 9;
+    static constexpr int LoraCs = 10;
+
+    static constexpr int H_MISO = 34;
+    static constexpr int H_MOSI = 33;
+    static constexpr int H_SCLK = 35;
+
+    static constexpr int MagCs = 13;
+    static constexpr int ImuCs_1 = 12;
+    static constexpr int ImuCs_2 = 11;
+
+    static constexpr int V_SCLK = 37;
+    static constexpr int V_MISO = 38;
+    static constexpr int V_MOSI = 36;
+
+    static constexpr int _SDA = 21;
+    static constexpr int _SCL = 26;
+    
+
+    static constexpr int SdCs_1 = 4;
+    static constexpr int SdCs_2 = 8;
+
+    static constexpr int Buzzer = 1;
+
+    static constexpr int TxCan = 18;
+    static constexpr int RxCan = 17;
+
+    static constexpr int SdDet_1 = 6;
+    static constexpr int SdDet_2 = 7;
+
+    static constexpr int BattVolt = 2;
+    static constexpr int LoraInt = 5;
+};
+
+
 
 

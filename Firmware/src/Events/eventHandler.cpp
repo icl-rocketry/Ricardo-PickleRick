@@ -207,7 +207,7 @@ condition_t EventHandler::configureCondition(JsonVariantConst condition, uint8_t
             return Condition(_flightvariables.get(conditionJson["flightVar"].as<std::string>()), 
                              conditionJson["component"].as<int>(),
                              conditionJson["threshold"].as<float>(),
-                             op);
+                             op); // while this looks like we are returning an Condtion object, as the return type of the function is std::function<bool()> and the operator() is defined for condtion, we are in fact returning a callable function
         }else{
             std::string condition_string;
             serializeJson(conditionJson,condition_string);
