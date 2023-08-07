@@ -34,13 +34,12 @@
 
 Sensors::Sensors(SPIClass& spi,TwoWire& I2C,Types::CoreTypes::SystemStatus_t& systemstatus) :
     _systemstatus(systemstatus),
-    I2C_2(1),
     gps(I2C,systemstatus),
-    baro(spi,systemstatus,PinMap::BaroCs),
+    // baro(spi,systemstatus,PinMap::BaroCs),
     accelgyro(spi,systemstatus,PinMap::ImuCs_1),
     accel(spi,systemstatus,PinMap::ImuCs_2),
-    // mag(spi,MagCs,systemstatus,logcontroller), // SPI constructor
-    mag(I2C_2,PinMap::H_SCLK,PinMap::H_MOSI,spi,PinMap::MagCs,systemstatus),
+    mag(spi,PinMap::MagCs,systemstatus), // SPI constructor
+    // mag(I2C_2,PinMap::H_SCLK,PinMap::H_MOSI,spi,PinMap::MagCs,systemstatus),
     logicrail("Logic Rail",PinMap::BattVolt,9.22,8.79)
 {}
 
@@ -66,7 +65,7 @@ void Sensors::setup(JsonObjectConst config){
     setIfContains(config,"LOGIC_MIN_VOLTAGE",logicMinVoltage,false);
 
     gps.setup();
-    baro.setup();
+    // baro.setup();
     accelgyro.setup(axesOrder,axesFlip);
     accel.setup(axesOrder,axesFlip);
     mag.setup(axesOrder,axesFlip);
@@ -85,7 +84,7 @@ void Sensors::update()
         return;
     }
     gps.update(sensors_raw.gps);
-    baro.update(sensors_raw.baro);
+    // baro.update(sensors_raw.baro);
     accelgyro.update(sensors_raw.accelgyro);
     accel.update(sensors_raw.accel);
     mag.update(sensors_raw.mag);
@@ -111,7 +110,7 @@ void Sensors::calibrateMag(MagCalibrationParameters magcal)
 
 void Sensors::calibrateBaro()
 {
-    baro.calibrateBaro();
+    // baro.calibrateBaro();
 }
 
 std::function<void(std::unique_ptr<RnpPacketSerialized>)> Sensors::getHitlCallback()

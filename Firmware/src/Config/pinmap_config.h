@@ -5,13 +5,6 @@
  */
 #pragma once
 
-#ifdef CONFIG_IDF_TARGET_ESP32S3
-namespace PinMap = PickleRickV2Pins;
-#else
-namespace PinMap = PickleRickV1Pins;
-#endif
-
-
 namespace PickleRickV1Pins{
     static constexpr int BaroCs = 2;
     static constexpr int LoraReset = 4;
@@ -82,6 +75,11 @@ namespace PickleRickV2Pins{
     static constexpr int LoraInt = 5;
 };
 
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+namespace PinMap = PickleRickV2Pins;
+#else
+namespace PinMap = PickleRickV1Pins;
+#endif
 
 
 

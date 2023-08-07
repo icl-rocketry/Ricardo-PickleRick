@@ -95,6 +95,7 @@ void System::systemUpdate()
     tunezhandler.update();
     sensors.update();
     estimator.update(sensors.getData());
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("hello");
 };
 
 void System::setupSPI()

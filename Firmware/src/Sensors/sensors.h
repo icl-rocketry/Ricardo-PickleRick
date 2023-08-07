@@ -61,10 +61,9 @@ public:
 private:
     SensorStructs::raw_measurements_t sensors_raw;
     Types::CoreTypes::SystemStatus_t& _systemstatus;
-    TwoWire I2C_2;
 
     Max_M8Q gps;
-    MS5607 baro;
+    // MS5607 baro;
     ICM_20608 accelgyro;
     H3LIS331DL accel;
     MMC5983MA mag;
