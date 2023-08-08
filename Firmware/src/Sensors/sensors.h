@@ -29,7 +29,7 @@
 
 
 
-#include "max_m8q.h"
+#include "max_m10s.h"
 #include "ms5607.h"
 #include "icm_20608.h"
 #include "h3lis331dl.h"
@@ -62,7 +62,7 @@ private:
     SensorStructs::raw_measurements_t sensors_raw;
     Types::CoreTypes::SystemStatus_t& _systemstatus;
 
-    Max_M8Q gps;
+    Max_M10S gps;
     // MS5607 baro;
     ICM_20608 accelgyro;
     H3LIS331DL accel;

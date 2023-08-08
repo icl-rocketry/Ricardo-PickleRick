@@ -20,16 +20,19 @@ TaskHandle_t loopTaskHandle = NULL;
 System ricSystem;
 
 
+
 void setup_task()
 {
     //MUST CALL CORE SYSTEM SETUP
     ricSystem.coreSystemSetup();
+   
 }
 
 void inner_loop_task()
 {
     //must call core system update
     ricSystem.coreSystemUpdate();
+   
 }
 
 void loopTask(void *pvParameters)

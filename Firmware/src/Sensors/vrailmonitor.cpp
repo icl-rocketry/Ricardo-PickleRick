@@ -15,7 +15,7 @@ _maxVoltage(0),
 _lowVoltage(0),
 _minVoltage(0)
 {
-    adcAttachPin(pin);
+    // adcAttachPin(pin);
 };
 
 void VRailMonitor::setup(uint16_t maxVoltage, uint16_t lowVoltage,uint16_t minVoltage){
@@ -30,8 +30,8 @@ void VRailMonitor::update(SensorStructs::V_RAIL_t &data)
     if (millis() - prevSampleTime >= sampleDelta)
     {
 
-        const uint16_t reading = analogRead(_pin);
-        // const uint16_t reading = 5;
+        // const uint16_t reading = analogRead(_pin);
+        const uint16_t reading = 5;
         data.volt = (uint16_t)(factor * (float)reading); // voltage in mV
 
         if ((data.volt < _lowVoltage) && !_lowVoltageTriggered)

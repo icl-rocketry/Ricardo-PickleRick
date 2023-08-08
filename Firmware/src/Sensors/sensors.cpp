@@ -26,7 +26,7 @@
 #include "packets/hitlpacket.h"
 //indivudal sensor classes
 
-#include "max_m8q.h"
+#include "max_m10s.h"
 #include "ms5607.h"
 #include "icm_20608.h"
 #include "h3lis331dl.h"

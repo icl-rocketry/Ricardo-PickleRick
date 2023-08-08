@@ -13,3 +13,6 @@
 [submodule "Firmware/components/arduino-esp32"]
 	path = Firmware/components/arduino
 	url = https://github.com/espressif/arduino-esp32.git
+[submodule "Firmware/lib/SparkFun_u-blox_GNSS_v3"]
+	path = Firmware/lib/SparkFun_u-blox_GNSS_v3
+	url = https://github.com/sparkfun/SparkFun_u-blox_GNSS_v3.git
