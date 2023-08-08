@@ -57,14 +57,15 @@ void DpsClass::begin(SPIClass &bus, int32_t chipSelect, uint8_t threeWire)
     m_spibus = &bus;
     m_chipSelect = chipSelect;
 
-    // Init bus
-    m_spibus->begin();
-    m_spibus->setDataMode(SPI_MODE3);
+    // Init bus LEAVE MY SPI BUS ALONE SHEESH
+    // m_spibus->begin();
+    // m_spibus->setDataMode(SPI_MODE3);
 
     pinMode(m_chipSelect, OUTPUT);
     digitalWrite(m_chipSelect, HIGH);
 
-    delay(50); // startup time of Dps3xx
+    // delay(50); // startup time of Dps3xx 
+    //delays are dumb <3
 
     // switch to 3-wire mode if necessary
     // do not use writeByteBitfield or check option to set SPI mode!
