@@ -30,7 +30,8 @@
 
 
 #include "max_m10s.h"
-#include "ms5607.h"
+// #include "ms5607.h"
+#include "dps310.h"
 #include "icm_20608.h"
 #include "h3lis331dl.h"
 #include "mmc5983ma.h"
@@ -64,6 +65,7 @@ private:
 
     Max_M10S gps;
     // MS5607 baro;
+    DPS310 baro;
     ICM_20608 accelgyro;
     H3LIS331DL accel;
     MMC5983MA mag;

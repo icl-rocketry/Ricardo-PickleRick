@@ -46,12 +46,12 @@ class DPS310 : private Dps3xx{
          * @brief  Temperature Measurement rate 
          * 
          */
-        static constexpr int temp_mr = 6;
+        static constexpr int temp_mr = 3;
         /**
          * @brief Temperature Over sampling rate
          * 
          */
-        static constexpr int temp_osr = 4;
+        static constexpr int temp_osr = 1;
         /**
          * @brief Pressure Measurement Rate
          * 
@@ -61,7 +61,7 @@ class DPS310 : private Dps3xx{
          * @brief Pressure Over sampling rate
          * 
          */
-        static constexpr int press_osr = 4;
+        static constexpr int press_osr = 3;
 
         float toAltitude(const float& pressure);
 

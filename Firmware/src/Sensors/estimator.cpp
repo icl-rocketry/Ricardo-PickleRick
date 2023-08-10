@@ -16,7 +16,7 @@
 
 
 Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus) : _systemstatus(systemstatus),
-                                                   update_frequency(5000), // 200Hz update
+                                                   update_frequency(500), // 2000Hz update
                                                    _homeSet(false),
                                                    madgwick(0.5f, 0.005f) // beta | gyroscope sample time step (s)
                                                    {};
