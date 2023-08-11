@@ -13,7 +13,7 @@ TunezHandler::TunezHandler()
 
 void TunezHandler::setup()
 {
-    ledcSetup(0,0,8);
+    ledcSetup(0,50,10);
     ledcAttachPin(PinMap::Buzzer,0);
     ledcWrite(0,_volume); //max volume
     ledcWriteTone(0,0); //write 0 hz so no noise

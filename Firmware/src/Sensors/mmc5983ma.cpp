@@ -70,7 +70,6 @@ void MMC5983MA::setup(const std::array<uint8_t,3>& axesOrder,const std::array<bo
         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_MAG, "Unable to initialize the MMC5983MA");
         return;
     }
-    Serial.println("alive");
 
     axeshelper.setOrder(axesOrder);
     axeshelper.setFlip(axesFlip);

@@ -40,7 +40,7 @@ class TunezHandler{
         void play(melody_base_t &melody,bool loop = false);
         
 
-        
+         
         /**
          * @brief Skip current tune
          * 
@@ -58,7 +58,7 @@ class TunezHandler{
 
         
         std::vector<tune_t> tune_queue; 
-        uint8_t _volume = 0;
+        uint16_t _volume = 1023;
 
         uint64_t prev_time = 0;
         uint16_t note_duration = 0;
