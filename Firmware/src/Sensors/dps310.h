@@ -61,7 +61,7 @@ class DPS310 : private Dps3xx{
          * @brief Pressure Over sampling rate
          * 
          */
-        static constexpr int press_osr = 3;
+        static constexpr int press_osr = 2;
 
         float toAltitude(const float& pressure);
 

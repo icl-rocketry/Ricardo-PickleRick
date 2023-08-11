@@ -231,7 +231,7 @@ public:
      */
     int16_t correctTemp(void);
 
-protected:
+public:
     // scaling factor table
     static const int32_t scaling_facts[DPS__NUM_OF_SCAL_FACTS];
 

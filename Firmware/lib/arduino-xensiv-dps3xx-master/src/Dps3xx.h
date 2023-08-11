@@ -18,7 +18,7 @@ public:
      */
     int16_t setInterruptSources(uint8_t intr_source, uint8_t polarity = 1);
 
-protected:
+public:
     uint8_t m_tempSensor;
 
     // compensation coefficients
