@@ -19,7 +19,6 @@ TaskHandle_t loopTaskHandle = NULL;
 
 System ricSystem;
 
-
 void setup_task()
 {
     //MUST CALL CORE SYSTEM SETUP

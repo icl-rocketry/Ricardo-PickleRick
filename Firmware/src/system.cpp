@@ -76,8 +76,8 @@ void System::systemSetup()
     networkmanager.addInterface(&radio);
     networkmanager.addInterface(&canbus);
 
-    networkmanager.enableAutoRouteGen(false);
-    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,3});
+    networkmanager.enableAutoRouteGen(true);
+    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,2,3});
 
     loadComponentConfig();
 
