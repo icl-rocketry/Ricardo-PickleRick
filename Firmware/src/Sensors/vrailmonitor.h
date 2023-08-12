@@ -2,6 +2,10 @@
 
 #include "sensorStructs.h"
 
+#include <driver/gpio.h>
+#include <driver/adc.h>
+#include "esp_adc_cal.h"
+
 #include <libriccore/riccorelogging.h>
 
 class VRailMonitor
@@ -48,6 +52,35 @@ private:
      * 
      */
     const uint8_t _pin;
+
+    /**
+     * @brief Corresponding adc channel
+     * 
+     */
+    adc_channel_t _channel;
+
+    /**
+     * @brief Corresonding adc unit
+     * 
+     */
+    adc_unit_t _unit;
+
+    /**
+     * @brief Calibration of adc struct
+     * 
+     */
+    esp_adc_cal_characteristics_t _adcCal;
+
+    /**
+     * @brief Flag for adc initialization
+     * 
+     */
+    bool _adcInitialized;
+
+    static constexpr adc_atten_t _atten = ADC_ATTEN_DB_11;
+    static constexpr adc_bits_width_t _width = ADC_WIDTH_12Bit;
+
+
     /**
      * @brief esp32 pins can read upto 3.3v (3300mv) in 4095 steps, voltage divider halves the input voltage hence we get 2*3300 -> from actual board r1 = 9.22k, r2 = 8.79k
      *

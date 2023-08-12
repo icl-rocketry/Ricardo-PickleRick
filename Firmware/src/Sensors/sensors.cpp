@@ -39,7 +39,7 @@ Sensors::Sensors(SPIClass& spi,TwoWire& I2C,Types::CoreTypes::SystemStatus_t& sy
     accelgyro(spi,systemstatus,PinMap::ImuCs_1),
     accel(spi,systemstatus,PinMap::ImuCs_2),
     mag(spi,PinMap::MagCs,systemstatus),
-    logicrail("Logic Rail",PinMap::BattVolt,9.22,8.79)
+    logicrail("Logic Rail",PinMap::BattVolt,8,1)
 {}
 
 void Sensors::setup(JsonObjectConst config){
