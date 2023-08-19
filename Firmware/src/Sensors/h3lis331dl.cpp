@@ -11,6 +11,8 @@
 
 #include "Helpers/axeshelper.h"
 
+#include <Preferences.h>
+
 
 H3LIS331DL::H3LIS331DL(SPIClass& spi,Types::CoreTypes::SystemStatus_t& systemstatus,uint8_t cs):
 _spi(spi),
@@ -38,6 +40,8 @@ void H3LIS331DL::setup(const std::array<uint8_t,3>& axesOrder, const std::array<
     axeshelper.setOrder(axesOrder);
     axeshelper.setFlip(axesFlip);
 
+    loadAccelBias();
+
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("H3LIS331DL Initialized");
 
 }
@@ -45,6 +49,11 @@ void H3LIS331DL::setup(const std::array<uint8_t,3>& axesOrder, const std::array<
 void H3LIS331DL::update(SensorStructs::ACCEL_3AXIS_t& data)
 {
     readAxes(data.ax,data.ay,data.az);
+
+    if (calibrating) {
+        calibrateBias();
+    }
+    
 };
 
 bool H3LIS331DL::alive(){
@@ -152,19 +161,88 @@ void H3LIS331DL::readRawAxes(int16_t &x, int16_t &y, int16_t &z)
 
 void H3LIS331DL::readAxes(float &x, float &y, float &z)
 {
-    int16_t ax;
-    int16_t ay;
-    int16_t az;
+    int16_t xi, yi, zi;
 
-    readRawAxes(ax,ay,az);
+    readRawAxes(xi, yi, zi);
 
-    std::array<float, 3> accel = axeshelper(std::array<float, 3>{-raw_to_g * float(ay),
-                                                                 -raw_to_g * float(ax),
-                                                                 -raw_to_g * float(az)});
+    std::array<float, 3> accel = axeshelper(std::array<float, 3>{-raw_to_g * (float)(xi + offset_ax),
+                                                                 -raw_to_g * (float)(yi + offset_ay),
+                                                                 -raw_to_g * (float)(zi + offset_az)});
 
     x = accel[0];
     y = accel[1];
     z = accel[2];
+}
+
+void H3LIS331DL::startCalibrateBias()
+{
+
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("High G accel calibration started");
+
+    measurements_made = 0;
+
+    sum_ax = 0, sum_ay = 0, sum_az = 0;
+
+    calibrating = true;
+}
+
+void H3LIS331DL::calibrateBias()
+{
+
+    readRawAxes(ax, ay, az);
+
+    sum_ax += ax;
+    sum_ay += ay;
+    sum_az += az;
+
+    measurements_made += 1;
+
+    if (measurements_made == number_measurements){
+
+        offset_ax = -sum_ax / number_measurements;
+        offset_ay = -sum_ay / number_measurements;
+        offset_az = 1 / raw_to_g - sum_az / number_measurements;
+
+        writeAccelBias();
+
+        calibrating = false;
+
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("High G accel calibration completed");
+
+    }
+}
+
+void H3LIS331DL::writeAccelBias()
+{
+
+    Preferences pref;
+
+    if (!pref.begin("IMU2")){
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs failed to start. Can't write high g calbration offsets");
+        return;
+    }   
+   
+    if (!pref.putShort("axBias",offset_ax)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putShort("ayBias",offset_ay)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putShort("azBias",offset_az)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    
+
+}
+
+void H3LIS331DL::loadAccelBias()
+{
+
+    Preferences pref;
+
+    if (!pref.begin("IMU2",true)){
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs failed to start");
+        return;
+    }
+
+    offset_ax = pref.getShort("axBias");
+    offset_ay = pref.getShort("ayBias");
+    offset_az = pref.getShort("azBias");
+
 }
 
 void H3LIS331DL::writeRegister(uint8_t reg_address, uint8_t *data, uint8_t len)

@@ -36,6 +36,7 @@ namespace Commands{
     void ResetLocalizationCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void SetBetaCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void CalibrateAccelGyroBiasCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void CalibrateHighGAccelBiasCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void CalibrateMagFullCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void CalibrateBaroCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void IgnitionCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);

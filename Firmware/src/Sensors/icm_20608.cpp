@@ -65,41 +65,58 @@ void ICM_20608::update(SensorStructs::ACCELGYRO_6AXIS_t& data)
     readAccel(data.ax,data.ay,data.az);
     readGyro(data.gx,data.gy,data.gz);
     readTemp(data.temp);
+
+    if (calibrating) {
+        calibrateBias();
+    }
+
+}
+
+void ICM_20608::startCalibrateBias()
+{
+
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Accel calibration started");
+
+    measurements_made = 0;
+
+    sum_gx = 0, sum_gy = 0, sum_gz = 0;
+    sum_ax = 0, sum_ay = 0, sum_az = 0;
+
+    calibrating = true;
 }
 
 void ICM_20608::calibrateBias()
 {
-    constexpr uint16_t number_measurements = 500;
 
-    int16_t gx, gy, gz;
-    int16_t ax, ay, az;
+    readGyroRaw(gx, gy, gz);
+    readAccelRaw(ax, ay, az);
 
-    int32_t sum_gx = 0, sum_gy = 0, sum_gz = 0;
-    int32_t sum_ax = 0, sum_ay = 0, sum_az = 0;
+    sum_gx += gx;
+    sum_gy += gy;
+    sum_gz += gz;
 
-    for (uint16_t i = 0; i < number_measurements; i++)
-    {
-        readGyroRaw(gx, gy, gz);
-        readAccelRaw(ax, ay, az);
+    sum_ax += ax;
+    sum_ay += ay;
+    sum_az += az;
 
-        sum_gx += gx;
-        sum_gy += gy;
-        sum_gz += gz;
+    measurements_made += 1;
 
-        sum_ax += ax;
-        sum_ay += ay;
-        sum_az += az;
+    if (measurements_made == number_measurements){
 
-        delay(5);// might be better as vtaskdelay
+        offset_gx = -sum_gx / number_measurements;
+        offset_gy = -sum_gy / number_measurements;
+        offset_gz = -sum_gz / number_measurements;
+        offset_ax = -sum_ax / number_measurements;
+        offset_ay = -sum_ay / number_measurements;
+        offset_az = 1 / accel_lsb_to_g - sum_az / number_measurements;
+        writeAccelGyroBias();
+
+        calibrating = false;
+
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Accel calibration completed");
+
     }
 
-    offset_gx = -sum_gx / number_measurements;
-    offset_gy = -sum_gy / number_measurements;
-    offset_gz = -sum_gz / number_measurements;
-    offset_ax = -sum_ax / number_measurements;
-    offset_ay = -sum_ay / number_measurements;
-    offset_az = 1 / accel_lsb_to_g - sum_az / number_measurements;
-    writeAccelGyroBias();
 }
 
 void ICM_20608::setRange(AccelRange accel_range,GyroRange gyro_range)

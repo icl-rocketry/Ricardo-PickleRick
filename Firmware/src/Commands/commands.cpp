@@ -218,6 +218,13 @@ void Commands::CalibrateAccelGyroBiasCommand(System& system, const RnpPacketSeri
 	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
 }
 
+void Commands::CalibrateHighGAccelBiasCommand(System& system, const RnpPacketSerialized& packet) 
+{
+	
+	system.sensors.calibrateHighGAccel();
+	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
+}
+
 void Commands::CalibrateMagFullCommand(System& system, const RnpPacketSerialized& packet) 
 {
 

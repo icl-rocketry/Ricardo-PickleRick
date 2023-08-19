@@ -54,6 +54,7 @@ public:
 
     // Sensor Calibration Functions
     void calibrateAccelGyro();
+    void calibrateHighGAccel();
     void calibrateMag(MagCalibrationParameters magcal);
     void calibrateBaro();
 

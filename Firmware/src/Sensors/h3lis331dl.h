@@ -32,6 +32,8 @@ class H3LIS331DL{
 
         void update(SensorStructs::ACCEL_3AXIS_t& data);
 
+        void startCalibrateBias();
+
     private:
     
 
@@ -85,9 +87,24 @@ class H3LIS331DL{
         void axesEnable(bool enable);
         void readAxes(float &x, float &y, float &z);
         void readRawAxes(int16_t &x, int16_t &y, int16_t &z);
+        void calibrateBias();
+        void writeAccelBias();
+        void loadAccelBias();
         void setFullScale(fs_range range);
 
         float raw_to_g;
+
+        static constexpr uint16_t number_measurements = 500;
+        uint16_t measurements_made;
+
+        int16_t ax, ay, az;
+        int32_t sum_ax, sum_ay, sum_az;
+
+        bool calibrating;
+
+        int16_t offset_ax{0};
+        int16_t offset_ay{0};
+        int16_t offset_az{0};        
 
         //registers
         static constexpr uint8_t WHO_AM_I = 0x0F;

@@ -43,7 +43,7 @@ class ICM_20608{
          * Orientation matters, only perform when board is out of rocket!
          * 
          */
-        void calibrateBias();
+        void startCalibrateBias();
 
         enum GyroRange:uint8_t
         {
@@ -82,6 +82,8 @@ class ICM_20608{
         void readGyroRaw(int16_t &x, int16_t &y, int16_t &z);
         void readAccelRaw(int16_t &x, int16_t &y, int16_t &z);
 
+        void calibrateBias();
+
         void readTempRaw(int16_t& temp);
         void readTemp(float& temp);
 
@@ -100,6 +102,17 @@ class ICM_20608{
 
         float gyro_lsb_to_degs;
         float accel_lsb_to_g;
+
+        static constexpr uint16_t number_measurements = 500;
+        uint16_t measurements_made;
+
+        int16_t gx, gy, gz;
+        int16_t ax, ay, az;
+
+        int32_t sum_gx, sum_gy, sum_gz;
+        int32_t sum_ax, sum_ay, sum_az;
+
+        bool calibrating;
 
         int16_t offset_gx{0};
         int16_t offset_gy{0};

@@ -99,7 +99,12 @@ const SensorStructs::raw_measurements_t& Sensors::getData()
 
 void Sensors::calibrateAccelGyro()
 {
-    accelgyro.calibrateBias();
+    accelgyro.startCalibrateBias();
+}
+
+void Sensors::calibrateHighGAccel()
+{
+    accel.startCalibrateBias();
 }
 
 void Sensors::calibrateMag(MagCalibrationParameters magcal)
