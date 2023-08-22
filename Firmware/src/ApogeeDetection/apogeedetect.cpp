@@ -103,7 +103,7 @@ void ApogeeDetect::updateSigmas(float oldTime, float newTime, float oldAlt, floa
     sigmaAltTime += ((newAlt * (newTime)) - (oldAlt * (oldTime)));
     sigmaAltTime_2 += ((newAlt * newTime_2) - (oldAlt * oldTime_2));
 
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(sigmaTime) + "\t" + std::to_string(sigmaTime) + "\t" + std::to_string(sigmaTime_2) + "\t" + std::to_string(sigmaTime_3) + "\t" + std::to_string(sigmaTime_4) + "\t" + std::to_string(sigmaAlt) + "\t" +std::to_string(sigmaAltTime) + "\t" + std::to_string(sigmaAltTime_2) + "\t" );
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(sigmaTime) + "\t" + std::to_string(sigmaTime) + "\t" + std::to_string(sigmaTime_2) + "\t" + std::to_string(sigmaTime_3) + "\t" + std::to_string(sigmaTime_4) + "\t" + std::to_string(sigmaAlt) + "\t" +std::to_string(sigmaAltTime) + "\t" + std::to_string(sigmaAltTime_2) + "\t" );
 };
 
 /*Create a matrix, three simulatneos equations */

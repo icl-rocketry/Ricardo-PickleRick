@@ -39,7 +39,7 @@ void Commands::LaunchCommand(System& system, const RnpPacketSerialized& packet)
 
 void Commands::ResetCommand(System& system, const RnpPacketSerialized& packet) 
 {	
-	ESP.restart(); 
+	system.statemachine.changeState(std::make_unique<Preflight>(system));
 }
 
 void Commands::LaunchAbortCommand(System& system,const  RnpPacketSerialized& packet) 
@@ -62,6 +62,7 @@ void Commands::FlightAbortCommand(System& system, const RnpPacketSerialized& pac
 {
 	//flight abort
 	//TODO log
+	system.statemachine.changeState(std::make_unique<Recovery>(system));
 }
 
 void Commands::SetHomeCommand(System& system, const RnpPacketSerialized& packet) 

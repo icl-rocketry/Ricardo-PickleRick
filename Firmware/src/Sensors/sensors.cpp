@@ -114,7 +114,7 @@ void Sensors::calibrateMag(MagCalibrationParameters magcal)
 
 void Sensors::calibrateBaro()
 {
-    // baro.calibrateBaro();
+    baro.calibrateBaro();
 }
 
 std::function<void(std::unique_ptr<RnpPacketSerialized>)> Sensors::getHitlCallback()

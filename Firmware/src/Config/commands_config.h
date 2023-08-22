@@ -33,8 +33,8 @@ namespace Commands
         Reset_Localization = 51,
         Set_Beta = 52,
         Calibrate_AccelGyro_Bias = 60,
-        Calibrate_HighGAccel_Bias = 61,
-        Calibrate_Mag_Full = 62,
+        Calibrate_Mag_Full = 61, //changed for compatibility
+        Calibrate_HighGAccel_Bias = 62,
         Calibrate_Baro = 63,
         Ignition = 69,
         Enter_Debug = 100,
