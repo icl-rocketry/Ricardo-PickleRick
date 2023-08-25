@@ -65,4 +65,7 @@ class DPS310 : private Dps3xx{
 
         float toAltitude(const float& pressure);
 
+        void loadDPSCalibrationValues();
+        void writeDPSCalibrationValues();
+
 };

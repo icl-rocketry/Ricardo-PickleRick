@@ -6,6 +6,7 @@
 #include <Dps3xx.h>
 #include <math.h>
 #include <array>
+#include <Preferences.h>
 
 #include "Config/types.h"
 #include "Config/systemflags_config.h"
@@ -40,6 +41,8 @@ void DPS310::setup()
         return;
     }
 
+    loadDPSCalibrationValues();
+
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("DPS310 Initialized!");
     _initialized = true;
 }
@@ -64,7 +67,10 @@ void DPS310::calibrateBaro()
     }
 
     readDPS(refPress, refTemp);
+
     refTemp += 273.15; // convert from celcius to kelvin
+
+    writeDPSCalibrationValues();
 }
 
 float DPS310::toAltitude(const float &pressure)
@@ -116,4 +122,30 @@ void DPS310::readDPS(float &pressure, float &temperature)
 
     temperature = calcTemp(raw_temp);
     pressure = calcPressure(raw_press);
+}
+
+
+void DPS310::writeDPSCalibrationValues(){
+    Preferences pref;
+
+    if (!pref.begin("DPS")){
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs failed to start. Can't write DPS calibration values");
+        return;
+    }
+
+    if (!pref.putFloat("TempRef", refTemp)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");}
+    if (!pref.putFloat("PressRef", refPress)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");}
+}
+
+
+void DPS310::loadDPSCalibrationValues(){
+    Preferences pref;
+
+    if (!pref.begin("DPS", true)){
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs failed to start");
+        return;
+    }
+
+    refTemp = pref.getFloat("TempRef");
+    refPress = pref.getFloat("PressRef");
 }
