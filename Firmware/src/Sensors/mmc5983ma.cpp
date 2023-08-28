@@ -86,7 +86,7 @@ void MMC5983MA::update(SensorStructs::MAG_3AXIS_t& data)
     float raw_mz;
     readData(raw_mx, raw_my, raw_mz, data.temp);
 
-    std::array<float,3> mag_transformed = axeshelper(std::array<float,3>{-raw_my,-raw_mx,raw_mz});
+    std::array<float,3> mag_transformed = axeshelper(std::array<float,3>{-raw_my,-raw_mz,raw_mx});
     //apply calibration
     Eigen::Vector3f corrected_mag = _magCal.A_1 * (Eigen::Vector3f{mag_transformed[0],mag_transformed[1],mag_transformed[2]} - _magCal.b);
     data.mx = corrected_mag[0];
