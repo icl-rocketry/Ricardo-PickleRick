@@ -984,10 +984,10 @@
       (net 29 "Net-(U11-SW1)") (pinfunction "1") (pintype "passive") (tstamp 4e409054-8fce-4133-ac00-511f17e99981))
     (pad "2" smd rect (at 2.025 0 270) (size 1.55 5.6) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 30 "Net-(U11-SW2)") (pinfunction "2") (pintype "passive") (tstamp 523497b5-bf72-47ff-936f-57fe1fe3d168))
-    (model "${ICLR_HW}/MPL-AL6050-4R7.stp"
-      (offset (xyz 0 0 0))
+    (model "${ICLR}/MPL-AL6050-4R7.STEP"
+      (offset (xyz 0 0 4.5))
       (scale (xyz 1 1 1))
-      (rotate (xyz 0 0 0))
+      (rotate (xyz -90 0 90))
     )
   )
 
@@ -1250,10 +1250,10 @@
       (net 32 "/SCL") (pinfunction "SCL") (pintype "input") (tstamp bdc5ca11-10e5-4600-9ef9-bb85404d6bea))
     (pad "18" smd roundrect (at 4.75 -4.4 180) (size 1.8 0.7) (layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.25)
       (net 171 "unconnected-(U19-~{SAFEBOOT}-Pad18)") (pinfunction "~{SAFEBOOT}") (pintype "input+no_connect") (tstamp 39b32332-d6eb-4066-9c5a-784c77cb509f))
-    (model "${KICAD6_3DMODEL_DIR}/RF_GPS.3dshapes/ublox_MAX.wrl"
+    (model "${ICLR}/MAX-M8Q.STEP"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
-      (rotate (xyz 0 0 0))
+      (rotate (xyz -90 0 0))
     )
   )
 
@@ -1872,8 +1872,8 @@
       (net 2 "GND") (pinfunction "SHIELD") (pintype "passive") (tstamp d26a8420-78a3-4a9e-b4f4-5a9910f59c4d))
     (pad "11" smd rect (at 6.675 7.375) (size 1.3 1.9) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 2 "GND") (pinfunction "SHIELD") (pintype "passive") (tstamp 49edae70-5dd4-4020-bb66-e19aaf00297f))
-    (model "${KICAD6_3DMODEL_DIR}/Connector_Card.3dshapes/DM3AT-SF-PEJM5--3DModel-STEP-1.STEP"
-      (offset (xyz -165.2 -154 0))
+    (model "${ICLR}/DM3AT-SF-PEJM5.stp"
+      (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
@@ -3071,8 +3071,8 @@
       (net 2 "GND") (pinfunction "Ext") (pintype "passive") (tstamp c2288b71-0313-4831-b20b-64c01771a6a6))
     (pad "2" thru_hole circle (at 1.72 4.38) (size 0.97 0.97) (drill 0.46) (layers "*.Cu")
       (net 2 "GND") (pinfunction "Ext") (pintype "passive") (tstamp df425070-f6bd-4dc2-bc2c-ec8e49ad418d))
-    (model "${KICAD6_3DMODEL_DIR}/Connector_Coaxial.3dshapes/732511150.stp"
-      (offset (xyz -14 0 0.5))
+    (model "${ICLR}/SMAConnector.step"
+      (offset (xyz -7 0 0.5))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
@@ -4314,6 +4314,11 @@
       (net 2 "GND") (pinfunction "GND") (pintype "input") (tstamp d5767db6-b107-49b0-a810-ae76acdf9093))
     (pad "9" smd rect (at 0 0 90) (size 2.15 2.15) (layers "F.Cu" "F.Mask")
       (net 2 "GND") (pinfunction "GND") (pintype "input") (tstamp cd167ede-127d-4614-91a9-04c8f69d541f))
+    (model "${ICLR}/SOIC-8.STEP"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz -90 0 0))
+    )
   )
 
   (footprint "Resistor_SMD:R_0402_1005Metric" (layer "F.Cu")
@@ -4741,10 +4746,10 @@
       (net 46 "/CAN+") (pinfunction "Pin_5") (pintype "passive") (tstamp e5809a62-5511-4f73-a0e9-f626abded6bd))
     (pad "6" thru_hole oval (at 8.4 5.5) (size 2.7 3.3) (drill 1.4) (layers "*.Cu" "*.Mask")
       (net 47 "/CAN-") (pinfunction "Pin_6") (pintype "passive") (tstamp 6cfc0d4a-84de-424f-941c-73a115c94cce))
-    (model "${KICAD6_3DMODEL_DIR}/Connector_Molex.3dshapes/Molex_Mini-Fit_Jr_5566-06A_2x03_P4.20mm_Vertical.wrl"
-      (offset (xyz 0 0 0))
+    (model "${ICLR}/RBus0203Hor.stp"
+      (offset (xyz 4.25 13.75 0))
       (scale (xyz 1 1 1))
-      (rotate (xyz 0 0 0))
+      (rotate (xyz -90 0 180))
     )
   )
 
@@ -5003,7 +5008,7 @@
       (net 2 "GND") (pinfunction "SHIELD") (pintype "passive") (tstamp 29c61c1a-f02d-4880-ac6b-b48e0380f1f7))
     (pad "S1" thru_hole oval (at 4.32 2.24 90) (size 1.7 0.9) (drill oval 1.4 0.6) (layers "*.Cu" "*.Mask")
       (net 2 "GND") (pinfunction "SHIELD") (pintype "passive") (tstamp 00bae6c8-ab78-4c2b-a7bc-ca440b2e2157))
-    (model "${KICAD6_3DMODEL_DIR}/Connector_USB.3dshapes/USB_C_Receptacle_Palconn_UTC16-G.wrl"
+    (model "${ICLR}/USB_C.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -5700,6 +5705,11 @@
       (net 1 "+3V3") (pinfunction "VDD") (pintype "power_in") (tstamp c8fb2e96-b5b2-4849-bdc9-53ea254259a7))
     (pad "16" smd rect (at -0.5 -1.47) (size 0.27 0.83) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 2 "GND") (pinfunction "GND") (pintype "power_in") (tstamp 046abdf3-ef40-4d46-aad5-20fccc06e037))
+    (model "${ICLR}/H3LIS331DLTR.stp"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz -90 0 0))
+    )
   )
 
   (footprint "iclr:MP28167GQ-A-Z" (layer "F.Cu")
@@ -5996,6 +6006,11 @@
       (net 29 "Net-(U11-SW1)") (pinfunction "SW1") (pintype "unspecified") (tstamp 3081808a-97c7-41a5-aa9c-8598f70bb631))
     (pad "16" smd rect (at -0.750001 -1.45) (size 0.7 0.25) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 108 "Net-(U11-BST1)") (pinfunction "BST1") (pintype "power_in") (tstamp a0b38bec-1d44-4c8d-bec1-4157a758a69b))
+    (model "C:/Users/shive/Documents/ICLR/iclr-hw/3d/MP28167GQ-A-Z.stp"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz 0 0 0))
+    )
   )
 
   (footprint "Capacitor_SMD:C_0402_1005Metric" (layer "F.Cu")
@@ -6346,10 +6361,10 @@
       (net 175 "unconnected-(U21-DIO1-Pad15)") (pinfunction "DIO1") (pintype "bidirectional+no_connect") (tstamp 8476e5bc-bf12-41f5-9358-6f231878f6db))
     (pad "16" smd rect (at 8 -7 180) (size 2 1) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 176 "unconnected-(U21-DIO2-Pad16)") (pinfunction "DIO2") (pintype "bidirectional+no_connect") (tstamp 52cf6701-e0f8-4481-827c-0fbd4e9bec67))
-    (model "${KICAD6_3DMODEL_DIR}/RF_Module.3dshapes/HOPERF_RFM9XW_SMD.wrl"
-      (offset (xyz 0 0 0))
+    (model "${ICLR}/RFM95 LoRa v15.step"
+      (offset (xyz -8 8 0))
       (scale (xyz 1 1 1))
-      (rotate (xyz 0 0 0))
+      (rotate (xyz -90 0 0))
     )
   )
 
@@ -7078,6 +7093,11 @@
       (net 1 "+3V3") (pinfunction "VDDA") (pintype "power_in") (tstamp 1e6877c5-64e6-47b0-bd99-dfa7869b7902))
     (pad "57" smd rect (at 0 0 270) (size 4 4) (layers "F.Cu" "F.Mask")
       (net 2 "GND") (pinfunction "GND") (pintype "power_in") (tstamp f6742655-f16d-42b8-a516-0a4f8a277d8f))
+    (model "${ICLR}/ESP32-S3.STEP"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz -90 0 0))
+    )
   )
 
   (footprint "Capacitor_SMD:C_0402_1005Metric" (layer "F.Cu")
@@ -7824,6 +7844,11 @@
       (net 2 "GND") (pinfunction "GND") (pintype "power_in") (tstamp 6fc9a388-8a26-454a-9383-576dfbfcef68))
     (pad "16" smd rect (at -0.5 -1.26) (size 0.49 0.35) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 1 "+3V3") (pinfunction "VDD") (pintype "power_in") (tstamp 3a6bad06-ae4d-4b9a-ac20-4c1c9210c693))
+    (model "${ICLR}/ICM-20608-G.step"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz -90 0 0))
+    )
   )
 
   (footprint "Capacitor_SMD:C_0402_1005Metric" (layer "F.Cu")
@@ -8141,8 +8166,8 @@
       (net 2 "GND") (pinfunction "Ext") (pintype "passive") (tstamp 7c0ddffa-17e3-4c34-b1c2-b6351a2cc949))
     (pad "2" thru_hole circle (at 1.72 4.38) (size 0.97 0.97) (drill 0.46) (layers "*.Cu")
       (net 2 "GND") (pinfunction "Ext") (pintype "passive") (tstamp a161060f-1ecd-4d7e-895c-6494a4167cc1))
-    (model "${KICAD6_3DMODEL_DIR}/Connector_Coaxial.3dshapes/732511150.stp"
-      (offset (xyz -14 0 0.5))
+    (model "${ICLR}/SMAConnector.step"
+      (offset (xyz -7 0 0.5))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
@@ -8697,6 +8722,11 @@
       (net 160 "unconnected-(U8-INT-Pad15)") (pinfunction "INT") (pintype "output+no_connect") (tstamp 7cf430c9-a21c-43fb-998a-0ff19d102646))
     (pad "16" smd rect (at -0.75 -1.275 90) (size 0.3 0.45) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 11 "/HSPI_MOSI") (pinfunction "SDA/SPI_SDI") (pintype "bidirectional") (tstamp 54f251cf-2884-48ba-a1f3-35dbe63d7e98))
+    (model "${ICLR}/MMC5983MA.STEP"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz -90 0 0))
+    )
   )
 
   (footprint "MountingHole:MountingHole_3.2mm_M3_DIN965_Pad" (layer "F.Cu")
@@ -9076,7 +9106,7 @@
       (net 2 "GND") (pinfunction "GND") (pintype "power_in") (tstamp 0462ffae-47e1-4bb8-824f-6c6e91e5857f))
     (pad "8" smd rect (at -0.725 -0.975 180) (size 0.35 0.35) (layers "F.Cu" "F.Mask")
       (net 1 "+3V3") (pinfunction "VDD") (pintype "power_in") (tstamp 6da58578-25ca-469b-96a9-da802028da3f))
-    (model "/Users/kiran/Documents/Projects/ICLR/iclr-hw/3d/DPS310.step"
+    (model "C:/Users/shive/Documents/ICLR/iclr-hw/3d/DPS310.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz -90 0 90))
