@@ -16,3 +16,6 @@
 [submodule "Firmware/lib/SparkFun_u-blox_GNSS_v3"]
 	path = Firmware/lib/SparkFun_u-blox_GNSS_v3
 	url = https://github.com/sparkfun/SparkFun_u-blox_GNSS_v3.git
+[submodule "Firmware/lib/SdFat"]
+	path = Firmware/lib/SdFat
+	url = https://github.com/greiman/SdFat.git

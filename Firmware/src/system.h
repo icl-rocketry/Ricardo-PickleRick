@@ -24,6 +24,7 @@
 #include "Deployment/deploymenthandler.h"
 #include "Engine/enginehandler.h"
 #include "Controller/controllerhandler.h"
+#include "Storage/sdfat_store.h"
 
 #include "ApogeeDetection/apogeedetect.h"
 
@@ -58,6 +59,8 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         
         TunezHandler tunezhandler;
 
+        SdFat_Store primarysd;
+
 
     private:
 
@@ -65,6 +68,13 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void setupI2C();
         void setupPins();
         void loadComponentConfig();
+        void initializeLoggers();
+        void logTelemetry();
 
+        const std::string log_path = "/Logs";
+        const std::string config_path = "/Config";
+
+        uint32_t telemetry_log_delta = 1000;
+        uint32_t prev_telemetry_log_time;
 
 };

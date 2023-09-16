@@ -2,9 +2,12 @@
 
 #include <libriccore/logging/loggers/coutlogger.h>
 #include <libriccore/logging/loggers/rnpmessagelogger.h>
+#include "Loggers/SysLogger/syslogger.h"
+#include "Loggers/TelemetryLogger/telemetrylogger.h"
 
-std::tuple<RnpMessageLogger,CoutLogger> RicCoreLoggingConfig::logger_list =
+std::tuple<SysLogger,TelemetryLogger,CoutLogger> RicCoreLoggingConfig::logger_list =
 {
-    RnpMessageLogger("SYS_LOG",1),
+    SysLogger(),
+    TelemetryLogger(),
     CoutLogger("COUT_LOG")
 };

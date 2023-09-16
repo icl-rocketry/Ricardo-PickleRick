@@ -300,20 +300,35 @@ void Commands::ExitDebugCommand(System& system, const RnpPacketSerialized& packe
 
 void Commands::FreeRamCommand(System& system, const RnpPacketSerialized& packet)
 {	
+	/// ESP_LOGI("ch", "%s", "deserialize");
+
+	SimpleCommandPacket commandpacket(packet);
+
+	uint32_t freeram = esp_get_free_heap_size();
 	//avliable in all states
 	//returning as simple string packet for ease
 	//currently only returning free ram
+	if (commandpacket.arg == 0){
 	MessagePacket_Base<0,static_cast<uint8_t>(decltype(System::commandhandler)::PACKET_TYPES::MESSAGE_RESPONSE)> message("FreeRam: " + std::to_string(esp_get_free_heap_size()));
 	// this is not great as it assumes a single command handler with the same service ID
 	// would be better if we could pass some context through the function paramters so it has an idea who has called it
 	// or make it much clearer that only a single command handler should exist in the system
-	message.header.source_service = system.commandhandler.getServiceID(); 
-	
-	
-	message.header.destination_service = packet.header.source_service;
-	message.header.source = packet.header.destination;
-	message.header.destination = packet.header.source;
-	message.header.uid = packet.header.uid;
-	system.networkmanager.sendPacket(message);
+		message.header.source_service = system.commandhandler.getServiceID(); 
+		message.header.destination_service = packet.header.source_service;
+		message.header.source = packet.header.destination;
+		message.header.destination = packet.header.source;
+		message.header.uid = packet.header.uid;
+		system.networkmanager.sendPacket(message);
+	}
+	else if (commandpacket.arg == 1)
+	{
+		BasicDataPacket<uint32_t,0,105> responsePacket(freeram);
+		responsePacket.header.source_service = system.commandhandler.getServiceID(); 
+		responsePacket.header.destination_service = packet.header.source_service;
+		responsePacket.header.source = packet.header.destination;
+		responsePacket.header.destination = packet.header.source;
+		responsePacket.header.uid = packet.header.uid;
+		system.networkmanager.sendPacket(responsePacket);	
+	}
 	
 }

@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <libriccore/riccoresystem.h>
+#include <libriccore/storage/wrappedfile.h>
 
 
 #include "Config/systemflags_config.h"
@@ -18,6 +19,7 @@
 
 #include "Sensors/sensors.h"
 #include "Sensors/estimator.h"
+#include "Sensors/sensorStructs.h"
 
 #include "Sound/tunezHandler.h"
 
@@ -25,6 +27,8 @@
 #include "Deployment/deploymenthandler.h"
 #include "Engine/enginehandler.h"
 #include "Controller/controllerhandler.h"
+#include "Storage/sdfat_store.h"
+#include "Loggers/TelemetryLogger/telemetrylogframe.h"
 
 #include "States/preflight.h"
 
@@ -50,7 +54,9 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    enginehandler(networkmanager, static_cast<uint8_t>(Services::ID::EngineHandler)),
                    controllerhandler(enginehandler),
                    eventhandler(enginehandler, deploymenthandler),
-                   apogeedetect(20){};
+                   apogeedetect(20),
+                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(50),false,&systemstatus)
+                   {};
 
 void System::systemSetup()
 {
@@ -58,14 +64,18 @@ void System::systemSetup()
     Serial.setRxBufferSize(GeneralConfig::SerialRxSize);
     Serial.begin(GeneralConfig::SerialBaud);
     delay(1000);
-    // intialize rnp message logger
-    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(networkmanager);
 
     setupPins();
     // intialize i2c interface
     setupI2C();
     // initalize spi interface
     setupSPI();
+
+    primarysd.setup();
+
+    initializeLoggers();
+
+    
 
     tunezhandler.setup();
     // network interfaces
@@ -95,6 +105,7 @@ void System::systemUpdate()
     tunezhandler.update();
     sensors.update();
     estimator.update(sensors.getData());
+    logTelemetry();
     // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("hello");
 };
 
@@ -165,4 +176,95 @@ void System::loadComponentConfig()
     //   //register deployment and engine handler services
     networkmanager.registerService(static_cast<uint8_t>(Services::ID::DeploymentHandler), deploymenthandler.getThisNetworkCallback());
     networkmanager.registerService(static_cast<uint8_t>(Services::ID::EngineHandler), enginehandler.getThisNetworkCallback());
+}
+
+void System::initializeLoggers()
+{   
+    //check if sd card is mounted
+    if (primarysd.getState() != StoreBase::STATE::NOMINAL)
+    {
+        loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(nullptr,networkmanager);
+
+        return;
+    }
+
+    //open log files
+    //get unique directory for logs
+    std::string log_directory_path = primarysd.generateUniquePath(log_path,"");
+    //make new directory
+    primarysd.mkdir(log_directory_path);
+
+    std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt",(FILE_MODE)((uint8_t)FILE_MODE::WRITE | (uint8_t)FILE_MODE::CREATE | (uint8_t)FILE_MODE::AT_END));
+    std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt",(FILE_MODE)((uint8_t)FILE_MODE::WRITE | (uint8_t)FILE_MODE::CREATE | (uint8_t)FILE_MODE::AT_END));
+    
+    // intialize sys logger
+    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(std::move(syslogfile),networkmanager);
+   
+    //initialize telemetry logger
+    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::TELEMETRY>().initialize(std::move(telemetrylogfile));
+
+}
+
+void System::logTelemetry()
+{
+    if (micros() - prev_telemetry_log_time > telemetry_log_delta)
+    {
+        const SensorStructs::raw_measurements_t& raw_sensors = sensors.getData();
+        const SensorStructs::state_t& estimator_state =  estimator.getData();
+        TelemetryLogframe logframe;
+        
+        logframe.gps_long = raw_sensors.gps.lng;
+        logframe.gps_lat = raw_sensors.gps.lat;
+        logframe.gps_alt = raw_sensors.gps.alt;
+        logframe.gps_v_n = raw_sensors.gps.v_n;
+        logframe.gps_v_e = raw_sensors.gps.v_e;
+        logframe.gps_v_d = raw_sensors.gps.v_d;
+        logframe.gps_sat = raw_sensors.gps.sat;
+        logframe.gps_fix = raw_sensors.gps.fix;
+        logframe.ax = raw_sensors.accelgyro.ax;
+        logframe.ay = raw_sensors.accelgyro.ay;
+        logframe.az = raw_sensors.accelgyro.az;
+        logframe.h_ax = raw_sensors.accel.ax;
+        logframe.h_ay = raw_sensors.accel.ay;
+        logframe.h_az = raw_sensors.accel.az;
+        logframe.gx = raw_sensors.accelgyro.gx;
+        logframe.gy = raw_sensors.accelgyro.gy;
+        logframe.gz = raw_sensors.accelgyro.gz;
+        logframe.mx = raw_sensors.mag.mx;
+        logframe.my = raw_sensors.mag.my;
+        logframe.mz = raw_sensors.mag.mz;
+        logframe.imu_temp = raw_sensors.accelgyro.temp;
+        logframe.baro_alt = raw_sensors.baro.alt;
+        logframe.baro_temp = raw_sensors.baro.temp;
+        logframe.baro_press = raw_sensors.baro.press;
+        logframe.batt_volt = raw_sensors.logicrail.volt;
+        logframe.batt_percent = raw_sensors.logicrail.percent;
+        logframe.roll = estimator_state.eulerAngles[0];
+        logframe.pitch = estimator_state.eulerAngles[1];
+        logframe.yaw = estimator_state.eulerAngles[2];
+        logframe.q0 = estimator_state.orientation.w();
+        logframe.q1 = estimator_state.orientation.x();
+        logframe.q2 = estimator_state.orientation.y();
+        logframe.q3 = estimator_state.orientation.z();
+        logframe.pn = estimator_state.position[0];
+        logframe.pe = estimator_state.position[1];
+        logframe.pd = estimator_state.position[2];
+        logframe.vn = estimator_state.velocity[0];
+        logframe.ve = estimator_state.velocity[1];
+        logframe.vd = estimator_state.velocity[2];
+        logframe.an = estimator_state.acceleration[0];
+        logframe.ae = estimator_state.acceleration[1];
+        logframe.ad = estimator_state.acceleration[2];
+
+        const RadioInterfaceInfo* radio_info = reinterpret_cast<const RadioInterfaceInfo*>(radio.getInfo());
+
+        logframe.rssi = radio_info->rssi;
+        logframe.snr = radio_info->snr;
+
+        logframe.timestamp = micros();
+
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::TELEMETRY>(logframe);
+
+        prev_telemetry_log_time = micros();
+    }
 }
