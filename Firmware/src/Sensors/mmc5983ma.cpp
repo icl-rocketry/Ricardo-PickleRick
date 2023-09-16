@@ -63,7 +63,7 @@ void MMC5983MA::setup(const std::array<uint8_t,3>& axesOrder,const std::array<bo
     delay(100);
 
     loadMagCal(); // load calibration from nvs
-    Serial.println("load calibration");
+    //Serial.println("load calibration");
    
     if (!alive())
     {
