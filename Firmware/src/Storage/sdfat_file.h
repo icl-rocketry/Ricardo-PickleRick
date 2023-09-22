@@ -13,7 +13,7 @@ class SdFat_Store;
 class SdFat_WrappedFile : public WrappedFile
 {
 public:
-    SdFat_WrappedFile(FsFile file, SdFat_Store &store, FILE_MODE mode);
+    SdFat_WrappedFile(FsFile file, SdFat_Store &store, FILE_MODE mode,size_t maxQueueSize);
 
     /**
      * @brief Get the Device lock

@@ -7,8 +7,8 @@
 
 
 
-SdFat_WrappedFile::SdFat_WrappedFile(FsFile file, SdFat_Store& store, FILE_MODE mode):
-WrappedFile(store,mode),
+SdFat_WrappedFile::SdFat_WrappedFile(FsFile file, SdFat_Store& store, FILE_MODE mode,size_t maxQueueSize):
+WrappedFile(store,mode,maxQueueSize),
 _file(file)
 {}
 
