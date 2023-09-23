@@ -38,9 +38,9 @@ void SdFat_Store::setup()
 
 }
 
-std::unique_ptr<WrappedFile> SdFat_Store::_open(std::string_view path,FILE_MODE mode,size_t maxQueueSize)
+std::unique_ptr<WrappedFile> SdFat_Store::_open(std::string_view path, store_fd fileDesc, FILE_MODE mode,size_t maxQueueSize)
 {
-    return std::make_unique<SdFat_WrappedFile>(filesys.open(std::string(path).c_str(),(O_WRITE | O_CREAT | O_AT_END)),*this,mode,maxQueueSize);
+    return std::make_unique<SdFat_WrappedFile>(filesys.open(std::string(path).c_str(),static_cast<oflag_t>(mode)),fileDesc,*this,mode,maxQueueSize);
 }
 
 bool SdFat_Store::_ls(std::string_view path, std::vector<directory_element_t> &directory_structure)

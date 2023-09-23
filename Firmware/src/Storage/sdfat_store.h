@@ -30,7 +30,7 @@ class SdFat_Store : public StoreBase
 
         ~SdFat_Store(){};
     protected:
-         std::unique_ptr<WrappedFile> _open(std::string_view path, FILE_MODE mode, size_t maxQueueSize) override;
+         std::unique_ptr<WrappedFile> _open(std::string_view path, store_fd fileDesc, FILE_MODE mode, size_t maxQueueSize) override;
          bool _ls(std::string_view path, std::vector<directory_element_t> &directory_structure) override;
          bool _mkdir(std::string_view path) override;
          bool _remove(std::string_view path) override;
