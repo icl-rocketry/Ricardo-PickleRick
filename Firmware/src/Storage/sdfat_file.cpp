@@ -2,13 +2,16 @@
 
 #include <SdFat.h>
 #include <libriccore/storage/wrappedfile.h>
+#include <libriccore/threading/riccorethread.h>
+#include <libriccore/threading/scopedlock.h>
+
 
 #include "sdfat_store.h"
 
 
 
-SdFat_WrappedFile::SdFat_WrappedFile(FsFile file, SdFat_Store& store, FILE_MODE mode):
-WrappedFile(store,mode),
+SdFat_WrappedFile::SdFat_WrappedFile(FsFile file, store_fd fileDesc, SdFat_Store& store, FILE_MODE mode,size_t maxQueueSize):
+WrappedFile(store,fileDesc,mode,maxQueueSize),
 _file(file)
 {}
 
@@ -58,5 +61,6 @@ void SdFat_WrappedFile::file_flush()
 
 SdFat_WrappedFile::~SdFat_WrappedFile()
 {
+    RicCoreThread::ScopedLock sl(store.get_lock());
     _close();
 }

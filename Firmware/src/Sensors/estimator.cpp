@@ -16,7 +16,7 @@
 
 
 Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus) : _systemstatus(systemstatus),
-                                                   update_frequency(500), // 2000Hz update
+                                                   update_frequency(2000), // 500Hz update
                                                    _homeSet(false),
                                                    madgwick(0.5f, 0.005f) // beta | gyroscope sample time step (s)
                                                    {};
@@ -236,11 +236,13 @@ void Estimator::changeBeta(float beta)
 void Estimator::resetOrientation()
 {
    madgwick.reset();
+   RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Orientation Reset");
 }
 
 void Estimator::resetLocalization()
 {
    localizationkf.reset();
+   RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Estimator Reset");
 }
 
 void Estimator::setIgnitionTime(uint32_t time)

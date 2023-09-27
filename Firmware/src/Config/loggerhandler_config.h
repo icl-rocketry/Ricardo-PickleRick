@@ -4,7 +4,7 @@
 
 #include <libriccore/logging/loggers/coutlogger.h>
 #include <libriccore/logging/loggers/rnpmessagelogger.h>
-#include "Loggers/SysLogger/syslogger.h"
+#include <libriccore/logging/loggers/syslogger.h>
 #include "Loggers/TelemetryLogger/telemetrylogger.h"
 
 

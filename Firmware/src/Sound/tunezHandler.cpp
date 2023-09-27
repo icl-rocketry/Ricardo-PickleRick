@@ -21,7 +21,7 @@ void TunezHandler::setup()
 };
 
 void TunezHandler::play_by_idx(int song_idx,bool loop){
-    if (song_idx > MelodyLibrary::songLibrary.size()){
+    if (song_idx >= MelodyLibrary::songLibrary.size()){
         return;
     }
     play(*MelodyLibrary::songLibrary.at(song_idx),loop);

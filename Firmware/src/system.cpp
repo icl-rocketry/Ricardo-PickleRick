@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include <ArduinoJson.h>
+
 #include <libriccore/riccoresystem.h>
 #include <libriccore/storage/wrappedfile.h>
 
@@ -28,11 +30,12 @@
 #include "Engine/enginehandler.h"
 #include "Controller/controllerhandler.h"
 #include "Storage/sdfat_store.h"
+#include "Storage/sdfat_file.h"
 #include "Loggers/TelemetryLogger/telemetrylogframe.h"
 
 #include "States/preflight.h"
 
-#include <ArduinoJson.h>
+
 
 #ifdef CONFIG_IDF_TARGET_ESP32S3
 static constexpr int VSPI_BUS_NUM = 0;
@@ -55,7 +58,7 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    controllerhandler(enginehandler),
                    eventhandler(enginehandler, deploymenthandler),
                    apogeedetect(20),
-                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(50),false,&systemstatus)
+                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus)
                    {};
 
 void System::systemSetup()
@@ -75,8 +78,6 @@ void System::systemSetup()
 
     initializeLoggers();
 
-    
-
     tunezhandler.setup();
     // network interfaces
     radio.setup();
@@ -89,11 +90,8 @@ void System::systemSetup()
     networkmanager.enableAutoRouteGen(true);
     networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,2,3});
 
-    loadComponentConfig();
+    loadConfig();
 
-    // sensors.setup(configcontroller.get()["Sensors"]);
-    JsonObject dummy;
-    sensors.setup(dummy);
     estimator.setup();
 
     // initialize statemachine with preflight state
@@ -106,7 +104,6 @@ void System::systemUpdate()
     sensors.update();
     estimator.update(sensors.getData());
     logTelemetry();
-    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("hello");
 };
 
 void System::setupSPI()
@@ -147,32 +144,55 @@ void System::setupPins()
     digitalWrite(PinMap::SdCs_2, HIGH);
 }
 
-void System::loadComponentConfig()
+void System::loadConfig()
 {
-    JsonObject dummy;
-    deploymenthandler.setup(dummy["t"]);
-    enginehandler.setup(dummy["t"]);
-    controllerhandler.setup(dummy["t"]);
-    eventhandler.setup(dummy["t"]);
-    //      // create config controller object
-    //   ConfigController configcontroller(&storagecontroller,&logcontroller);
-    //   configcontroller.load(); // load configuration from sd card into ram
+    DynamicJsonDocument configDoc(16384); //allocate 16kb for config doc MAXSIZE
+    DeserializationError jsonError;
+    // get wrapped file for config doc -> returns nullptr if cant open
+    // primarysd.mkdir("/Config");
+    std::unique_ptr<WrappedFile> config_file_ptr = primarysd.open(config_path,FILE_MODE::READ);
 
-    //   //enumerate deployers engines controllers and events from config file
-    //   try
-    //   {
-    //     deploymenthandler.setup(configcontroller.get()["Deployers"]);
-    //     enginehandler.setup(configcontroller.get()["Engines"]);
-    //     controllerhandler.setup(configcontroller.get()["Controllers"]);
-    //     eventhandler.setup(configcontroller.get()["Events"]);
-    //   }
-    //   catch (const std::exception& e)
-    //   {
-    //     Serial.println("exception:");
-    //     Serial.println(std::string(e.what()).c_str());
-    //     //impelment panic handler to send crashed message to gc
-    //     throw std::runtime_error("broke");
-    //   }
+    if (config_file_ptr != nullptr)
+    {
+        //cast non-owning wrapped file ptr to sdfat_wrappedfile ptr
+        SdFat_WrappedFile* sdfat_wrapped_file_ptr = reinterpret_cast<SdFat_WrappedFile*>(config_file_ptr.get());
+        //lock the file store device lock
+        {
+        RicCoreThread::ScopedLock sl(sdfat_wrapped_file_ptr->getDevLock());
+        jsonError = deserializeJson(configDoc,sdfat_wrapped_file_ptr->IStream());
+
+        }
+    }
+    else
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Error opening config file!");
+    }
+
+
+    if (jsonError)
+    {
+         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Error deserializing JSON - " + std::string(jsonError.c_str()));
+    }
+    
+    
+    //enumerate deployers engines controllers and events from config file
+    try
+    {
+        sensors.setup(configDoc.as<JsonObjectConst>()["Sensors"]);
+
+        deploymenthandler.setup(configDoc.as<JsonObjectConst>()["Deployers"]);
+        enginehandler.setup(configDoc.as<JsonObjectConst>()["Engines"]);
+        controllerhandler.setup(configDoc.as<JsonObjectConst>()["Controllers"]);
+        eventhandler.setup(configDoc.as<JsonObjectConst>()["Events"]);
+
+    }
+    catch (const std::exception &e)
+    {
+         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Exception occured while loading flight config! - " + std::string(e.what()));
+
+         throw e; //continue throwing as we dont want to continue
+    }
+   
     //   //register deployment and engine handler services
     networkmanager.registerService(static_cast<uint8_t>(Services::ID::DeploymentHandler), deploymenthandler.getThisNetworkCallback());
     networkmanager.registerService(static_cast<uint8_t>(Services::ID::EngineHandler), enginehandler.getThisNetworkCallback());
@@ -194,8 +214,8 @@ void System::initializeLoggers()
     //make new directory
     primarysd.mkdir(log_directory_path);
 
-    std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt",(FILE_MODE)((uint8_t)FILE_MODE::WRITE | (uint8_t)FILE_MODE::CREATE | (uint8_t)FILE_MODE::AT_END));
-    std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt",(FILE_MODE)((uint8_t)FILE_MODE::WRITE | (uint8_t)FILE_MODE::CREATE | (uint8_t)FILE_MODE::AT_END));
+    std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END));
+    std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50); 
     
     // intialize sys logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(std::move(syslogfile),networkmanager);
@@ -268,3 +288,4 @@ void System::logTelemetry()
         prev_telemetry_log_time = micros();
     }
 }
+

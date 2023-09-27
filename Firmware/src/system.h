@@ -2,6 +2,8 @@
 
 #include <libriccore/riccoresystem.h>
 
+#include <string_view>
+
 //config includes
 #include "Config/systemflags_config.h"
 #include "Config/commands_config.h"
@@ -67,14 +69,16 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void setupSPI();
         void setupI2C();
         void setupPins();
-        void loadComponentConfig();
+        void loadConfig();
         void initializeLoggers();
         void logTelemetry();
 
-        const std::string log_path = "/Logs";
-        const std::string config_path = "/Config";
+        static constexpr std::string_view log_path = "/Logs";
+        static constexpr std::string_view config_path = "/Config/rml.jsonc";
+        
 
-        uint32_t telemetry_log_delta = 1000;
+
+        uint32_t telemetry_log_delta = 10000;
         uint32_t prev_telemetry_log_time;
 
 };
