@@ -66,7 +66,7 @@ void System::systemSetup()
 
     Serial.setRxBufferSize(GeneralConfig::SerialRxSize);
     Serial.begin(GeneralConfig::SerialBaud);
-    delay(1000);
+    delay(3000);
 
     setupPins();
     // intialize i2c interface
@@ -84,6 +84,7 @@ void System::systemSetup()
     canbus.setup();
 
     // add interfaces to netmanager
+    networkmanager.setNodeType(NODETYPE::HUB);
     networkmanager.addInterface(&radio);
     networkmanager.addInterface(&canbus);
 
@@ -150,30 +151,34 @@ void System::loadConfig()
     DeserializationError jsonError;
     // get wrapped file for config doc -> returns nullptr if cant open
     // primarysd.mkdir("/Config");
-    std::unique_ptr<WrappedFile> config_file_ptr = primarysd.open(config_path,FILE_MODE::READ);
 
-    if (config_file_ptr != nullptr)
+    //only try load file if sd card is present
+    if (primarysd.getState() == StoreBase::STATE::NOMINAL)
     {
-        //cast non-owning wrapped file ptr to sdfat_wrappedfile ptr
-        SdFat_WrappedFile* sdfat_wrapped_file_ptr = reinterpret_cast<SdFat_WrappedFile*>(config_file_ptr.get());
-        //lock the file store device lock
-        {
-        RicCoreThread::ScopedLock sl(sdfat_wrapped_file_ptr->getDevLock());
-        jsonError = deserializeJson(configDoc,sdfat_wrapped_file_ptr->IStream());
+      
+        std::unique_ptr<WrappedFile> config_file_ptr = primarysd.open(config_path,FILE_MODE::READ);
 
+        if (config_file_ptr != nullptr)
+        {
+            //cast non-owning wrapped file ptr to sdfat_wrappedfile ptr
+            SdFat_WrappedFile* sdfat_wrapped_file_ptr = reinterpret_cast<SdFat_WrappedFile*>(config_file_ptr.get());
+            //lock the file store device lock
+            {
+            RicCoreThread::ScopedLock sl(sdfat_wrapped_file_ptr->getDevLock());
+            jsonError = deserializeJson(configDoc,sdfat_wrapped_file_ptr->IStream());
+
+            }
+        }
+        else
+        {
+            RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Error opening config file!");
+        }
+
+        if (jsonError)
+        {
+            RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Error deserializing JSON - " + std::string(jsonError.c_str()));
         }
     }
-    else
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Error opening config file!");
-    }
-
-
-    if (jsonError)
-    {
-         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Error deserializing JSON - " + std::string(jsonError.c_str()));
-    }
-    
     
     //enumerate deployers engines controllers and events from config file
     try

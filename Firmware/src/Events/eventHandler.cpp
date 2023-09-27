@@ -70,7 +70,7 @@ void EventHandler::setup(JsonArrayConst event_config)
 
 action_t EventHandler::configureAction(JsonVariantConst actions){
 
-    if (actions.is<JsonObject>()){
+    if (actions.is<JsonObjectConst>()){
 
         auto actionJson = actions.as<JsonObjectConst>();
         std::string actionType = actionJson["type"];
@@ -99,7 +99,7 @@ action_t EventHandler::configureAction(JsonVariantConst actions){
              RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Bad Action Type, continuing with null action");
             return [](){};
         }
-    }else if (actions.is<JsonArray>()) {
+    }else if (actions.is<JsonArrayConst>()) {
         std::vector<action_t> action_vec;
 
         for (JsonObjectConst action : actions.as<JsonArrayConst>()) {
@@ -128,7 +128,7 @@ condition_t EventHandler::configureCondition(JsonVariantConst condition, uint8_t
     if (recursion_level > condition_recursion_max_depth){
         throw std::runtime_error("EventHandler max recursion depth reached!"); // this needs to fail quietly too
     }
-    if (condition.is<JsonObject>())
+    if (condition.is<JsonObjectConst>())
     {
 
         auto conditionJson = condition.as<JsonObjectConst>();

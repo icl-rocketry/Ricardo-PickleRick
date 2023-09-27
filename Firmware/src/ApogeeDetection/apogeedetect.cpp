@@ -115,16 +115,16 @@ void ApogeeDetect::quadraticFit(float oldTime, float newTime, float oldAlt, floa
         sigmaTime, sigmaTime_2, sigmaTime_3,
         sigmaTime_2, sigmaTime_3, sigmaTime_4;
     
-    std::stringstream a;
-    a<<A;
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(a.str());
+    // std::stringstream a;
+    // a<<A;
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(a.str());
 
 
     b << sigmaAlt, sigmaAltTime, sigmaAltTime_2;
 
-    std::stringstream b_str;
-    b_str<<b;
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(b_str.str());
+    // std::stringstream b_str;
+    // b_str<<b;
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(b_str.str());
     // solve the system for the coefficents 
     coeffs = A.colPivHouseholderQr().solve(b);
 }

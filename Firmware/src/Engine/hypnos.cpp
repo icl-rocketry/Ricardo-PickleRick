@@ -71,6 +71,7 @@ shutdown_called(false)
                                                  
     addComponentNetworkCallback(_tankPressure.get(),tankPressureConf,addNetworkCallbackFunction);
 
+    log("Hypnos Constructed");
 
 }
 
