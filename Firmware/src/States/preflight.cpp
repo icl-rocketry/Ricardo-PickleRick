@@ -43,6 +43,8 @@ void Preflight::initialize(){
     RoutingTable flightRouting;
     flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION_GATEWAY,Route{2,1,{}});
     flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION,Route{2,2,{}});
+    flightRouting.setRoute(17,Route{3,2,{}});
+    flightRouting.setRoute(18,Route{3,2,{}});
     flightRouting.setRoute(5,Route{3,2,{}});
     flightRouting.setRoute(6,Route{3,2,{}});
     flightRouting.setRoute(7,Route{3,2,{}});
@@ -55,10 +57,15 @@ void Preflight::initialize(){
     flightRouting.setRoute(14,Route{3,2,{}});
     flightRouting.setRoute(15,Route{3,2,{}});
     flightRouting.setRoute(16,Route{3,2,{}});
-    flightRouting.setRoute(17,Route{3,2,{}});
-    flightRouting.setRoute(18,Route{3,2,{}});
-    flightRouting.setRoute(19,Route{3,2,{}});
-    flightRouting.setRoute(20,Route{3,2,{}});
+    flightRouting.setRoute(50,Route{3,2,{}});
+    flightRouting.setRoute(51,Route{3,2,{}});
+    flightRouting.setRoute(52,Route{3,2,{}});
+    flightRouting.setRoute(100,Route{3,2,{}});
+    flightRouting.setRoute(101,Route{3,2,{}});
+    flightRouting.setRoute(102,Route{3,2,{}});
+    flightRouting.setRoute(150,Route{1,2,{}});
+    flightRouting.setRoute(4,Route{1,2,{}});
+    flightRouting.setRoute(3,Route{1,2,{}});
     
     _system.networkmanager.setRoutingTable(flightRouting);
     _system.networkmanager.updateBaseTable(); // save the new base table
