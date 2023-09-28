@@ -15,6 +15,7 @@
 
 #include "simpleengine.h"
 #include "hypnos.h"
+#include "thanos.h"
 
 
 void EngineHandler::update(){ // call update on all engines
@@ -62,7 +63,15 @@ void EngineHandler::setupIndividual_impl(size_t id, JsonObjectConst engineconfig
                                             getaddNetworkCallbackFunction(id),
                                             _networkmanager,
                                             _serviceID));   
-    }else{
+    }
+    else if (type == "Thanos"){
+        addObject(std::make_unique<Thanos>(id,
+                                            engineconfig,
+                                            getaddNetworkCallbackFunction(id),
+                                            _networkmanager,
+                                            _serviceID));   
+    }
+    else{
         throw std::runtime_error("Engine of type:" + type + "not implemented!");
     }
 

@@ -24,6 +24,13 @@ class Thanos : public Engine
 
         void execute(int32_t func) override;
 
+        /**
+         * Defined as empty for now, will eventually send the demanded thrust/chamber pressure
+        */
+        void control(std::vector<float> u) override;
+
+        ~Thanos(){};
+
     private:
 
         ThanosState _state;

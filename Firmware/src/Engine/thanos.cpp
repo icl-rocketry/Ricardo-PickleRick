@@ -64,6 +64,7 @@ Engine(id, networkmanager, handlerServiceID)
     setIfContains<uint16_t>(fuelPrssValveConf,"open_position",_fuelPrssValveOpen,false);
 
     addComponentNetworkCallback(_fuelPrssValve.get(),fuelPrssValveConf,addNetworkCallbackFunction);
+    log("Thanos Constructed");
 }
 
 void Thanos::updateState()
@@ -77,7 +78,7 @@ void Thanos::updateState()
 
 void Thanos::execute(int32_t func)
 {
-    Engine::execute(func);
+    Engine::execute(func);//add vent here
 }
 
 void Thanos::armEngine()
@@ -128,3 +129,5 @@ uint8_t Thanos::flightCheck()
     return res;
     
 }
+
+void Thanos::control(std::vector<float> u){};
