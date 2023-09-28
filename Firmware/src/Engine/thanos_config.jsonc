@@ -4,43 +4,36 @@
     "id":0,
     "type":"Thanos",
     //add pre-igition delay
+    "engine":
+    {
+        "address":12,
+        "destination_service":10
+    },
     "igniter":
     {
-        "address":9,
-        "destination_service":3,
-        "fire_duration":10
+        "address":11,
+        "destination_service":11
     },
-    "ventValve":
+    "fuelVentValve":
     {
-        "address":10,
-        "destination_service":2,
+        "address":7,
+        "destination_service":10,
         "closed_position" : 0,
         "open_position": 180
-        
     },
-    "oxidiserValve":
+    "oxVentValve":
     {
-        "address":11,
-        "destination_service":2,
+        "address":9,
+        "destination_service":10,
         "closed_position":0,
-        "open_position":180,
-        "preignition_posiiton":115
-
+        "open_position":180
     },
-    "chamberPressure":
+    "fuelPrssValve"
     {
-        "address":12,
-        "destination_service":2
-    },
-    "tankPressure":
-    {
-        "address":12,
-        "destination_service":3
-    },
-    "temperature":
-    {
-        "address":12,
-        "destination_service":4
+        "address":7,
+        "destination_service":11,
+        "closed_position":0,
+        "open_position":180
     }
 
 }
