@@ -91,6 +91,7 @@ void System::systemSetup()
     networkmanager.enableAutoRouteGen(true);
     networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,2,3});
 
+
     loadConfig();
 
     estimator.setup();

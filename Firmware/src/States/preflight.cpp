@@ -64,8 +64,7 @@ void Preflight::initialize(){
     flightRouting.setRoute(101,Route{3,2,{}});
     flightRouting.setRoute(102,Route{3,2,{}});
     flightRouting.setRoute(150,Route{1,2,{}});
-    flightRouting.setRoute(4,Route{1,2,{}});
-    flightRouting.setRoute(3,Route{1,2,{}});
+
     
     _system.networkmanager.setRoutingTable(flightRouting);
     _system.networkmanager.updateBaseTable(); // save the new base table
