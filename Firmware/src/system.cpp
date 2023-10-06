@@ -151,12 +151,14 @@ void System::loadConfig()
     DynamicJsonDocument configDoc(16384); //allocate 16kb for config doc MAXSIZE
     DeserializationError jsonError;
     // get wrapped file for config doc -> returns nullptr if cant open
-    // primarysd.mkdir("/Config");
+    
 
     //only try load file if sd card is present
     if (primarysd.getState() == StoreBase::STATE::NOMINAL)
     {
-      
+
+        primarysd.mkdir("/Config");
+
         std::unique_ptr<WrappedFile> config_file_ptr = primarysd.open(config_path,FILE_MODE::READ);
 
         if (config_file_ptr != nullptr)
