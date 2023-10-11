@@ -45,21 +45,30 @@ Sensors::Sensors(SPIClass& spi,TwoWire& I2C,Types::CoreTypes::SystemStatus_t& sy
 void Sensors::setup(JsonObjectConst config){
     using namespace JsonConfigHelper;
     //default axes order and flip
-    std::array<uint8_t,3> axesOrderICM{2,1,0};
-    std::array<bool,3> axesFlipICM{1,1,1};
+    // std::array<uint8_t,3> axesOrderICM{2,1,0};
+    // std::array<bool,3> axesFlipICM{1,1,1};
 
-    std::array<uint8_t,3> axesOrderH3LIS{2,0,1};
-    std::array<bool,3> axesFlipH3LIS{1,0,0};
+    // std::array<uint8_t,3> axesOrderH3LIS{2,0,1};
+    // std::array<bool,3> axesFlipH3LIS{1,0,0};
 
-    std::array<uint8_t,3> axesOrderMMC{2,0,1};
-    std::array<bool,3> axesFlipMMC{0,0,1};
+    // std::array<uint8_t,3> axesOrderMMC{2,0,1};
+    // std::array<bool,3> axesFlipMMC{0,0,1};
 
-    setIfContains(config,"X_AXIS",axesOrderICM[0],false);
-    setIfContains(config,"Y_AXIS",axesOrderICM[1],false);
-    setIfContains(config,"Z_AXIS",axesOrderICM[2],false);
-    setIfContains(config,"X_FLIP",axesFlipICM[0],false);
-    setIfContains(config,"Y_FLIP",axesFlipICM[1],false);
-    setIfContains(config,"Z_FLIP",axesFlipICM[2],false);
+    std::array<uint8_t,3> axesOrderICM{1,0,2};
+    std::array<bool,3> axesFlipICM{0,0,1};
+
+    std::array<uint8_t,3> axesOrderH3LIS{0,1,2};
+    std::array<bool,3> axesFlipH3LIS{0,1,1};
+
+    std::array<uint8_t,3> axesOrderMMC{0,1,2};
+    std::array<bool,3> axesFlipMMC{1,0,0};
+
+    // setIfContains(config,"X_AXIS",axesOrderICM[0],false);
+    // setIfContains(config,"Y_AXIS",axesOrderICM[1],false);
+    // setIfContains(config,"Z_AXIS",axesOrderICM[2],false);
+    // setIfContains(config,"X_FLIP",axesFlipICM[0],false);
+    // setIfContains(config,"Y_FLIP",axesFlipICM[1],false);
+    // setIfContains(config,"Z_FLIP",axesFlipICM[2],false);
 
     uint16_t logicMaxVoltage = 4200;
     uint16_t logicLowVoltage = 3400;

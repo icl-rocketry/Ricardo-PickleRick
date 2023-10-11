@@ -190,9 +190,9 @@ void ICM_20608::readGyro(float &x, float &y, float &z)
 
     readGyroRaw(xi, yi, zi);
 
-    std::array<float, 3> gyro = axeshelper(std::array<float, 3>{(float)(yi + offset_gy) * gyro_lsb_to_degs,
-                                                                 (float)(xi + offset_gx) * gyro_lsb_to_degs,
-                                                                 -(float)(zi + offset_gz) * gyro_lsb_to_degs});
+    std::array<float, 3> gyro = axeshelper(std::array<float, 3>{(float)(xi + offset_gx) * gyro_lsb_to_degs,
+                                                                (float)(yi + offset_gy) * gyro_lsb_to_degs,
+                                                                 (float)(zi + offset_gz) * gyro_lsb_to_degs});
 
     x = gyro[0];
     y = gyro[1];
@@ -203,9 +203,9 @@ void ICM_20608::readAccel(float &x, float &y, float &z)
 {
     int16_t xi, yi, zi;
     readAccelRaw(xi, yi, zi);
-    std::array<float, 3> accel = axeshelper(std::array<float, 3>{(float)(yi + offset_ay) * accel_lsb_to_g,
-                                                                  (float)(xi + offset_ax) * accel_lsb_to_g,
-                                                                  -(float)(zi + offset_az) * accel_lsb_to_g});
+    std::array<float, 3> accel = axeshelper(std::array<float, 3>{(float)(xi + offset_ax) * accel_lsb_to_g,
+                                                                 (float)(yi + offset_ay) * accel_lsb_to_g,
+                                                                  (float)(zi + offset_az) * accel_lsb_to_g});
 
     x = accel[0];
     y = accel[1];

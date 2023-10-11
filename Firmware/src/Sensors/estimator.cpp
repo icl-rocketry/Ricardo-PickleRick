@@ -106,7 +106,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
          // only update with high-g accelerometer if the low g acceleromter is working
          if (!_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_HACCEL))
          {
-            localizationkf.HaccelUpdate(getLinearAcceleration(raw_sensors.accel.ax, raw_sensors.accel.ay, raw_sensors.accel.az) * g);
+            // localizationkf.HaccelUpdate(getLinearAcceleration(raw_sensors.accel.ax, raw_sensors.accel.ay, raw_sensors.accel.az) * g);
          }
       }
 
