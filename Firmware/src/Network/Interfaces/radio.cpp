@@ -95,8 +95,18 @@ void Radio::getPacket(){
         if (_packetBuffer == nullptr){
             return;
         }
+        std::unique_ptr<RnpPacketSerialized> packet_ptr;
 
-        auto packet_ptr = std::make_unique<RnpPacketSerialized>(data);
+        try
+        {
+            packet_ptr = std::make_unique<RnpPacketSerialized>(data);
+        }
+        catch (std::exception& e)
+        {
+            RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Deserialization error: " + std::string(e.what()));
+            return;
+        }
+        
         //update source interface
         packet_ptr->header.src_iface = getID();
         _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer

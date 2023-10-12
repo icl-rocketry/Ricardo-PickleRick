@@ -154,12 +154,12 @@ private:
 
     // ACCELEROMETER MEASUREMENTS
 
-    static constexpr float accelVariance = .00001 * 9.81;   //new value
+    static constexpr float accelVariance = .001 * 9.81;   //new value
     const Eigen::DiagonalMatrix<float, 3> R_ACCEL{{accelVariance, accelVariance, accelVariance}};
     const Eigen::Matrix<float, 3, 9> H_ACCEL{
         {0, 0, 1, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 1, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 1}};
+        {0, 0, 0, 0, 0, -1, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, -1}};
 
     static constexpr float HaccelVariance = 0.01 * 9.81;    //new value
     const Eigen::DiagonalMatrix<float, 3> R_HACCEL{{HaccelVariance, HaccelVariance, HaccelVariance}};
@@ -167,7 +167,7 @@ private:
     // BARO MEASUREMENT
 
     // static constexpr float baroVariance = 0.5;
-    static constexpr float baroVariance = 5;
+    static constexpr float baroVariance = 0.5;
     const Eigen::Matrix<float, 1, 9> H_BARO{{0, 0, 0, 0, 0, 0, -1, 0, 0}};
 
     // GPS MEASUREMENT

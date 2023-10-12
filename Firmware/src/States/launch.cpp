@@ -53,7 +53,7 @@ Types::CoreTypes::State_ptr_t Launch::update()
     // }
 
     // if (!_system.systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK) && _system.estimator.getData().acceleration(2) < -1){ // launch acceleration threshold comparison of down acceleration with a threshold of 1.5 g idk if this is okay lol?
-    if (_system.estimator.getData().acceleration(2) < -9.81)
+    if (_system.estimator.getData().acceleration(2) < -(2*9.81) && _system.estimator.getData().position(2) < -50)
     { // launch acceleration threshold comparison of down acceleration with a threshold of 1.5 g idk if this is okay lol?
         _system.estimator.setLiftoffTime(millis());
         return std::make_unique<Flight>(_system);
