@@ -91,7 +91,7 @@ void Radio::getPacket(){
 
         std::vector<uint8_t> data(packetSize);
         loraRadio.readBytes(data.data(),packetSize);
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Receive");
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Receive");
         if (_packetBuffer == nullptr){
             return;
         }
@@ -106,7 +106,7 @@ void Radio::getPacket(){
             RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Deserialization error: " + std::string(e.what()));
             return;
         }
-        
+
         //update source interface
         packet_ptr->header.src_iface = getID();
         _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer
@@ -155,7 +155,7 @@ void Radio::sendFromBuffer()
 
 size_t Radio::send(std::vector<uint8_t> &data){
     if (loraRadio.beginPacket()){
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Send");
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Send");
         loraRadio.write(data.data(), data.size());
         loraRadio.endPacket(true); // asynchronous send 
         _txDone = false;
