@@ -63,7 +63,7 @@ void Preflight::initialize(){
     flightRouting.setRoute(100,Route{3,2,{}});
     flightRouting.setRoute(101,Route{3,2,{}});
     flightRouting.setRoute(102,Route{3,2,{}});
-    flightRouting.setRoute(150,Route{1,2,{}});
+    flightRouting.setRoute(150,Route{2,2,{}});
 
     
     _system.networkmanager.setRoutingTable(flightRouting);
