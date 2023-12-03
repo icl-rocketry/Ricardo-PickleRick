@@ -43,6 +43,7 @@ void Radio::setup(){
     loraRadio.setSPI(_spi);
     //load defaut config and restart the radio
     restart();
+    loraRadio.setTxPower(20,1); //20 dbm, mux antenna output to PA_Boost (req. for 20dbm)
 };
 
 
