@@ -21,6 +21,9 @@ const std::unordered_map<std::string, memberFunc_t> FlightVariables::function_ma
 	{"Position", &FlightVariables::Position},
 	{"Velocity", &FlightVariables::Velocity},
 	{"Acceleration", &FlightVariables::Acceleration}
+	//networkcomponentstate
+	//networkcomponentvalue
+	//pyro continuity
 };
 
 flightVariable_t FlightVariables::TimeSinceIgnition(int arg) 

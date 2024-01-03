@@ -13,7 +13,7 @@ Engine(id, networkmanager, handlerServiceID)
                                                  getIfContains<uint8_t>(engineConf, "destination_service"),
                                                  _networkmanager,
                                                  getLogCB());
-                
+    
     addComponentNetworkCallback(_engine.get(),engineConf,addNetworkCallbackFunction);
 
     auto igniterConf = getIfContains<JsonObjectConst>(engineConfig, "igniter");

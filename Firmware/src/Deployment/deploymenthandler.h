@@ -10,11 +10,11 @@
 #include <Wire.h>
 
 
-#include <librrc/rocketactuator.h>
+#include <librrc/Interface/rocketactuator.h>
 
-#include <librrc/flightcomponenthandler.h>
-#include <librrc/configurabledynamichandler.h>
-#include <librrc/networkeddynamichandler.h>
+#include <librrc/Handler/flightcomponenthandler.h>
+#include <librrc/Handler/configurabledynamichandler.h>
+#include <librrc/Handler/networkeddynamichandler.h>
 
 #include <libriccore/riccorelogging.h>
 

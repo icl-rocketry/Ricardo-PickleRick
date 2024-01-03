@@ -36,7 +36,7 @@ const ApogeeInfo &ApogeeDetect::checkApogee(float altitude, float velocity, uint
         float prevAltitude = altitude_array.pop_push_back(altitude);
 
         // Mach lock check:
-        if (abs(velocity) >= mlock_speed)
+        if (velocity >= mlock_speed)
         {
             if (!mlock){
                 RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Mach Lock Triggered!");

@@ -47,7 +47,7 @@ class RingBuf : private std::queue<T> {
         using std::queue<T>::size;
 
     private:
-        static constexpr size_t maxLen = LEN;
+        static constexpr size_t maxLen = LEN; // no idea why this is here
 
 };
 
@@ -70,8 +70,8 @@ public:
     /**
      * @brief 
      * 
-     * @param altitude expects up + be careful!
-     * @param velocity 
+     * @param altitude expects up +ve be careful!
+     * @param velocity +ve up!
      * @param time 
      * @return const ApogeeInfo& 
      */

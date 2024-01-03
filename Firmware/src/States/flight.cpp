@@ -38,17 +38,17 @@ Types::CoreTypes::State_ptr_t Flight::update()
 
     float Ad = _system.estimator.getData().acceleration(2);
 
-    if (Ad > 0 && !_system.systemstatus.flagSetOr(SYSTEM_FLAG::FLIGHTPHASE_BOOST))
+    if (Ad < 0 && !_system.systemstatus.flagSetOr(SYSTEM_FLAG::FLIGHTPHASE_BOOST))
     {
         _system.systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST, "Entered Boost Phase");
         _system.systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST);
     }
-    else if (Ad < 0 && !_system.systemstatus.flagSetOr(SYSTEM_FLAG::FLIGHTPHASE_COAST))
+    else if (Ad > 0 && !_system.systemstatus.flagSetOr(SYSTEM_FLAG::FLIGHTPHASE_COAST))
     {
         _system.systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST, "Entered Coast Phase");
         _system.systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST);
     }
-    ApogeeInfo apogeeinfo = _system.apogeedetect.checkApogee(-_system.estimator.getData().position(2), _system.estimator.getData().velocity(2), millis());
+    ApogeeInfo apogeeinfo = _system.apogeedetect.checkApogee(-_system.estimator.getData().position(2),-_system.estimator.getData().velocity(2), millis());
     if (apogeeinfo.reached)
     {
         _system.systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST);

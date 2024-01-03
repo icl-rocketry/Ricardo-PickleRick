@@ -13,16 +13,16 @@
 
 
 VRailMonitor::VRailMonitor(std::string_view vrail_name,const uint8_t pin, const float r1,const float r2):
-_name(vrail_name),
-_pin(pin),
-_channel(ADC_CHANNEL_0),//default
-_unit(ADC_UNIT_1),
-_adcCal(),
-_adcInitialized(false),
-factor(((r1+r2)/r2)),
-_maxVoltage(0),
-_lowVoltage(0),
-_minVoltage(0)
+    _name(vrail_name),
+    _pin(pin),
+    _channel(ADC_CHANNEL_0),//default
+    _unit(ADC_UNIT_1),
+    _adcCal(),
+    _adcInitialized(false),
+    factor(((r1+r2)/r2)),
+    _maxVoltage(0),
+    _lowVoltage(0),
+    _minVoltage(0)
 {};
 
 void VRailMonitor::setup(uint16_t maxVoltage, uint16_t lowVoltage,uint16_t minVoltage){

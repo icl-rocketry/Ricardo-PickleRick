@@ -3,7 +3,8 @@
     "files.associations": {
         "*.ipp": "cpp",
         "core": "cpp",
-        "eigen": "cpp"
+        "eigen": "cpp",
+        "esp_vfs_semihost.h": "c"
     },
     "editor.bracketPairColorization.enabled": true,
     "editor.guides.bracketPairs": "active",

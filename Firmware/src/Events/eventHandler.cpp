@@ -182,7 +182,7 @@ condition_t EventHandler::configureCondition(JsonVariantConst condition, uint8_t
 
             return conditionCombination;
 
-        }else if (conditionJson.containsKey("flightVar")){
+        }else if (conditionJson.containsKey("flightVar")){ // expand here to allow for the other types i.e networked sensor / local pyros etc
 
             // what happens if config requests that flight var is time since event on its self?
             // if it is the only condition and u are testing time_triggered then the event will never trigger

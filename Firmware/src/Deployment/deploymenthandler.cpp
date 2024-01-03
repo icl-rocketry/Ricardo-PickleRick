@@ -9,13 +9,13 @@
 
 #include "Helpers/jsonconfighelper.h"
 
-#include <librrc/rocketcomponent.h>
-#include <librrc/rocketcomponenttype.h>
+#include <librrc/Interface/rocketcomponent.h>
+#include <librrc/Interface/rocketcomponenttype.h>
 
-#include <librrc/networkactuator.h>
-#include <librrc/packets/nrcpackets.h>
+#include <librrc/Interface/networkactuator.h>
+#include <librrc/Packets/nrcpackets.h>
 
-#include <librrc/i2cpyro.h>
+#include <librrc/Local/i2cpyro.h>
 
 
 
