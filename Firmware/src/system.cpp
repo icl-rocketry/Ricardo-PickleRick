@@ -27,6 +27,8 @@
 
 #include "Events/eventHandler.h"
 #include "Deployment/deploymenthandler.h"
+#include "Deployment/PCA9534.h"
+#include "Deployment/PCA9534Gpio.h"
 #include "Engine/enginehandler.h"
 #include "Controller/controllerhandler.h"
 #include "Storage/sdfat_store.h"
@@ -47,7 +49,7 @@ static constexpr int HSPI_BUS_NUM = HSPI;
 
 System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabledCommands, Serial),
                    vspi(VSPI_BUS_NUM),
-                   hspi(HSPI_BUS_NUM), // CHANGE FOR esp32s3
+                   hspi(HSPI_BUS_NUM),
                    I2C(0),
                    radio(hspi,  PinMap::LoraCs, PinMap::LoraReset, -1, systemstatus, RADIO_MODE::TURN_TIMEOUT,  2),
                    canbus(systemstatus, PinMap::TxCan, PinMap::RxCan, 3),
@@ -58,7 +60,12 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    controllerhandler(enginehandler),
                    eventhandler(enginehandler, deploymenthandler),
                    apogeedetect(20),
-                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus)
+                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus),
+                   pyroPinExpander0(0x20,I2C),
+                   pyro0(PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Cont),networkmanager),
+                   pyro1(PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Cont),networkmanager),
+                   pyro2(PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Cont),networkmanager),
+                   pyro3(PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Cont),networkmanager)
                    {};
 
 void System::systemSetup()
@@ -91,6 +98,8 @@ void System::systemSetup()
     networkmanager.enableAutoRouteGen(true);
     networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,2,3});
 
+    //register pryo services
+    setupLocalPyros();
 
     loadConfig();
 
@@ -98,6 +107,10 @@ void System::systemSetup()
 
     // initialize statemachine with preflight state
     statemachine.initalize(std::make_unique<Preflight>(*this));
+    pyro3.arm(1);
+    pyro3.execute(1000);
+    sleep(2);
+    pyro3.execute(1000);
 };
 
 void System::systemUpdate()
@@ -125,6 +138,28 @@ void System::setupI2C()
 {
     I2C.begin(PinMap::_SDA, PinMap::_SCL, GeneralConfig::I2C_FREQUENCY);
 }
+
+void System::setupLocalPyros()
+{
+    if (pyroPinExpander0.alive())
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pyro pin expander alive");
+    }
+    else
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pyro pin expander failed to respond");
+    }
+
+    pyro0.setup();
+    pyro1.setup();
+    pyro2.setup();
+    pyro3.setup();
+    
+    networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro0),pyro0.getThisNetworkCallback());
+    networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro1),pyro1.getThisNetworkCallback());
+    networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro2),pyro2.getThisNetworkCallback());
+    networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro3),pyro3.getThisNetworkCallback());
+};
 
 void System::setupPins()
 {

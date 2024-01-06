@@ -18,9 +18,9 @@
 #include <string>
 #include "Helpers/jsonconfighelper.h"
 
-#include <librrc/rocketactuator.h>
-#include <librrc/networkactuator.h>
-#include <librrc/networksensor.h>
+#include <librrc/Interface/rocketactuator.h>
+#include <librrc/Interface/networkactuator.h>
+#include <librrc/Interface/networksensor.h>
 
 #include <libriccore/riccorelogging.h>
 

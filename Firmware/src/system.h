@@ -12,6 +12,8 @@
 #include <SPI.h>
 #include <Wire.h>
 
+#include <librrc/Remote/nrcremotepyro.h>
+
 #include "Commands/commands.h"
 
 #include "Network/Interfaces/radio.h"
@@ -24,6 +26,8 @@
 
 #include "Events/eventHandler.h"
 #include "Deployment/deploymenthandler.h"
+#include "Deployment/PCA9534.h"
+#include "Deployment/PCA9534Gpio.h"
 #include "Engine/enginehandler.h"
 #include "Controller/controllerhandler.h"
 #include "Storage/sdfat_store.h"
@@ -63,12 +67,14 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         SdFat_Store primarysd;
 
-
+        
+    
     private:
 
         void setupSPI();
         void setupI2C();
         void setupPins();
+        void setupLocalPyros();
         void loadConfig();
         void initializeLoggers();
         void logTelemetry();
@@ -80,5 +86,13 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         uint32_t telemetry_log_delta = 10000;
         uint32_t prev_telemetry_log_time;
+
+        
+        PCA9534 pyroPinExpander0;
+        NRCRemotePyro<PCA9534Gpio> pyro0;
+        NRCRemotePyro<PCA9534Gpio> pyro1;
+        NRCRemotePyro<PCA9534Gpio> pyro2;
+        NRCRemotePyro<PCA9534Gpio> pyro3;
+
 
 };

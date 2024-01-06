@@ -4,6 +4,9 @@
 
 #include <Wire.h>
 
+#include <libriccore/threading/riccorethread.h>
+#include <libriccore/threading/scopedlock.h>
+
 
 
 void PCA9534::pinMode(uint8_t pin, PINMODE mode)
@@ -12,6 +15,8 @@ void PCA9534::pinMode(uint8_t pin, PINMODE mode)
     {
         return;
     }
+    
+    RicCoreThread::ScopedLock sl(device_lock);
 
     switch(mode){
         case PINMODE::GPIO_OUTPUT:
@@ -50,6 +55,9 @@ void PCA9534::digitalWrite(uint8_t pin, uint8_t level)
     {
         return;
     }
+
+    RicCoreThread::ScopedLock sl(device_lock);
+   
     switch (level)
     {
         case 0:
@@ -68,6 +76,7 @@ void PCA9534::digitalWrite(uint8_t pin, uint8_t level)
         }
     }
 
+
     writeRegister(OUTPUT_PORT,outputShadow);
 
 };
@@ -82,6 +91,11 @@ int PCA9534::digitalRead(uint8_t pin)
     return readRegister(INPUT_PORT) & ( 1 << pin);
 };
 
+bool PCA9534::alive()
+{
+    m_wire.beginTransmission(m_address);
+    return !(m_wire.endTransmission()); // returns 0 if no error 
+}
 
 uint8_t PCA9534::readRegister(uint8_t reg)
 {
@@ -90,7 +104,7 @@ uint8_t PCA9534::readRegister(uint8_t reg)
     m_wire.write(reg);
     m_wire.endTransmission(false);
 
-    m_wire.requestFrom(m_address,1);
+    m_wire.requestFrom(m_address,static_cast<uint8_t>(1));
     if (m_wire.available()){
         return m_wire.read();
     }else{

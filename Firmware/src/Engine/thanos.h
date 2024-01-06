@@ -2,7 +2,7 @@
 
 #include "engine.h"
 #include "Helpers/jsonconfighelper.h"
-#include <librrc/networkactuator.h>
+#include <librrc/Interface/networkactuator.h>
 
 
 struct ThanosState : public EngineState{};

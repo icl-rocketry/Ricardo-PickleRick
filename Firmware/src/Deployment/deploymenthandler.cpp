@@ -15,7 +15,7 @@
 #include <librrc/Interface/networkactuator.h>
 #include <librrc/Packets/nrcpackets.h>
 
-#include <librrc/Local/i2cpyro.h>
+// #include <librrc/Local/i2cpyro.h>
 
 
 
@@ -29,15 +29,16 @@ void DeploymentHandler::setupIndividual_impl(size_t id,JsonObjectConst deployerc
     if (type == "i2c_act_servo"){
         throw std::runtime_error("i2c servo Not implemented!");
     }else if (type == "i2c_act_pyro"){
-        auto address = getIfContains<uint8_t>(deployerconfig,"address");
-        auto channel = getIfContains<uint8_t>(deployerconfig,"channel");
-        auto invertContinuity = getIfContains<bool>(deployerconfig,"invertContinuity");
-        addObject(std::make_unique<I2CPyro>(id, 
-                                            address,
-                                            channel,
-                                            invertContinuity, 
-                                            _wire,
-                                            _logcb));
+        throw std::runtime_error("i2c servo Not implemented!");
+        // auto address = getIfContains<uint8_t>(deployerconfig,"address");
+        // auto channel = getIfContains<uint8_t>(deployerconfig,"channel");
+        // auto invertContinuity = getIfContains<bool>(deployerconfig,"invertContinuity");
+        // addObject(std::make_unique<I2CPyro>(id, 
+        //                                     address,
+        //                                     channel,
+        //                                     invertContinuity, 
+        //                                     _wire,
+        //                                     _logcb));
     }else if (type == "net_actuator"){
         auto address = getIfContains<uint8_t>(deployerconfig,"address");
         auto destination_service = getIfContains<uint8_t>(deployerconfig,"destination_service");

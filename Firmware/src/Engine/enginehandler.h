@@ -11,7 +11,7 @@
 #include <librnp/rnp_networkmanager.h>
 
 #include "engine.h"
-#include <librrc/flightcomponenthandler.h>
+#include <librrc/Handler/flightcomponenthandler.h>
 
 #include <libriccore/riccorelogging.h>
 

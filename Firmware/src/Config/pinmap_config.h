@@ -36,6 +36,18 @@ namespace PickleRickV1Pins{
     static constexpr int SdDet_2 = 35;
     static constexpr int BattVolt = 36;
     static constexpr int LoraInt = 39;
+
+    //PCA9634 Mapping -> NB this does not match schmatic or silkscreen (will update in v3 pickle)
+    static constexpr int Ch0Fire = 1;
+    static constexpr int Ch1Fire = 3;
+    static constexpr int Ch2Fire = 5;
+    static constexpr int Ch3Fire = 7;
+
+    static constexpr int Ch0Cont = 0;
+    static constexpr int Ch1Cont = 2;
+    static constexpr int Ch2Cont = 4;
+    static constexpr int Ch3Cont = 6;
+    
 };
 
 namespace PickleRickV2Pins{
@@ -73,6 +85,19 @@ namespace PickleRickV2Pins{
 
     static constexpr int BattVolt = 2;
     static constexpr int LoraInt = 5;
+
+    //PCA9634 Mapping -> NB this does not match schmatic or silkscreen (will update in v3 pickle)
+    static constexpr int Ch0Fire = 1;
+    static constexpr int Ch1Fire = 3;
+    static constexpr int Ch2Fire = 5;
+    static constexpr int Ch3Fire = 7;
+
+    static constexpr int Ch0Cont = 0;
+    static constexpr int Ch1Cont = 2;
+    static constexpr int Ch2Cont = 4;
+    static constexpr int Ch3Cont = 6;
+
+
 };
 
 #ifdef CONFIG_IDF_TARGET_ESP32S3

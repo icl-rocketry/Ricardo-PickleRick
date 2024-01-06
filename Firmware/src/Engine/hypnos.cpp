@@ -170,10 +170,10 @@ void Hypnos::updateSensors()
 {
      if (millis() - _prevSensorUpdateTime > _sensorUpdateDelta)
     {
-        if (millis() - _chamberPressure->getState()->lastNewStateUpdateTime < _networkTimeout){
+        if (millis() - _chamberPressure->getLastStateUpdateTime() < _networkTimeout){
             _chamberPressure->updateState();
             _chamberPressureTimeout = false;
-            log("Chamber Pressure:" + std::to_string(static_cast<const NetworkSensorState*>(_chamberPressure->getState())->sensorValue));
+            log("Chamber Pressure:" + std::to_string(_chamberPressure->getValue()));
         }else{
             if (!_chamberPressureTimeout){
                 log("Chamber Pressure Timeout!");
@@ -182,10 +182,10 @@ void Hypnos::updateSensors()
             // component timed out -> maybe timeout detection should be in the component rather than here
         }
 
-        if (millis() - _tankPressure->getState()->lastNewStateUpdateTime < _networkTimeout){
+        if (millis() - _tankPressure->getLastStateUpdateTime() < _networkTimeout){
             _tankPressure->updateState();
             _tankPressureTimeout = false;
-            log("Tank Pressure:" + std::to_string(static_cast<const NetworkSensorState*>(_tankPressure->getState())->sensorValue));
+            log("Tank Pressure:" + std::to_string(_tankPressure->getValue()));
         }else{
             // component timed out 
             if (!_tankPressureTimeout){

@@ -3,6 +3,9 @@
 #include <stdint.h>
 
 #include <Wire.h>
+#include <atomic>
+
+#include <libriccore/threading/riccorethread.h>
 
 
 class PCA9534
@@ -36,6 +39,8 @@ class PCA9534
 
         int digitalRead(uint8_t pin);
 
+        bool alive();
+
     private:
 
         /**
@@ -58,7 +63,14 @@ class PCA9534
 
     private:
         const uint16_t m_address;
-        TwoWire &const m_wire;
+        TwoWire& m_wire;
+
+        /**
+         * @brief Lock to prevent issues if multiple threads try to change shadow reigsters at the same time. 
+         * Ensure i2c device lock isnt taken before calling digitalWrite or pinMode otherwise deadlock is likely
+         * 
+         */
+        RicCoreThread::Lock_t device_lock;
 
 
         //shadow registers

@@ -4,8 +4,9 @@
 
 #include <ArduinoJson.h>
 
-#include <librrc/networkactuator.h>
-#include <librrc/configurabledynamichandler.h>
+#include <librrc/Interface/networkactuator.h>
+#include <librrc/Handler/configurabledynamichandler.h>
+#include <librrc/componentstatusflags.h>
 
 
 #include "Helpers/jsonconfighelper.h"
@@ -55,7 +56,7 @@ void SimpleEngine::updateState(){
 
 uint8_t SimpleEngine::flightCheck(){
     uint8_t flightcheck_result = _igniter->flightCheck(_networkRetryInterval,_componentStateExpiry,"SimpleEngine");
-    if (_igniter->getState()->flagSet(COMPONENT_STATUS_FLAGS::ERROR_NORESPONSE) ){
+    if (_igniter->getState().flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::ERROR_NORESPONSE) ){
         _state.connectionState = static_cast<uint8_t>(ENGINE_CONNECTION_STATE::ERROR);
     }else{
         _state.connectionState = static_cast<uint8_t>(ENGINE_CONNECTION_STATE::CONNECTED);
