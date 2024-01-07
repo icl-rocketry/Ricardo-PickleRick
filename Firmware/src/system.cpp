@@ -107,10 +107,7 @@ void System::systemSetup()
 
     // initialize statemachine with preflight state
     statemachine.initalize(std::make_unique<Preflight>(*this));
-    pyro3.arm(1);
-    pyro3.execute(1000);
-    sleep(2);
-    pyro3.execute(1000);
+
 };
 
 void System::systemUpdate()
@@ -272,6 +269,8 @@ void System::logTelemetry()
 {
     if (micros() - prev_telemetry_log_time > telemetry_log_delta)
     {
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(uxTaskGetStackHighWaterMark(nullptr)));
+
         const SensorStructs::raw_measurements_t& raw_sensors = sensors.getData();
         const SensorStructs::state_t& estimator_state =  estimator.getData();
         TelemetryLogframe logframe;
