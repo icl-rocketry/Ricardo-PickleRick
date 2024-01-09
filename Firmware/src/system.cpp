@@ -141,21 +141,22 @@ void System::setupLocalPyros()
     if (pyroPinExpander0.alive())
     {
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pyro pin expander alive");
+
+        pyro0.setup();
+        pyro1.setup();
+        pyro2.setup();
+        pyro3.setup();
+        
+        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro0),pyro0.getThisNetworkCallback());
+        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro1),pyro1.getThisNetworkCallback());
+        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro2),pyro2.getThisNetworkCallback());
+        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro3),pyro3.getThisNetworkCallback());
     }
     else
     {
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pyro pin expander failed to respond");
     }
 
-    pyro0.setup();
-    pyro1.setup();
-    pyro2.setup();
-    pyro3.setup();
-    
-    networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro0),pyro0.getThisNetworkCallback());
-    networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro1),pyro1.getThisNetworkCallback());
-    networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro2),pyro2.getThisNetworkCallback());
-    networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro3),pyro3.getThisNetworkCallback());
 };
 
 void System::setupPins()

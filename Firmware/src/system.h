@@ -3,6 +3,7 @@
 #include <libriccore/riccoresystem.h>
 
 #include <string_view>
+#include <array>
 
 //config includes
 #include "Config/systemflags_config.h"
@@ -11,6 +12,7 @@
 
 #include <SPI.h>
 #include <Wire.h>
+
 
 #include <librrc/Remote/nrcremotepyro.h>
 
@@ -67,8 +69,6 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         SdFat_Store primarysd;
 
-        
-    
     private:
 
         void setupSPI();
@@ -83,16 +83,18 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         static constexpr std::string_view config_path = "/Config/rml.jsonc";
         
 
-
         uint32_t telemetry_log_delta = 10000;
         uint32_t prev_telemetry_log_time;
-
         
         PCA9534 pyroPinExpander0;
+
         NRCRemotePyro<PCA9534Gpio> pyro0;
         NRCRemotePyro<PCA9534Gpio> pyro1;
         NRCRemotePyro<PCA9534Gpio> pyro2;
         NRCRemotePyro<PCA9534Gpio> pyro3;
+
+        const std::array<NRCRemotePyro<PCA9534Gpio>*,4> localPyroMap = {&pyro0,&pyro1,&pyro2,&pyro3};
+        
 
 
 };
