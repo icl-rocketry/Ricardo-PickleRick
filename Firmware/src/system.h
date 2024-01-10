@@ -75,6 +75,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void setupSPI();
         void setupI2C();
         void setupPins();
+        void configureNetwork();
         void setupLocalPyros();
         void loadConfig();
         void initializeLoggers();

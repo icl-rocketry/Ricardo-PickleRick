@@ -91,12 +91,7 @@ void System::systemSetup()
     canbus.setup();
 
     // add interfaces to netmanager
-    networkmanager.setNodeType(NODETYPE::HUB);
-    networkmanager.addInterface(&radio);
-    networkmanager.addInterface(&canbus);
-
-    networkmanager.enableAutoRouteGen(true);
-    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,2,3});
+    configureNetwork();
 
     //register pryo services
     setupLocalPyros();
@@ -332,3 +327,42 @@ void System::logTelemetry()
     }
 }
 
+void System::configureNetwork()
+{   
+    networkmanager.setNodeType(NODETYPE::HUB);
+    networkmanager.addInterface(&radio);
+    networkmanager.addInterface(&canbus);
+
+    networkmanager.enableAutoRouteGen(true);
+    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,3});
+
+    RoutingTable flightRouting;
+    flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION_GATEWAY,Route{2,1,{}});
+    flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION,Route{2,2,{}});
+    flightRouting.setRoute(17,Route{3,2,{}});
+    flightRouting.setRoute(18,Route{3,2,{}});
+    flightRouting.setRoute(5,Route{3,2,{}});
+    flightRouting.setRoute(6,Route{3,2,{}});
+    flightRouting.setRoute(7,Route{3,2,{}});
+    flightRouting.setRoute(8,Route{3,2,{}});
+    flightRouting.setRoute(9,Route{3,2,{}});
+    flightRouting.setRoute(10,Route{3,2,{}});
+    flightRouting.setRoute(11,Route{3,2,{}});
+    flightRouting.setRoute(12,Route{3,2,{}});
+    flightRouting.setRoute(13,Route{3,2,{}});
+    flightRouting.setRoute(14,Route{3,2,{}});
+    flightRouting.setRoute(15,Route{3,2,{}});
+    flightRouting.setRoute(16,Route{3,2,{}});
+    flightRouting.setRoute(50,Route{3,2,{}});
+    flightRouting.setRoute(51,Route{3,2,{}});
+    flightRouting.setRoute(52,Route{3,2,{}});
+    flightRouting.setRoute(100,Route{3,2,{}});
+    flightRouting.setRoute(101,Route{3,2,{}});
+    flightRouting.setRoute(102,Route{3,2,{}});
+    flightRouting.setRoute(150,Route{2,2,{}});
+
+    
+    networkmanager.setRoutingTable(flightRouting);
+    networkmanager.updateBaseTable(); // save the new base table
+
+};
