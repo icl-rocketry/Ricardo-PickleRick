@@ -4,13 +4,14 @@
 #include <memory>
 
 #include <librrc/Interface/rocketactuator.h>
+#include "Config/types.h"
 
 #include "engine.h"
 
 
 class SimpleEngine:public Engine{
     public:
-        SimpleEngine(uint8_t id,JsonObjectConst engineConfig,addNetworkCallbackFunction_t addNetworkCallbackF,RnpNetworkManager& networkmanager,uint8_t handlerServiceID);
+        SimpleEngine(uint8_t id, JsonObjectConst engineConfig, const Types::LocalPyroMap_t &localPyroMap, addNetworkCallbackFunction_t addNetworkCallbackF, RnpNetworkManager &networkmanager, uint8_t handlerServiceID);
 
         void updateState() override;
 

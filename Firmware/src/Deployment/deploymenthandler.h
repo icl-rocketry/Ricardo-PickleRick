@@ -4,6 +4,7 @@
 #include <memory>
 #include <functional>
 #include <unordered_map>
+#include <array>
 
 #include <librnp/rnp_networkmanager.h>
 #include <ArduinoJson.h>
@@ -12,12 +13,18 @@
 
 #include <librrc/Interface/rocketactuator.h>
 
+#include <librrc/Remote/nrcremotepyro.h>
+#include "PCA9534Gpio.h"
+
 #include <librrc/Handler/flightcomponenthandler.h>
 #include <librrc/Handler/configurabledynamichandler.h>
 #include <librrc/Handler/networkeddynamichandler.h>
 
+
+
 #include <libriccore/riccorelogging.h>
 
+#include "Config/types.h"
 
 
 
@@ -31,9 +38,9 @@ class DeploymentHandler : public FlightComponentHandler<RocketActuator,Deploymen
          * @param serviceID network service the handler is assigned to
          * @param logcontroller 
          */
-        DeploymentHandler(RnpNetworkManager& networkmanager,uint8_t serviceID,TwoWire& wire):
+        DeploymentHandler(RnpNetworkManager& networkmanager,const Types::LocalPyroMap_t& localPyroMap,uint8_t serviceID):
             FlightComponentHandler(networkmanager,serviceID,[](const std::string& msg){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(msg);}),
-            _wire(wire)
+            m_localPyroMap(localPyroMap)
         {};
 
 
@@ -53,5 +60,6 @@ class DeploymentHandler : public FlightComponentHandler<RocketActuator,Deploymen
     private:
         static constexpr uint16_t _networkRetryInterval = 5000; // 5 seconds before a new update state request is sent
         static constexpr uint16_t _componentStateExpiry = 1000; //1 second expiry
-        TwoWire& _wire;
+
+        const Types::LocalPyroMap_t& m_localPyroMap;
 };

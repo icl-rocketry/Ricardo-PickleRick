@@ -53,6 +53,7 @@ void EngineHandler::setupIndividual_impl(size_t id, JsonObjectConst engineconfig
     if (type == "SimpleEngine"){
         addObject(std::make_unique<SimpleEngine>(id,
                                                  engineconfig,
+                                                 m_localPyroMap,
                                                  getaddNetworkCallbackFunction(id),
                                                  _networkmanager,
                                                  _serviceID));

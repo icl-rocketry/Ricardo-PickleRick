@@ -55,8 +55,8 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    canbus(systemstatus, PinMap::TxCan, PinMap::RxCan, 3),
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
-                   deploymenthandler(networkmanager, static_cast<uint8_t>(Services::ID::DeploymentHandler), I2C),
-                   enginehandler(networkmanager, static_cast<uint8_t>(Services::ID::EngineHandler)),
+                   deploymenthandler(networkmanager, localPyroMap, static_cast<uint8_t>(Services::ID::DeploymentHandler)),
+                   enginehandler(networkmanager, localPyroMap, static_cast<uint8_t>(Services::ID::EngineHandler)),
                    controllerhandler(enginehandler),
                    eventhandler(enginehandler, deploymenthandler),
                    apogeedetect(20),
@@ -73,7 +73,7 @@ void System::systemSetup()
 
     Serial.setRxBufferSize(GeneralConfig::SerialRxSize);
     Serial.begin(GeneralConfig::SerialBaud);
-    delay(3000);
+    // delay(3000);
 
     setupPins();
     // intialize i2c interface

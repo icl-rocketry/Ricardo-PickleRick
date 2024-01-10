@@ -9,6 +9,7 @@
 #include "Config/systemflags_config.h"
 #include "Config/commands_config.h"
 #include "Config/pinmap_config.h"
+#include "Config/types.h"
 
 #include <SPI.h>
 #include <Wire.h>
@@ -88,12 +89,11 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         
         PCA9534 pyroPinExpander0;
 
-        NRCRemotePyro<PCA9534Gpio> pyro0;
-        NRCRemotePyro<PCA9534Gpio> pyro1;
-        NRCRemotePyro<PCA9534Gpio> pyro2;
-        NRCRemotePyro<PCA9534Gpio> pyro3;
-
-        const std::array<NRCRemotePyro<PCA9534Gpio>*,4> localPyroMap = {&pyro0,&pyro1,&pyro2,&pyro3};
+        Types::LocalPyro_t pyro0;
+        Types::LocalPyro_t pyro1;
+        Types::LocalPyro_t pyro2;
+        Types::LocalPyro_t pyro3;
+        const std::array<Types::LocalPyro_t*,4> localPyroMap = {&pyro0,&pyro1,&pyro2,&pyro3};
         
 
 
