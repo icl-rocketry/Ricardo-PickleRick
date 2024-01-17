@@ -39,7 +39,6 @@ void Preflight::initialize(){
                                            Commands::ID::Calibrate_Baro,
                                            Commands::ID::Enter_Debug
                                             });
-    //load the rocket routing table
    
     
 

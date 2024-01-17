@@ -5,6 +5,7 @@
 #include <memory>
 
 #include <libriccore/riccorelogging.h>
+#include <librrc/Helpers/jsonconfighelper.h>
 
 #include "event.h"
 #include "condition.h"
@@ -37,6 +38,8 @@ void EventHandler::setup(JsonArrayConst event_config)
         #ifdef _RICDEBUG
         _decisiontree = "";
         #endif
+        //verify action ID 
+        LIBRRC::JsonConfigHelper::checkConfigId(eventID,jsonEvent);
 
         bool fire_mode = jsonEvent["single_fire"];
         uint16_t actionCooldown = jsonEvent["cooldown"];
