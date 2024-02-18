@@ -14,7 +14,7 @@
 
 #include "Commands/commands.h"
 
-#include "Network/Interfaces/radio.h"
+#include "Network/Interfaces/tdma.h"
 #include <libriccore/networkinterfaces/can/canbus.h>
 
 #include "Sensors/sensors.h"
@@ -45,7 +45,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         SPIClass hspi;
         TwoWire I2C;
 
-        Radio radio;
+        TDMA tdma;
         CanBus<SYSTEM_FLAG> canbus;
 
         Sensors sensors;

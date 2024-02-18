@@ -164,7 +164,7 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 	telemetry.system_status = system.systemstatus.getStatus();
 	
 
-	const RadioInterfaceInfo* radioinfo = static_cast<const RadioInterfaceInfo*>(system.radio.getInfo());
+	const RadioInterfaceInfo* radioinfo = static_cast<const RadioInterfaceInfo*>(system.tdma.getInfo());
 	telemetry.rssi = radioinfo->rssi;
 	telemetry.snr = radioinfo->snr;
 

@@ -16,7 +16,7 @@
 
 #include "Commands/commands.h"
 
-#include "Network/Interfaces/radio.h"
+#include "Network/Interfaces/tdma.h"
 #include <libriccore/networkinterfaces/can/canbus.h>
 
 #include "Sensors/sensors.h"
@@ -49,7 +49,7 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    vspi(VSPI_BUS_NUM),
                    hspi(HSPI_BUS_NUM), // CHANGE FOR esp32s3
                    I2C(0),
-                   radio(hspi,  PinMap::LoraCs, PinMap::LoraReset, -1, systemstatus, RADIO_MODE::TURN_TIMEOUT,  2),
+                   tdma(hspi,  PinMap::LoraCs, PinMap::LoraReset, -1, systemstatus, networkmanager, 2, "TDMA Radio"),
                    canbus(systemstatus, PinMap::TxCan, PinMap::RxCan, 3),
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
@@ -80,12 +80,12 @@ void System::systemSetup()
 
     tunezhandler.setup();
     // network interfaces
-    radio.setup();
+    tdma.setup();
     canbus.setup();
 
     // add interfaces to netmanager
     networkmanager.setNodeType(NODETYPE::HUB);
-    networkmanager.addInterface(&radio);
+    networkmanager.addInterface(&tdma);
     networkmanager.addInterface(&canbus);
 
     networkmanager.enableAutoRouteGen(true);
@@ -284,7 +284,7 @@ void System::logTelemetry()
         logframe.ae = estimator_state.acceleration[1];
         logframe.ad = estimator_state.acceleration[2];
 
-        const RadioInterfaceInfo* radio_info = reinterpret_cast<const RadioInterfaceInfo*>(radio.getInfo());
+        const RadioInterfaceInfo* radio_info = reinterpret_cast<const RadioInterfaceInfo*>(tdma.getInfo());
 
         logframe.rssi = radio_info->rssi;
         logframe.snr = radio_info->snr;

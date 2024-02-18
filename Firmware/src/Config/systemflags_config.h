@@ -38,7 +38,8 @@ enum class SYSTEM_FLAG:uint32_t{
     FLIGHTPHASE_BOOST = (1 << 25),
     
     FLIGHTPHASE_COAST = (1 << 26),
-    FLIGHTPHASE_APOGEE = (1 << 27)
+    FLIGHTPHASE_APOGEE = (1 << 27),
+    ERROR_TDMA = (1 << 28)
     
 };
 

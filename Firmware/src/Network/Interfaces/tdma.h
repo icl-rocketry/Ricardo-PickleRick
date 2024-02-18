@@ -23,16 +23,16 @@
 
 struct RadioConfig
 {
-    double frequency;
+    float frequency;
     uint8_t sync_byte;
-    double bandwidth;
+    float bandwidth;
     int spreading_factor;
     int cr_denominator;
     int preamble_length;
     uint8_t gain;
 
     static constexpr uint8_t max_payload_length = 255;
-    static constexpr uint8_t max_ack_length = 4;        // tdma header size
+    static constexpr uint8_t max_ack_length = 6;       // tdma header size
 };
 
 enum TDMA_MODE : uint8_t
@@ -40,6 +40,17 @@ enum TDMA_MODE : uint8_t
     DISCOVERY,
     TRANSMIT,
     RECEIVE
+};
+
+enum DISCOVERY_PHASE : uint8_t
+{   
+    ENTRY,
+    SNIFFING,
+    INIT_NETWORK,
+    SYNCING,
+    JOIN_REQUEST,
+    JOIN_REQUEST_RESPONSE,
+    EXIT,
 };
 
 struct RadioInterfaceInfo : public RnpInterfaceInfo
@@ -90,8 +101,6 @@ private:
     bool _received = false;
     RnpNetworkManager &_networkmanager;
 
-    // LOW LEVEL DRIVER STUFF
-
     LoRaClass loraRadio;
     void radioSetup();
     void radioRestart();
@@ -108,27 +117,30 @@ private:
     void discovery();
     void rx();
     void tx();
-    TDMA_MODE currentMode = TDMA_MODE::DISCOVERY;    
+    TDMA_MODE currentMode = TDMA_MODE::DISCOVERY;
+    DISCOVERY_PHASE currentDiscoveryPhase = DISCOVERY_PHASE::ENTRY;    
 
     void calcTimewindowDuration();
-    double calcPacketToF(int Lpayload);
+    float calcPacketToF(int Lpayload);
 
     void initNetwork();
-    void generateTDMAHeader(PacketType packettype);
-    void generateTDMAHeader(PacketType packettype, uint8_t info);
+    void generateTDMAHeader(std::vector<uint8_t> &TDMAHeader, PacketType packettype, uint8_t destinationNode);
+    void generateTDMAHeader(std::vector<uint8_t> &TDMAHeader, PacketType packettype, uint8_t destinationNode, uint8_t info);
+    void unpackTDMAHeader(std::vector<uint8_t> &packet);
     void sync();
 
     std::queue<std::vector<uint8_t>> _sendBuffer; 
 
-    static constexpr double discoveryTimeout = 60e6;     //TODO: this needs a proper calc once channel hopping is implemented
-    double timeEnteredDiscovery;
-    double timeJoinRequestSent;        
+    static constexpr uint64_t discoveryTimeout = static_cast<uint64_t>(30e6);     //TODO: this needs a proper calc once channel hopping is implemented
+    uint64_t timeEnteredDiscovery;
+    uint64_t timeJoinRequestSent;
+    uint64_t joinRequestExpiryTime = 10e6;     
 
-    double timewindowDuration;
+    uint64_t timewindowDuration;
     uint8_t timewindows;
     uint8_t txTimewindow;
     uint8_t currTimewindow;
-    double timeMovedTimewindow = 0;
+    uint64_t timeMovedTimewindow = 0;
 
     uint8_t countsNoTx;
     uint8_t maxCountsNoTx = 10;
@@ -139,7 +151,7 @@ private:
     std::vector<uint8_t> registeredNodes;   // list of rnp nodes on network
 
     PacketType receivedPacketType;
-    double timePacketReceived;    
+    uint64_t timePacketReceived;    
     uint8_t packetSource;
     uint8_t packetDest;
     uint8_t packetRegNodes;
@@ -156,7 +168,7 @@ private:
     bool acked = false;
     bool packetForMe;
 
-    std::vector<uint8_t> TDMAHeader;
+    uint8_t tdmaHeaderSize = 6;
 
 
     RadioConfig defaultConfig{(long)868E6, 0x12, (long)250E3, 7, 5, 8, 6};
