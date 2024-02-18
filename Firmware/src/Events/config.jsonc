@@ -20,7 +20,7 @@
 			"destination_service": 10
 		},
 		{ 
-			"id": 3,//payload deploy
+			"id": 3,//local deploy
 			"type": "local_pyro", 
 			"channel":3
 		}
@@ -167,6 +167,33 @@
                     }
                 ]
             }
+		},
+        { //main deployment event
+            "id":5,
+			"single_fire": true,
+			"cooldown": 0,
+			"action": [
+				{
+					"type": "deployment",
+					"id": 1,
+					"param": 10000
+				}
+			],
+			"condition":[
+                {
+                "operator": "TRUE", //FALSE
+                "flightVar": "ComponentState", 
+                "mask": 4 // bit mask for the state i.e 4 = 0b00000100
+                },
+                {
+                "operator": "MORETHAN",
+                "flightVar": "ComponentValue",
+                "threshold": 0
+                }
+            ]
+                    
+                
+            
 		}
 	]
     
