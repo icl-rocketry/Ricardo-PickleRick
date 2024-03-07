@@ -37,6 +37,9 @@
 
 #include "States/preflight.h"
 
+#include "hal/usb_serial_jtag_ll.h"
+
+
 
 
 #ifdef CONFIG_IDF_TARGET_ESP32S3
@@ -266,6 +269,11 @@ void System::logTelemetry()
     if (micros() - prev_telemetry_log_time > telemetry_log_delta)
     {
         // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(uxTaskGetStackHighWaterMark(nullptr)));
+        
+        // std::string logstring = "int:" + std::to_string(usb_serial_jtag_ll_get_intsts_mask());
+        // std::stringstream s;
+        // s << std::hex << Serial.getRxQueue() <<"\n";
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(s.str());
 
         const SensorStructs::raw_measurements_t& raw_sensors = sensors.getData();
         const SensorStructs::state_t& estimator_state =  estimator.getData();
