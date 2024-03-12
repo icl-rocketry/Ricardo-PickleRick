@@ -116,7 +116,7 @@ namespace SensorStructs
         uint32_t apogeeTime{0};
 
         /**
-         * @brief Estimator state
+         * @brief Estimator state -> maybe change this to be a bitfield lol
          * 
          * 
             NOMINAL = 0

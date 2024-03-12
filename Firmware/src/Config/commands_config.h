@@ -32,7 +32,7 @@ namespace Commands
         Reset_Orientation = 50,
         Reset_Localization = 51,
         Set_Beta = 52,
-        Calibrate_AccelGyro_Bias = 60,
+        Calibrate_AccelGyro_Bias = 60, // bias callibration requires sensor z axis aligned with up directioN!
         Calibrate_Mag_Full = 61, //changed for compatibility
         Calibrate_HighGAccel_Bias = 62,
         Calibrate_Baro = 63,

@@ -48,7 +48,7 @@ public:
     /**
      * @brief Barometer update
      *
-     * @param altitude in m
+     * @param altitude in m +ve up
      */
     void baroUpdate(const float &altitude);
 
@@ -168,7 +168,7 @@ private:
 
     // static constexpr float baroVariance = 0.5;
     static constexpr float baroVariance = 0.5;
-    const Eigen::Matrix<float, 1, 9> H_BARO{{0, 0, 0, 0, 0, 0, -1, 0, 0}};
+    const Eigen::Matrix<float, 1, 9> H_BARO{{0, 0, 0, 0, 0, 0, -1, 0, 0}}; // NOTE -1 as baromters measure altitude postive up!!
 
     // GPS MEASUREMENT
     // cep reference - https://gssc.esa.int/navipedia/index.php/Accuracy
