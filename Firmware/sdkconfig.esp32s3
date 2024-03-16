@@ -223,16 +223,6 @@ CONFIG_ARDUINO_SELECTIVE_Wire=y
 # end of Arduino Configuration
 
 #
-# Arduino Configuration
-#
-
-#
-# Debug Log Configuration
-#
-# end of Debug Log Configuration
-# end of Arduino Configuration
-
-#
 # Compiler options
 #
 CONFIG_COMPILER_OPTIMIZATION_DEFAULT=y
