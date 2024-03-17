@@ -63,7 +63,7 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    controllerhandler(enginehandler),
                    eventhandler(enginehandler, deploymenthandler),
                    apogeedetect(20),
-                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus),
+                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(10),false,&systemstatus),
                    pyroPinExpander0(0x20,I2C),
                    pyro0(PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Cont),networkmanager),
                    pyro1(PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Cont),networkmanager),
@@ -76,7 +76,7 @@ void System::systemSetup()
 
     Serial.setRxBufferSize(GeneralConfig::SerialRxSize);
     Serial.begin(GeneralConfig::SerialBaud);
-    // delay(3000);
+    delay(3000);
 
     setupPins();
     // intialize i2c interface
@@ -84,9 +84,7 @@ void System::systemSetup()
     // initalize spi interface
     setupSPI();
 
-    primarysd.setup();
-
-    initializeLoggers();
+    
 
     tunezhandler.setup();
     // network interfaces
@@ -95,6 +93,11 @@ void System::systemSetup()
 
     // add interfaces to netmanager
     configureNetwork();
+
+    primarysd.setup();
+
+    initializeLoggers();
+
 
     //register pryo services
     setupLocalPyros();
@@ -242,8 +245,9 @@ void System::initializeLoggers()
     //check if sd card is mounted
     if (primarysd.getState() != StoreBase::STATE::NOMINAL)
     {
+        
         loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(nullptr,networkmanager);
-
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("SD Init Failed");
         return;
     }
 
@@ -262,6 +266,7 @@ void System::initializeLoggers()
     //initialize telemetry logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::TELEMETRY>().initialize(std::move(telemetrylogfile));
 
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("SD Init Complete");
 }
 
 void System::logTelemetry()
@@ -273,7 +278,7 @@ void System::logTelemetry()
         // std::string logstring = "int:" + std::to_string(usb_serial_jtag_ll_get_intsts_mask());
         // std::stringstream s;
         // s << std::hex << Serial.getRxQueue() <<"\n";
-        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(s.str());
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("sd card state: " + std::to_string(primarysd.getError()));
 
         const SensorStructs::raw_measurements_t& raw_sensors = sensors.getData();
         const SensorStructs::state_t& estimator_state =  estimator.getData();
