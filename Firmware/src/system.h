@@ -85,7 +85,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         static constexpr std::string_view config_path = "/Config/rml.jsonc";
         
 
-        uint32_t telemetry_log_delta = 10000;
+        uint32_t telemetry_log_delta = 1000;
         uint32_t prev_telemetry_log_time;
         
         PCA9534 pyroPinExpander0;
@@ -95,6 +95,8 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         Types::LocalPyro_t pyro2;
         Types::LocalPyro_t pyro3;
         const std::array<Types::LocalPyro_t*,4> localPyroMap = {&pyro0,&pyro1,&pyro2,&pyro3};
+
+        uint32_t prevTime;
         
 
 

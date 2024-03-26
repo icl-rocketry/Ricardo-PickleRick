@@ -63,7 +63,7 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    controllerhandler(enginehandler),
                    eventhandler(enginehandler, deploymenthandler),
                    apogeedetect(20),
-                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(10),false,&systemstatus),
+                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(50),false,&systemstatus),
                    pyroPinExpander0(0x20,I2C),
                    pyro0(PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Cont),networkmanager),
                    pyro1(PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Cont),networkmanager),
@@ -76,7 +76,7 @@ void System::systemSetup()
 
     Serial.setRxBufferSize(GeneralConfig::SerialRxSize);
     Serial.begin(GeneralConfig::SerialBaud);
-    delay(3000);
+  
 
     setupPins();
     // intialize i2c interface
@@ -84,7 +84,9 @@ void System::systemSetup()
     // initalize spi interface
     setupSPI();
 
-    
+    primarysd.setup();
+
+    initializeLoggers();    
 
     tunezhandler.setup();
     // network interfaces
@@ -94,10 +96,7 @@ void System::systemSetup()
     // add interfaces to netmanager
     configureNetwork();
 
-    primarysd.setup();
-
-    initializeLoggers();
-
+    
 
     //register pryo services
     setupLocalPyros();
@@ -117,6 +116,11 @@ void System::systemUpdate()
     sensors.update();
     estimator.update(sensors.getData());
     logTelemetry();
+    if (millis() - prevTime > 50)
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("sd card state: " + std::to_string(primarysd.getError()));
+        prevTime = millis();
+    }
 };
 
 void System::setupSPI()
@@ -273,7 +277,7 @@ void System::logTelemetry()
 {
     if (micros() - prev_telemetry_log_time > telemetry_log_delta)
     {
-        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(uxTaskGetStackHighWaterMark(nullptr)));
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(uxTaskGetStackHighWaterMark(primarysd.getHandle())));
         
         // std::string logstring = "int:" + std::to_string(usb_serial_jtag_ll_get_intsts_mask());
         // std::stringstream s;
