@@ -32,7 +32,7 @@ void TDMA::setup(){
     timeMovedTimewindow = micros();
 };
 
-
+uint32_t pTime;
 
 void TDMA::update(){
 
@@ -40,13 +40,23 @@ void TDMA::update(){
         currTimewindow = (currTimewindow + 1) % timewindows;
         //RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(currTimewindow));
         timeMovedTimewindow = micros();
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(timeMovedTimewindow));
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(timeMovedTimewindow));
 
         packetSent = false;
         txWindowDone = false;
         rxWindowDone = false;
     }
 
+    if (millis() - pTime > 500)
+    {
+        std::string nodes;
+        for (auto n :registeredNodes)
+        {
+            nodes += (std::to_string(n) + ","); 
+        }
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Nodes: " + nodes);
+        pTime = millis();
+    }
 
     if (currentMode == TDMA_MODE::DISCOVERY){
         discovery();
@@ -205,6 +215,8 @@ void TDMA::generateTDMAHeader(std::vector<uint8_t> &TDMAHeader, PacketType packe
 void TDMA::unpackTDMAHeader(std::vector<uint8_t> &packet){
     uint8_t initial_size = packet.size();
 
+    //! This is kinda slow maybe to an inital copy first?
+
     receivedPacketType = static_cast<PacketType>(packet.front());
     packet.erase(packet.begin());
 
@@ -221,7 +233,7 @@ void TDMA::unpackTDMAHeader(std::vector<uint8_t> &packet){
     packet.erase(packet.begin());
 
     if(packet.front() != 255){
-        packetInfo = packet.front();
+        packetInfo = packet.front(); // default value?
     }
     packet.erase(packet.begin());
 
@@ -243,7 +255,7 @@ void TDMA::tx(){
             txWindowDone = true;
         }
         if(!packetSent){
-            bytes_written = send(_sendBuffer.front());  // send from front of buffer
+            bytes_written = send(_sendBuffer.front());  // send from front of buffer -> sets packetSent to true?
             if (bytes_written){
                 RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("RNP packet sent");
                 countsNoAck ++;  // just trust me bro, it makes sense
@@ -251,8 +263,14 @@ void TDMA::tx(){
             }
         }
         else{                   // packet has been sent
+            RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Waiting for Ack");
             getPacket();        // scan for acks
+            if (_received)
+            {
+                RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("received something: " +  std::to_string(receivedPacketType));
+            }
             if (_received && receivedPacketType == PacketType::ACK){ // packet got acked
+                RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("got Ack");
                 uint8_t popped_packet_size = sizeof(_sendBuffer.back());
                 _sendBuffer.pop();      // remove packet from send queue
                 _currentSendBufferSize -= popped_packet_size;
@@ -287,7 +305,7 @@ void TDMA::rx(){
 
     if(_received){
 
-        //timeMovedTimewindow = timePacketReceived - static_cast<uint64_t>(calcPacketToF(packetSize)*1e6f);   //resyncing
+        timeMovedTimewindow = timePacketReceived - static_cast<uint64_t>(calcPacketToF(packetSize)*1e6f);   //resyncing
         std::vector<uint8_t> ackPacket(tdmaHeaderSize);     // initialising ack packet
 
         switch (receivedPacketType) {
@@ -320,6 +338,7 @@ void TDMA::rx(){
 
                 generateTDMAHeader(ackPacket, PacketType::ACK, packetSource);
                 send(ackPacket);
+                RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio receive");
                 rxWindowDone = true; 
                 break; 
             }
@@ -340,7 +359,7 @@ void TDMA::rx(){
 
 void TDMA::calcTimewindowDuration(){
     float maxTframe = 2;                 //assuming 2 seconds
-    float clock_drift = 2E-5;            //us/s
+    float clock_drift = 2E-5;            //s/s
     float Tg = maxTframe*clock_drift;    //guard time   
     float ff = 1.1;                        //magic fudge factor
     timewindowDuration = ff*(calcPacketToF(_config.max_payload_length) + calcPacketToF(_config.max_ack_length) + Tg)*1e6f;
@@ -359,6 +378,8 @@ float TDMA::calcPacketToF(int Lpayload){
 void TDMA::sendPacket(RnpPacket& data)
 {
     const size_t dataSize = data.header.size() + data.header.packet_len;
+    //! DATA SIZE NOT updated with tdma header length
+
     if (dataSize > _info.MTU){ // will implement packet segmentation here at a later data
         //RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Packet Exceeds Radio MTU");
         ++_info.txerror;
@@ -370,6 +391,8 @@ void TDMA::sendPacket(RnpPacket& data)
         _info.sendBufferOverflow = true;
         return;
     }
+
+    
 
     std::unique_ptr<std::vector<uint8_t>> serializedPacket = std::make_unique<std::vector<uint8_t>>();
     data.serialize(*serializedPacket);
@@ -421,23 +444,40 @@ void TDMA::getPacket(){
 
     int size = loraRadio.parsePacket();
 
-    if (size>0){
+    if (size>0){  
         packetSize = size;
         _received=true; 
 
         timePacketReceived = micros();
-        std::vector<uint8_t> data(packetSize);
+        std::vector<uint8_t> data(packetSize); 
         loraRadio.readBytes(data.data(),packetSize);
+
+        std::string bytestring;
+        for (auto e : data)
+        {
+            bytestring += e;
+        }
+
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("IPacket Size: " + std::to_string(data.size()) );
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("IPacket: " + bytestring );
 
         //unpacking TDMA header
         try{
-            unpackTDMAHeader(data);
+            unpackTDMAHeader(data); // modifies data vector
         }
         catch (std::exception& e)
         {
             RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("TDMA Error: " + std::string(e.what()));
             return;
         }
+
+        bytestring.clear();
+        for (auto e : data)
+        {
+            bytestring += e;
+        }
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Packet Size: " + std::to_string(data.size()) );
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Packet: " + bytestring );
 
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(receivedPacketType));
 
