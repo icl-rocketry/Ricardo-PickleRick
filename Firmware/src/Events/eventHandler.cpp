@@ -131,6 +131,7 @@ condition_t EventHandler::configureCondition(JsonVariantConst condition, uint8_t
     if (recursion_level > condition_recursion_max_depth){
         throw std::runtime_error("EventHandler max recursion depth reached!"); // this needs to fail quietly too
     }
+    
     if (condition.is<JsonObjectConst>())
     {
 
@@ -149,6 +150,7 @@ condition_t EventHandler::configureCondition(JsonVariantConst condition, uint8_t
             }
 
             conditionOperator_t op;
+            
             if (conditionJson["operator"].as<std::string>() == "AND"){
                 op = ConditionOperator::AND;
             }else if (conditionJson["operator"].as<std::string>() == "OR"){

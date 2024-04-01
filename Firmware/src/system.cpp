@@ -63,7 +63,7 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    controllerhandler(enginehandler),
                    eventhandler(enginehandler, deploymenthandler),
                    apogeedetect(20),
-                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(50),false,&systemstatus),
+                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus),
                    pyroPinExpander0(0x20,I2C),
                    pyro0(PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Cont),networkmanager),
                    pyro1(PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Cont),networkmanager),
@@ -195,7 +195,7 @@ void System::loadConfig()
     if (primarysd.getState() == StoreBase::STATE::NOMINAL)
     {
 
-        primarysd.mkdir("/Config");
+        primarysd.mkdir("/Config"); // ensure config directory exists
 
         std::unique_ptr<WrappedFile> config_file_ptr = primarysd.open(config_path,FILE_MODE::READ);
 
@@ -225,7 +225,6 @@ void System::loadConfig()
     try
     {
         sensors.setup(configDoc.as<JsonObjectConst>()["Sensors"]);
-
         deploymenthandler.setup(configDoc.as<JsonObjectConst>()["Deployers"]);
         enginehandler.setup(configDoc.as<JsonObjectConst>()["Engines"]);
         controllerhandler.setup(configDoc.as<JsonObjectConst>()["Controllers"]);
