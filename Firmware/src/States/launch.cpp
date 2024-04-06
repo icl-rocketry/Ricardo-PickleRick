@@ -23,6 +23,7 @@ void Launch::initialize()
                                            Commands::ID::Launch_Abort});
                                            
     _system.tunezhandler.play(MelodyLibrary::confirmation);
+    _system.tunezhandler.play(MelodyLibrary::beepbeep,true);
 
     // arm deployers and engines
 

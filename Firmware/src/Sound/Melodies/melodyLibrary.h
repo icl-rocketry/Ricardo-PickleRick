@@ -14,6 +14,8 @@ namespace MelodyLibrary {
     extern melody_t<286> miichannel;
     extern melody_t<340> nevergonnagiveyouup;
     extern melody_t<3> confirmation;
+    extern melody_t<4> heartbeat;
+    extern melody_t<4> beepbeep;
 
     // enum class SONGS:uint8_t{
     // FIREFLIES,

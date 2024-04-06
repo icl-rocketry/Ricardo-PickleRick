@@ -63,7 +63,7 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    controllerhandler(enginehandler),
                    eventhandler(enginehandler, deploymenthandler),
                    apogeedetect(20),
-                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus),
+                   primarysd(vspi,PinMap::SdCs_2,SD_SCK_MHZ(20),false,&systemstatus),
                    pyroPinExpander0(0x20,I2C),
                    pyro0(PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Cont),networkmanager),
                    pyro1(PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Cont),networkmanager),
