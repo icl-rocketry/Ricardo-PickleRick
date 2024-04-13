@@ -206,5 +206,6 @@ void Radio::restart(){
     loraRadio.setSignalBandwidth(_config.bandwidth);
     loraRadio.setSpreadingFactor(_config.spreading_factor);
     loraRadio.enableCrc();
+    loraRadio.setTxPower(20,1);
 
 }
