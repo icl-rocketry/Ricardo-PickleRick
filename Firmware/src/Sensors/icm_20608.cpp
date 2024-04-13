@@ -109,8 +109,8 @@ void ICM_20608::calibrateBias()
         offset_ax = -sum_ax / number_measurements;
         offset_ay = -sum_ay / number_measurements;
 
-        // offset_az = ( 1 / accel_lsb_to_g) - sum_az / number_measurements; //! This is wrong
-        offset_az = (- 1 / accel_lsb_to_g) - sum_az / number_measurements;
+        offset_az = ( 1 / accel_lsb_to_g) - sum_az / number_measurements; 
+        // offset_az = (- 1 / accel_lsb_to_g) - sum_az / number_measurements; //! This is wrong
         writeAccelGyroBias();
 
         calibrating = false;

@@ -226,7 +226,7 @@ Eigen::Vector3f Estimator::getLinearAcceleration(const float &ax, const float &a
    // //! now transform back to NED and apply linear acceleration correction
    // return (Eigen::Vector3f{NWU_transformed[1],NWU_transformed[0],-NWU_transformed[2]}) - Eigen::Vector3f{0, 0, 1};
 
-   return (madgwick.getRotationMatrix() * Eigen::Vector3f{ax,ay,az}) - Eigen::Vector3f{0,0,1};
+   return (madgwick.getRotationMatrix() * Eigen::Vector3f{ax,ay,az}) + Eigen::Vector3f{0,0,1};
 };
 
 void Estimator::changeEstimatorState(ESTIMATOR_STATE status, std::string logmessage)
