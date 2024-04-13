@@ -26,6 +26,7 @@ void SdFat_WrappedFile::_read(std::vector<uint8_t> &dest)
     if(numBytes == -1)
     {
         //could be io error or read called when *underlying* file not opened, idk if we can differentiate this
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Read error!");
         throw WrappedFile::ReadException();
     }
 }
@@ -34,6 +35,7 @@ void SdFat_WrappedFile::_close()
 {
     if(!_file.close())
     {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Close error!");
         throw WrappedFile::CloseException();
     }
 }
@@ -46,6 +48,7 @@ void SdFat_WrappedFile::file_write(const std::vector<uint8_t>& data)
     {
         if (_file.getWriteError())
         {
+            RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Write error!");
             throw WrappedFile::WriteException();
         }
     }
@@ -55,6 +58,7 @@ void SdFat_WrappedFile::file_flush()
 {
     if(!_file.sync())
     {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Flush error!");
         throw WrappedFile::FlushException();
     }
 }

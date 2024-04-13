@@ -31,7 +31,7 @@ void SdFat_Store::setup()
 {
     if(!filesys.begin(_config))
     {
-        // _systemstatus->newFlag(SYSTEM_FLAG::ERROR_)
+        _systemstatus->newFlag(SYSTEM_FLAG::ERROR_SD);
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Error while begining filesys");
         _storeState = STATE::ERROR_SETUP;
     }

@@ -76,7 +76,7 @@ void System::systemSetup()
 
     Serial.setRxBufferSize(GeneralConfig::SerialRxSize);
     Serial.begin(GeneralConfig::SerialBaud);
-    // delay(3000);
+  
 
     setupPins();
     // intialize i2c interface
@@ -86,7 +86,7 @@ void System::systemSetup()
 
     primarysd.setup();
 
-    initializeLoggers();
+    initializeLoggers();    
 
     tunezhandler.setup();
     // network interfaces
@@ -95,6 +95,8 @@ void System::systemSetup()
 
     // add interfaces to netmanager
     configureNetwork();
+
+    
 
     //register pryo services
     setupLocalPyros();
@@ -114,6 +116,11 @@ void System::systemUpdate()
     sensors.update();
     estimator.update(sensors.getData());
     logTelemetry();
+    if (millis() - prevTime > 50)
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("sd card state: " + std::to_string(primarysd.getError()));
+        prevTime = millis();
+    }
 };
 
 void System::setupSPI()
@@ -188,7 +195,7 @@ void System::loadConfig()
     if (primarysd.getState() == StoreBase::STATE::NOMINAL)
     {
 
-        primarysd.mkdir("/Config");
+        primarysd.mkdir("/Config"); // ensure config directory exists
 
         std::unique_ptr<WrappedFile> config_file_ptr = primarysd.open(config_path,FILE_MODE::READ);
 
@@ -218,7 +225,6 @@ void System::loadConfig()
     try
     {
         sensors.setup(configDoc.as<JsonObjectConst>()["Sensors"]);
-
         deploymenthandler.setup(configDoc.as<JsonObjectConst>()["Deployers"]);
         enginehandler.setup(configDoc.as<JsonObjectConst>()["Engines"]);
         controllerhandler.setup(configDoc.as<JsonObjectConst>()["Controllers"]);
@@ -242,8 +248,9 @@ void System::initializeLoggers()
     //check if sd card is mounted
     if (primarysd.getState() != StoreBase::STATE::NOMINAL)
     {
+        
         loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(nullptr,networkmanager);
-
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("SD Init Failed");
         return;
     }
 
@@ -262,18 +269,19 @@ void System::initializeLoggers()
     //initialize telemetry logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::TELEMETRY>().initialize(std::move(telemetrylogfile));
 
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("SD Init Complete");
 }
 
 void System::logTelemetry()
 {
     if (micros() - prev_telemetry_log_time > telemetry_log_delta)
     {
-        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(uxTaskGetStackHighWaterMark(nullptr)));
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(uxTaskGetStackHighWaterMark(primarysd.getHandle())));
         
         // std::string logstring = "int:" + std::to_string(usb_serial_jtag_ll_get_intsts_mask());
         // std::stringstream s;
         // s << std::hex << Serial.getRxQueue() <<"\n";
-        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(s.str());
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("sd card state: " + std::to_string(primarysd.getError()));
 
         const SensorStructs::raw_measurements_t& raw_sensors = sensors.getData();
         const SensorStructs::state_t& estimator_state =  estimator.getData();
