@@ -85,7 +85,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         static constexpr std::string_view config_path = "/Config/rml.jsonc";
         
 
-        uint32_t telemetry_log_delta = 1000;
+        uint32_t telemetry_log_delta = 5000; //200hz
         uint32_t prev_telemetry_log_time;
         
         PCA9534 pyroPinExpander0;

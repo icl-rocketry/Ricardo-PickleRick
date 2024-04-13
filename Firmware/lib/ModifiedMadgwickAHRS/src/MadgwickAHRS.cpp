@@ -152,6 +152,7 @@ void Madgwick::update(float gx, float gy, float gz, float ax, float ay, float az
 // IMU algorithm update
 
 void Madgwick::updateIMU(float gx, float gy, float gz, float ax, float ay, float az) {
+
 	float recipNorm;
 	float s0, s1, s2, s3;
 	float qDot1, qDot2, qDot3, qDot4;

@@ -227,17 +227,18 @@ void MMC5983MA::writeMagCal()
     if (!pref.putFloat("D",_magCal.declination)){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
     if (!pref.putFloat("A11",_magCal.A_1(0,0))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
     if (!pref.putFloat("A12",_magCal.A_1(0,1))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
-    if (!pref.putFloat("A12",_magCal.A_1(0,2))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("A13",_magCal.A_1(0,2))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
     if (!pref.putFloat("A21",_magCal.A_1(1,0))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
     if (!pref.putFloat("A22",_magCal.A_1(1,1))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
-    if (!pref.putFloat("A22",_magCal.A_1(1,2))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("A23",_magCal.A_1(1,2))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
     if (!pref.putFloat("A31",_magCal.A_1(2,0))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
     if (!pref.putFloat("A32",_magCal.A_1(2,1))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
-    if (!pref.putFloat("A32",_magCal.A_1(2,2))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
+    if (!pref.putFloat("A33",_magCal.A_1(2,2))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
     if (!pref.putFloat("b1",_magCal.b(0))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
     if (!pref.putFloat("b2",_magCal.b(1))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
     if (!pref.putFloat("b3",_magCal.b(2))){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");};
     
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Mag Calb Written to NVS");
  
 
 }

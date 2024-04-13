@@ -57,8 +57,8 @@ void Sensors::setup(JsonObjectConst config){
     std::array<uint8_t,3> axesOrderICM{1,0,2};
     std::array<bool,3> axesFlipICM{0,0,1};
 
-    std::array<uint8_t,3> axesOrderH3LIS{0,1,2};
-    std::array<bool,3> axesFlipH3LIS{0,1,1};
+    std::array<uint8_t,3> axesOrderH3LIS{1,0,2};
+    std::array<bool,3> axesFlipH3LIS{1,1,1};
 
     std::array<uint8_t,3> axesOrderMMC{0,1,2};
     std::array<bool,3> axesFlipMMC{1,0,0};

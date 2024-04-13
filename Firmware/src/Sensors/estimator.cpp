@@ -184,7 +184,11 @@ void Estimator::updateOrientation(const float &gx, const float &gy, const float 
 
    // calculate orientation solution
    madgwick.setDeltaT(dt); // update integration time
+   //TODO Fix this
+   //!need to convert frame from NED to NWU
    madgwick.update(gx, gy, gz, ax, ay, az, mx, my, mz);
+   // madgwick.update(gx, gy, gz, ax, ay, az-2, mx, my, mz);
+
    // update orientation
    state.orientation = madgwick.getOrientation();
    state.eulerAngles = madgwick.getEulerAngles();
@@ -196,6 +200,8 @@ void Estimator::updateOrientation(const float &gx, const float &gy, const float 
 
    // calculate orientation solution
    madgwick.setDeltaT(dt); // update integration time
+   //TODO Fix this
+   //!need to convert frame from NED to NWU
    madgwick.updateIMU(gx, gy, gz, ax, ay, az);
    // update orientation
    state.orientation = madgwick.getOrientation();
@@ -209,7 +215,18 @@ void Estimator::updateAngularRates(const float &gx, const float &gy, const float
 
 Eigen::Vector3f Estimator::getLinearAcceleration(const float &ax, const float &ay, const float &az)
 {
-   return (madgwick.getRotationMatrix() * Eigen::Vector3f{ax, ay, az}) - Eigen::Vector3f{0, 0, 1};
+   //TODO Fix this
+   //! need to first get the trasnformation in NWU
+   // Eigen::Vector3f NWU_transformed = madgwick.getRotationMatrix() * Eigen::Vector3f{ax,-ay,-az};
+   //! now transform back to NED and apply linear acceleration correction
+   // return (Eigen::Vector3f{NWU_transformed[0],-NWU_transformed[1],-NWU_transformed[2]}) - Eigen::Vector3f{0, 0, 1};
+
+   //  //! need to first get the trasnformation in NWU
+   // Eigen::Vector3f NWU_transformed = madgwick.getRotationMatrix() * Eigen::Vector3f{ay,ax,-az};
+   // //! now transform back to NED and apply linear acceleration correction
+   // return (Eigen::Vector3f{NWU_transformed[1],NWU_transformed[0],-NWU_transformed[2]}) - Eigen::Vector3f{0, 0, 1};
+
+   return (madgwick.getRotationMatrix() * Eigen::Vector3f{ax,ay,az}) - Eigen::Vector3f{0,0,1};
 };
 
 void Estimator::changeEstimatorState(ESTIMATOR_STATE status, std::string logmessage)

@@ -156,9 +156,13 @@ private:
 
     static constexpr float accelVariance = .001 * 9.81;   //new value
     const Eigen::DiagonalMatrix<float, 3> R_ACCEL{{accelVariance, accelVariance, accelVariance}};
+    // const Eigen::Matrix<float, 3, 9> H_ACCEL{
+    //     {0, 0, 1, 0, 0, 0, 0, 0, 0},
+    //     {0, 0, 0, 0, 0, 1, 0, 0, 0},
+    //     {0, 0, 0, 0, 0, 0, 0, 0, 1}};
     const Eigen::Matrix<float, 3, 9> H_ACCEL{
         {0, 0, 1, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, -1, 0, 0, 0},
+        {0, 0, 0, 0, 0, 1, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, -1}};
 
     static constexpr float HaccelVariance = 0.01 * 9.81;    //new value
