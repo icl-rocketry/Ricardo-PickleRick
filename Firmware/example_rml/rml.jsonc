@@ -1,0 +1,202 @@
+ {
+	"General": {
+		"LaunchAccelerationThreshold": 2, //?maybe some different types of launch detection
+		"NetworkLogDestination": 1
+	},
+	"Sensors": {
+		"X_AXIS": 0,
+		"Y_AXIS": 1,
+		"Z_AXIS": 2,
+		"X_FLIP": 0,
+		"Y_FLIP": 0,
+		"Z_FLIP": 0
+	},
+	"Networking": {
+		"RoutingTable":
+		[
+			{
+				"Destination": 3,
+				"Interface": 2,
+				"Metric": 1,
+				"Address": "Null"
+			},
+			{
+				"Destination": 4,
+				"Interface": 2,
+				"Metric": 1,
+				"Address": "Null"
+			},
+			{
+				"Destination": 5,
+				"Interface": 2,
+				"Metric": 1,
+				"Address": "Null"
+			}
+		]
+	},
+	"Deployers": [
+		{ 
+			"id": 0,//drogue
+			"type": "net_actuator", 
+			"address": 17,
+			"destination_service": 10
+		},
+		{ 
+			"id": 1,//main
+			"type": "net_actuator", 
+			"address": 17,
+			"destination_service": 11
+		},
+		{ 
+			"id": 2,//payload deploy
+			"type": "net_actuator", 
+			"address": 13,
+			"destination_service": 10
+		}
+	],
+	"Engines": [
+		{
+			"id":0,
+			"type":"Thanos",
+			"engine":
+			{
+				"address":12,
+				"destination_service":10
+			},
+			"igniter":
+			{
+				"address":11,
+				"destination_service":11
+			},
+			"fuelVentValve":
+			{
+				"address":7,
+				"destination_service":10,
+				"closed_position" : 0,
+				"open_position": 180
+			},
+			"oxVentValve":
+			{
+				"address":9,
+				"destination_service":10,
+				"closed_position":0,
+				"open_position":180
+			},
+			"fuelPrssValve":
+			{
+				"address":7,
+				"destination_service":11,
+				"closed_position":0,
+				"open_position":180
+			}
+		
+		}
+	],
+	"Controllers": [
+	],
+	"Events":
+	[
+		{// engine ignition event
+			"single_fire": true,
+			"cooldown": 0,
+			"action": [
+				{
+					"type": "engine",
+					"id": 0,
+					"param": 1
+				}
+			],
+			"condition": {
+				"operator": "MORETHAN",
+				"flightVar": "TimeSinceIgnition",
+				"threshold": 0
+			}
+		},
+		{ // engine shutdown event 
+			"single_fire": true,
+			"cooldown": 0,
+			"action": [
+				{
+					"type": "engine",
+					"id": 0,
+					"param": 0
+				}
+			],
+			"condition": {
+				"operator": "MORETHAN",
+				"flightVar": "TimeSinceIgnition",
+				"threshold": 6720
+			}
+		},
+		{ // drogue deployment event
+			"single_fire": true,
+			"cooldown": 0,
+			"action": [
+				{
+					"type": "deployment",
+					"id": 0,
+					"param": 10000
+				}
+			],
+			"condition": {
+				"operator": "MORETHAN",
+				"flightVar": "TimeSinceApogee",
+				"threshold": 0
+			}
+		},
+		{ // payload deployment event
+			"single_fire": true,
+			"cooldown": 0,
+			"action": [
+				{
+					"type": "deployment",
+					"id": 2,
+					"param": 0
+				}
+			],
+			"condition":{
+                "operator":"AND",
+                "condition":[
+                    {
+                    "operator": "MORETHAN",
+                    "flightVar": "Velocity", 
+                    "component": 2, 
+                    "threshold": -5 //500m AGL in NED
+                    },
+                    {
+                    "operator": "MORETHAN",
+                    "flightVar": "TimeSinceApogee",
+                    "threshold": 10000
+                    }
+                ]
+            }
+		},
+		{ //main deployment event
+			"single_fire": true,
+			"cooldown": 0,
+			"action": [
+				{
+					"type": "deployment",
+					"id": 1,
+					"param": 10000
+				}
+			],
+			"condition":{
+                "operator":"AND",
+                "condition":[
+                    {
+                    "operator": "MORETHAN",
+                    "flightVar": "Position", 
+                    "component": 2, 
+                    "threshold": -500 //500m AGL in NED
+                    },
+                    {
+                    "operator": "MORETHAN",
+                    "flightVar": "TimeSinceApogee",
+                    "threshold": 0
+                    }
+                ]
+            }
+		}
+	]
+}
