@@ -1,7 +1,10 @@
  {
 	"General": {
 		"LaunchAccelerationThreshold": 2, //?maybe some different types of launch detection
-		"NetworkLogDestination": 1
+		"NetworkLogDestination": 1,
+		"AutoSethome": false,
+		"AutoLaunch": false,
+		"PrimaryStorage": "SD1" // is this even useful? as in, how will the device know to read from SD1 if this config is on SD1?
 	},
 	"Sensors": {
 		"X_AXIS": 0,

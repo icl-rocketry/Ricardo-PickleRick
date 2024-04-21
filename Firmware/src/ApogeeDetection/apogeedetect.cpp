@@ -26,8 +26,6 @@ const ApogeeInfo &ApogeeDetect::checkApogee(float altitude, float velocity, uint
         initialEntryTime = time; // recording first time this method is called to scale the system better
     }
 
-    
-
     if (millis() - prevCheckApogeeTime > _sampleTime)
     {
         uint32_t timeSinceEntry = time-initialEntryTime;
