@@ -11,7 +11,7 @@
 
 #include "engine.h"
 
-#include "Helpers/jsonconfighelper.h"
+#include <librrc/Helpers/jsonconfighelper.h>
 
 #include "simpleengine.h"
 #include "hypnos.h"
@@ -46,7 +46,7 @@ void EngineHandler::shutdownAllEngines(){
 
 
 void EngineHandler::setupIndividual_impl(size_t id, JsonObjectConst engineconfig){
-    using namespace JsonConfigHelper;
+    using namespace LIBRRC::JsonConfigHelper;
 
     auto type = getIfContains<std::string>(engineconfig,"type");
 

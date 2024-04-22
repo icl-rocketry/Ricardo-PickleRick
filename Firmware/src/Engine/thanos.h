@@ -1,7 +1,7 @@
 #pragma once
 
 #include "engine.h"
-#include "Helpers/jsonconfighelper.h"
+#include <librrc/Helpers/jsonconfighelper.h>
 #include <librrc/Interface/networkactuator.h>
 
 
@@ -68,7 +68,7 @@ class Thanos : public Engine
         template<typename T>
         void addComponentNetworkCallback(T* component,JsonObjectConst componentconf,addNetworkCallbackFunction_t addNetworkCallbackFunction)
         {
-            using namespace JsonConfigHelper;
+            using namespace LIBRRC::JsonConfigHelper;
             addNetworkCallbackFunction(getIfContains<uint8_t>(componentconf,"address"),
                                 getIfContains<uint8_t>(componentconf,"destination_service"),
                                 [this,component](packetptr_t packetptr)

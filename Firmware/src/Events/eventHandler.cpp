@@ -16,6 +16,8 @@
 
 void EventHandler::setup(JsonArrayConst event_config)
 {
+
+    using namespace LIBRRC::JsonConfigHelper;
     //for each in the list of cool tings
 
     if (event_config.isNull())
@@ -35,15 +37,19 @@ void EventHandler::setup(JsonArrayConst event_config)
 
     for (JsonObjectConst jsonEvent : event_config)
     {
-        #ifdef _RICDEBUG
+        #ifdef _RICDEBUG //TODO cleanup this
         _decisiontree = "";
         #endif
         //verify action ID 
-        LIBRRC::JsonConfigHelper::checkConfigId(eventID,jsonEvent);
+        checkConfigId(eventID,jsonEvent);
 
-        bool fire_mode = jsonEvent["single_fire"];
-        uint16_t actionCooldown = jsonEvent["cooldown"];
+        std::string eventName = getIfContains<std::string>(jsonEvent,"name","Unnamed");
 
+        bool fire_mode = getIfContains<bool>(jsonEvent,"single_fire",true); //default true
+
+        uint16_t actionCooldown = getIfContains<uint16_t>(jsonEvent,"cooldown",1000); //default 1 second cooldown
+
+        //! Null configs for the condition config and the action config are handleld in their respective functions
         JsonVariantConst conditionJson = jsonEvent["condition"];
         condition_t eventCondition = configureCondition(conditionJson);
 
@@ -57,12 +63,13 @@ void EventHandler::setup(JsonArrayConst event_config)
         }
 
         _eventList.at(eventID) = std::make_unique<Event>(eventID,
+                                                 eventName,
                                                  eventCondition,
                                                  eventAction,
                                                  fire_mode,
                                                  actionCooldown);
 
-        #ifdef _RICDEBUG
+        #ifdef _RICDEBUG //TODO CLEANUP
          RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(_decisiontree);
         #endif
 

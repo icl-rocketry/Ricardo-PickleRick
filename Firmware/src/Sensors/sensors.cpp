@@ -15,7 +15,7 @@
 
 #include <librnp/default_packets/simplecommandpacket.h>
 
-#include "Helpers/jsonconfighelper.h"
+#include <librrc/Helpers/jsonconfighelper.h>
 
 
 //config
@@ -43,7 +43,7 @@ Sensors::Sensors(SPIClass& spi,TwoWire& I2C,Types::CoreTypes::SystemStatus_t& sy
 {}
 
 void Sensors::setup(JsonObjectConst config){
-    using namespace JsonConfigHelper;
+    using namespace LIBRRC::JsonConfigHelper;
     //default axes order and flip
     // std::array<uint8_t,3> axesOrderICM{2,1,0};
     // std::array<bool,3> axesFlipICM{1,1,1};

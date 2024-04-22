@@ -1,10 +1,10 @@
 #include "thanos.h"
-#include "Helpers/jsonconfighelper.h"
+#include <librrc/Helpers/jsonconfighelper.h>
 
 Thanos::Thanos(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunction_t addNetworkCallbackFunction, RnpNetworkManager &networkmanager, uint8_t handlerServiceID) : 
 Engine(id, networkmanager, handlerServiceID)
 {
-    using namespace JsonConfigHelper;
+    using namespace LIBRRC::JsonConfigHelper;
 
     auto engineConf = getIfContains<JsonObjectConst>(engineConfig, "engine");
     _engine = std::make_unique<NetworkActuator>(0,

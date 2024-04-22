@@ -10,7 +10,7 @@
 #include <librrc/Local/remoteactuatoradapter.h>
 
 
-#include "Helpers/jsonconfighelper.h"
+#include <librrc/Helpers/jsonconfighelper.h>
 
 #include "Config/types.h"
 
@@ -18,7 +18,7 @@ SimpleEngine::SimpleEngine(uint8_t id,JsonObjectConst engineConfig,const Types::
 Engine(id,networkmanager,handlerServiceID),
 _state({static_cast<uint8_t>(ENGINE_RUN_STATE::SHUTDOWN),})
 {
-    using namespace JsonConfigHelper;
+    using namespace LIBRRC::JsonConfigHelper;
     auto igniterConf = getIfContains<JsonObjectConst>(engineConfig,"igniter");
     auto igniterType = getIfContains<std::string>(igniterConf,"type");
 

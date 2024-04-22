@@ -1,5 +1,5 @@
 #include "hypnos.h"
-#include "Helpers/jsonconfighelper.h"
+#include <librrc/Helpers/jsonconfighelper.h>
 
 Hypnos::Hypnos(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunction_t addNetworkCallbackFunction, RnpNetworkManager &networkmanager, uint8_t handlerServiceID) : 
 Engine(id, networkmanager, handlerServiceID),
@@ -7,7 +7,7 @@ _igniterFired(false),
 motor_lockout(true),
 shutdown_called(false)
 {
-    using namespace JsonConfigHelper;
+    using namespace LIBRRC::JsonConfigHelper;
     //setup components from config
 
     auto igniterConf = getIfContains<JsonObjectConst>(engineConfig, "igniter");
