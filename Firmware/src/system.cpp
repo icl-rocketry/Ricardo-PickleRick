@@ -106,6 +106,8 @@ void System::systemUpdate()
     sensors.update();
     estimator.update(sensors.getData());
     logTelemetry();
+    sendtest_1();
+    sendtest_2();
 };
 
 void System::setupSPI()
@@ -297,3 +299,24 @@ void System::logTelemetry()
     }
 }
 
+void System::sendtest_1()
+{
+    SimpleCommandPacket test_command(3, 0);
+    test_command.header.source = 2;
+    test_command.header.destination_service = 11;
+
+    test_command.header.destination = 104;
+    test_command.header.uid = 0;
+    _networkmanager.sendPacket(test_command);
+}
+
+void System::sendtest_2()
+{
+    SimpleCommandPacket test_command(2, 90);
+    test_command.header.source = 2;
+    test_command.header.destination_service = 11;
+
+    test_command.header.destination = 104;
+    test_command.header.uid = 0;
+    _networkmanager.sendPacket(test_command);
+}

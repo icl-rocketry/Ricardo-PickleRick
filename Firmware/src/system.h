@@ -72,6 +72,9 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void loadConfig();
         void initializeLoggers();
         void logTelemetry();
+        void sendtest_1();
+        void sendtest_2();
+        RnpNetworkManager _networkmanager;
 
         static constexpr std::string_view log_path = "/Logs";
         static constexpr std::string_view config_path = "/Config/rml.jsonc";
