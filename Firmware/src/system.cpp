@@ -116,6 +116,14 @@ void System::systemUpdate()
     sensors.update();
     estimator.update(sensors.getData());
     logTelemetry();
+    auto CurrentData = estimator.getData();
+    if (CurrentData.eulerAngles[0] > 3.14/2)  {
+        digitalWrite(PinMap::SdDet_1, HIGH);
+    } else {
+        digitalWrite(PinMap::SdDet_1, LOW);
+    }
+    sendtest_1();
+    sendtest_2();
 };
 
 void System::setupSPI()
@@ -377,3 +385,25 @@ void System::configureNetwork()
     networkmanager.updateBaseTable(); // save the new base table
 
 };
+    
+void System::sendtest_1()
+{
+    SimpleCommandPacket test_command(3, 0);
+    test_command.header.source = 2;
+    test_command.header.destination_service = 11;
+
+    test_command.header.destination = 104;
+    test_command.header.uid = 0;
+    _networkmanager.sendPacket(test_command);
+}
+
+void System::sendtest_2()
+{
+    SimpleCommandPacket test_command(2, 90);
+    test_command.header.source = 2;
+    test_command.header.destination_service = 11;
+
+    test_command.header.destination = 104;
+    test_command.header.uid = 0;
+    _networkmanager.sendPacket(test_command);
+}

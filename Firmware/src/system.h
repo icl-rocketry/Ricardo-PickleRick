@@ -36,6 +36,7 @@
 #include "Storage/sdfat_store.h"
 
 #include "ApogeeDetection/apogeedetect.h"
+#include <librnp/rnp_networkmanager.h>
 
 class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 {
@@ -70,6 +71,8 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         SdFat_Store primarysd;
 
+        RnpNetworkManager _networkmanager;
+
     private:
 
         void setupSPI();
@@ -80,6 +83,8 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void loadConfig();
         void initializeLoggers();
         void logTelemetry();
+        void sendtest_1();
+        void sendtest_2();
 
         static constexpr std::string_view log_path = "/Logs";
         static constexpr std::string_view config_path = "/Config/rml.jsonc";
