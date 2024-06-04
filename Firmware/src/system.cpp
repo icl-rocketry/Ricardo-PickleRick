@@ -138,13 +138,9 @@ void System::systemUpdate()
 	// CurrentData.position(1); // y
 	// CurrentData.position(2); // z
 
-    float inputMatrix[6] = {CurrentData.position(0),CurrentData.position(1),CurrentData.position(2),CurrentData.eulerAngles[0], CurrentData.eulerAngles[1],CurrentData.eulerAngles[2]};
-    if (inputMatrix[3] > 3.14/2)  {
-        digitalWrite(PinMap::SdDet_1, HIGH);
-    } 
-    else {
-        digitalWrite(PinMap::SdDet_1, LOW);
-    }
+    Eigen::Matrix<float,1, 6> inputMatrix = {CurrentData.position(0),CurrentData.position(1),CurrentData.position(2),CurrentData.eulerAngles[0], CurrentData.eulerAngles[1],CurrentData.eulerAngles[2]};
+    Eigen::Matrix<float,1, 4> outputValues = PID.outputMatrix
+    float testOutputValue = 
     
 };
 

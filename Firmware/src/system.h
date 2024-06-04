@@ -71,6 +71,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         SdFat_Store primarysd;
 
+        Eigen::Matrix<float, 6, 1> inputMatrix;
 
     private:
 
