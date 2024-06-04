@@ -107,7 +107,6 @@ void System::systemSetup()
 
     // initialize statemachine with preflight state
     statemachine.initalize(std::make_unique<Preflight>(*this));
-
 };
 
 void System::systemUpdate()
@@ -122,8 +121,15 @@ void System::systemUpdate()
     } else {
         digitalWrite(PinMap::SdDet_1, LOW);
     }
-    sendtest_1();
-    sendtest_2();
+    if (count < 10)
+    {
+        sendtest_1();
+        arg = !arg;
+        delay(1000);
+        sendtest_2(arg);
+        count++;
+    }
+    
 };
 
 void System::setupSPI()
@@ -176,7 +182,7 @@ void System::setupPins()
     pinMode(PinMap::MagCs, OUTPUT);
     pinMode(PinMap::SdCs_1, OUTPUT);
     pinMode(PinMap::SdCs_2, OUTPUT);
-
+    pinMode(PinMap::SdDet_1, OUTPUT);
     // initialise cs pins
     digitalWrite(PinMap::LoraCs, HIGH);
     digitalWrite(PinMap::ImuCs_1, HIGH);
@@ -388,22 +394,33 @@ void System::configureNetwork()
     
 void System::sendtest_1()
 {
-    SimpleCommandPacket test_command(3, 0);
-    test_command.header.source = 2;
-    test_command.header.destination_service = 11;
-
-    test_command.header.destination = 104;
-    test_command.header.uid = 0;
-    _networkmanager.sendPacket(test_command);
+    SimpleCommandPacket test_command_1(3, 0);
+    test_command_1.header.source_service = 10;
+    test_command_1.header.source = 2;
+    test_command_1.header.destination_service = 11;
+    test_command_1.header.destination = 104;
+    test_command_1.header.uid = 0;
+    networkmanager.sendPacket(test_command_1);
 }
 
-void System::sendtest_2()
+void System::sendtest_2(bool arg)
 {
-    SimpleCommandPacket test_command(2, 90);
-    test_command.header.source = 2;
-    test_command.header.destination_service = 11;
-
-    test_command.header.destination = 104;
-    test_command.header.uid = 0;
-    _networkmanager.sendPacket(test_command);
+    if (arg)
+    {
+        SimpleCommandPacket test_command_2(2, 0);
+        test_command_2.header.source_service = 10;
+        test_command_2.header.source = 2;
+        test_command_2.header.destination_service = 11;
+        test_command_2.header.destination = 104;
+        test_command_2.header.uid = 1;
+        networkmanager.sendPacket(test_command_2);
+    } else {
+        SimpleCommandPacket test_command_2(2, 90);
+        test_command_2.header.source_service = 10;
+        test_command_2.header.source = 2;
+        test_command_2.header.destination_service = 11;
+        test_command_2.header.destination = 104;
+        test_command_2.header.uid = 1;
+        networkmanager.sendPacket(test_command_2);
+    }
 }

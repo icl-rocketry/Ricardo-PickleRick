@@ -71,7 +71,6 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         SdFat_Store primarysd;
 
-        RnpNetworkManager _networkmanager;
 
     private:
 
@@ -84,8 +83,9 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void initializeLoggers();
         void logTelemetry();
         void sendtest_1();
-        void sendtest_2();
-
+        void sendtest_2(bool arg);
+        bool arg = false;
+        int count = 0;
         static constexpr std::string_view log_path = "/Logs";
         static constexpr std::string_view config_path = "/Config/rml.jsonc";
         
