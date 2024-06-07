@@ -128,13 +128,15 @@ private:
     void generateTDMAHeader(std::vector<uint8_t> &TDMAHeader, PacketType packettype, uint8_t destinationNode, uint8_t info);
     void unpackTDMAHeader(std::vector<uint8_t> &packet);
     void sync();
+    void updateRegisteredNodes(uint8_t rnp_node);
 
     std::queue<std::vector<uint8_t>> _sendBuffer; 
 
     static constexpr uint64_t discoveryTimeout = static_cast<uint64_t>(30e6);     //TODO: this needs a proper calc once channel hopping is implemented
     uint64_t timeEnteredDiscovery;
     uint64_t timeJoinRequestSent;
-    uint64_t joinRequestExpiryTime = 10e6;     
+    uint64_t joinRequestExpiryTime = 10e6;    
+    int64_t networkTimeShift = 0; 
 
     uint64_t timewindowDuration;
     uint8_t timewindows;
