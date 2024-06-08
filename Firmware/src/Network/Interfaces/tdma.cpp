@@ -32,15 +32,16 @@ void TDMA::setup(){
     timeMovedTimewindow = micros();
 };
 
-uint32_t pTime;
+
 
 void TDMA::update(){
 
-    if (micros() - timeMovedTimewindow >= timewindowDuration){
+    if (micros() - (timeMovedTimewindow + networkTimeShift) >= timewindowDuration){
         currTimewindow = (currTimewindow + 1) % timewindows;
-        //RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(currTimewindow));
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(currTimewindow));
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Number of registered nodes: " + std::to_string(registeredNodes.size()));
         timeMovedTimewindow = micros();
-        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(timeMovedTimewindow));
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(timeMovedTimewindow));
 
         packetSent = false;
         txWindowDone = false;
@@ -125,6 +126,7 @@ void TDMA::discovery(){
 
         case DISCOVERY_PHASE::JOIN_REQUEST: {
             if(currTimewindow == txTimewindow){
+
                 generateTDMAHeader(joinRequest, PacketType::JOINREQUEST, packetSource);
                 if(send(joinRequest) > 0){                                      // bytes written successfully
                     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Join request sent");
@@ -138,26 +140,51 @@ void TDMA::discovery(){
 
         case DISCOVERY_PHASE::JOIN_REQUEST_RESPONSE: {
 
-            getPacket();        // scan for response 
+            getPacket();        // scan for response
+
+            if (_received){
+                RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Received something: " + std::to_string(receivedPacketType) + ", " + std::to_string(packetDest) + ", " + std::to_string(_networkmanager.getAddress()));
+            }
 
             if(_received && receivedPacketType == PacketType::ACK && packetDest == _networkmanager.getAddress()){
                 RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Joined network");
-                registeredNodes.push_back(_networkmanager.getAddress()); // add self to list
-                registeredNodes.push_back(packetDest);       // maybe should not add to the registered nodes list
+
+                try{
+                    updateRegisteredNodes(_networkmanager.getAddress());
+                }catch (std::exception& e){
+                    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("ERROR updating reg nodes list: " + std::string(e.what()));
+                }
+                try {
+                    updateRegisteredNodes(packetSource);
+                }catch (std::exception& e){
+                    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("ERROR updating reg nodes list: " + std::string(e.what()));
+                }
+                //registeredNodes.push_back(_networkmanager.getAddress()); // add self to list
+                //registeredNodes.push_back(packetDest);       // maybe should not add to the registered nodes list
                 timewindows = packetRegNodes + 1;   // set local number of timewindows to match network
                 currentDiscoveryPhase = DISCOVERY_PHASE::EXIT;
             }
 
-            else if(_received && receivedPacketType == PacketType::NACK){  
+            else if(_received && receivedPacketType == PacketType::NACK && packetDest == _networkmanager.getAddress()){  
                 RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Node joined before");
                 txTimewindow = packetInfo;
-                registeredNodes.push_back(_networkmanager.getAddress()); // add self to list
-                registeredNodes.push_back(packetDest);       // maybe should not add to the registered nodes list
+                try{
+                    updateRegisteredNodes(_networkmanager.getAddress());
+                }catch (std::exception& e){
+                    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("ERROR updating reg nodes list: " + std::string(e.what()));
+                }
+                try {
+                    updateRegisteredNodes(packetSource);
+                }catch (std::exception& e){
+                    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("ERROR updating reg nodes list: " + std::string(e.what()));
+                }
+                //registeredNodes.push_back(_networkmanager.getAddress()); // add self to list
+                //registeredNodes.push_back(packetDest);       // maybe should not add to the registered nodes list
                 timewindows = packetRegNodes + 1;
                 currentDiscoveryPhase = DISCOVERY_PHASE::EXIT;
             }
 
-            if (micros() - timeJoinRequestSent > joinRequestExpiryTime){       // request expired
+            if (micros() - timeJoinRequestSent > joinRequestExpiryTime || (_received && receivedPacketType == PacketType::HEARTBEAT)){       // request expired
                 currentDiscoveryPhase = DISCOVERY_PHASE::JOIN_REQUEST;  // try again
             }
             break;
@@ -182,8 +209,7 @@ void TDMA::discovery(){
 
 
 void TDMA::sync(){
-    // back timestamping when the node was meant to move windows
-    timeMovedTimewindow = timePacketReceived - static_cast<uint64_t>(calcPacketToF(packetSize)*1e6f);
+    networkTimeShift = timeMovedTimewindow - (timePacketReceived - static_cast<uint64_t>(calcPacketToF(packetSize)*1e6f));   //resyncing
     
     currTimewindow = packetTimewindow;    // sync local current timewindow to network
     txTimewindow = packetRegNodes;        // send in the n+1th timewindow
@@ -304,8 +330,10 @@ void TDMA::rx(){
     getPacket();    // scan for packets
 
     if(_received){
+        networkTimeShift = timeMovedTimewindow - (timePacketReceived - static_cast<uint64_t>(calcPacketToF(packetSize)*1e6f));   //resyncing
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(static_cast<uint64_t>(calcPacketToF(packetSize)*1e6f)) + " vs " + std::to_string(timewindowDuration));
 
-        timeMovedTimewindow = timePacketReceived - static_cast<uint64_t>(calcPacketToF(packetSize)*1e6f);   //resyncing
+        //timeMovedTimewindow = timePacketReceived - static_cast<uint64_t>(calcPacketToF(packetSize)*1e6f);   //resyncing
         std::vector<uint8_t> ackPacket(tdmaHeaderSize);     // initialising ack packet
 
         switch (receivedPacketType) {
@@ -344,11 +372,13 @@ void TDMA::rx(){
             }
 
             case PacketType::HEARTBEAT: {                               // handling heartbeat packet
+                rxWindowDone = true;
                 break;
             }
 
             default: {                                                  // handling other packet
                 RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Received unexpected packet type: " + std::to_string(receivedPacketType));
+                rxWindowDone = true;
                 break;
             }
 
@@ -405,6 +435,19 @@ void TDMA::sendPacket(RnpPacket& data)
 
 }
 
+void TDMA::updateRegisteredNodes(uint8_t rnp_node){
+    auto it = find(registeredNodes.begin(), registeredNodes.end(), rnp_node);
+    if (it != registeredNodes.end()){
+        throw std::runtime_error("RNP node " + std::to_string(rnp_node) + " already exists in list");
+        return;
+    }
+    else{
+        registeredNodes.push_back(rnp_node);
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("RNP node " + std::to_string(rnp_node) + " added to list");
+    }
+}
+
+
 
 
 //LOW LEVEL SHIT below
@@ -444,7 +487,7 @@ void TDMA::getPacket(){
 
     int size = loraRadio.parsePacket();
 
-    if (size>0){  
+    if (size>0){
         packetSize = size;
         _received=true; 
 
@@ -527,7 +570,7 @@ size_t TDMA::send(std::vector<uint8_t> &data){
     if (loraRadio.beginPacket()){
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Send");
         loraRadio.write(data.data(), data.size());
-        loraRadio.endPacket(false); // asynchronous send 
+        loraRadio.endPacket(true); // asynchronous send 
         //_txDone = false;
         //_info.prevTimeSent = millis();
         packetSent = true;
