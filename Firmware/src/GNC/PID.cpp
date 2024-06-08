@@ -1,13 +1,14 @@
 #include <Eigen/Dense>
 #include "PID.h"
-
-PID::PID() {
-
-
-Eigen::Matrix<float,4, 1> PID::outputMatrix(Eigen::Matrix<float,6, 1> inputMatrix) {
-// Multplies with K_p
+Eigen::Matrix<float,1, 4> outputMat;
 
 
-
-}
+Eigen::Matrix<float,1, 4> PID::outputMatrix(Eigen::Matrix<float,1, 6> inputMatrix) {
+Eigen::Matrix<float, 1, 4> outputMat = Eigen::Matrix<float, 1, 4>::Zero();
+for (int j = 0; j < 4; ++j) {
+        for (int i = 0; i < 6; ++i) {
+            outputMat(0,j) += inputMatrix(0,i) * K_p(i,j);
+        }
+    }
+return outputMat;
 }

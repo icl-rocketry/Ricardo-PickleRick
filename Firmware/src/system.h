@@ -19,6 +19,8 @@
 
 #include "Commands/commands.h"
 
+#include "GNC/PID.h"
+
 #include "Network/Interfaces/radio.h"
 #include <libriccore/networkinterfaces/can/canbus.h>
 
@@ -71,7 +73,10 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         SdFat_Store primarysd;
 
-        Eigen::Matrix<float, 6, 1> inputMatrix;
+        Eigen::Matrix<float, 1, 6> inputMatrix;
+
+
+
 
     private:
 
@@ -100,6 +105,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         Types::LocalPyro_t pyro1;
         Types::LocalPyro_t pyro2;
         Types::LocalPyro_t pyro3;
+        PID pid;
         const std::array<Types::LocalPyro_t*,4> localPyroMap = {&pyro0,&pyro1,&pyro2,&pyro3};
 
         uint32_t prevTime;

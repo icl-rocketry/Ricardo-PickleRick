@@ -68,7 +68,8 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    pyro0(PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Cont),networkmanager),
                    pyro1(PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Cont),networkmanager),
                    pyro2(PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Cont),networkmanager),
-                   pyro3(PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Cont),networkmanager)
+                   pyro3(PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Cont),networkmanager),
+                   pid(networkmanager)
                    {};
 
 void System::systemSetup()
@@ -139,8 +140,9 @@ void System::systemUpdate()
 	// CurrentData.position(2); // z
 
     Eigen::Matrix<float,1, 6> inputMatrix = {CurrentData.position(0),CurrentData.position(1),CurrentData.position(2),CurrentData.eulerAngles[0], CurrentData.eulerAngles[1],CurrentData.eulerAngles[2]};
-    Eigen::Matrix<float,1, 4> outputValues = PID.outputMatrix
-    float testOutputValue = 
+    Eigen::Matrix<float,1, 4> outputValues = pid.outputMatrix(inputMatrix);
+    // Serial.println(outputValues);
+
     
 };
 

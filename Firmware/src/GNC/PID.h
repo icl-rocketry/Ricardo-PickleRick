@@ -1,16 +1,19 @@
 #include <Eigen/Dense>
-#include "/librrc/Remote/nrcremoteactuatorbase.h"
+#include "librrc/Remote/nrcremoteactuatorbase.h"
+#include <librnp/rnp_networkmanager.h>
+
 
 class PID : public NRCRemoteActuatorBase<PID>
 {
     public:
-        PID();
-
-        Eigen::Matrix<float,1, 4> outputMatrix();
+        PID(RnpNetworkManager &networkmanager):
+        NRCRemoteActuatorBase(networkmanager) 
+        {};
+        Eigen::Matrix<float,1, 4> outputMatrix(Eigen::Matrix<float,1, 6> inputMatrix);
     private:
-         Eigen::Matrix<float,4, 6> K_p;
+         Eigen::Matrix<float,6, 4> K_p;
 
 
 
 
-}
+};
