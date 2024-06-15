@@ -89,9 +89,10 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void initializeLoggers();
         void logTelemetry();
         void sendtest_1();
-        void sendtest_2(bool arg);
-        bool arg = false;
-        int count = 0;
+        void sendtest_2(float servoAngle1);
+        void sendtest_3();
+        void sendtest_4(float servoAngle2);
+
         static constexpr std::string_view log_path = "/Logs";
         static constexpr std::string_view config_path = "/Config/rml.jsonc";
         

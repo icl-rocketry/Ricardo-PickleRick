@@ -108,6 +108,11 @@ void System::systemSetup()
 
     // initialize statemachine with preflight state
     statemachine.initalize(std::make_unique<Preflight>(*this));
+
+    pid.Setup();
+    
+    sendtest_1();
+    sendtest_3();
 };
 
 void System::systemUpdate()
@@ -127,7 +132,7 @@ void System::systemUpdate()
     //     sendtest_1();
     //     arg = !arg;
     //     delay(1000);
-    //     sendtest_2(arg);
+    //     sendtest_2(arg,outputValues(0,0));
     //     count++;
     // }
 
@@ -141,9 +146,10 @@ void System::systemUpdate()
 
     Eigen::Matrix<float,1, 6> inputMatrix = {CurrentData.position(0),CurrentData.position(1),CurrentData.position(2),CurrentData.eulerAngles[0], CurrentData.eulerAngles[1],CurrentData.eulerAngles[2]};
     Eigen::Matrix<float,1, 4> outputValues = pid.outputMatrix(inputMatrix);
-    // Serial.println(outputValues);
 
-    
+    sendtest_2(outputValues(0,0));
+    sendtest_4(outputValues(0,1));
+    delay(500);
 };
 
 void System::setupSPI()
@@ -417,24 +423,41 @@ void System::sendtest_1()
     networkmanager.sendPacket(test_command_1);
 }
 
-void System::sendtest_2(bool arg)
+void System::sendtest_2(float servoAngle1)
 {
-    if (arg)
-    {
-        SimpleCommandPacket test_command_2(2, 0);
-        test_command_2.header.source_service = 10;
-        test_command_2.header.source = 2;
-        test_command_2.header.destination_service = 11;
-        test_command_2.header.destination = 104;
-        test_command_2.header.uid = 1;
-        networkmanager.sendPacket(test_command_2);
-    } else {
-        SimpleCommandPacket test_command_2(2, 90);
-        test_command_2.header.source_service = 10;
-        test_command_2.header.source = 2;
-        test_command_2.header.destination_service = 11;
-        test_command_2.header.destination = 104;
-        test_command_2.header.uid = 1;
-        networkmanager.sendPacket(test_command_2);
-    }
+    servoAngle1 = (servoAngle1 + 3.1415)*(90/3.1415);
+    int sA1 = std::round(servoAngle1);
+    
+    SimpleCommandPacket test_command_2(2,sA1);
+    test_command_2.header.source_service = 10;
+    test_command_2.header.source = 2;
+    test_command_2.header.destination_service = 11;
+    test_command_2.header.destination = 104;
+    test_command_2.header.uid = 1;
+    networkmanager.sendPacket(test_command_2);
+}
+
+void System::sendtest_3()
+{
+    SimpleCommandPacket test_command_3(3, 0);
+    test_command_3.header.source_service = 10;
+    test_command_3.header.source = 2;
+    test_command_3.header.destination_service = 10;
+    test_command_3.header.destination = 104;
+    test_command_3.header.uid = 0;
+    networkmanager.sendPacket(test_command_3);
+}
+
+void System::sendtest_4(float servoAngle2)
+{
+    servoAngle2 = (servoAngle2 + 3.1415)*(90/3.1415);
+    int sA2 = std::round(servoAngle2);
+    
+    SimpleCommandPacket test_command_4(2,sA2);
+    test_command_4.header.source_service = 10;
+    test_command_4.header.source = 2;
+    test_command_4.header.destination_service = 10;
+    test_command_4.header.destination = 104;
+    test_command_4.header.uid = 1;
+    networkmanager.sendPacket(test_command_4);
 }
