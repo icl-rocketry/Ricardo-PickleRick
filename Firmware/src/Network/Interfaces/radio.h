@@ -20,6 +20,7 @@
 #include <Config/types.h>
 #include <Config/systemflags_config.h>
 
+
 enum class RADIO_MODE : uint8_t
 {
     SIMPLE,
@@ -35,7 +36,9 @@ struct RadioInterfaceInfo : public RnpInterfaceInfo
     uint32_t prevTimeSent;
 
     int rssi;
+    int packet_rssi;
     float snr;
+    float packet_snr;
     long freqError;
 };
 
@@ -45,6 +48,7 @@ struct RadioConfig
     uint8_t sync_byte;
     long bandwidth;
     int spreading_factor;
+    int txPower;
 };
 
 class Radio : public RnpInterface
@@ -89,5 +93,5 @@ private:
     static constexpr int turnTimeout = 250;
     bool _received;
 
-    static constexpr RadioConfig defaultConfig{static_cast<long>(868E6),0xF3,static_cast<long>(500E3),7};
+    static constexpr RadioConfig defaultConfig{static_cast<long>(868E6),0xF3,static_cast<long>(500E3),7,20};
 };

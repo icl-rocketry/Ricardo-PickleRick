@@ -24,6 +24,7 @@ namespace Commands
         Start_Logging = 5,
         Stop_Logging = 6,
         Telemetry = 8,
+        Radio_Test = 9,
         Print_Flash_filesystem = 12,
         Print_Sd_filesystem = 13,
         Play_Song = 14,
@@ -47,7 +48,7 @@ namespace Commands
         Free_Ram = 250
     };
 
-    inline std::initializer_list<ID> defaultEnabledCommands = {ID::Free_Ram,ID::Telemetry};
+    inline std::initializer_list<ID> defaultEnabledCommands = {ID::Free_Ram,ID::Telemetry,ID::Radio_Test};
 
     inline std::unordered_map<ID, std::function<void(ForwardDecl_SystemClass &, const RnpPacketSerialized &)>> command_map{
         {ID::Launch, LaunchCommand},
@@ -57,6 +58,7 @@ namespace Commands
         {ID::Start_Logging, StartLoggingCommand},
         {ID::Stop_Logging, StopLoggingCommand},
         {ID::Telemetry, TelemetryCommand},
+        {ID::Radio_Test, RadioTestCommand},
         {ID::Play_Song, PlaySongCommand},
         {ID::Skip_Song, SkipSongCommand},
         {ID::Clear_Song_Queue, ClearSongQueueCommand},

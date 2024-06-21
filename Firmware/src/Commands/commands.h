@@ -27,6 +27,7 @@ namespace Commands{
     void StartLoggingCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void StopLoggingCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void TelemetryCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void RadioTestCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     // void ClearFlashCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     // void ClearSDCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void PlaySongCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);

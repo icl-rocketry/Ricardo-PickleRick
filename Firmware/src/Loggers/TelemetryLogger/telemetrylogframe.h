@@ -51,7 +51,9 @@ private:
             &TelemetryLogframe::ae,
             &TelemetryLogframe::ad,
             &TelemetryLogframe::rssi,
+            &TelemetryLogframe::packet_rssi,
             &TelemetryLogframe::snr,
+            &TelemetryLogframe::packet_snr,
             &TelemetryLogframe::timestamp
             
            
@@ -86,8 +88,8 @@ public:
     //linear acceleration
     float an,ae,ad;
     //radio details
-    int16_t rssi; 
-    float snr;
+    int16_t rssi, packet_rssi;
+    float snr, packet_snr;
 
     
     uint64_t timestamp;

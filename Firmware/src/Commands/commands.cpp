@@ -20,6 +20,7 @@
 
 #include "packets/magcalcommandpacket.h"
 #include "packets/TelemetryPacket.h"
+#include "packets/RadioTestPacket.h"
 
 #include "system.h"
 
@@ -172,6 +173,33 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 
 	system.networkmanager.sendPacket(telemetry);
 
+}
+
+void Commands::RadioTestCommand(System& system, const RnpPacketSerialized& packet) 
+{
+	SimpleCommandPacket commandpacket(packet);
+
+	RadioTestPacket telemetry;
+
+	telemetry.header.type = 101;
+	telemetry.header.source = system.networkmanager.getAddress();
+	// this is not great as it assumes a single command handler with the same service ID
+	// would be better if we could pass some context through the function paramters so it has an idea who has called it
+	// or make it much clearer that only a single command handler should exist in the system
+	telemetry.header.source_service = static_cast<uint8_t>(DEFAULT_SERVICES::COMMAND);
+	telemetry.header.destination = commandpacket.header.source;
+	telemetry.header.destination_service = commandpacket.header.source_service;
+	telemetry.header.uid = commandpacket.header.uid; 
+	
+	telemetry.system_time = millis();
+	telemetry.system_status = system.systemstatus.getStatus();
+	const RadioInterfaceInfo* radioinfo = static_cast<const RadioInterfaceInfo*>(system.radio.getInfo());
+	telemetry.rssi = radioinfo->rssi;
+	telemetry.packet_rssi = radioinfo->packet_rssi;
+	telemetry.snr = radioinfo->snr;
+	telemetry.packet_snr = radioinfo->packet_snr;
+
+	system.networkmanager.sendPacket(telemetry);
 }
 
 void Commands::PlaySongCommand(System& system, const RnpPacketSerialized& packet) 

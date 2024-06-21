@@ -54,7 +54,7 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    vspi(VSPI_BUS_NUM),
                    hspi(HSPI_BUS_NUM),
                    I2C(0),
-                   radio(hspi,  PinMap::LoraCs, PinMap::LoraReset, -1, systemstatus, RADIO_MODE::TURN_TIMEOUT,  2),
+                   radio(hspi,  PinMap::LoraCs, PinMap::LoraReset, -1, systemstatus, RADIO_MODE::TURN_TIMEOUT, 2),
                    canbus(systemstatus, PinMap::TxCan, PinMap::RxCan, 3),
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
@@ -328,7 +328,9 @@ void System::logTelemetry()
         const RadioInterfaceInfo* radio_info = reinterpret_cast<const RadioInterfaceInfo*>(radio.getInfo());
 
         logframe.rssi = radio_info->rssi;
+        logframe.packet_rssi = radio_info->packet_rssi;
         logframe.snr = radio_info->snr;
+        logframe.packet_snr = radio_info->packet_snr;
 
         logframe.timestamp = micros();
 
@@ -345,35 +347,35 @@ void System::configureNetwork()
     networkmanager.addInterface(&canbus);
 
     networkmanager.enableAutoRouteGen(true);
-    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,3});
+    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,2});
 
-    RoutingTable flightRouting;
-    flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION_GATEWAY,Route{2,1,{}});
-    flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION,Route{2,2,{}});
-    flightRouting.setRoute(17,Route{3,2,{}});
-    flightRouting.setRoute(18,Route{3,2,{}});
-    flightRouting.setRoute(5,Route{3,2,{}});
-    flightRouting.setRoute(6,Route{3,2,{}});
-    flightRouting.setRoute(7,Route{3,2,{}});
-    flightRouting.setRoute(8,Route{3,2,{}});
-    flightRouting.setRoute(9,Route{3,2,{}});
-    flightRouting.setRoute(10,Route{3,2,{}});
-    flightRouting.setRoute(11,Route{3,2,{}});
-    flightRouting.setRoute(12,Route{3,2,{}});
-    flightRouting.setRoute(13,Route{3,2,{}});
-    flightRouting.setRoute(14,Route{3,2,{}});
-    flightRouting.setRoute(15,Route{3,2,{}});
-    flightRouting.setRoute(16,Route{3,2,{}});
-    flightRouting.setRoute(50,Route{3,2,{}});
-    flightRouting.setRoute(51,Route{3,2,{}});
-    flightRouting.setRoute(52,Route{3,2,{}});
-    flightRouting.setRoute(100,Route{3,2,{}});
-    flightRouting.setRoute(101,Route{3,2,{}});
-    flightRouting.setRoute(102,Route{3,2,{}});
-    flightRouting.setRoute(150,Route{2,2,{}});
+    // RoutingTable flightRouting;
+    // flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION_GATEWAY,Route{2,1,{}});
+    // flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION,Route{2,2,{}});
+    // flightRouting.setRoute(17,Route{3,2,{}});
+    // flightRouting.setRoute(18,Route{3,2,{}});
+    // flightRouting.setRoute(5,Route{3,2,{}});
+    // flightRouting.setRoute(6,Route{3,2,{}});
+    // flightRouting.setRoute(7,Route{3,2,{}});
+    // flightRouting.setRoute(8,Route{3,2,{}});
+    // flightRouting.setRoute(9,Route{3,2,{}});
+    // flightRouting.setRoute(10,Route{3,2,{}});
+    // flightRouting.setRoute(11,Route{3,2,{}});
+    // flightRouting.setRoute(12,Route{3,2,{}});
+    // flightRouting.setRoute(13,Route{3,2,{}});
+    // flightRouting.setRoute(14,Route{3,2,{}});
+    // flightRouting.setRoute(15,Route{3,2,{}});
+    // flightRouting.setRoute(16,Route{3,2,{}});
+    // flightRouting.setRoute(50,Route{3,2,{}});
+    // flightRouting.setRoute(51,Route{3,2,{}});
+    // flightRouting.setRoute(52,Route{3,2,{}});
+    // flightRouting.setRoute(100,Route{3,2,{}});
+    // flightRouting.setRoute(101,Route{3,2,{}});
+    // flightRouting.setRoute(102,Route{3,2,{}});
+    // flightRouting.setRoute(150,Route{2,2,{}});
 
     
-    networkmanager.setRoutingTable(flightRouting);
-    networkmanager.updateBaseTable(); // save the new base table
+    // networkmanager.setRoutingTable(flightRouting);
+    // networkmanager.updateBaseTable(); // save the new base table
 
 };
