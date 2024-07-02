@@ -20,7 +20,8 @@ void Launch::initialize()
     State::initialize();
 
     _system.commandhandler.enableCommands({Commands::ID::Ignition,
-                                           Commands::ID::Launch_Abort});
+                                           Commands::ID::Launch_Abort},
+                                           Commands::ID::Liftoff_Override);
                                            
     _system.tunezhandler.play(MelodyLibrary::confirmation);
     _system.tunezhandler.play(MelodyLibrary::beepbeep,true);

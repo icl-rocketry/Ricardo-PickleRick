@@ -74,7 +74,7 @@ flightVariable_t FlightVariables::RocketOrientation(int arg)
 
 flightVariable_t FlightVariables::BoardOrientation(int arg) 
 {
-	return getComponent(_state.eulerAngles, arg);
+	return getComponent(_state.rocketEulerAngles, arg);
 }
 
 flightVariable_t FlightVariables::Tilt(int arg) 

@@ -98,8 +98,8 @@ class Estimator{
          *        i.e the roll axis is aligned with the vertical axis of the rocket, hence we use pitch and yaw
          *        to calcualte the tilt angle.
          * 
-         * @param euler expects euler angle vector in the roll pitch yaw format
-         * @return float 
+         * @param euler expects euler angle vector in the roll pitch yaw format in rad
+         * @return float angle of nutation (tilt) [rad]
          */
         float calculateNutation(const Eigen::Vector3f &euler);
 };

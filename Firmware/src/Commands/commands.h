@@ -53,4 +53,5 @@ namespace Commands{
     void FireInfoCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void FreeRamCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void FlightAbortCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void LiftoffOverrideCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
 }

@@ -325,6 +325,14 @@ void Commands::ExitDebugCommand(System& system, const RnpPacketSerialized& packe
 	system.statemachine.changeState(std::make_unique<Preflight>(system));
 }
 
+void Commands::LiftoffOverrideCommand(System& system, const RnpPacketSerialized& packet) 
+{
+	system.estimator.setLiftoffTime(millis());
+	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
+	system.statemachine.changeState(std::make_unique<Flight>(system));
+	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Liftoff Override triggered, Forcing into flight mode!");
+}
+
 
 void Commands::FreeRamCommand(System& system, const RnpPacketSerialized& packet)
 {	

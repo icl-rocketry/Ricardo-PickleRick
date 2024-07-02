@@ -45,6 +45,7 @@ namespace Commands
         Enter_Recovery = 105,
         Exit_Debug = 106,
         Flight_Abort = 120,
+        Liftoff_Override = 130,
         Free_Ram = 250
     };
 
@@ -77,7 +78,8 @@ namespace Commands
         {ID::Enter_Recovery, EnterRecoveryCommand},
         {ID::Exit_Debug, ExitDebugCommand},
         {ID::Free_Ram, FreeRamCommand},
-        {ID::Flight_Abort, FlightAbortCommand}};
+        {ID::Flight_Abort, FlightAbortCommand},
+        {ID:Liftoff_Override, LiftoffOverrideCommand}};
 
 
 

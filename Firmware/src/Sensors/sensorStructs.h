@@ -97,9 +97,11 @@ namespace SensorStructs
 
     struct state_t
     {
-        //? NOTE these oreintaitons are with respect to the board orientation where
+        //? NOTE these orientations are with respect to the board orientation where
         //? z points from the bottom to the top of the board, x points towards the SMA connectors,
         //? and y completes the right hand coordinate system.
+        //? Euler angles use the roll pitch yaw convetion, meaning roll is aligned with the x axis,
+        //? pitch aligned with the y axis and yaw aligned with the z axis of the board.
         Eigen::Quaternionf orientation; //(quaternion)
         Eigen::Vector3f eulerAngles;    //(rad) (roll pitch yaw)
 
