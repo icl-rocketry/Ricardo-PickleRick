@@ -100,6 +100,8 @@ namespace SensorStructs
 
         Eigen::Quaternionf orientation; //(quaternion)
         Eigen::Vector3f eulerAngles;    //(deg) (roll pitch yaw)
+        float tilt; //angle of tilt (nuation?) (rad)
+
         Eigen::Vector3f position;       //(m) relative to callibration site (NED)
         Eigen::Vector3f velocity;       //(ms-1) (NED)
         Eigen::Vector3f acceleration;   //(ms-2) (NED)

@@ -20,7 +20,11 @@ const std::unordered_map<std::string, memberFunc_t> FlightVariables::function_ma
 	{"TimeSinceEvent", &FlightVariables::TimeSinceEvent},
 	{"Position", &FlightVariables::Position},
 	{"Velocity", &FlightVariables::Velocity},
-	{"Acceleration", &FlightVariables::Acceleration}
+	{"Acceleration", &FlightVariables::Acceleration},
+	{"RocketOrientation", &FlightVariables::RocketOrientation},
+	{"BoardOrientation", &FlightVariables::BoardOrientation},
+	{"Tilt", &FlightVariables::Tilt},
+
 	//networkcomponentstate
 	//networkcomponentvalue
 	//pyro continuity
@@ -60,6 +64,21 @@ flightVariable_t FlightVariables::Velocity(int arg)
 flightVariable_t FlightVariables::Acceleration(int arg) 
 {
 	return getComponent(_state.acceleration, arg);
+}
+
+flightVariable_t FlightVariables::RocketOrientation(int arg) 
+{
+	return getComponent(_state.eulerAngles, arg);
+}
+
+flightVariable_t FlightVariables::BoardOrientation(int arg) 
+{
+	return getComponent(_state.eulerAngles, arg);
+}
+
+flightVariable_t FlightVariables::Tilt(int arg) 
+{
+	return _state.tilt;
 }
 
 
