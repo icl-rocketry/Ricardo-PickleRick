@@ -67,7 +67,7 @@ public:
     float gps_long, gps_lat;
     long gps_alt;
     long gps_v_n, gps_v_e, gps_v_d;
-    uint8_t gps_sat, gps_fix; // these cant be uint8_t as this is a typedef to unsigned char so cannot be converted to a numeric string
+    uint8_t gps_sat, gps_fix; 
     //imu
     float ax, ay, az;
     float h_ax, h_ay, h_az;
@@ -91,7 +91,6 @@ public:
     int16_t rssi, packet_rssi;
     float snr, packet_snr;
 
-    
     uint64_t timestamp;
 
     std::string stringify()const{

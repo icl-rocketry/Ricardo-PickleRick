@@ -96,8 +96,6 @@ void System::systemSetup()
     // add interfaces to netmanager
     configureNetwork();
 
-    
-
     //register pryo services
     setupLocalPyros();
 
@@ -224,6 +222,7 @@ void System::loadConfig()
         enginehandler.setup(configDoc.as<JsonObjectConst>()["Engines"]);
         controllerhandler.setup(configDoc.as<JsonObjectConst>()["Controllers"]);
         eventhandler.setup(configDoc.as<JsonObjectConst>()["Events"]);
+        configureRadio(configDoc.as<JsonObjectConst>()["Radio"]);
 
     }
     catch (const std::exception &e)
@@ -379,3 +378,16 @@ void System::configureNetwork()
     // networkmanager.updateBaseTable(); // save the new base table
 
 };
+
+void System::configureRadio(JsonObjectConst conf)
+{
+    using namespace LIBRRC::JsonConfigHelper;
+
+    RadioConfig radioConfig = radio.getConfig(); // get default config
+    radioConfig.frequency = getIfContains<long>("Frequency");
+    radioConfig.sync_byte = getIfContains<int>("SyncByte"); // default 0xf3
+    radioConfig.bandwith = getIfContains<long>("Bandwidth");
+    radioConfig.spreading_factor = getIfContains<int>("SpreadingFactor");
+    radioConfig.txPower = getIfContains<int>("TxPower");
+    radio.setConfig(radioConfig);
+}

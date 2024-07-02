@@ -81,6 +81,13 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void initializeLoggers();
         void logTelemetry();
 
+        /**
+         * @brief reads the json radio config from sd card and reconfigures the radio
+         * 
+         * @param conf 
+         */
+        void configureRadio(JsonObjectConst conf);
+
         static constexpr std::string_view log_path = "/Logs";
         static constexpr std::string_view config_path = "/Config/rml.jsonc";
         

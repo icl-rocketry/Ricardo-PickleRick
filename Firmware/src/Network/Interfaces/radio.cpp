@@ -199,7 +199,7 @@ void Radio::setConfig(RadioConfig config)
 
 void Radio::restart(){
     if (!loraRadio.begin(_config.frequency)){
-        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LORA,"loraRadio setting up");     
+        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LORA,"loraRadio Failed to start!");     
         return;
     };
     if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_LORA)){
