@@ -71,12 +71,14 @@ class Estimator{
         
         //private methods
 
-        void updateOrientation(const float &gx, const float &gy, const float &gz,
+        void computeOrientation(const float &gx, const float &gy, const float &gz,
                                const float &ax, const float &ay, const float &az,
                                const float &mx, const float &my, const float &mz, float dt);
 
-        void updateOrientation(const float &gx, const float &gy, const float &gz,
+        void computeOrientation(const float &gx, const float &gy, const float &gz,
                                const float &ax, const float &ay, const float &az, float dt);
+
+        void updateOrientation();
 
         void updateAngularRates(const float &gx, const float &gy, const float &gz);
 
@@ -90,4 +92,14 @@ class Estimator{
          * @param dt delta t in seconds
          */
         void predictLocalizationKF(const float& dt);
+        
+        /**
+         * @brief Calculates angle of nutation i.e tilt angle. We assume rocket axes convention here,
+         *        i.e the roll axis is aligned with the vertical axis of the rocket, hence we use pitch and yaw
+         *        to calcualte the tilt angle.
+         * 
+         * @param euler expects euler angle vector in the roll pitch yaw format
+         * @return float 
+         */
+        float calculateNutation(const Eigen::Vector3f &euler);
 };

@@ -13,13 +13,11 @@
 
 #include "sensors.h"
 
-
-
 Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus) : _systemstatus(systemstatus),
-                                                   update_frequency(2000), // 500Hz update
-                                                   _homeSet(false),
-                                                   madgwick(0.5f, 0.005f) // beta | gyroscope sample time step (s)
-                                                   {};
+                                                                       update_frequency(2000), // 500Hz update
+                                                                       _homeSet(false),
+                                                                       madgwick(0.5f, 0.005f) // beta | gyroscope sample time step (s)
+                                                                       {};
 
 void Estimator::setup()
 {
@@ -84,9 +82,9 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
       { // we have imu so calculate orientation and update localizationkf
          if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_MAG))
          {
-            updateOrientation(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz,
-                              raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az,
-                              dt_seconds);
+            computeOrientation(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz,
+                               raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az,
+                               dt_seconds);
             // check that there isnt a bigger error
             if (_homeSet)
             {
@@ -95,10 +93,10 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
          }
          else
          {
-            updateOrientation(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz,
-                              raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az,
-                              raw_sensors.mag.mx, raw_sensors.mag.my, raw_sensors.mag.mz,
-                              dt_seconds);
+            computeOrientation(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz,
+                               raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az,
+                               raw_sensors.mag.mx, raw_sensors.mag.my, raw_sensors.mag.mz,
+                               dt_seconds);
          }
          // transform angular rates from body frame to earth frame
          updateAngularRates(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz);
@@ -177,35 +175,43 @@ void Estimator::setHome(const SensorStructs::raw_measurements_t &raw_sensors)
    _homeSet = true;
 }
 
-void Estimator::updateOrientation(const float &gx, const float &gy, const float &gz,
-                                  const float &ax, const float &ay, const float &az,
-                                  const float &mx, const float &my, const float &mz, float dt)
+void Estimator::computeOrientation(const float &gx, const float &gy, const float &gz,
+                                   const float &ax, const float &ay, const float &az,
+                                   const float &mx, const float &my, const float &mz, float dt)
 {
 
    // calculate orientation solution
    madgwick.setDeltaT(dt); // update integration time
-   //TODO Fix this
-   //!need to convert frame from NED to NWU
+
    madgwick.update(gx, gy, gz, ax, ay, az, mx, my, mz);
    // madgwick.update(gx, gy, gz, ax, ay, az-2, mx, my, mz);
 
-   // update orientation
-   state.orientation = madgwick.getOrientation();
-   state.eulerAngles = madgwick.getEulerAngles();
+   updateOrientation();
 }
 
-void Estimator::updateOrientation(const float &gx, const float &gy, const float &gz,
-                                  const float &ax, const float &ay, const float &az, float dt)
+void Estimator::computeOrientation(const float &gx, const float &gy, const float &gz,
+                                   const float &ax, const float &ay, const float &az, float dt)
 {
 
    // calculate orientation solution
    madgwick.setDeltaT(dt); // update integration time
-   //TODO Fix this
-   //!need to convert frame from NED to NWU
+
    madgwick.updateIMU(gx, gy, gz, ax, ay, az);
+   // update orientation
+   updateOrientation();
+}
+
+void Estimator::updateOrientation()
+{
+
    // update orientation
    state.orientation = madgwick.getOrientation();
    state.eulerAngles = madgwick.getEulerAngles();
+
+   state.rocketOrientation = {};
+   state.rocketEulerAngles = {};
+
+   state.tilt = calculateNutation(state.eulerAngles);
 }
 
 void Estimator::updateAngularRates(const float &gx, const float &gy, const float &gz)
@@ -215,18 +221,7 @@ void Estimator::updateAngularRates(const float &gx, const float &gy, const float
 
 Eigen::Vector3f Estimator::getLinearAcceleration(const float &ax, const float &ay, const float &az)
 {
-   //TODO Fix this
-   //! need to first get the trasnformation in NWU
-   // Eigen::Vector3f NWU_transformed = madgwick.getRotationMatrix() * Eigen::Vector3f{ax,-ay,-az};
-   //! now transform back to NED and apply linear acceleration correction
-   // return (Eigen::Vector3f{NWU_transformed[0],-NWU_transformed[1],-NWU_transformed[2]}) - Eigen::Vector3f{0, 0, 1};
-
-   //  //! need to first get the trasnformation in NWU
-   // Eigen::Vector3f NWU_transformed = madgwick.getRotationMatrix() * Eigen::Vector3f{ay,ax,-az};
-   // //! now transform back to NED and apply linear acceleration correction
-   // return (Eigen::Vector3f{NWU_transformed[1],NWU_transformed[0],-NWU_transformed[2]}) - Eigen::Vector3f{0, 0, 1};
-
-   return (madgwick.getRotationMatrix() * Eigen::Vector3f{ax,ay,az}) + Eigen::Vector3f{0,0,1};
+   return (madgwick.getRotationMatrix() * Eigen::Vector3f{ax, ay, az}) + Eigen::Vector3f{0, 0, 1};
 };
 
 void Estimator::changeEstimatorState(ESTIMATOR_STATE status, std::string logmessage)
@@ -278,7 +273,6 @@ void Estimator::setApogeeTime(uint32_t time)
 {
    state.apogeeTime = time;
    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Apogee detected at " + std::to_string(time));
-   
 }
 
 const SensorStructs::state_t &Estimator::getData()
@@ -293,4 +287,10 @@ void Estimator::predictLocalizationKF(const float &dt)
    state.acceleration = localizationkf.getAcceleration();
    state.velocity = localizationkf.getVelocity();
    state.position = localizationkf.getPosition();
+}
+
+float Estimator::calculateNutation(const Eigen::Vector3f &euler)
+{
+   //domain of acos is [0,pi] -> tilt angle will always be an absolute value 
+   return acos(cos(euler(1)) * cos(euler(2)));
 }

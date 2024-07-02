@@ -97,9 +97,15 @@ namespace SensorStructs
 
     struct state_t
     {
-
+        //? NOTE these oreintaitons are with respect to the board orientation where
+        //? z points from the bottom to the top of the board, x points towards the SMA connectors,
+        //? and y completes the right hand coordinate system.
         Eigen::Quaternionf orientation; //(quaternion)
-        Eigen::Vector3f eulerAngles;    //(deg) (roll pitch yaw)
+        Eigen::Vector3f eulerAngles;    //(rad) (roll pitch yaw)
+
+        Eigen::Quaternionf rocketOrientation; // (quaternion)
+        Eigen::Vector3f rocketEulerAngles; // (rad)
+
         float tilt; //angle of tilt (nuation?) (rad)
 
         Eigen::Vector3f position;       //(m) relative to callibration site (NED)

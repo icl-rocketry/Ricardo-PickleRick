@@ -65,7 +65,6 @@ private:
     Types::CoreTypes::SystemStatus_t& _systemstatus;
 
     Max_M10S gps;
-    // MS5607 baro;
     DPS310 baro;
     ICM_20608 accelgyro;
     H3LIS331DL accel;

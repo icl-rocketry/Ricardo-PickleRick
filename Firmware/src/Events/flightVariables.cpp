@@ -27,6 +27,7 @@ const std::unordered_map<std::string, memberFunc_t> FlightVariables::function_ma
 
 	//networkcomponentstate
 	//networkcomponentvalue
+	//command id recieved for manual triggers
 	//pyro continuity
 };
 

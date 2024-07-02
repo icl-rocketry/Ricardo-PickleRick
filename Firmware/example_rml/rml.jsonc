@@ -6,13 +6,14 @@
 		"AutoLaunch": false,
 		"PrimaryStorage": "SD1" // is this even useful? as in, how will the device know to read from SD1 if this config is on SD1?
 	},
+	"Radio":
+	{
+		"Frequency":868000000,
+		"Bandwidth":500,
+		"SpreadingFactor":"7"
+	},
 	"Sensors": {
-		"X_AXIS": 0,
-		"Y_AXIS": 1,
-		"Z_AXIS": 2,
-		"X_FLIP": 0,
-		"Y_FLIP": 0,
-		"Z_FLIP": 0
+		
 	},
 	"Networking": {
 		"RoutingTable":

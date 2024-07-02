@@ -217,12 +217,15 @@ void System::loadConfig()
     //enumerate deployers engines controllers and events from config file
     try
     {
+        configureRadio(configDoc.as<JsonObjectConst>()["Radio"]);
+
         sensors.setup(configDoc.as<JsonObjectConst>()["Sensors"]);
         deploymenthandler.setup(configDoc.as<JsonObjectConst>()["Deployers"]);
         enginehandler.setup(configDoc.as<JsonObjectConst>()["Engines"]);
         controllerhandler.setup(configDoc.as<JsonObjectConst>()["Controllers"]);
         eventhandler.setup(configDoc.as<JsonObjectConst>()["Events"]);
-        configureRadio(configDoc.as<JsonObjectConst>()["Radio"]);
+
+        
 
     }
     catch (const std::exception &e)
