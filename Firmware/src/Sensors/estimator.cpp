@@ -55,7 +55,8 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 
             if (_homeSet) // if no home, this falls thru to the no home
             {
-               localizationkf.baroUpdate(raw_sensors.baro.alt - state.baro_ref_alt);
+               
+               baroUpdate(raw_sensors.baro.alt);
                changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_IMU_NO_GPS, "no IMU and GPS");
                predictLocalizationKF(dt_seconds);
                return;
@@ -146,7 +147,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
       }
       else
       {
-         localizationkf.baroUpdate(raw_sensors.baro.alt - state.baro_ref_alt);
+         baroUpdate(raw_sensors.baro.alt);
       }
 
       predictLocalizationKF(dt_seconds);
@@ -293,4 +294,13 @@ float Estimator::calculateNutation(const Eigen::Vector3f &euler)
 {
    //domain of acos is [0,pi] -> tilt angle will always be an absolute value 
    return acos(cos(euler(1)) * cos(euler(2)));
+}
+
+void Estimator::baroUpdate(const float& altitude)
+{
+   if (altitude > BARO_MAX_ALT)
+   {
+      return;
+   }
+   localizationkf.baroUpdate(altitude - state.baro_ref_alt);
 }

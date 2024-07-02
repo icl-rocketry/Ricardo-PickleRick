@@ -6,6 +6,7 @@
 #include <Eigen/Sparse>
 
 
+
 #include "sensorStructs.h"
 
 class LocalizationKF
@@ -282,4 +283,6 @@ private:
         Eigen::Matrix<float, 9, 9> I_KH_temp = (Eigen::Matrix<float, 9, 9>::Identity() - (K * H));
         P = (I_KH_temp * P * I_KH_temp.transpose()) + (K * R * K.transpose());
     };
+
+
 };

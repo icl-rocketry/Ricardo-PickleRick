@@ -68,7 +68,10 @@ class Estimator{
         //POSITION ESTIMATION
         LocalizationKF localizationkf;
 
-        
+        //barometer methods
+        void baroUpdate(const float& altitude);
+        static constexpr float BARO_MAX_ALT = 10000; // 10km max alt 
+
         //private methods
 
         void computeOrientation(const float &gx, const float &gy, const float &gz,
