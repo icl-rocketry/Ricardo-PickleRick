@@ -19,9 +19,6 @@
 [submodule "Firmware/lib/SdFat"]
 	path = Firmware/lib/SdFat
 	url = https://github.com/greiman/SdFat.git
-[submodule "Firmware/lib/--force"]
-	path = Firmware/lib/--force
-	url = git@github.com:icl-rocketry/arduino-LoRa.git
 [submodule "Firmware/lib/arduino-LoRa"]
 	path = Firmware/lib/arduino-LoRa
 	url = git@github.com:icl-rocketry/arduino-LoRa.git
