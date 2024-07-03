@@ -37,8 +37,12 @@ void Preflight::initialize(){
                                            Commands::ID::Calibrate_HighGAccel_Bias,
                                            Commands::ID::Calibrate_Mag_Full,
                                            Commands::ID::Calibrate_Baro,
-                                           Commands::ID::Enter_Debug
-                                            });
+                                           Commands::ID::Enter_Debug,
+                                           Commands::ID::Radio_SetFreq,
+                                           Commands::ID::Radio_SetBW,
+                                           Commands::ID::Radio_SetPower,
+                                           Commands::ID::Radio_SetSF,
+                                           Commands::ID::Radio_SetSYNC});
    
     
 
