@@ -228,7 +228,7 @@ void Commands::ResetOrientationCommand(System& system, const RnpPacketSerialized
 
 void Commands::ResetLocalizationCommand(System& system, const RnpPacketSerialized& packet) 
 {
-	system.estimator.setup();
+	system.estimator.resetLocalization();
 	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
 }
 

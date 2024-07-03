@@ -4,17 +4,26 @@
 		"NetworkLogDestination": 1,
 		"AutoSethome": false,
 		"AutoLaunch": false,
-		"PrimaryStorage": "SD1", // is this even useful? as in, how will the device know to read from SD1 if this config is on SD1?
-		"Orientation":""
+		"PrimaryStorage": "SD1"// is this even useful? as in, how will the device know to read from SD1 if this config is on SD1?
 	},
 	"Radio":
 	{
-		"Frequency":868000000,
-		"Bandwidth":500,
+		"Frequency":868000000, // in hz
+		"Bandwidth":500, // khz
 		"SpreadingFactor":"7"
 	},
 	"Sensors": {
 		
+	},
+	"Estimator":
+	{
+		"Orientation":
+		{
+			"type":"euler", // nb order of operations 
+			"roll":90,
+			"pitch":90,
+			"yaw":90
+		}
 	},
 	"Networking": {
 		"RoutingTable":

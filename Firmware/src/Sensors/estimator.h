@@ -32,6 +32,7 @@ class Estimator{
         Estimator(Types::CoreTypes::SystemStatus_t& systemstatus);   
         
         void setup();
+        void configure(JsonObjectConst conf);
         void update(const SensorStructs::raw_measurements_t& raw_sensors);
 
         void setHome(const SensorStructs::raw_measurements_t& raw_sensors); //records the current position as the launch site
@@ -64,6 +65,16 @@ class Estimator{
         //ORIENTATION ESTIMATION
         Madgwick madgwick; // madgwick filter object
         static constexpr float g = 9.81;
+        /**
+         * @brief Reference orientation of board in the rocket
+         * 
+         */
+        Eigen::Quaternionf refOrientation;
+        /**
+         * @brief Default orientation of board in rocket, this corresponds to roll along x axis, pitch along y axis and yaw along z axis in a RH coordinate frame.
+         * 
+         */
+        const Eigen::Quaternionf defaultOrientation{1,0,0,0};
         
         //POSITION ESTIMATION
         LocalizationKF localizationkf;
@@ -105,4 +116,6 @@ class Estimator{
          * @return float angle of nutation (tilt) [rad]
          */
         float calculateNutation(const Eigen::Vector3f &euler);
+
+        void setRefOrientation(JsonObjectConst conf);
 };

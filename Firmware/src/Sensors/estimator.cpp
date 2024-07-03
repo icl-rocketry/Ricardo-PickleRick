@@ -7,6 +7,7 @@
 
 #include <ArduinoJson.h>
 #include <libriccore/riccorelogging.h>
+#include <librrc/Helpers/jsonconfighelper.h>
 
 #include "Config/types.h"
 #include "Config/systemflags_config.h"
@@ -16,16 +17,23 @@
 Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus) : _systemstatus(systemstatus),
                                                                        update_frequency(2000), // 500Hz update
                                                                        _homeSet(false),
-                                                                       madgwick(0.5f, 0.005f) // beta | gyroscope sample time step (s)
+                                                                       madgwick(0.5f, 0.005f), // beta | gyroscope sample time step (s)
+                                                                       refOrientation(defaultOrientation)
                                                                        {};
 
 void Estimator::setup()
 {
+   resetLocalization();
+   resetOrientation();
+};
+
+void Estimator::configure(JsonObjectConst conf)
+{
    // update board orientation this is applied when converthing back to sensor frame where the orientaiton of sensor matters
    // upside down should be retireved from config file
+   setRefOrientation(conf["Orientation"]);
+}
 
-   localizationkf.reset();
-};
 
 void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 {
@@ -209,8 +217,10 @@ void Estimator::updateOrientation()
    state.orientation = madgwick.getOrientation();
    state.eulerAngles = madgwick.getEulerAngles();
 
-   state.rocketOrientation = {};
-   state.rocketEulerAngles = {};
+   //TODO finish this
+   // state.rocketOrientation = (state.orientation * refOrientation).normalized();
+   // state.rocketEulerAngles = {};
+   // state.rocketOrientation = {};
 
    state.tilt = calculateNutation(state.eulerAngles);
 }
@@ -303,4 +313,57 @@ void Estimator::baroUpdate(const float& altitude)
       return;
    }
    localizationkf.baroUpdate(altitude - state.baro_ref_alt);
+}
+
+void Estimator::setRefOrientation(JsonObjectConst conf)
+{
+   using namespace LIBRRC::JsonConfigHelper;
+   std::string type = getIfContains<std::string>(conf,"type","");
+   try
+   {
+      if (type == "")
+      {
+         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("No Orientation Type Given, using Default!");
+         return;
+      }
+      else if (type == "euler") //extepd format r,p,y
+      {
+         float roll = getIfContains<float>(conf,"roll");
+         float pitch = getIfContains<float>(conf,"pitch");
+         float yaw = getIfContains<float>(conf,"yaw");
+
+      }
+      else if (type == "quaternion") //exepcetd format w,x,y,z
+      {
+         refOrientation = Eigen::Quaternionf({getIfContains<float>(conf,"w"),
+                                              getIfContains<float>(conf,"x"),
+                                              getIfContains<float>(conf,"y"),
+                                              getIfContains<float>(conf,"z")});
+         refOrientation.normalize(); //ensure ref orinetation is normalized
+      }
+      else if (type == "axisAlign")
+      {
+         int x_axis = getIfContains<int>(conf,"x_axis");
+         int y_axis = getIfContains<int>(conf,"y_axis");
+         int z_axis = getIfContains<int>(conf,"z_axis");
+         int x_inv = getIfContains<int>(conf,"x_inv") ? -1 : 1;
+         int y_inv = getIfContains<int>(conf,"y_inv") ? -1 : 1;
+         int z_inv = getIfContains<int>(conf,"z_inv") ? -1 : 1;
+
+      }
+      else
+      {
+         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Illegal Orientation Type Given, using Default!");
+         return;
+      }
+   }
+   catch (const std::exception &e)
+   {
+      RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Exception occured while processing orientation! - " + std::string(e.what()));
+
+      return;
+   }
+
+   RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Ref Orientation updated to:" );
+
 }

@@ -218,14 +218,13 @@ void System::loadConfig()
     try
     {
         configureRadio(configDoc.as<JsonObjectConst>()["Radio"]);
+        estimator.configure(configDoc.as<JsonObjectConst>()["Estimator"]);
 
         sensors.setup(configDoc.as<JsonObjectConst>()["Sensors"]);
         deploymenthandler.setup(configDoc.as<JsonObjectConst>()["Deployers"]);
         enginehandler.setup(configDoc.as<JsonObjectConst>()["Engines"]);
         controllerhandler.setup(configDoc.as<JsonObjectConst>()["Controllers"]);
         eventhandler.setup(configDoc.as<JsonObjectConst>()["Events"]);
-
-        
 
     }
     catch (const std::exception &e)
@@ -387,10 +386,10 @@ void System::configureRadio(JsonObjectConst conf)
     using namespace LIBRRC::JsonConfigHelper;
 
     RadioConfig radioConfig = radio.getConfig(); // get default config
-    radioConfig.frequency = getIfContains<long>("Frequency");
-    radioConfig.sync_byte = getIfContains<int>("SyncByte"); // default 0xf3
-    radioConfig.bandwith = getIfContains<long>("Bandwidth");
-    radioConfig.spreading_factor = getIfContains<int>("SpreadingFactor");
-    radioConfig.txPower = getIfContains<int>("TxPower");
+    radioConfig.frequency = getIfContains<long>(conf,"Frequency");
+    radioConfig.sync_byte = getIfContains<int>(conf,"SyncByte"); // default 0xf3
+    radioConfig.bandwidth = getIfContains<long>(conf,"Bandwidth");
+    radioConfig.spreading_factor = getIfContains<int>(conf,"SpreadingFactor");
+    radioConfig.txPower = getIfContains<int>(conf,"TxPower");
     radio.setConfig(radioConfig);
 }

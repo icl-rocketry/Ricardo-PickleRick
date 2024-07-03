@@ -79,7 +79,7 @@ namespace Commands
         {ID::Exit_Debug, ExitDebugCommand},
         {ID::Free_Ram, FreeRamCommand},
         {ID::Flight_Abort, FlightAbortCommand},
-        {ID:Liftoff_Override, LiftoffOverrideCommand}};
+        {ID::Liftoff_Override, LiftoffOverrideCommand}};
 
 
 
