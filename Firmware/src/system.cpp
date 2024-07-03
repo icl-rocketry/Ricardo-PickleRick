@@ -386,10 +386,12 @@ void System::configureRadio(JsonObjectConst conf)
     using namespace LIBRRC::JsonConfigHelper;
 
     RadioConfig radioConfig = radio.getConfig(); // get default config
+    bool override = getIfContains<bool>(conf,"Override",false);
+    
     radioConfig.frequency = getIfContains<long>(conf,"Frequency");
     radioConfig.sync_byte = getIfContains<int>(conf,"SyncByte"); // default 0xf3
     radioConfig.bandwidth = getIfContains<long>(conf,"Bandwidth");
     radioConfig.spreading_factor = getIfContains<int>(conf,"SpreadingFactor");
     radioConfig.txPower = getIfContains<int>(conf,"TxPower");
-    radio.setConfig(radioConfig);
+    radio.setConfig(radioConfig,override);
 }

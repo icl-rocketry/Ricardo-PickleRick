@@ -42,6 +42,7 @@ void Radio::setup(){
     loraRadio.setPins(csPin,resetPin,dioPin);
     loraRadio.setSPI(_spi);
     //load defaut config and restart the radio
+    loadConf();
     restart();
 };
 
@@ -56,7 +57,7 @@ void Radio::sendPacket(RnpPacket& data)
         return;
     }
     if (dataSize + _currentSendBufferSize > _info.sendBufferSize){
-        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LORA," Lora Send Buffer Overflow!");
+        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LORA,"Lora Send Buffer Overflow!");
         ++_info.txerror;
         _info.sendBufferOverflow = true;
         return;
@@ -91,9 +92,9 @@ void Radio::getPacket(){
 
         std::vector<uint8_t> data(packetSize);
         loraRadio.readBytes(data.data(),packetSize);
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio receive");
-        std::string message = "Packet RSSI: " + std::to_string(loraRadio.packetRssi()) + ", SNR: " + std::to_string(loraRadio.packetSnr());
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(message);
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio receive");
+        // std::string message = "Packet RSSI: " + std::to_string(loraRadio.packetRssi()) + ", SNR: " + std::to_string(loraRadio.packetSnr());
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(message);
         if (_packetBuffer == nullptr){
             return;
         }
@@ -197,6 +198,14 @@ void Radio::setConfig(RadioConfig config)
     restart();
 }
 
+void Radio::setConfig(RadioConfig config, bool overrideNVS)
+{
+    if (overrideNVS)
+    {
+        setConfig(config);
+    }
+}
+
 void Radio::restart(){
     if (!loraRadio.begin(_config.frequency)){
         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LORA,"loraRadio Failed to start!");     
@@ -212,7 +221,7 @@ void Radio::restart(){
     loraRadio.enableCrc();
     loraRadio.setTxPower(_config.txPower,1);
 
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::string("Radio config: ") + std::string("BW = ") + std::to_string(_config.bandwidth) +
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::string("Radio config: ") + std::string("Freq = ") + std::to_string(_config.frequency) + std::string(", BW = ") + std::to_string(_config.bandwidth) +
                     std::string(", SF = ") + std::to_string(_config.spreading_factor) + std::string(", TxPower = ") + std::to_string(_config.txPower)); 
 
 }

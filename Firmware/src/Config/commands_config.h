@@ -45,6 +45,11 @@ namespace Commands
         Enter_Recovery = 105,
         Exit_Debug = 106,
         Flight_Abort = 120,
+        Radio_SetFreq = 200,
+        Radio_SetSF = 201,
+        Radio_SetBW = 202,
+        Radio_SetSYNC = 203,
+        Radio_SetPower = 204,
         Liftoff_Override = 130,
         Free_Ram = 250
     };
@@ -78,6 +83,12 @@ namespace Commands
         {ID::Enter_Recovery, EnterRecoveryCommand},
         {ID::Exit_Debug, ExitDebugCommand},
         {ID::Free_Ram, FreeRamCommand},
+        {ID::Flight_Abort, FlightAbortCommand},
+        {ID::Radio_SetFreq, Radio_SetFreq},
+        {ID::Radio_SetBW, Radio_SetBW},
+        {ID::Radio_SetPower, Radio_SetPower},
+        {ID::Radio_SetSF, Radio_SetSF},
+        {ID::Radio_SetSYNC, Radio_SetSYNC},
         {ID::Flight_Abort, FlightAbortCommand},
         {ID::Liftoff_Override, LiftoffOverrideCommand}};
 

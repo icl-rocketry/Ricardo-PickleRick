@@ -8,6 +8,7 @@
 	},
 	"Radio":
 	{
+		"Override":false,
 		"Frequency":868000000, // in hz
 		"Bandwidth":500, // khz
 		"SpreadingFactor":"7"
