@@ -318,9 +318,9 @@ void Estimator::baroUpdate(const float& altitude)
 void Estimator::setRefOrientation(JsonObjectConst conf)
 {
    using namespace LIBRRC::JsonConfigHelper;
-   std::string type = getIfContains<std::string>(conf,"type","");
    try
    {
+      std::string type = getIfContains<std::string>(conf,"type","");
       if (type == "")
       {
          RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("No Orientation Type Given, using Default!");
