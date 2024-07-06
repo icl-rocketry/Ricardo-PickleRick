@@ -39,6 +39,8 @@ class PCA9534
 
         int digitalRead(uint8_t pin);
 
+        bool setup();
+
         bool alive();
 
     private:

@@ -136,7 +136,7 @@ void System::setupI2C()
 
 void System::setupLocalPyros()
 {
-    if (pyroPinExpander0.alive())
+    if (pyroPinExpander0.setup())
     {
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pyro pin expander alive");
 

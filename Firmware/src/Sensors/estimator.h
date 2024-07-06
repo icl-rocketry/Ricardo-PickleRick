@@ -74,7 +74,7 @@ class Estimator{
          * @brief Default orientation of board in rocket, this corresponds to roll along x axis, pitch along y axis and yaw along z axis in a RH coordinate frame.
          * 
          */
-        const Eigen::Quaternionf defaultOrientation{1,0,0,0};
+        // const Eigen::Quaternionf defaultOrientation(1.0,0.0,0.0,0.0);
         
         //POSITION ESTIMATION
         LocalizationKF localizationkf;
@@ -118,4 +118,6 @@ class Estimator{
         float calculateNutation(const Eigen::Vector3f &euler);
 
         void setRefOrientation(JsonObjectConst conf);
+
+        Eigen::Vector3f quat2rpy(Eigen::Quaternionf quat);
 };

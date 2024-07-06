@@ -97,6 +97,21 @@ bool PCA9534::alive()
     return !(m_wire.endTransmission()); // returns 0 if no error 
 }
 
+bool PCA9534::setup()
+{
+
+    if (!alive())
+    {
+        return false;
+    }
+
+    //write default config
+    writeRegister(OUTPUT_PORT,outputShadow);
+    writeRegister(POLARITY,polarityShadow);
+    writeRegister(CONFIG,configShadow);
+
+
+}
 uint8_t PCA9534::readRegister(uint8_t reg)
 {
 

@@ -18,7 +18,8 @@ Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus) : _systemst
                                                                        update_frequency(2000), // 500Hz update
                                                                        _homeSet(false),
                                                                        madgwick(0.5f, 0.005f), // beta | gyroscope sample time step (s)
-                                                                       refOrientation(defaultOrientation)
+                                                                     //   refOrientation(1.0,0.0,0.0,0.0)
+                                                                        refOrientation(0.707,0.0,0.707,0.0)
                                                                        {};
 
 void Estimator::setup()
@@ -217,12 +218,37 @@ void Estimator::updateOrientation()
    state.orientation = madgwick.getOrientation();
    state.eulerAngles = madgwick.getEulerAngles();
 
-   //TODO finish this
-   // state.rocketOrientation = (state.orientation * refOrientation).normalized();
-   // state.rocketEulerAngles = {};
-   // state.rocketOrientation = {};
+
+   // state.eulerAngles = quat2rpy(state.orientation);
+   // state.rocketOrientation = (refOrientation * state.orientation * refOrientation.inverse()).normalized();
+   // state.rocketEulerAngles = quat2rpy(state.rocketOrientation);
+
+   // float q0 = state.rocketOrientation.w();
+   // float q1 = state.rocketOrientation.x();
+   // float q2 = state.rocketOrientation.y();
+   // float q3 = state.rocketOrientation.z();
+
+   // float roll = atan2f(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2);
+	// float pitch = asinf(-2.0f * (q1*q3 - q0*q2));
+	// float yaw = atan2f(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3);
+   // // state.rocketEulerAngles =  state.rocketOrientation.toRotationMatrix().eulerAngles(0, 1, 2);
+   // state.rocketEulerAngles = Eigen::Vector3f(roll,pitch,yaw);
 
    state.tilt = calculateNutation(state.eulerAngles);
+}
+
+Eigen::Vector3f Estimator::quat2rpy(Eigen::Quaternionf quat)
+{
+   float q0 = state.orientation.w();
+   float q1 = state.orientation.x();
+   float q2 = state.orientation.y();
+   float q3 = state.orientation.z();
+
+   float yaw   = atan2f(2.0 * (q1 * q2 + q0 * q3), q0 * q0 + q1 * q1 - q2 * q2 - q3 * q3);
+   float pitch = -asinf(2.0 * (q1 * q3 - q0 * q2));
+   float roll  = atan2f(2.0 * (q0 * q1 + q2 * q3), q0 * q0 - q1 * q1 - q2 * q2 + q3 * q3);
+
+   return Eigen::Vector3f{roll,pitch,yaw};
 }
 
 void Estimator::updateAngularRates(const float &gx, const float &gy, const float &gz)
@@ -303,7 +329,7 @@ void Estimator::predictLocalizationKF(const float &dt)
 float Estimator::calculateNutation(const Eigen::Vector3f &euler)
 {
    //domain of acos is [0,pi] -> tilt angle will always be an absolute value 
-   return acos(cos(euler(1)) * cos(euler(2)));
+   return acos(cos(euler(1) - (3.1415*0.5)) * cos(euler(2)));
 }
 
 void Estimator::baroUpdate(const float& altitude)
@@ -331,6 +357,12 @@ void Estimator::setRefOrientation(JsonObjectConst conf)
          float roll = getIfContains<float>(conf,"roll");
          float pitch = getIfContains<float>(conf,"pitch");
          float yaw = getIfContains<float>(conf,"yaw");
+  
+         refOrientation = Eigen::AngleAxisf(roll,  Eigen::Vector3f::UnitX())
+                              * Eigen::AngleAxisf(pitch,  Eigen::Vector3f::UnitY())
+                              * Eigen::AngleAxisf(yaw,  Eigen::Vector3f::UnitZ());
+                              
+         refOrientation.normalize(); //ensure ref orinetation is normalized
 
       }
       else if (type == "quaternion") //exepcetd format w,x,y,z
