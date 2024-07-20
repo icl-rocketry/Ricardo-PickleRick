@@ -110,10 +110,27 @@ void Radio::getPacket(){
             return;
         }
 
+        _received=true;
+        _info.prevTimeReceived = millis();
+
         //update source interface
         packet_ptr->header.src_iface = getID();
-        _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer
-        _received=true;
+
+        switch(_info.mode)
+        {
+            case(RADIO_MODE::SYNC):
+            {
+                syncModeReceive_Hook(std::move(packet_ptr));
+                break;
+            }
+            default:
+            {
+                _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer
+                break;
+            }
+        }
+        
+        
 
     }
 }
@@ -135,6 +152,11 @@ void Radio::checkSendBuffer(){
             if (_received || (millis()-_info.prevTimeSent > turnTimeout)){
                 sendFromBuffer();
             }
+            break;
+        }
+        case(RADIO_MODE::SYNC):
+        {
+            syncModeTransmit_Hook();
             break;
         }
         default:
@@ -224,4 +246,32 @@ void Radio::restart(){
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::string("Radio config: ") + std::string("Freq = ") + std::to_string(_config.frequency) + std::string(", BW = ") + std::to_string(_config.bandwidth) +
                     std::string(", SF = ") + std::to_string(_config.spreading_factor) + std::string(", TxPower = ") + std::to_string(_config.txPower)); 
 
+}
+
+void Radio::syncModeTransmit_Hook()
+{
+
+
+}
+
+void Radio::syncModeReceive_Hook(std::unique_ptr<RnpPacketSerialized> packet_ptr)
+{   
+    switch(packet_ptr->header.start_byte)
+    {
+        case (0xAF):
+        {
+            //normal rnp packet
+            break;
+        }
+        case (0xBF):
+        {
+            //sync packet
+            break;
+        }
+
+
+    }
+
+
+    _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer
 }

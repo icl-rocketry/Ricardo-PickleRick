@@ -25,7 +25,8 @@
 enum class RADIO_MODE : uint8_t
 {
     SIMPLE,
-    TURN_TIMEOUT
+    TURN_TIMEOUT,
+    SYNC
 };
 
 struct RadioInterfaceInfo : public RnpInterfaceInfo
@@ -35,6 +36,7 @@ struct RadioInterfaceInfo : public RnpInterfaceInfo
 
     RADIO_MODE mode;
     uint32_t prevTimeSent;
+    uint32_t prevTimeReceived;
 
     int rssi;
     int packet_rssi;
@@ -51,7 +53,6 @@ struct RadioConfig
     int spreading_factor; 
     int txPower; //in dB
 };
-
 class Radio : public RnpInterface
 {
 public:
@@ -189,4 +190,30 @@ private:
     bool _received;
 
     static constexpr RadioConfig defaultConfig{static_cast<long>(911000000),0xF3,static_cast<long>(500E3),7,20};
+
+    enum class SYNCMODE_STATE:uint8_t
+    {
+        DISCONNECTED,
+        CONNECTED
+    };
+    enum class SYNCMODE_MODE:uint8_t
+    {
+        RX,
+        TX
+    };
+    
+    static constexpr uint8_t syncPacketStartByte = 0xBF;
+
+    struct SyncModeInfo{
+        uint32_t guardTime;
+        bool synced;
+        SYNCMODE_STATE state;
+        SYNCMODE_MODE mode;
+
+    };
+
+    void syncModeTransmit_Hook();
+    void syncModeReceive_Hook(std::unique_ptr<RnpPacketSerialized> packet_ptr);
+
+
 };
