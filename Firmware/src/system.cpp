@@ -390,11 +390,11 @@ void System::configureRadio(JsonObjectConst conf)
     {
         bool override = getIfContains<bool>(conf,"Override",false);
 
-        radioConfig.frequency = getIfContains<long>(conf,"Frequency");
-        radioConfig.sync_byte = getIfContains<int>(conf,"SyncByte"); // default 0xf3
-        radioConfig.bandwidth = getIfContains<long>(conf,"Bandwidth");
-        radioConfig.spreading_factor = getIfContains<int>(conf,"SpreadingFactor");
-        radioConfig.txPower = getIfContains<int>(conf,"TxPower");
+        radioConfig.frequency = getIfContains<long>(conf,"Frequency",radioConfig.frequency);
+        radioConfig.sync_byte = getIfContains<int>(conf,"SyncByte",radioConfig.sync_byte); // default 0xf3
+        radioConfig.bandwidth = getIfContains<long>(conf,"Bandwidth",radioConfig.bandwidth);
+        radioConfig.spreading_factor = getIfContains<int>(conf,"SpreadingFactor",radioConfig.spreading_factor);
+        radioConfig.txPower = getIfContains<int>(conf,"TxPower",radioConfig.txPower);
         radio.setConfig(radioConfig,override);
     }
     catch (const std::exception &e)

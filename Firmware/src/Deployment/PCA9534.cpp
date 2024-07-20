@@ -109,6 +109,7 @@ bool PCA9534::setup()
     writeRegister(OUTPUT_PORT,outputShadow);
     writeRegister(POLARITY,polarityShadow);
     writeRegister(CONFIG,configShadow);
+    return true;
 
 
 }

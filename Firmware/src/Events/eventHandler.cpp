@@ -43,8 +43,9 @@ void EventHandler::setup(JsonArrayConst event_config)
         //verify action ID 
         checkConfigId(eventID,jsonEvent);
 
-        std::string eventName = getIfContains<std::string>(jsonEvent,"name","Unnamed");
-
+        std::string eventName = getIfContains<std::string>(jsonEvent,"name",std::string("Unnamed"));
+    
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(eventName);
         bool fire_mode = getIfContains<bool>(jsonEvent,"single_fire",true); //default true
 
         uint16_t actionCooldown = getIfContains<uint16_t>(jsonEvent,"cooldown",1000); //default 1 second cooldown

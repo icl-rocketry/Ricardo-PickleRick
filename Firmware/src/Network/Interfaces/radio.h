@@ -188,5 +188,5 @@ private:
     static constexpr int turnTimeout = 250;
     bool _received;
 
-    static constexpr RadioConfig defaultConfig{static_cast<long>(868E6),0xF3,static_cast<long>(500E3),7,20};
+    static constexpr RadioConfig defaultConfig{static_cast<long>(911000000),0xF3,static_cast<long>(500E3),7,20};
 };
