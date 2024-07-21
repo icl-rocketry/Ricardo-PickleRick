@@ -34,6 +34,8 @@ _received(true)
     _info.MTU = 256;
     _info.sendBufferSize = 2048;
     _info.mode=mode;
+    _info.prevTimeSent = 0;
+    _info.prevTimeReceived = 0;
 };
 
 
@@ -42,7 +44,7 @@ void Radio::setup(){
     loraRadio.setPins(csPin,resetPin,dioPin);
     loraRadio.setSPI(_spi);
     //load defaut config and restart the radio
-    loadConf();
+    // loadConf();
     restart();
 };
 
@@ -77,6 +79,7 @@ void Radio::update(){
     getPacket();
     checkSendBuffer();
     checkTx();
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(loraRadio.readRegister(0x1f)));
 }
 
 
@@ -92,7 +95,7 @@ void Radio::getPacket(){
 
         std::vector<uint8_t> data(packetSize);
         loraRadio.readBytes(data.data(),packetSize);
-        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio receive");
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio receive");
         // std::string message = "Packet RSSI: " + std::to_string(loraRadio.packetRssi()) + ", SNR: " + std::to_string(loraRadio.packetSnr());
         // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(message);
         if (_packetBuffer == nullptr){
@@ -129,6 +132,9 @@ void Radio::getPacket(){
                 break;
             }
         }
+
+        //place radio back into rx mode
+        loraRadio.parsePacket();
         
         
 
@@ -136,21 +142,27 @@ void Radio::getPacket(){
 }
 
 void Radio::checkSendBuffer(){
-    if (_sendBuffer.size() == 0){
-        return; // exit if nothing in the buffer
-    }
+    // if (_sendBuffer.size() == 0){
+    //     return; // exit if nothing in the buffer
+    // }
     
     switch(_info.mode)
     {
         case(RADIO_MODE::SIMPLE):
-        {
-            sendFromBuffer();
+        {  
+            if (_sendBuffer.size())
+            {
+                sendFromBuffer();
+            }
+            
             break;
         }
         case(RADIO_MODE::TURN_TIMEOUT):
         {
-            if (_received || (millis()-_info.prevTimeSent > turnTimeout)){
-                sendFromBuffer();
+            if (_sendBuffer.size()){
+                if (_received || (millis()-_info.prevTimeSent > turnTimeout)){
+                    sendFromBuffer();
+                }
             }
             break;
         }
@@ -180,7 +192,7 @@ void Radio::sendFromBuffer()
 
 size_t Radio::send(std::vector<uint8_t> &data){
     if (loraRadio.beginPacket()){
-        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Send");
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Send");
         loraRadio.write(data.data(), data.size());
         loraRadio.endPacket(true); // asynchronous send 
         _txDone = false;
@@ -250,28 +262,89 @@ void Radio::restart(){
 
 void Radio::syncModeTransmit_Hook()
 {
+    if (syncmodeinfo.mode == SYNCMODE_MODE::RX && 
+        millis() - _info.prevTimeReceived < syncmodeinfo.guardTime)
+    {
+        return;
+    }
+
+    if (millis() - _info.prevTimeReceived > syncmodeinfo.connectionTimeout)
+    {
+        syncmodeinfo.state = SYNCMODE_STATE::DISCONNECTED;
+    }
+
+    if (_sendBuffer.size())
+    {
+        sendFromBuffer();
+    }
+    else //send a sync packet
+    { 
+        //construct sync packet
+        //! using rnp pakcet for ease here but could be a future optimization
+        //create empty packet with empty header -> default values
+        RnpPacket syncPacket(RnpHeader{});
+        //update start byte to refelct different protocol
+        syncPacket.header.start_byte = syncPacketStartByte;
+
+        std::vector<uint8_t> serializedSyncPacket;
+        syncPacket.serialize(serializedSyncPacket);
+        
+        switch (syncmodeinfo.state)
+        {
+            case (SYNCMODE_STATE::DISCONNECTED):
+            {
+                //in disconnected state we beacon the sync messages wrt the beacon delta 
+                if ( millis() - _info.prevTimeSent > syncmodeinfo.beaconDelta)
+                {
+                    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Beacon Send");
+                    send(serializedSyncPacket);
+                }
+                break;
+            }
+            case (SYNCMODE_STATE::CONNECTED):
+            {
+                if ( millis() - _info.prevTimeSent > 100)
+                {
+                    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Sync Send");
+                    send(serializedSyncPacket);
+                }
+                break;
+            }
+        }
+        loraRadio.parsePacket();
+    }
+    // place driver in receive mode
+    syncmodeinfo.mode = SYNCMODE_MODE::RX;
+    //force driver back into rx mode?
 
 
 }
 
 void Radio::syncModeReceive_Hook(std::unique_ptr<RnpPacketSerialized> packet_ptr)
 {   
+    //we have received so place driver in transmit mode
+    syncmodeinfo.mode = SYNCMODE_MODE::TX;
+    //update state to connected
+    syncmodeinfo.state = SYNCMODE_STATE::CONNECTED;
+
     switch(packet_ptr->header.start_byte)
     {
         case (0xAF):
         {
             //normal rnp packet
+            _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer
             break;
         }
         case (0xBF):
         {
+            RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Sync Receive");
             //sync packet
+            //dont push sync packets to packet buffer, just dump them yea
             break;
         }
 
 
     }
-
-
-    _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer
+   
+    
 }

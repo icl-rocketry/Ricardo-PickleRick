@@ -189,7 +189,7 @@ private:
     static constexpr int turnTimeout = 250;
     bool _received;
 
-    static constexpr RadioConfig defaultConfig{static_cast<long>(911000000),0xF3,static_cast<long>(500E3),7,20};
+    static constexpr RadioConfig defaultConfig{static_cast<long>(868E6),0xF3,static_cast<long>(500E3),7,20};
 
     enum class SYNCMODE_STATE:uint8_t
     {
@@ -205,15 +205,20 @@ private:
     static constexpr uint8_t syncPacketStartByte = 0xBF;
 
     struct SyncModeInfo{
-        uint32_t guardTime;
-        bool synced;
+        uint32_t guardTime; // in ms
+        uint32_t beaconDelta; // in ms
+        uint32_t connectionTimeout;
         SYNCMODE_STATE state;
         SYNCMODE_MODE mode;
+        
 
     };
+    //some defaults
+    SyncModeInfo syncmodeinfo{500,1000,10000,SYNCMODE_STATE::DISCONNECTED,SYNCMODE_MODE::RX};
 
     void syncModeTransmit_Hook();
     void syncModeReceive_Hook(std::unique_ptr<RnpPacketSerialized> packet_ptr);
 
+    
 
 };
