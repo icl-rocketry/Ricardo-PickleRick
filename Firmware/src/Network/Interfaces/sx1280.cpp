@@ -1,5 +1,12 @@
 #include "sx1280.h"
 
+// SPI
+#define LORA_DEFAULT_SPI           SPI
+#define LORA_DEFAULT_SPI_FREQUENCY 8E6 
+#define LORA_DEFAULT_SS_PIN        10
+#define LORA_DEFAULT_RESET_PIN     9
+#define LORA_DEFAULT_DIO0_PIN      2
+
 // Register Address Map
 
 #define RxGain 0x891
@@ -37,23 +44,110 @@
 #define CadDetPeak 0x942
 #define LoraSyncWord 0x944
 
+// IRQ Source Bits
 
-// Modes
+#define TxDone 0
+#define RxDone 1
+#define SyncWordValid 2
+#define SyncWordError 3
+#define HeaderValid 4
+#define HeaderError 5
+#define CrcError 6
+#define RangingSlaveResponseDone 7
+#define RangingSlaveRequestDiscard 8
+#define RangingMasterResultValid 9
+#define RangingMasterTimeout 10
+#define RangingSlaveRequestValid 11
+#define CadDone 12
+#define CadDetected 13
+#define RxTxTimeout 14
+#define PreambleDetected 15
+#define AdvancedRangingDone 15
+
+
+sx1280::sx1280() :
+  _spiSettings(LORA_DEFAULT_SPI_FREQUENCY, MSBFIRST, SPI_MODE0),
+  _spi(&LORA_DEFAULT_SPI),
+  _ss(LORA_DEFAULT_SS_PIN), _reset(LORA_DEFAULT_RESET_PIN), _dio0(LORA_DEFAULT_DIO0_PIN),
+  _frequency(0),
+  _packetIndex(0),
+  _implicitHeaderMode(0),
+  _onReceive(NULL),
+  _onCadDone(NULL),
+  _onTxDone(NULL)
+{}
+
+
+void sx1280::beginSPI(){
+
+  // setup pins
+  pinMode(_ss, OUTPUT);
+  // set SS high
+  digitalWrite(_ss, HIGH);
+
+  if (_reset != -1) {
+    pinMode(_reset, OUTPUT);
+
+    // perform reset
+    digitalWrite(_reset, LOW);
+    delay(10);
+    digitalWrite(_reset, HIGH);
+    delay(10);
+  }
+
+  // start SPI
+  _spi->begin();
+}
 
 #define SleepConfig0 0 //RAM flushed
 #define SleepConfig1 1 //RAM retained
 #define SleepConfig2 2 //Data buffer retained
 
-#define STDBY_RC 0 //Device running on RC 13MHz, set STDBY_RC mode
-#define STDBY_X0SC 1 //Device running on XTAL 52MHz, set STDBY_XOSC mode
+void sx1280::SetSleep(int mode){
 
-
-
-sx1280::sx1280() {
-  // Constructor
-
-
+  singleTransfer(0x84, mode);
 }
+
+void sx1280::endSPI()
+{
+  // put in sleep mode
+  SetSleep(SleepConfig2);
+
+  // stop SPI
+  _spi->end();
+}
+
+void sx1280::setPins(int ss, int reset, int dio0)
+{
+  _ss = ss;
+  _reset = reset;
+  _dio0 = dio0;
+}
+
+void sx1280::setSPI(SPIClass& spi)
+{
+  _spi = &spi;
+}
+
+
+int sx1280::parsePacket()
+{
+  rxSetup();
+  GetRxBufferStatus();
+  return static_cast<int>(_rxPayloadLength);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void sx1280::GetStatus(){
@@ -70,14 +164,16 @@ void sx1280::WriteRegister(uint16_t address, uint32_t value) {
 
 void sx1280::ReadRegister(uint16_t address) {
   
-    singleTransfer(0x19, address, 0x00);  
+    spiReturn = singleTransfer(0x19, address, 0x00,0x00);
+    _register = spiReturn[4];
+
 }
 
-void sx1280::WriteBuffer(uint8_t &offset, uint32_t value){
+void sx1280::WriteBuffer(uint8_t &offset, std::vector<uint8_t> &payload){
 
-    singleTransfer(0x1A, offset, value);
-
-    // offset loops back to 0 after 255
+    singleTransfer(0x1A, offset, payload);
+    
+    // offset loops back to 0 after 255 (FIX)
     if (_offset < 255){
         _offset++;
     }
@@ -89,15 +185,13 @@ void sx1280::WriteBuffer(uint8_t &offset, uint32_t value){
 
 void sx1280::ReadBuffer(uint8_t &offset){
 
-    singleTransfer(0x1B, offset, 0x00);
-
+    spiReturn = singleTransfer(0x1B, offset, 0x00,0x00);
+    _buffer = spiReturn[3];
 }
 
 
-void sx1280::SetSleep(int mode){
-
-  singleTransfer(0x84, mode);
-}
+#define STDBY_RC 0 //Device running on RC 13MHz, set STDBY_RC mode
+#define STDBY_X0SC 1 //Device running on XTAL 52MHz, set STDBY_XOSC mode
 
 void sx1280::SetStandby(int mode){
 
@@ -111,30 +205,63 @@ void sx1280::SetFs(){
   singleTransfer(0xC1);
 }
 
-void sx1280::SetTx(){
 
-    ClearIqrStatus();
+// Timeout Step  Timeout duration = periodBase*periodBaseCount
+#define periodBase0 0x00 //15.625us
+#define periodBase1 0x01 //62.5us
+#define periodBase2 0x02 //1ms
+#define periodBase3 0x03 //4ms
 
-    singleTransfer(0x83, 0x00, 0x00, 0x00);
+// Timeout Mode
+#define notimeout 0x0000 
+#define timeout 0x0001
+#define rxContinous 0xFF //Device remains in Rx mode when sending two bytes
+
+void sx1280::SetTx(int periodBase){
+
+    ClearIrqStatus(0xFF);
+
+    singleTransfer(0x83, periodBase, 0x00, 0x00);
 }
 
-void sx1280::SetRx(){
+void sx1280::SetRx(int periodBase, int timeoutMode){
 
-  ClearIqrStatus();
+  ClearIrqStatus(0x01);
+  ClearIrqStatus(0xE);
 
-  singleTransfer(0x82, 0x03, 0x00, 0x00);
+  switch(timeoutMode){
+
+    case(notimeout):{
+      singleTransfer(0x82,periodBase,0x00,0x00);
+    }
+
+    case(timeout):{
+      singleTransfer(0x82,periodBase,0x00,0x01);
+    }
+
+    case(rxContinous):{
+      singleTransfer(0x82,periodBase,0xFF,0xFF);
+    }
+
+  }
 }
 
-void sx1280::SetRxDutyCycle(){
 
-  singleTransfer(0x94, 0x03, 0x00, 0x00);
+
+void sx1280::SetRxDutyCycle(int periodBase){
+
+  singleTransfer(0x94, periodBase, 0x00, 0xAF,0x00,0xFA);
 }
+ 
+
+
 
 void sx1280::SetLongPreamble(){
 
   singleTransfer(0x9B,0x01);
 
 }
+
 
 void sx1280::SetCad(){
 
@@ -159,86 +286,183 @@ void sx1280::SetAutoTx(){
   singleTransfer(0x98, 0x00, 0x5C);
 }
 
-void sx1280::SetAutoFs(){
 
-  singleTransfer(0x9E, 0x00); //Enable- 0x01, Disable- 0x00
+
+
+#define autoFsDisable 0x00
+#define autoFsEnable 0x01
+
+void sx1280::SetAutoFs(int enable){
+
+  singleTransfer(0x9E, enable); //Enable- 0x01, Disable- 0x00
 }
 
-void sx1280::SetPacketType(){
 
-  singleTransfer(0x8A, 0x01); // 0x01 for LoRa, 0x02 for Ranging
+
+
+#define Packet_Type_Lora 0x01
+#define Packet_Type_Ranging 0x02
+
+void sx1280::SetPacketType(int packetType){
+
+  singleTransfer(0x8A, packetType); // 0x01 for LoRa, 0x02 for Ranging
 }
+
+
 
 
 void sx1280:: GetPacketType(){
 
-  singleTransfer(0x03, 0x00, 0x00);
+  spiReturn = singleTransfer(0x03, 0x00, 0x00);
+  _packetType = spiReturn[2];
 }
 
-void sx1280::SetRfFrequency(){
 
-  singleTransfer(0x86, 0xB8, 0x9D, 0x89);
-}
+void sx1280::SetRfFrequency(uint32_t frequency){
 
-void sx1280::SetTxParams(){
+  singleTransfer(0x86, frequency);
 
-  singleTransfer(0x8E, 0x1F, 0xE0);  //0x1F (31) for 13dBm, (between 0 - 31)
+    _frequency = frequency;
 
-}
+  uint64_t frf = ((uint64_t)frequency << 19) / 32000000;
 
-void sx1280::SetCadParams(){
-
-  singleTransfer(0x88, 0x80); 
+  singleTransfer((uint8_t)(frf >> 16), (uint8_t)(frf >> 8),(uint8_t)(frf >> 0));
 
 }
 
-void sx1280::SetBufferBaseAddress(){
+#define RADIO_RAMP_02_US 0x00 
+#define RADIO_RAMP_04_US 0x20 
+#define RADIO_RAMP_06_US 0x40 
+#define RADIO_RAMP_08_US 0x60
+#define RADIO_RAMP_10_US 0x80 
+#define RADIO_RAMP_12_US 0xA0 
+#define RADIO_RAMP_16_US 0xC0
+#define RADIO_RAMP_20_US 0xE0 
 
-  singleTransfer(0x8F, 0x80, 0x00); // (opcode, txBaseAdress, rxBaseAdress)
+void sx1280::SetTxParams(int power, int rampTime){
+
+  singleTransfer(0x8E, power +18, rampTime);  //0x1F (31) for 13dBm, (between 0 - 31)
+}   
+
+// Channel Activity Detection symbols used (higher false detection risk for 1 and 2 symbols)
+#define LORA_CAD_01_SYMBOL 0x00 //1
+#define LORA_CAD_02_SYMBOLS 0x20 //2
+#define LORA_CAD_04_SYMBOLS 0x40 //4
+#define LORA_CAD_08_SYMBOLS 0x60 //8
+#define LORA_CAD_16_SYMBOLS 0x80 //16
+
+void sx1280::SetCadParams(uint8_t cadSymbolNum){
+
+  singleTransfer(0x88, cadSymbolNum); 
+
 }
 
-void sx1280::SetModulationParams(){
+void sx1280::SetBufferBaseAddress(uint8_t txBaseAddress, uint8_t rxBaseAddress){
 
-  singleTransfer(0x8B,0x70,0x0A,0x01);//(opCode,SF,BW,coding rate)
+  singleTransfer(0x8F, txBaseAddress, rxBaseAddress);
 }
 
-void sx1280::SetPacketParams(){
 
-  singleTransfer(0x8C,0x0C,0x00,0x80,0x20,0x40,0x00,0x00); //(opCode,PreambleLength ,HeaderType, Payload Length, CRC, InvertIq, notUsed, notUsed)
+// Modulation Parameters
+
+//Spreading Factor
+#define LORA_SF_5 0x50 //5
+#define LORA_SF_6 0x60 //6
+#define LORA_SF_7 0x70 //7
+#define LORA_SF_8 0x80 //8
+#define LORA_SF_9 0x90 //9
+#define LORA_SF_10 0xA0 //10
+#define LORA_SF_11 0xB0 //11
+#define LORA_SF_12 0xC0 //12
+
+//Bandwidth
+#define LORA_BW_1600 0x0A //1625.0
+#define LORA_BW_800 0x18 //812.5
+#define LORA_BW_400 0x26 //406.25
+#define LORA_BW_200 0x34 //203.125
+
+// Coding Rate (*Interleaving increases robustness to burst interference and doppler events)
+#define LORA_CR_4_5 0x01 //4/5
+#define LORA_CR_4_6 0x02 //4/6
+#define LORA_CR_4_7 0x03 //4/7
+#define LORA_CR_4_8 0x04 //4/8
+#define LORA_CR_LI_4_5 0x05 //4/5*
+#define LORA_CR_LI_4_6 0x06 //4/6*
+#define LORA_CR_LI_4_8 0x07 //4/8*
+
+void sx1280::SetModulationParams(uint8_t modParam1, uint8_t modParam2, uint8_t modParam3){
+
+  singleTransfer(0x8B,modParam1,modParam2,modParam3);
+}
+
+// packetParam1: Preamble Length
+
+
+//packetParam2: Header Type
+#define EXPLICIT_HEADER 0x00 //EXPLICIT HEADER
+#define IMPLICIT_HEADER 0x80 //IMPLICIT HEADER
+
+//packetParam3: Payload Length
+#define PAYLOAD_LENGTH 0x12 //Payload Length 
+
+//packetParam4: CRC Enable
+#define CRC_ENABLE 0x20 //CRC ENABLE
+#define CRC_DISABLE 0x00 //CRC DISABLE
+
+//packetParam5: IQ Inversion
+#define LORA_IQ_INVERTED 0x00 //Swapped IQ
+#define LORA_IQ_STD 0x40 //Standard IQ
+
+void sx1280::SetPacketParams(uint8_t packetParam1, uint8_t packetParam2, uint8_t packetParam3, uint8_t packetParam4, uint8_t packetParam5){
+
+  singleTransfer(0x8C,packetParam1,packetParam2, packetParam3, packetParam4, packetParam5, 0x00, 0x00);
+  
+  if(packetParam2 == EXPLICIT_HEADER){_implicitHeaderMode = 1;}
+  else{_implicitHeaderMode = 0;};
 }
 
 void sx1280::GetRxBufferStatus(){
 
-  singleTransfer(0x17, 0x00,0x00,0x00);
+  spiReturn = singleTransfer(0x17, 0x00,0x00,0x00);
+  _rxPayloadLength = spiReturn[2];
+  _rxStartBufferPointer = spiReturn[3];
 
 }
 
 void sx1280::GetPacketStatus(){
 
-  singleTransfer(0x1D,0x00,0x00,0x00,0x00,0x00,0x00); //(opCode, status, rssi sync, snrPkt, -, -, -)
+  spiReturn = singleTransfer(0x1D,0x00,0x00,0x00,0x00,0x00,0x00); //(opCode, status, rssi sync, snrPkt, -, -, -)
+  _rssiSync = spiReturn[2];
+  snrPkt = spiReturn[3];
 
+} 
+
+
+int8_t sx1280::GetRssiInst(){
+
+    spiReturn = singleTransfer(0x1F,0x00,0x00);
+    _rssiInst = spiReturn[2];
+    return _rssiInst;
 }
 
-void sx1280::GetRssiInst(){
-
-    singleTransfer(0x1F,0x00,0x00);
-}
-
-void sx1280::SetDioIqrParams(){
+void sx1280::SetDioIrqParams(){
 
   singleTransfer(0x8D,0x40,0x23,0x00,0x01,0x00,0x02,0x40,0x20); // Change later for required params
 
 }
 
-void sx1280::GetIqrStatus(){
+void sx1280::GetIrqStatus(){
 
-  singleTransfer(0x15, 0x00, 0x00, 0x00);
+  spiReturn = singleTransfer(0x15, 0x00, 0x00, 0x00);
+  _irqstatus = static_cast<uint16_t>(spiReturn[2]) << 8 | static_cast<uint16_t>(spiReturn[3]);
 
 }
 
-void sx1280::ClearIqrStatus(){
+void sx1280::ClearIrqStatus(uint16_t _irqFlag){
 
-  singleTransfer(0x97,0XFF, 0xFF);
+  uint8_t irqbyte1 = static_cast<uint8_t>(_irqFlag >> 8);
+  uint8_t irqbyte2 = static_cast<uint8_t>(_irqFlag & 0xFF);
+  singleTransfer(0x97,irqbyte1, irqbyte2);
 
 }
 
@@ -265,60 +489,43 @@ void sx1280::SetAdvancedRanging(){
 
 }
 
+// LORA TRANSCEIVER OPERATION
+
 void sx1280::setup(){
 
   SetStandby(STDBY_RC);
-  SetPacketType(); //preset to lora
-  SetRfFrequency(); //preset to 2.4GHz
-
-
-
-}
-
-
-
-// LORA TRANSCEIVER OPERATION
-
-void sx1280::settings(){
-
-  SetStandby(STDBY_RC);
-  SetPacketType();  //set to lora
-  SetRfFrequency(); //set to 2.4GHz
-  SetBufferBaseAddress();
-  SetModulationParams();
+  SetPacketType(Packet_Type_Lora);  //set to lora
+  SetRfFrequency(2400000000); //set to 2.4GHz
+  SetBufferBaseAddress(_txBaseAddress,_rxBaseAddress);
+  SetModulationParams(LORA_SF_7,LORA_BW_800,LORA_CR_4_5);
   WriteRegister(0x925,0x37);
-  SetPacketParams();  
+  SetPacketParams(0x0C, IMPLICIT_HEADER ,PAYLOAD_LENGTH,CRC_ENABLE,LORA_IQ_STD);  
 
 }
 
-void sx1280::txSetup(){
+void sx1280::txSetup(std::vector<uint8_t> &data){
 
-  SetTxParams();
-  WriteBuffer(_offset,_data);
-  
+  SetTxParams(13,RADIO_RAMP_02_US);
+  WriteBuffer(_offset,data);
+  SetDioIrqParams();
+  SetTx(periodBase2);
+  ClearIrqStatus(0xFFFF);
+
+}
+
+void sx1280::rxSetup(){
+
+  SetDioIrqParams();
+  SetRx(periodBase2,rxContinous);
+  GetPacketStatus();
+  ClearIrqStatus(0XFFFF);
+  GetRxBufferStatus();
+  ReadBuffer(_offset);
 
 }
 
 
 
-template <typename T, typename... Args> void sx1280::singleTransfer(T first, Args... args){
-
-  digitalWrite(_ss, LOW);
-
-  _spi->beginTransaction(_spiSettings);
-
-   for(uint8_t i = 0; i<size(first); i++){
-      _spi->transfer((first >> (i*8)) & 0xFF);
-    }
-
-   for(uint8_t j = 0; j<size(args...); j++){
-      _spi->transfer((args... >> (j*8)) & 0xFF);
-    }
-
-  _spi->endTransaction();
-  digitalWrite(_ss, HIGH);
-
-}
 
 
   

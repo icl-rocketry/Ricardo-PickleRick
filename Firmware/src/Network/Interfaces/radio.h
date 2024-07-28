@@ -21,6 +21,8 @@
 #include <Config/types.h>
 #include <Config/systemflags_config.h>
 
+#include "sx1280.h"
+
 
 enum class RADIO_MODE : uint8_t
 {
@@ -57,7 +59,6 @@ class Radio : public RnpInterface
 public:
     Radio(SPIClass &spi, int cs,int reset, int dio, Types::CoreTypes::SystemStatus_t &systemstatus, RADIO_MODE mode = RADIO_MODE::SIMPLE,  uint8_t id = 2, std::string name = "Radio");
     void setup() override;
-
     void sendPacket(RnpPacket &data) override;
     void update() override;
     const RnpInterfaceInfo *getInfo() override;
@@ -160,7 +161,8 @@ public:
     };
 
 private:
-    LoRaClass loraRadio;
+    // LoRaClass loraRadio;
+    sx1280 radio;         
 
     RadioConfig _config;
 

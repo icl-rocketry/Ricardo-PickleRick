@@ -1,5 +1,5 @@
 #include "radio.h"
-
+#include "sx1280.h"
 
 #include <libriccore/riccorelogging.h>
 
@@ -39,8 +39,8 @@ _received(true)
 
 void Radio::setup(){
     //setup loraRadio module
-    loraRadio.setPins(csPin,resetPin,dioPin);
-    loraRadio.setSPI(_spi);
+    radio.setPins(csPin,resetPin,dioPin);
+    radio.setSPI(_spi);
     //load defaut config and restart the radio
     loadConf();
     restart();
@@ -86,12 +86,12 @@ void Radio::getPacket(){
         return;
     }
 
-    int packetSize = loraRadio.parsePacket(); // put radio back into single receive mode and check for packets
+    int packetSize = radio.parsePacket(); // put radio back into single receive mode and check for packets
 
     if (packetSize){
 
         std::vector<uint8_t> data(packetSize);
-        loraRadio.readBytes(data.data(),packetSize);
+        radio.readBytes(data.data(),packetSize);
         // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio receive");
         // std::string message = "Packet RSSI: " + std::to_string(loraRadio.packetRssi()) + ", SNR: " + std::to_string(loraRadio.packetSnr());
         // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(message);
@@ -157,36 +157,41 @@ void Radio::sendFromBuffer()
 }
 
 size_t Radio::send(std::vector<uint8_t> &data){
-    if (loraRadio.beginPacket()){
-        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Send");
-        loraRadio.write(data.data(), data.size());
-        loraRadio.endPacket(true); // asynchronous send 
-        _txDone = false;
-        _info.prevTimeSent = millis();
-        _received = false; // used for turn_timeout mode
-        return data.size();
-    }else{
-        return 0;
-    }
+
+    uint8_t offset = radio.getoffset();
+    radio.txSetup(data);
+
+    // if (loraRadio.beginPacket()){
+    //     // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Send");
+    //     loraRadio.write(data.data(), data.size());
+    //     loraRadio.endPacket(true); // asynchronous send 
+    //     _txDone = false;
+    //     _info.prevTimeSent = millis();
+    //     _received = false; // used for turn_timeout mode
+    //     return data.size();
+    // }else{
+    //     return 0;
+    // }
+    return data.size();
 }
 
 void Radio::checkTx(){
-    if (_txDone){
-        return;
-    }
-    if (!loraRadio.isTransmitting()){
-        _txDone = true;
-    }
+    // if (_txDone){
+    //     return;
+    // }
+    // if (!loraRadio.isTransmitting()){
+    //     _txDone = true;
+    // }
 }
 
 
 const RnpInterfaceInfo* Radio::getInfo()
 {
-     _info.rssi = loraRadio.rssi();
-     _info.packet_rssi = loraRadio.packetRssi();
-     _info.snr = loraRadio.packetSnr();  
-     _info.packet_snr = loraRadio.packetSnr();
-     _info.freqError = loraRadio.packetFrequencyError();
+     _info.rssi = radio.GetRssiInst();
+     _info.packet_rssi = radio.GetRssiInst();// CHANGE LATER FOR PACKET RSSI
+     _info.snr = radio.GetSnrPkt();  //CHANGE LATER FOR RADIO SNR
+     _info.packet_snr = radio.GetSnrPkt();
+     _info.freqError = radio.GetSnrPkt();//Fix Later 
      return &_info;
 };
 
@@ -207,21 +212,21 @@ void Radio::setConfig(RadioConfig config, bool overrideNVS)
 }
 
 void Radio::restart(){
-    if (!loraRadio.begin(_config.frequency)){
-        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LORA,"loraRadio Failed to start!");     
-        return;
-    };
-    if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_LORA)){
-        _systemstatus.deleteFlag(SYSTEM_FLAG::ERROR_LORA);
-    }
+    // if (!radio.beginSPI){
+    //     _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LORA,"loraRadio Failed to start!");     
+    //     return;
+    // };
+    // if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_LORA)){
+    //     _systemstatus.deleteFlag(SYSTEM_FLAG::ERROR_LORA);
+    // }
     
-    loraRadio.setSyncWord(_config.sync_byte);
-    loraRadio.setSignalBandwidth(_config.bandwidth);
-    loraRadio.setSpreadingFactor(_config.spreading_factor);
-    loraRadio.enableCrc();
-    loraRadio.setTxPower(_config.txPower,1);
+    // // loraRadio.setSyncWord(_config.sync_byte);
+    // loraRadio.setSignalBandwidth(_config.bandwidth);
+    // loraRadio.setSpreadingFactor(_config.spreading_factor);
+    // loraRadio.enableCrc();
+    // loraRadio.setTxPower(_config.txPower,1);
 
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::string("Radio config: ") + std::string("Freq = ") + std::to_string(_config.frequency) + std::string(", BW = ") + std::to_string(_config.bandwidth) +
-                    std::string(", SF = ") + std::to_string(_config.spreading_factor) + std::string(", TxPower = ") + std::to_string(_config.txPower)); 
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::string("Radio config: ") + std::string("Freq = ") + std::to_string(_config.frequency) + std::string(", BW = ") + std::to_string(_config.bandwidth) +
+    //                 std::string(", SF = ") + std::to_string(_config.spreading_factor) + std::string(", TxPower = ") + std::to_string(_config.txPower)); 
 
 }
