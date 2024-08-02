@@ -228,5 +228,6 @@ void Radio::restart(){
 
     // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::string("Radio config: ") + std::string("Freq = ") + std::to_string(_config.frequency) + std::string(", BW = ") + std::to_string(_config.bandwidth) +
     //                 std::string(", SF = ") + std::to_string(_config.spreading_factor) + std::string(", TxPower = ") + std::to_string(_config.txPower)); 
-
+    radio.beginSPI();
+    radio.setup();
 }

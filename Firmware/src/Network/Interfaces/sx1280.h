@@ -7,6 +7,15 @@
 #include <cmath>
 #include <type_traits>
 
+// SPI
+#define LORA_DEFAULT_SPI           SPI
+#define LORA_DEFAULT_SPI_FREQUENCY 8E6 
+#define LORA_DEFAULT_SS_PIN        10
+#define LORA_DEFAULT_RESET_PIN     9
+#define LORA_DEFAULT_DIO0_PIN      2
+
+
+
 class sx1280 :public Stream{
 public:
 
@@ -20,7 +29,7 @@ sx1280();
 
 void beginSPI();
 void endSPI();
-void setPins(int ss, int reset, int dio0);
+void setPins(int ss = LORA_DEFAULT_SS_PIN, int reset = LORA_DEFAULT_RESET_PIN, int dio0 = LORA_DEFAULT_DIO0_PIN);
 void setSPI(SPIClass& spi);
 void GetStatus(); //Not needed for SPI interface
 

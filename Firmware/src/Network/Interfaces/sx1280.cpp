@@ -1,12 +1,5 @@
 #include "sx1280.h"
 
-// SPI
-#define LORA_DEFAULT_SPI           SPI
-#define LORA_DEFAULT_SPI_FREQUENCY 8E6 
-#define LORA_DEFAULT_SS_PIN        10
-#define LORA_DEFAULT_RESET_PIN     9
-#define LORA_DEFAULT_DIO0_PIN      2
-
 // Register Address Map
 
 #define RxGain 0x891
@@ -40,7 +33,7 @@
 
 #define RangingIDCheckLength 0x931
 
-#define FrequencyErrorCorection0x93C
+#define FrequencyErrorCorection 0x93C
 #define CadDetPeak 0x942
 #define LoraSyncWord 0x944
 
@@ -172,13 +165,13 @@ void sx1280::ReadRegister(uint16_t address) {
 void sx1280::WriteBuffer(uint8_t &offset, std::vector<uint8_t> &payload){
 
     singleTransfer(0x1A, offset, payload);
-    
-    // offset loops back to 0 after 255 (FIX)
-    if (_offset < 255){
-        _offset++;
+    int payloadSize = payload.size();
+    // offset loops back to 0 after 255 (FIX) 
+    if (255 - (offset + payloadSize) >= 0){
+        offset += payloadSize;
     }
     else{
-        _offset = 0;
+        offset = (offset + payloadSize) - 255;
     }
 
 }
