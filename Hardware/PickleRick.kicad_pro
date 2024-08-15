@@ -49,7 +49,7 @@
         "silk_text_upright": false,
         "zones": {
           "45_degree_only": false,
-          "min_clearance": 0.254
+          "min_clearance": 0.0
         }
       },
       "diff_pair_dimensions": [
@@ -685,6 +685,10 @@
     [
       "a5e505c0-c0af-4f61-a9d4-cf031c548012",
       "radio"
+    ],
+    [
+      "f8ca6ebe-a1b7-4d27-a7e8-9fa3d73c83bf",
+      "ABUS"
     ]
   ],
   "text_variables": {}

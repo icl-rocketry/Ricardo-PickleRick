@@ -1,4 +1,4 @@
-23877505546553929
+23905911897406768
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -96586,6 +96586,13 @@ Varistor VF
 2
 2
 iclr-hw
+95
+
+
+0
+0
+0
+iclr-hw
 292227-7
 
 
@@ -96670,6 +96677,13 @@ CAPC2012X145N
 2
 2
 iclr-hw
+CMT052575SMTTR
+CMT-0525-75-SMT-TR-1
+Loudspeaker or Buzzer
+0
+3
+3
+iclr-hw
 CONV_MAX77827AEFD+T
 
 
@@ -96683,6 +96697,20 @@ Chad
 0
 0
 0
+iclr-hw
+D5V0FS4U10LP7
+D5V0FS4U10LP-7-1
+TVS Diode (Uni-directional)
+0
+10
+10
+iclr-hw
+DDTCCRUB_COTS_Charger
+
+
+0
+4
+4
 iclr-hw
 DIOM6959X245N
 
@@ -96718,6 +96746,13 @@ GCT_USB4110-GF-A_REVB
 0
 16
 16
+iclr-hw
+IC_ESP32-S3
+
+
+0
+69
+69
 iclr-hw
 IC_TPS61089RNRR
 
@@ -96775,6 +96810,13 @@ IND_SRP6540-390M
 2
 2
 iclr-hw
+JAE_ST1W008S4TR2000
+
+
+0
+13
+13
+iclr-hw
 Kermit
 
 
@@ -96788,6 +96830,13 @@ LGA88-1.4-17.8X15.8X2.4MM
 0
 88
 88
+iclr-hw
+LM2596_COTS_Buck
+
+
+0
+4
+4
 iclr-hw
 LM2623QNHLRQ1
 
@@ -96867,6 +96916,13 @@ connector Molex Mini-Fit_Jr top entryplastic_peg
 8
 iclr-hw
 Molex_Nano-Fit_105313-xx02_1x02_P2.50mm_Horizontal
+Molex Nano-Fit Power Connectors, 105313-xx02, 2 Pins per row (http://www.molex.com/pdm_docs/sd/1053131208_sd.pdf), generated with kicad-footprint-generator
+connector Molex Nano-Fit top entry
+0
+2
+2
+iclr-hw
+Molex_Nano-Fit_105313-xx02_1x02_P2.50mm_Horizontal_No_Mounting_Holes
 Molex Nano-Fit Power Connectors, 105313-xx02, 2 Pins per row (http://www.molex.com/pdm_docs/sd/1053131208_sd.pdf), generated with kicad-footprint-generator
 connector Molex Nano-Fit top entry
 0
@@ -96964,6 +97020,20 @@ Integrated Circuit
 48
 48
 iclr-hw
+RCLAMP3346PQTNT
+RCLAMP3346PQTNT-2
+Diode
+0
+7
+7
+iclr-hw
+SDM02U30LP37B
+SDM02U30LP3-7B-4
+Schottky Diode
+0
+2
+2
+iclr-hw
 SER2011202MLD
 SER2011-202MLD-1
 Inductor
@@ -96984,6 +97054,13 @@ MOSFET (P-Channel)
 0
 11
 11
+iclr-hw
+SODFL3516X70N
+S Series_1
+Diode
+0
+2
+2
 iclr-hw
 SOIC127P599X175-8N
 
@@ -97125,6 +97202,13 @@ TO254P483X1016X2222-3P
 3
 3
 iclr-hw
+TPS259830ONRGER
+TPS259830ONRGER-2
+Integrated Circuit
+0
+26
+26
+iclr-hw
 TRANS_SSM6J511NU,LF
 
 
@@ -97202,6 +97286,20 @@ Inductor
 2
 2
 iclr-hw
+XT30PWF
+XT30PW-F-2
+Connector
+0
+4
+4
+iclr-hw
+XT30PWM
+XT30PW-M
+Connector
+0
+4
+4
+iclr-hw
 astronautPete30mmwide
 
 
@@ -97210,6 +97308,13 @@ astronautPete30mmwide
 0
 iclr-hw
 buckaroo
+
+
+0
+0
+0
+iclr-hw
+buffkermit
 
 
 0
@@ -97315,6 +97420,13 @@ rae_logo_4mm
 0
 iclr-hw
 rae_logo_6mm
+
+
+0
+0
+0
+iclr-hw
+rae_logo_8mm
 
 
 0
