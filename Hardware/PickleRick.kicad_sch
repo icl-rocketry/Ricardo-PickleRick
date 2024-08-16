@@ -6583,7 +6583,7 @@
 	)
 	(wire
 		(pts
-			(xy 121.92 181.61) (xy 138.43 181.61)
+			(xy 121.92 182.88) (xy 133.35 182.88)
 		)
 		(stroke
 			(width 0)
@@ -6883,7 +6883,7 @@
 	)
 	(wire
 		(pts
-			(xy 121.92 189.23) (xy 121.92 181.61)
+			(xy 121.92 190.5) (xy 121.92 182.88)
 		)
 		(stroke
 			(width 0)
@@ -7915,7 +7915,7 @@
 		(uuid "26c50088-80ff-43fa-a13b-801600e7555b")
 	)
 	(label "JTAG_MTDI"
-		(at 168.91 184.15 0)
+		(at 163.83 185.42 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -8575,7 +8575,7 @@
 		(uuid "b636ff9f-6a4d-412d-85f0-e7d72ff41c01")
 	)
 	(label "JTAG_MTDO"
-		(at 138.43 186.69 180)
+		(at 133.35 187.96 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -8740,7 +8740,7 @@
 		(uuid "dbc0323b-700b-465c-8416-a9e9aea1c906")
 	)
 	(label "JTAG_MTMS"
-		(at 138.43 184.15 180)
+		(at 133.35 185.42 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -13750,7 +13750,7 @@
 	(symbol
 		(lib_name "GND_1")
 		(lib_id "power:GND")
-		(at 121.92 189.23 0)
+		(at 121.92 190.5 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -13759,7 +13759,7 @@
 		(fields_autoplaced yes)
 		(uuid "9dcd4c01-b6ad-4071-adf5-e8cc7d512011")
 		(property "Reference" "#PWR024"
-			(at 121.92 195.58 0)
+			(at 121.92 196.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13768,7 +13768,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 121.92 194.31 0)
+			(at 121.92 195.58 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13776,7 +13776,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 121.92 189.23 0)
+			(at 121.92 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13785,7 +13785,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 121.92 189.23 0)
+			(at 121.92 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13794,7 +13794,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 121.92 189.23 0)
+			(at 121.92 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14911,7 +14911,7 @@
 	)
 	(symbol
 		(lib_id "iclr-hw:RCLAMP3346PQTNT")
-		(at 138.43 179.07 0)
+		(at 133.35 180.34 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -14920,7 +14920,7 @@
 		(fields_autoplaced yes)
 		(uuid "cd8bed9f-0e8e-4d97-83f0-79c54a659ccf")
 		(property "Reference" "D19"
-			(at 153.67 171.45 0)
+			(at 148.59 172.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14928,7 +14928,7 @@
 			)
 		)
 		(property "Value" "RCLAMP3346PQTNT"
-			(at 153.67 173.99 0)
+			(at 148.59 175.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14936,7 +14936,7 @@
 			)
 		)
 		(property "Footprint" "RCLAMP3346PQTNT"
-			(at 165.1 273.99 0)
+			(at 160.02 275.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14946,7 +14946,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 165.1 373.99 0)
+			(at 160.02 375.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14956,7 +14956,7 @@
 			)
 		)
 		(property "Description" "ESD Suppressors / TVS Diodes 6Line ESD protection automotive grade"
-			(at 138.43 179.07 0)
+			(at 133.35 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14965,7 +14965,7 @@
 			)
 		)
 		(property "Height" "0.53"
-			(at 165.1 573.99 0)
+			(at 160.02 575.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14975,7 +14975,7 @@
 			)
 		)
 		(property "Mouser Part Number" "947-RCLAMP3346PQTNT"
-			(at 165.1 673.99 0)
+			(at 160.02 675.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14985,7 +14985,7 @@
 			)
 		)
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Semtech/RCLAMP3346PQTNT?qs=gTYE2QTfZfTlZML4DB76Nw%3D%3D"
-			(at 165.1 773.99 0)
+			(at 160.02 775.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14995,7 +14995,7 @@
 			)
 		)
 		(property "Manufacturer_Name" "SEMTECH"
-			(at 165.1 873.99 0)
+			(at 160.02 875.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15005,7 +15005,7 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" "RCLAMP3346PQTNT"
-			(at 165.1 973.99 0)
+			(at 160.02 975.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
