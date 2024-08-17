@@ -16708,7 +16708,7 @@
 	(footprint "iclr-hw:iclr_logo_estd2018_6mm"
 		(layer "F.Cu")
 		(uuid "67ae265f-6ba6-449c-961d-be6d42a42e70")
-		(at 133.12 74.17)
+		(at 131.875 74.05)
 		(property "Reference" "G***"
 			(at 0 0 0)
 			(layer "F.SilkS")
@@ -42959,7 +42959,7 @@
 	(footprint "iclr-hw:rae_logo_6mm"
 		(layer "F.Cu")
 		(uuid "e06cdebb-bc89-49b9-8238-abc3f20b0476")
-		(at 126.3 73.96)
+		(at 125.475 73.975)
 		(property "Reference" "G***"
 			(at 0 0 0)
 			(layer "F.SilkS")
@@ -59981,7 +59981,7 @@
 		)
 	)
 	(gr_text "BLACK SERIES\n"
-		(at 124.51 79.1 0)
+		(at 123.65 79.075 0)
 		(layer "F.SilkS")
 		(uuid "2d8b8201-3635-43b3-879a-188744f458f6")
 		(effects
