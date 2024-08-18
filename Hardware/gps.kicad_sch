@@ -1619,6 +1619,16 @@
 		)
 		(uuid "5dbd7b38-bc6e-4ef9-bc0e-194d5867f506")
 	)
+	(text "0x42"
+		(exclude_from_sim no)
+		(at 124.714 75.692 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "6b6a7761-d487-443f-82d0-4c7dadbb5d4d")
+	)
 	(text "10ohm, 5%, 0.25W"
 		(exclude_from_sim no)
 		(at 134.62 64.77 0)
