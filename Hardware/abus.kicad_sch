@@ -5,6 +5,230 @@
 	(uuid "b3793e08-ef34-412a-a186-fe199ec2d107")
 	(paper "A4")
 	(lib_symbols
+		(symbol "CPDV5-3V3UP_1"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "D"
+				(at 0 -6.85 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" ""
+				(at 0 -6.85 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "Package_TO_SOT_SMD:SOT-353_SC-70-5"
+				(at 0 -6.85 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://www.mouser.co.uk/datasheet/2/80/CPDV5_3V3UP_HF_RevB181493-2505215.pdf"
+				(at 0 -6.85 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "2 channel double backed zener TVS diode"
+				(at 0 -6.85 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "CPDV5-3V3UP_1_0_1"
+				(polyline
+					(pts
+						(xy 0 -12.938) (xy 0 -16.51)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.03 -13.9125) (xy -0.014 -12.3885) (xy 1.002 -13.9125) (xy -1.03 -13.9125)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.0339 -16.5776) (xy 0.0179 -18.1016) (xy -0.9981 -16.5776) (xy 1.0339 -16.5776)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy -0.7441 -18.6096) (xy -0.9981 -18.6096) (xy -0.9981 -18.1016) (xy 1.0339 -18.1016) (xy 1.0339 -17.5936)
+						(xy 0.7799 -17.5936)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.748 -11.8805) (xy 1.002 -11.8805) (xy 1.002 -12.3885) (xy -1.03 -12.3885) (xy -1.03 -12.8965)
+						(xy -0.776 -12.8965)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "CPDV5-3V3UP_1_1_1"
+				(pin passive line
+					(at 0 -8.89 270)
+					(length 4)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 3.81 -15.24 180)
+					(length 3.7)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -21.59 90)
+					(length 4)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "CPDV5-3V3UP_1_2_1"
+				(pin passive line
+					(at 3.81 -15.24 180)
+					(length 3.7)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -21.59 90)
+					(length 4)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -8.89 270)
+					(length 4)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Connector:Conn_01x03_Pin"
 			(pin_names
 				(offset 1.016) hide)
@@ -256,7 +480,7 @@
 			(symbol "CPDV5-3V3UP_0_1"
 				(polyline
 					(pts
-						(xy 0 -17.002) (xy 0 -15.478)
+						(xy 0 -12.938) (xy 0 -16.51)
 					)
 					(stroke
 						(width 0)
@@ -268,31 +492,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 -16.24) (xy 0 -13.7)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -12.938) (xy 0 -14.462)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.016 -14.462) (xy 0 -12.938) (xy 1.016 -14.462) (xy -1.016 -14.462)
+						(xy -1.03 -13.9125) (xy -0.014 -12.3885) (xy 1.002 -13.9125) (xy -1.03 -13.9125)
 					)
 					(stroke
 						(width 0.254)
@@ -304,7 +504,7 @@
 				)
 				(polyline
 					(pts
-						(xy 1.016 -15.478) (xy 0 -17.002) (xy -1.016 -15.478) (xy 1.016 -15.478)
+						(xy 1.0339 -16.5776) (xy 0.0179 -18.1016) (xy -0.9981 -16.5776) (xy 1.0339 -16.5776)
 					)
 					(stroke
 						(width 0.254)
@@ -316,8 +516,8 @@
 				)
 				(polyline
 					(pts
-						(xy -0.762 -17.51) (xy -1.016 -17.51) (xy -1.016 -17.002) (xy 1.016 -17.002) (xy 1.016 -16.494)
-						(xy 0.762 -16.494)
+						(xy -0.7441 -18.6096) (xy -0.9981 -18.6096) (xy -0.9981 -18.1016) (xy 1.0339 -18.1016) (xy 1.0339 -17.5936)
+						(xy 0.7799 -17.5936)
 					)
 					(stroke
 						(width 0.254)
@@ -329,8 +529,8 @@
 				)
 				(polyline
 					(pts
-						(xy 0.762 -12.43) (xy 1.016 -12.43) (xy 1.016 -12.938) (xy -1.016 -12.938) (xy -1.016 -13.446)
-						(xy -0.762 -13.446)
+						(xy 0.748 -11.8805) (xy 1.002 -11.8805) (xy 1.002 -12.3885) (xy -1.03 -12.3885) (xy -1.03 -12.8965)
+						(xy -0.776 -12.8965)
 					)
 					(stroke
 						(width 0.254)
@@ -343,7 +543,7 @@
 			)
 			(symbol "CPDV5-3V3UP_1_1"
 				(pin passive line
-					(at 0 -10.16 270)
+					(at 0 -8.89 270)
 					(length 4)
 					(name ""
 						(effects
@@ -361,8 +561,8 @@
 					)
 				)
 				(pin passive line
-					(at 3.985 -14.9344 180)
-					(length 4)
+					(at 3.81 -15.24 180)
+					(length 3.7)
 					(name ""
 						(effects
 							(font
@@ -379,7 +579,7 @@
 					)
 				)
 				(pin passive line
-					(at 0 -20.32 90)
+					(at 0 -21.59 90)
 					(length 4)
 					(name ""
 						(effects
@@ -399,8 +599,8 @@
 			)
 			(symbol "CPDV5-3V3UP_2_1"
 				(pin passive line
-					(at 4.1083 -14.9652 180)
-					(length 4)
+					(at 3.81 -15.24 180)
+					(length 3.7)
 					(name ""
 						(effects
 							(font
@@ -417,7 +617,7 @@
 					)
 				)
 				(pin passive line
-					(at 0 -20.32 90)
+					(at 0 -21.59 90)
 					(length 4)
 					(name ""
 						(effects
@@ -435,7 +635,7 @@
 					)
 				)
 				(pin passive line
-					(at 0 -10.16 270)
+					(at 0 -8.89 270)
 					(length 4)
 					(name ""
 						(effects
@@ -553,16 +753,6 @@
 	)
 	(wire
 		(pts
-			(xy 87.9356 73.835) (xy 87.9356 76.375)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0806317e-5c30-450e-8468-8c6e9b168d55")
-	)
-	(wire
-		(pts
 			(xy 121.92 68.58) (xy 124.46 68.58)
 		)
 		(stroke
@@ -570,6 +760,16 @@
 			(type default)
 		)
 		(uuid "3ed52fd0-b11e-492b-94eb-6f79cb7304b8")
+	)
+	(wire
+		(pts
+			(xy 92.71 74.93) (xy 92.71 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "83f0eefb-4d93-43ee-89b8-db9778e16b43")
 	)
 	(wire
 		(pts
@@ -601,27 +801,25 @@
 		)
 		(uuid "d100dd29-536a-415d-ada4-451d13522281")
 	)
-	(hierarchical_label "TX"
+	(wire
+		(pts
+			(xy 100.33 74.93) (xy 100.33 80.01)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fc441d68-17df-4390-9353-52a2bd3166bc")
+	)
+	(hierarchical_label "RX"
 		(shape input)
-		(at 92.71 69.85 0)
+		(at 100.33 62.23 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
-		)
-		(uuid "0542ae30-97f6-4f89-919f-5f7e8ffc2daf")
-	)
-	(hierarchical_label "RX"
-		(shape input)
-		(at 82.55 69.85 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
 		)
 		(uuid "11b6893c-e915-4ab2-bd7d-290c86f5523c")
 	)
@@ -639,6 +837,18 @@
 	)
 	(hierarchical_label "TX"
 		(shape input)
+		(at 92.71 62.23 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "73a7a141-31f2-45ad-ad27-f9f6ab3cf2ae")
+	)
+	(hierarchical_label "TX"
+		(shape input)
 		(at 121.92 68.58 180)
 		(fields_autoplaced yes)
 		(effects
@@ -648,6 +858,87 @@
 			(justify right)
 		)
 		(uuid "8ed8311e-98a6-4938-83e4-93206eb6610c")
+	)
+	(symbol
+		(lib_name "CPDV5-3V3UP_1")
+		(lib_id "iclr-hw:CPDV5-3V3UP")
+		(at 92.71 53.34 0)
+		(unit 2)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "3f8e2dd5-2840-4b97-b9d6-d029a81e7efa")
+		(property "Reference" "D18"
+			(at 87.63 68.5851 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "~"
+			(at 90.17 68.5851 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-353_SC-70-5"
+			(at 92.71 60.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.mouser.co.uk/datasheet/2/80/CPDV5_3V3UP_HF_RevB181493-2505215.pdf"
+			(at 92.71 60.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "2 channel double backed zener TVS diode"
+			(at 92.71 60.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ba133a98-c5f3-4f7b-8ffa-52fea3abf662")
+		)
+		(pin "5"
+			(uuid "f0151574-4976-4566-be2f-6469c2a56cec")
+		)
+		(pin "2"
+			(uuid "a513ea41-4b52-4b55-b248-292a0d6e5f5c")
+		)
+		(pin "2"
+			(uuid "b18ed19b-fcb7-4fc0-bc29-d4f454dfb126")
+		)
+		(pin "4"
+			(uuid "4b8ce727-5613-4892-af15-826f0ffd8026")
+		)
+		(pin "3"
+			(uuid "4bd321e1-27c5-41a4-84e6-cd51fde6de3c")
+		)
+		(instances
+			(project ""
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/f8ca6ebe-a1b7-4d27-a7e8-9fa3d73c83bf"
+					(reference "D18")
+					(unit 2)
+				)
+			)
+		)
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -716,74 +1007,8 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 87.9356 76.375 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "534f4235-a5fa-485b-ac1c-985a782fc490")
-		(property "Reference" "#PWR0106"
-			(at 87.9356 82.725 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 87.9356 81.455 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 87.9356 76.375 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 87.9356 76.375 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 87.9356 76.375 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "6a7f508e-16c9-49f6-9b87-9975a880c0ce")
-		)
-		(instances
-			(project ""
-				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/f8ca6ebe-a1b7-4d27-a7e8-9fa3d73c83bf"
-					(reference "#PWR0106")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "iclr-hw:CPDV5-3V3UP")
-		(at 102.87 69.85 270)
+		(at 100.33 83.82 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -792,7 +1017,7 @@
 		(fields_autoplaced yes)
 		(uuid "9271a7b2-3197-4460-9240-952e923de503")
 		(property "Reference" "D18"
-			(at 87.9 64.77 90)
+			(at 105.41 68.85 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -800,7 +1025,7 @@
 			)
 		)
 		(property "Value" "~"
-			(at 87.9 67.31 90)
+			(at 102.87 68.85 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -808,7 +1033,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-353_SC-70-5"
-			(at 96.02 69.85 0)
+			(at 100.33 76.97 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -817,7 +1042,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.mouser.co.uk/datasheet/2/80/CPDV5_3V3UP_HF_RevB181493-2505215.pdf"
-			(at 96.02 69.85 0)
+			(at 100.33 76.97 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -826,7 +1051,7 @@
 			)
 		)
 		(property "Description" "2 channel double backed zener TVS diode"
-			(at 96.02 69.85 0)
+			(at 100.33 76.97 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -856,6 +1081,138 @@
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/f8ca6ebe-a1b7-4d27-a7e8-9fa3d73c83bf"
 					(reference "D18")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 92.71 78.74 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a16257f1-3b0b-4605-ab78-11c0cfcd94b2")
+		(property "Reference" "#PWR016"
+			(at 92.71 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 92.71 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 92.71 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 92.71 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 92.71 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a6d5a399-9287-4589-97cc-7462a6e806e6")
+		)
+		(instances
+			(project ""
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/f8ca6ebe-a1b7-4d27-a7e8-9fa3d73c83bf"
+					(reference "#PWR016")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 100.33 80.01 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a2089530-5cba-4127-b12d-cd8c53cb26e3")
+		(property "Reference" "#PWR0106"
+			(at 100.33 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 100.33 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 100.33 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 100.33 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 100.33 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f6bcf0e1-532b-40ee-8cd6-0b9ddda1f150")
+		)
+		(instances
+			(project "PickleRick"
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/f8ca6ebe-a1b7-4d27-a7e8-9fa3d73c83bf"
+					(reference "#PWR0106")
 					(unit 1)
 				)
 			)
