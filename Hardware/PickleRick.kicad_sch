@@ -5362,8 +5362,16 @@
 		(uuid "ff8d7c48-cf44-482a-8a92-3e8b83448ba2")
 	)
 	(no_connect
+		(at 133.35 180.34)
+		(uuid "005679f3-7af6-40c8-86df-e06d483f4a42")
+	)
+	(no_connect
 		(at 240.03 69.85)
 		(uuid "14062b2f-c1ab-43d4-83e0-572b249dcb49")
+	)
+	(no_connect
+		(at 163.83 180.34)
+		(uuid "1c64d987-577d-47ec-8181-6f05dfb0d0c3")
 	)
 	(no_connect
 		(at 134.62 90.17)
@@ -5388,6 +5396,10 @@
 	(no_connect
 		(at 134.62 110.49)
 		(uuid "b223c7e3-952c-468c-a6bf-c185df3e7714")
+	)
+	(no_connect
+		(at 163.83 182.88)
+		(uuid "e00bc340-6228-42e6-999c-1e31e8cf19bc")
 	)
 	(no_connect
 		(at 134.62 123.19)
@@ -5822,16 +5834,6 @@
 			(type default)
 		)
 		(uuid "2bf63ee9-f36c-4398-91ef-0acb380d1915")
-	)
-	(wire
-		(pts
-			(xy 97.79 156.21) (xy 101.6 156.21)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2c0602dc-dc2f-435e-9773-6a778613a800")
 	)
 	(wire
 		(pts
@@ -9868,7 +9870,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "4.7k"
+		(property "Value" "2.2k"
 			(at 257.81 144.7799 0)
 			(effects
 				(font
@@ -10935,71 +10937,6 @@
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
 					(reference "C1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+3.3V")
-		(at 101.6 156.21 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "437aaa5a-67f2-4a09-b716-1136ca096c4c")
-		(property "Reference" "#PWR016"
-			(at 101.6 160.02 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3V3"
-			(at 101.981 151.8158 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 101.6 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 101.6 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 101.6 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "efadcb34-53ea-4c03-b380-beb23e60eebf")
-		)
-		(instances
-			(project "PickleRick"
-				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
-					(reference "#PWR016")
 					(unit 1)
 				)
 			)
@@ -12858,7 +12795,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "4.7k"
+		(property "Value" "2.2k"
 			(at 262.89 144.7799 0)
 			(effects
 				(font
@@ -15196,7 +15133,7 @@
 				)
 			)
 		)
-		(property "Footprint" "RCLAMP3346PQTNT"
+		(property "Footprint" "iclr-hw:RCLAMP3346PQTNT"
 			(at 160.02 275.26 0)
 			(effects
 				(font
@@ -16805,16 +16742,6 @@
 				)
 				(justify left top)
 			)
-		)
-		(pin "3.3V" output
-			(at 97.79 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "024cef38-5927-47cb-8157-ae104f3635b5")
 		)
 		(pin "Data+" bidirectional
 			(at 97.79 160.02 0)

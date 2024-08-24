@@ -1,4 +1,4 @@
-23918029656338777
+23923207628679164
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -96663,6 +96663,13 @@ Axes_Magnetic_Lefthand_Xdown
 0
 0
 iclr-hw
+BSZ025N04LS
+BSZ025N04LS-2
+MOSFET (N-Channel)
+0
+10
+10
+iclr-hw
 BUK9M1140HX
 BUK9M11-40HX
 MOSFET (N-Channel)
@@ -96683,6 +96690,13 @@ Loudspeaker or Buzzer
 0
 3
 3
+iclr-hw
+CONN8_08S4TR2000_JAE
+
+ST1W008S4TR2000 
+0
+13
+13
 iclr-hw
 CONV_MAX77827AEFD+T
 
@@ -97124,6 +97138,13 @@ Integrated Circuit
 0
 13
 13
+iclr-hw
+SON65P300X300X100-9N-D
+8 lead
+Integrated Circuit
+0
+9
+9
 iclr-hw
 SOP40P640X120-14N
 

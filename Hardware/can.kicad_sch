@@ -1447,16 +1447,6 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 85.09) (xy 175.26 88.9)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "33b30c1e-0c8b-428a-9cc0-88e1b39db179")
-	)
-	(wire
-		(pts
 			(xy 124.46 68.58) (xy 127 68.58)
 		)
 		(stroke
@@ -2018,75 +2008,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C_Small")
-		(at 175.26 82.55 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "23622c20-4a70-4ee7-b39c-f5519633413f")
-		(property "Reference" "C53"
-			(at 173.99 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "DNP"
-			(at 173.99 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 175.26 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 175.26 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 175.26 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "6a8c2151-de75-4ce4-92b6-d503d15c9ad4")
-		)
-		(pin "2"
-			(uuid "75f2870c-086d-4bb5-b7c6-e85cea1de9f0")
-		)
-		(instances
-			(project "PickleRick"
-				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/84dc3251-c581-43e1-8e86-e53b5efc8269"
-					(reference "C53")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Diode:SM712_SOT23")
 		(at 186.69 88.9 270)
 		(unit 1)
@@ -2220,72 +2141,6 @@
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/84dc3251-c581-43e1-8e86-e53b5efc8269"
 					(reference "#PWR0124")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 175.26 102.87 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "54c27e2d-52b9-4197-956b-7db5f761b4df")
-		(property "Reference" "#PWR0125"
-			(at 175.26 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 175.26 106.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 175.26 102.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 175.26 102.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 175.26 102.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "75828b44-2df4-489c-be52-aa6efeac5bb8")
-		)
-		(instances
-			(project "PickleRick"
-				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/84dc3251-c581-43e1-8e86-e53b5efc8269"
-					(reference "#PWR0125")
 					(unit 1)
 				)
 			)
@@ -2730,7 +2585,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+		(property "Footprint" "iclr-hw:SmallerSolderJP"
 			(at 157.48 88.9 0)
 			(effects
 				(font
@@ -2767,76 +2622,6 @@
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/84dc3251-c581-43e1-8e86-e53b5efc8269"
 					(reference "JP3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C_Small")
-		(at 175.26 100.33 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "f5a97da1-282d-43a4-ae5f-607cebde55a6")
-		(property "Reference" "C54"
-			(at 177.8 99.0535 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "DNP"
-			(at 177.8 101.5935 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 175.26 100.33 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 175.26 100.33 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 175.26 100.33 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "c685cfd7-e386-40bf-bf60-826ff44dfc78")
-		)
-		(pin "2"
-			(uuid "38414853-6148-45ae-9788-69224b7341e0")
-		)
-		(instances
-			(project "PickleRick"
-				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/84dc3251-c581-43e1-8e86-e53b5efc8269"
-					(reference "C54")
 					(unit 1)
 				)
 			)
