@@ -58,8 +58,8 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    canbus(systemstatus, PinMap::TxCan, PinMap::RxCan, 3),
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
-                   deploymenthandler(networkmanager, localPyroMap, static_cast<uint8_t>(Services::ID::DeploymentHandler)),
-                   enginehandler(networkmanager, localPyroMap, static_cast<uint8_t>(Services::ID::EngineHandler)),
+                   deploymenthandler(networkmanager, localPyroMap, localServoMap, static_cast<uint8_t>(Services::ID::DeploymentHandler)),
+                   enginehandler(networkmanager, localPyroMap, localServoMap, static_cast<uint8_t>(Services::ID::EngineHandler)),
                    controllerhandler(enginehandler),
                    eventhandler(enginehandler, deploymenthandler),
                    apogeedetect(20),
@@ -68,7 +68,12 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    pyro0(PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Cont),networkmanager),
                    pyro1(PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Cont),networkmanager),
                    pyro2(PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Cont),networkmanager),
-                   pyro3(PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Cont),networkmanager)
+                   pyro3(PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Cont),networkmanager),
+                   pwmPinExpander0(0x40,I2C,50),
+                   servo0(PCA9685PWM(PinMap::servo0pin,pwmPinExpander0),networkmanager,"srv0"),
+                   servo1(PCA9685PWM(PinMap::servo1pin,pwmPinExpander0),networkmanager,"srv1"),
+                   servo2(PCA9685PWM(PinMap::servo2pin,pwmPinExpander0),networkmanager,"srv2"),
+                   servo3(PCA9685PWM(PinMap::servo3pin,pwmPinExpander0),networkmanager,"srv3")
                    {};
 
 void System::systemSetup()
@@ -98,6 +103,8 @@ void System::systemSetup()
 
     //register pryo services
     setupLocalPyros();
+    //register servo serv ices
+    setupLocalServos();
 
     loadConfig();
 
@@ -153,6 +160,29 @@ void System::setupLocalPyros()
     else
     {
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pyro pin expander failed to respond");
+    }
+
+};
+
+void System::setupLocalServos()
+{
+    if (pwmPinExpander0.setup())
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pwm expander alive");
+
+        servo0.setup();
+        servo1.setup();
+        servo2.setup();
+        servo3.setup();
+        
+        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Servo0),servo0.getThisNetworkCallback());
+        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Servo1),servo1.getThisNetworkCallback());
+        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Servo2),servo2.getThisNetworkCallback());
+        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Servo3),servo3.getThisNetworkCallback());
+    }
+    else
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pwm expander failed to respond");
     }
 
 };

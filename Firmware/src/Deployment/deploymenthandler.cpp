@@ -18,7 +18,7 @@
 #include <librrc/Remote/nrcremotepyro.h>
 
 #include "Config/types.h"
-// #include <librrc/Local/i2cpyro.h>
+
 
 
 
@@ -61,7 +61,22 @@ void DeploymentHandler::setupIndividual_impl(size_t id,JsonObjectConst deployerc
                                 }
                             );
             
-    }else{
+    }
+    if (type == "local_servo"){
+        uint8_t channel = getIfContains<uint8_t>(deployerconfig,"channel");
+        if (channel > 3)
+        {
+            throw std::runtime_error("Local servo channel out of range!");
+        }
+        //retrive nrcremotepyro instance correspondign to channel number
+        Types::LocalServo_t& localServo = *(m_localServoMap.at(channel));
+
+
+        //add object to dep handler and use adapter to convert to local type
+        addObject(std::make_unique<RemoteActuatorAdapter<Types::LocalServo_t>>(id,localServo,_logcb));
+
+    }
+    else{
         throw std::runtime_error("Invalid type!");
     }
 

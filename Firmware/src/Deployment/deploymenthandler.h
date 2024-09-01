@@ -14,7 +14,9 @@
 #include <librrc/Interface/rocketactuator.h>
 
 #include <librrc/Remote/nrcremotepyro.h>
+#include <librrc/Remote/nrcremoteservo.h>
 #include "PCA9534Gpio.h"
+#include "PCA9685PWM.h"
 
 #include <librrc/Handler/flightcomponenthandler.h>
 #include <librrc/Handler/configurabledynamichandler.h>
@@ -38,9 +40,10 @@ class DeploymentHandler : public FlightComponentHandler<RocketActuator,Deploymen
          * @param serviceID network service the handler is assigned to
          * @param logcontroller 
          */
-        DeploymentHandler(RnpNetworkManager& networkmanager,const Types::LocalPyroMap_t& localPyroMap,uint8_t serviceID):
+        DeploymentHandler(RnpNetworkManager& networkmanager,const Types::LocalPyroMap_t& localPyroMap, const Types::LocalServoMap_t& localServoMap,uint8_t serviceID):
             FlightComponentHandler(networkmanager,serviceID,[](const std::string& msg){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(msg);}),
-            m_localPyroMap(localPyroMap)
+            m_localPyroMap(localPyroMap),
+            m_localServoMap(localServoMap)
         {};
 
 
@@ -62,4 +65,5 @@ class DeploymentHandler : public FlightComponentHandler<RocketActuator,Deploymen
         static constexpr uint16_t _componentStateExpiry = 1000; //1 second expiry
 
         const Types::LocalPyroMap_t& m_localPyroMap;
+        const Types::LocalServoMap_t& m_localServoMap;
 };

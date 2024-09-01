@@ -25,7 +25,11 @@ namespace Services{
         Pyro0 = 10,
         Pyro1 = 11,
         Pyro2 = 12,
-        Pyro3 = 13
+        Pyro3 = 13,
+        Servo0 = 20,
+        Servo1 = 21,
+        Servo2 = 22,
+        Servo3 = 23
     };
 
 };

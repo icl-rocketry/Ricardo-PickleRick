@@ -6259,7 +6259,7 @@
 		)
 		(uuid "90558fc3-8b73-4bc6-90f0-b260c68046c1")
 	)
-	(text "dec 128 : hex 0x80\n"
+	(text "dec 64 : hex 0x40\n"
 		(exclude_from_sim no)
 		(at 149.86 57.15 0)
 		(effects

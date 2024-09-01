@@ -97,6 +97,11 @@ namespace PickleRickV2Pins{
     static constexpr int Ch2Cont = 4;
     static constexpr int Ch3Cont = 6;
 
+    //PCA9685 Mapping
+    static constexpr int servo0pin = 7;
+    static constexpr int servo1pin = 8;
+    static constexpr int servo2pin = 9;
+    static constexpr int servo3pin = 10;
 
 };
 
