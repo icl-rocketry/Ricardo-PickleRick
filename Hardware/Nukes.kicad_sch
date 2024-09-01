@@ -4680,6 +4680,16 @@
 	)
 	(wire
 		(pts
+			(xy 245.11 45.72) (xy 238.76 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "04298b0c-c8b4-48d0-b12d-d7eb49b80482")
+	)
+	(wire
+		(pts
 			(xy 160.02 140.97) (xy 160.02 137.16)
 		)
 		(stroke
@@ -4830,16 +4840,6 @@
 	)
 	(wire
 		(pts
-			(xy 250.19 45.72) (xy 243.84 45.72)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1c747581-83c5-40e3-9486-ae526560378e")
-	)
-	(wire
-		(pts
 			(xy 181.61 82.55) (xy 182.88 82.55)
 		)
 		(stroke
@@ -4847,6 +4847,16 @@
 			(type default)
 		)
 		(uuid "1d934b79-4091-4bcf-9ef7-7d7140fb989e")
+	)
+	(wire
+		(pts
+			(xy 245.11 43.18) (xy 238.76 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1e6da201-4498-4900-b6db-91ccc6db5dbd")
 	)
 	(wire
 		(pts
@@ -5410,16 +5420,6 @@
 	)
 	(wire
 		(pts
-			(xy 250.19 40.64) (xy 243.84 40.64)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7fa9780a-4b34-42e3-a2e6-3357f1c94a23")
-	)
-	(wire
-		(pts
 			(xy 182.88 82.55) (xy 182.88 83.82)
 		)
 		(stroke
@@ -5467,6 +5467,16 @@
 			(type default)
 		)
 		(uuid "8a5fab85-5276-4493-bd66-9f6f4b5a0d74")
+	)
+	(wire
+		(pts
+			(xy 245.11 38.1) (xy 238.76 38.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8c221f70-16d9-4691-8c2b-b7fa8f96f021")
 	)
 	(wire
 		(pts
@@ -5537,16 +5547,6 @@
 			(type default)
 		)
 		(uuid "92f18e50-aebf-4110-9ec9-edfdb57dab4e")
-	)
-	(wire
-		(pts
-			(xy 250.19 38.1) (xy 243.84 38.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9323885d-af41-4bc6-80f6-51bcb7704530")
 	)
 	(wire
 		(pts
@@ -6010,16 +6010,6 @@
 	)
 	(wire
 		(pts
-			(xy 250.19 43.18) (xy 243.84 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "da9065f8-a8ca-409c-9573-a96a29e85716")
-	)
-	(wire
-		(pts
 			(xy 261.62 108.585) (xy 261.62 121.92)
 		)
 		(stroke
@@ -6170,6 +6160,16 @@
 	)
 	(wire
 		(pts
+			(xy 245.11 40.64) (xy 238.76 40.64)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f62d5a82-a6fc-4541-b1e5-ac4fe98490b8")
+	)
+	(wire
+		(pts
 			(xy 61.214 102.87) (xy 61.214 104.14)
 		)
 		(stroke
@@ -6281,17 +6281,6 @@
 		)
 		(uuid "02901f5e-75e8-44b8-8195-8d085b046f3d")
 	)
-	(label "SERVO0"
-		(at 243.84 45.72 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "03086bd2-7804-4401-a56e-730bf06bdb2e")
-	)
 	(label "Cont2"
 		(at 104.775 48.895 180)
 		(fields_autoplaced yes)
@@ -6346,17 +6335,6 @@
 			(justify right bottom)
 		)
 		(uuid "0be74563-bf97-4080-a3df-98bdc74c3aa6")
-	)
-	(label "SERVO1"
-		(at 243.84 43.18 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "0cb77a85-9272-4185-9ca2-5379bc1edaf7")
 	)
 	(label "Nuke1-"
 		(at 123.19 57.15 270)
@@ -6490,17 +6468,6 @@
 		)
 		(uuid "3d1ae766-5261-414e-b9fd-0fdafaa6cd57")
 	)
-	(label "SERVO2"
-		(at 243.84 40.64 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "43f21b48-3a9c-4cab-af00-11e39e00e24f")
-	)
 	(label "Nuke3"
 		(at 210.82 132.08 0)
 		(fields_autoplaced yes)
@@ -6567,8 +6534,8 @@
 		)
 		(uuid "73723bf7-e7a1-485b-983e-62cd98c09f27")
 	)
-	(label "SERVO3"
-		(at 243.84 38.1 0)
+	(label "SERVO2"
+		(at 238.76 40.64 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6576,7 +6543,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "7c9906fa-f844-46c7-ac1e-51d6999db533")
+		(uuid "7b46ff4d-ecef-4b0d-b7d3-d8792e939836")
 	)
 	(label "Nuke0-"
 		(at 118.11 57.15 270)
@@ -6611,6 +6578,17 @@
 		)
 		(uuid "8a1937c3-4f63-44c9-8d9d-c991ba314e89")
 	)
+	(label "SERVO3"
+		(at 238.76 38.1 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "8e8aee45-13ee-4f75-8e51-1dfc74f292f6")
+	)
 	(label "Cont1"
 		(at 54.864 104.14 0)
 		(fields_autoplaced yes)
@@ -6632,6 +6610,17 @@
 			(justify left bottom)
 		)
 		(uuid "90f9e4bb-54ad-48ab-b743-8747b2749dc2")
+	)
+	(label "SERVO1"
+		(at 238.76 43.18 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "93fac09f-9138-4739-9001-7034bad7d102")
 	)
 	(label "_SCL"
 		(at 50.8 43.815 0)
@@ -6764,6 +6753,17 @@
 			(justify left bottom)
 		)
 		(uuid "eca3df41-e34c-4d43-a2c1-8703cc6528f4")
+	)
+	(label "SERVO0"
+		(at 238.76 45.72 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "f0ca5dcd-e86c-4de2-a4f4-1498cc849dd5")
 	)
 	(label "Nuke2+"
 		(at 134.62 96.52 90)
@@ -9324,6 +9324,74 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R_Small")
+		(at 247.65 40.64 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8113edeb-f2e0-4dfa-96ca-b9d534e3b816")
+		(property "Reference" "R52"
+			(at 247.65 35.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "220"
+			(at 247.65 38.1 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 247.65 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 247.65 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 247.65 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "60012f4b-0a51-4669-92cd-7ccc7a9f8d0b")
+		)
+		(pin "2"
+			(uuid "243835b6-5d99-4475-aa35-d478b9bb200d")
+		)
+		(instances
+			(project "PickleRick"
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/ca0eab8e-e3fd-464d-bb03-d1603b8a651b"
+					(reference "R52")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:D_Schottky_AAK")
 		(at 139.954 114.808 90)
 		(unit 1)
@@ -9977,6 +10045,74 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R_Small")
+		(at 247.65 38.1 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a359fd97-830d-49d5-8d36-9183f156a104")
+		(property "Reference" "R47"
+			(at 247.65 33.02 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "220"
+			(at 247.65 35.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 247.65 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 247.65 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 247.65 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "d46a9e7b-94c2-4241-9baa-513cfa7f58f3")
+		)
+		(pin "2"
+			(uuid "73d6381a-94d8-4365-bbab-1ab0ac06bad7")
+		)
+		(instances
+			(project ""
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/ca0eab8e-e3fd-464d-bb03-d1603b8a651b"
+					(reference "R47")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "iclr-hw:S-102T")
 		(at 180.34 144.78 90)
 		(unit 1)
@@ -10466,6 +10602,74 @@
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/ca0eab8e-e3fd-464d-bb03-d1603b8a651b"
 					(reference "#PWR052")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small")
+		(at 247.65 43.18 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "bcfc0356-f3c9-4ab7-b6a9-8facb3f1c2ec")
+		(property "Reference" "R53"
+			(at 247.65 38.1 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "220"
+			(at 247.65 40.64 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 247.65 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 247.65 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 247.65 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e162de5c-46ae-48cb-b0a2-944d1c7cdd4d")
+		)
+		(pin "2"
+			(uuid "325f5e75-1672-40ed-a5b6-26dd9944d109")
+		)
+		(instances
+			(project "PickleRick"
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/ca0eab8e-e3fd-464d-bb03-d1603b8a651b"
+					(reference "R53")
 					(unit 1)
 				)
 			)
@@ -12200,6 +12404,74 @@
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/ca0eab8e-e3fd-464d-bb03-d1603b8a651b"
 					(reference "D17")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small")
+		(at 247.65 45.72 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f65c9e04-f408-48ab-90fa-3e81529e4dc2")
+		(property "Reference" "R54"
+			(at 247.65 40.64 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "220"
+			(at 247.65 43.18 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 247.65 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 247.65 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 247.65 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "80e3d470-f91b-4a8f-b5d4-468d455771f5")
+		)
+		(pin "2"
+			(uuid "b2ea51d0-2ecc-4131-a1c8-ded7c496a2d4")
+		)
+		(instances
+			(project "PickleRick"
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/ca0eab8e-e3fd-464d-bb03-d1603b8a651b"
+					(reference "R54")
 					(unit 1)
 				)
 			)
