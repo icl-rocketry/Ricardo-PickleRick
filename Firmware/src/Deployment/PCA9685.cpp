@@ -20,14 +20,9 @@ bool PCA9685::setup()
     //turn all outputs off
     writeRegister(MODE1, mode1Shadow);
     writeRegister(MODE2,mode2Shadow);
-    writeTiming(ALL_LED_START,0,500);
+    writeTiming(ALL_LED_START,0,4096);
    
     setFrequency(m_freq);
-
-    uint8_t reg = readRegister(MODE1);
-
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("HI");
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("pwm reg " + std::to_string(reg));
     
     return true;
 
@@ -42,6 +37,7 @@ void PCA9685::writeDuty(uint8_t pin, uint32_t duty){
     }
     duty = std::min(std::max(duty,static_cast<uint32_t>(0)),static_cast<uint32_t>(4095));
     uint8_t address = LEDSTART + (4*pin);
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Writing" + std::to_string(duty));
     if (duty == 0)
     {
         writeTiming(address,0,4096);
@@ -117,11 +113,11 @@ void PCA9685::setFrequency(uint32_t freq)
     // min is 0x03
     //max is 0xff
 
-    float prescale_temp = std::ceil(( static_cast<float>(OSC_FREQUENCY) / (static_cast<float>(4096) * static_cast<float>(freq)) ) - 1);
+    float prescale_temp = std::round(( static_cast<float>(OSC_FREQUENCY) / (static_cast<float>(4096) * static_cast<float>(freq)) ) - 1);
     prescale_temp = std::min(std::max(prescale_temp,0.f),255.f); // ensure float is properly bounded for uint8_t
     // bound prescale to hardware limits
-    uint8_t prescale = std::min(std::max(static_cast<uint8_t>(prescale_temp),static_cast<uint8_t>(0xff)),static_cast<uint8_t>(0x03));
-    
+    uint8_t prescale = static_cast<uint8_t>(std::max(std::min(static_cast<uint16_t>(prescale_temp),static_cast<uint16_t>(0xff)),static_cast<uint16_t>(0x03)));
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Prescale" + std::to_string(prescale));
     uint8_t newmode = (mode1Shadow & ~RESTART) | SLEEP;
     writeRegister(MODE1,newmode);
     writeRegister(PRE_SCALE,prescale);

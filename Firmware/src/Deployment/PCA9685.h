@@ -100,7 +100,7 @@ class PCA9685
          *  totem pole to drive output high and low -> 0
          *  OE -> 0
          */
-        static constexpr uint8_t mode2Default = 0x00; 
+        static constexpr uint8_t mode2Default = 0b00000100; 
 
         static constexpr uint8_t MAX_CHANNEL = 16;
         
