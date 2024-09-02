@@ -8542,7 +8542,7 @@
 		)
 		(uuid "feef8caf-a0d9-4c08-a60b-fe0280d08be0")
 	)
-	(text "0x40"
+	(text "0x45\n"
 		(exclude_from_sim no)
 		(at 137.414 116.332 0)
 		(effects
