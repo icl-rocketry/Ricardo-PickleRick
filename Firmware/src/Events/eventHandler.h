@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 #include <ArduinoJson.h>
 
@@ -56,6 +57,14 @@ class EventHandler{
         #endif
         
         std::vector<std::unique_ptr<Event> > _eventList;
+
+        std::unordered_map<std::string,std::function<condition_t(EventHandler*, JsonObjectConst conf)>> configureConditionMap = {
+                                                                                                                {"flightVar",&EventHandler::configureFlightVarCondition}
+                                                                                                                };
+
+        condition_t configureFlightVarCondition(JsonObjectConst conf);
+
+
 };
 
 

@@ -61,8 +61,7 @@ void DeploymentHandler::setupIndividual_impl(size_t id,JsonObjectConst deployerc
                                 }
                             );
             
-    }
-    if (type == "local_servo"){
+    }else if (type == "local_servo"){
         uint8_t channel = getIfContains<uint8_t>(deployerconfig,"channel");
         if (channel > 3)
         {
