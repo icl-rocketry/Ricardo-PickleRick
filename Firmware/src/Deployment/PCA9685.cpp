@@ -37,7 +37,6 @@ void PCA9685::writeDuty(uint8_t pin, uint32_t duty){
     }
     duty = std::min(std::max(duty,static_cast<uint32_t>(0)),static_cast<uint32_t>(4095));
     uint8_t address = LEDSTART + (4*pin);
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Writing" + std::to_string(duty));
     if (duty == 0)
     {
         writeTiming(address,0,4096);
@@ -117,7 +116,6 @@ void PCA9685::setFrequency(uint32_t freq)
     prescale_temp = std::min(std::max(prescale_temp,0.f),255.f); // ensure float is properly bounded for uint8_t
     // bound prescale to hardware limits
     uint8_t prescale = static_cast<uint8_t>(std::max(std::min(static_cast<uint16_t>(prescale_temp),static_cast<uint16_t>(0xff)),static_cast<uint16_t>(0x03)));
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Prescale" + std::to_string(prescale));
     uint8_t newmode = (mode1Shadow & ~RESTART) | SLEEP;
     writeRegister(MODE1,newmode);
     writeRegister(PRE_SCALE,prescale);

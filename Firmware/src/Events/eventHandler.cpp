@@ -6,6 +6,7 @@
 
 #include <libriccore/riccorelogging.h>
 #include <librrc/Helpers/jsonconfighelper.h>
+#include <librrc/Local/remoteactuatoradapter.h>
 
 #include "event.h"
 #include "condition.h"
@@ -200,6 +201,7 @@ condition_t EventHandler::configureCondition(JsonVariantConst condition, uint8_t
 
     }
     
+
     //iterate thru call map
     for (const auto& [key, configureConditionFunction] : configureConditionMap)
     {
@@ -253,6 +255,37 @@ condition_t EventHandler::configureFlightVarCondition(JsonObjectConst conf)
                             op); // while this looks like we are returning an Condtion object, as the return type of the function is std::function<bool()> and the operator() is defined for condtion, we are in fact returning a callable function
 
 }
+
+condition_t EventHandler::configureLocalPyroCondition(JsonObjectConst conf)
+{
+    if (!conf["continuity"])
+    {
+        throw std::runtime_error("EventHandler Condition no state given ");
+    }
+
+    auto localPyroChannel = conf["localPyroChannel"].as<int>();
+    //check if channel exists
+    if (localPyroChannel > m_localPyroMap.size())
+    {
+        throw std::runtime_error("EventHandler Condition localPyroChannel out of range");
+    }
+
+    bool continuity = conf["continuity"].as<bool>();
+
+    auto condtionFunc = [localPyroChannel,continuity,this]() -> bool {
+        auto localPyro = RemoteActuatorAdapter<Types::LocalPyro_t>(0,*m_localPyroMap.at(localPyroChannel),[](std::string msg){});
+        localPyro.updateState(); // force pyro to read continuity
+        auto state = localPyro.getState();
+        if (!state.flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::ERROR_CONTINUITY) && continuity)
+        {
+            return true; 
+        }
+        return false; 
+    };
+
+    return condtionFunc;
+}
+
 
 void EventHandler::update(const SensorStructs::state_t& state)
 {
