@@ -9977,7 +9977,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "80k"
+		(property "Value" "75k"
 			(at 118.11 31.7499 0)
 			(effects
 				(font
@@ -12468,7 +12468,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SON65P300X300X100-9N-D"
+		(property "Footprint" "iclr:SON65P300X300X100-9N-D"
 			(at 123.19 265.1 0)
 			(effects
 				(font
@@ -14767,7 +14767,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "80k"
+		(property "Value" "75k"
 			(at 81.28 31.7499 0)
 			(effects
 				(font
