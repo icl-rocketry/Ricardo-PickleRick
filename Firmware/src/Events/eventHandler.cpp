@@ -202,7 +202,9 @@ condition_t EventHandler::configureCondition(JsonVariantConst condition, uint8_t
     }
     
 
-    //iterate thru call map
+    //iterate thru call map 
+    //!O(n) but this doesnt matter right now, could redo to use explict keys in JSON and use that
+    //! to lookup in map but thats a future thing.
     for (const auto& [key, configureConditionFunction] : configureConditionMap)
     {
         if (conditionJson[key])
