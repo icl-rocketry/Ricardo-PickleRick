@@ -531,6 +531,140 @@
 				)
 			)
 		)
+		(symbol "Device:SparkGap"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "E"
+				(at 0 2.032 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "SparkGap"
+				(at 0 -1.905 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 -1.778 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Spark gap"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "spark gap ESD electrostatic suppression"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "SG*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "SparkGap_0_1"
+				(polyline
+					(pts
+						(xy -2.54 0.635) (xy -2.54 -0.635) (xy -0.635 0) (xy -2.54 0.635)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 0.635) (xy 2.54 -0.635) (xy 0.635 0) (xy 2.54 0.635)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "SparkGap_1_1"
+				(pin passive line
+					(at -5.08 0 0)
+					(length 2.54)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 0 180)
+					(length 2.54)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "RF_GPS:MAX-M8Q"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -1303,6 +1437,12 @@
 		)
 	)
 	(junction
+		(at 156.21 58.42)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "42962347-9b79-4e72-a160-e82189a8c0ec")
+	)
+	(junction
 		(at 156.21 76.2)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1321,16 +1461,16 @@
 		(uuid "6e8cbae7-db8e-460b-a093-c0325203d2de")
 	)
 	(junction
+		(at 156.21 60.96)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "7aa4984b-c632-4027-a93c-9d97c500e47a")
+	)
+	(junction
 		(at 139.7 115.57)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "88cbe820-0867-4aa5-8434-1fd393f43d99")
-	)
-	(junction
-		(at 156.21 59.69)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "baffc93d-3cc2-4e2b-846e-caf075410cbe")
 	)
 	(no_connect
 		(at 154.94 107.95)
@@ -1390,7 +1530,7 @@
 	)
 	(wire
 		(pts
-			(xy 171.45 59.69) (xy 171.45 96.52)
+			(xy 171.45 60.96) (xy 171.45 96.52)
 		)
 		(stroke
 			(width 0)
@@ -1440,7 +1580,7 @@
 	)
 	(wire
 		(pts
-			(xy 156.21 59.69) (xy 171.45 59.69)
+			(xy 156.21 60.96) (xy 171.45 60.96)
 		)
 		(stroke
 			(width 0)
@@ -1490,6 +1630,16 @@
 	)
 	(wire
 		(pts
+			(xy 156.21 58.42) (xy 156.21 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7fffeeef-4a80-45a2-884f-edbea2f27e16")
+	)
+	(wire
+		(pts
 			(xy 156.21 73.66) (xy 156.21 76.2)
 		)
 		(stroke
@@ -1497,16 +1647,6 @@
 			(type default)
 		)
 		(uuid "85d8d679-4046-4424-8d74-655d11459b28")
-	)
-	(wire
-		(pts
-			(xy 156.21 59.69) (xy 156.21 57.15)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8d866981-f3a6-4b76-85da-1157868bafab")
 	)
 	(wire
 		(pts
@@ -1540,7 +1680,7 @@
 	)
 	(wire
 		(pts
-			(xy 156.21 60.96) (xy 156.21 59.69)
+			(xy 156.21 58.42) (xy 156.21 60.96)
 		)
 		(stroke
 			(width 0)
@@ -1699,6 +1839,71 @@
 			(justify left)
 		)
 		(uuid "7495390a-d3e2-4978-9733-e35f1b14215a")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 166.37 58.42 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "25f4fa44-cb6f-42c4-a03e-4c715d804ebf")
+		(property "Reference" "#PWR0125"
+			(at 166.37 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 166.497 62.8142 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 166.37 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 166.37 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 166.37 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fb49c7c3-6ed2-46c4-a028-34d0a289723e")
+		)
+		(instances
+			(project "PickleRick"
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
+					(reference "#PWR0125")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(symbol
 		(lib_id "Connector:Conn_Coaxial")
@@ -1892,6 +2097,74 @@
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
 					(reference "TP15")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:SparkGap")
+		(at 161.29 58.42 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7dc99627-a407-4420-8aa3-53c976eb3639")
+		(property "Reference" "E1"
+			(at 161.29 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SparkGap"
+			(at 161.29 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "iclr:Spark_Gap"
+			(at 161.29 60.198 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 161.29 58.42 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Spark gap"
+			(at 161.29 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6873530d-d696-4bac-8cfb-04de21b62fb7")
+		)
+		(pin "2"
+			(uuid "aec4a65b-7e4f-4520-90a0-46c774b6eae2")
+		)
+		(instances
+			(project ""
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
+					(reference "E1")
 					(unit 1)
 				)
 			)
