@@ -31,6 +31,8 @@
 #include "Deployment/deploymenthandler.h"
 #include "Deployment/PCA9534.h"
 #include "Deployment/PCA9534Gpio.h"
+#include "Deployment/PCA9685.h"
+#include "Deployment/PCA9685PWM.h"
 #include "Engine/enginehandler.h"
 #include "Controller/controllerhandler.h"
 #include "Storage/sdfat_store.h"
@@ -77,6 +79,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void setupPins();
         void configureNetwork();
         void setupLocalPyros();
+        void setupLocalServos();
         void loadConfig();
         void initializeLoggers();
         void logTelemetry();
@@ -101,9 +104,17 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         Types::LocalPyro_t pyro1;
         Types::LocalPyro_t pyro2;
         Types::LocalPyro_t pyro3;
-        const std::array<Types::LocalPyro_t*,4> localPyroMap = {&pyro0,&pyro1,&pyro2,&pyro3};
+        const Types::LocalPyroMap_t localPyroMap = {&pyro0,&pyro1,&pyro2,&pyro3};
 
-        uint32_t prevTime;
+        PCA9685 pwmPinExpander0;
+
+        Types::LocalServo_t servo0;
+        Types::LocalServo_t servo1;
+        Types::LocalServo_t servo2;
+        Types::LocalServo_t servo3;
+        const Types::LocalServoMap_t localServoMap = {&servo0,&servo1,&servo2,&servo3};
+
+    
         
 
 

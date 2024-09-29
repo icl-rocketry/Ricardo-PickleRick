@@ -14,7 +14,7 @@ public:
     /**
      * @brief Construct a new VRailMonitor object
      * 
-     * @param systemstatus reference to system status object
+     * @param vrail_name name of voltage rail for logging purposes
      * @param pin pin to read voltage
      * @param r1 value of r1 in potential divider (unitless)
      * @param r2 value of r2 in potential divider (unitless)

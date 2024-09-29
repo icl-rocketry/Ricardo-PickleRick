@@ -112,6 +112,7 @@
 	"Events":
 	[
 		{// engine ignition event
+			"id":0,
 			"single_fire": true,
 			"cooldown": 0,
 			"action": [
@@ -127,7 +128,70 @@
 				"threshold": 0
 			}
 		},
+		{
+			"id":1,
+			"single_fire": true,
+			"cooldown": 0,
+			"action": [
+				{
+					"type": "engine",
+					"id": 0,
+					"param": 0
+				}
+			],
+			"condition": {
+				"localPyroChannel":0,
+				"threshold": 1 // 0 is no continuity, 1 is continuity
+			}
+		},
+	// 	{// network component state example
+	// 		"single_fire":true,
+	// 		"cooldown": 0,
+	// 		"action":[
+	// 			{
+	// 				"type":"deployment",
+	// 				"id":0,
+	// 				"param":1000
+	// 			}
+	// 		],
+	// 		"condition":
+	// 			{
+	// 				"operator":"MORETHAN",
+	// 				"networkComponentState":
+	// 				{
+	// 					"address":17,
+	// 					"service":2,
+	// 					"poll_rate":500
+	// 				},
+	// 				"threshold":20
+	// 			}
+		
+	// 	},
+	// 	{// network component value example, will compare values as FLOATS
+	// 	"single_fire":true,
+	// 	"cooldown": 0,
+	// 	"action":[
+	// 		{
+	// 			"type":"deployment",
+	// 			"id":0,
+	// 			"param":1000
+	// 		}
+	// 	],
+	// 	"condition":
+	// 		{
+	// 			"operator":"MORETHAN",
+	// 			"networkComponentValue":
+	// 			{
+	// 				"address":17,
+	// 				"service":2,
+	// 				"poll_rate":500
+	// 			},
+	// 			"threshold":20
+	// 		}
+	
+	// },
 		{ // engine shutdown event 
+			"id":1,
 			"single_fire": true,
 			"cooldown": 0,
 			"action": [
@@ -144,6 +208,7 @@
 			}
 		},
 		{ // drogue deployment event
+			"id":2,
 			"single_fire": true,
 			"cooldown": 0,
 			"action": [
@@ -160,6 +225,7 @@
 			}
 		},
 		{ // payload deployment event
+			"id":3,
 			"single_fire": true,
 			"cooldown": 0,
 			"action": [
@@ -187,6 +253,7 @@
             }
 		},
 		{ //main deployment event
+			"id":4,
 			"single_fire": true,
 			"cooldown": 0,
 			"action": [

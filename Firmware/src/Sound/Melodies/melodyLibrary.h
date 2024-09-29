@@ -17,15 +17,6 @@ namespace MelodyLibrary {
     extern melody_t<4> heartbeat;
     extern melody_t<4> beepbeep;
 
-    // enum class SONGS:uint8_t{
-    // FIREFLIES,
-    // ZELDATHEME,
-    // CANTINABAND,
-    // GAMEOFTHRONES,
-    // MIICHANNEL,
-    // NEVERGONNAGIVEYOUUP,
-    // COUNT
-    // };
 
     static const std::array<melody_base_t*,6> songLibrary{
         &Fireflies,
@@ -33,7 +24,8 @@ namespace MelodyLibrary {
         &cantinaband,
         &gameofthrones,
         &miichannel,
-        &nevergonnagiveyouup};
+        &nevergonnagiveyouup
+        };
 
 };
 

@@ -24,11 +24,9 @@ const std::unordered_map<std::string, memberFunc_t> FlightVariables::function_ma
 	{"RocketOrientation", &FlightVariables::RocketOrientation},
 	{"BoardOrientation", &FlightVariables::BoardOrientation},
 	{"Tilt", &FlightVariables::Tilt},
-
-	//networkcomponentstate
-	//networkcomponentvalue
-	//command id recieved for manual triggers
-	//pyro continuity
+	//State?
+	//Time since Launch abort
+	// Time since Flight abort
 };
 
 flightVariable_t FlightVariables::TimeSinceIgnition(int arg) 

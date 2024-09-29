@@ -22,9 +22,10 @@ using addNetworkCallbackFunction_t = std::function<void(uint8_t,uint8_t,std::fun
 
 class EngineHandler : public FlightComponentHandler<Engine,EngineHandler>{
     public:
-        EngineHandler(RnpNetworkManager& networkmanager,const Types::LocalPyroMap_t& localPyroMap, uint8_t serviceID):
+        EngineHandler(RnpNetworkManager& networkmanager,const Types::LocalPyroMap_t& localPyroMap,const Types::LocalServoMap_t& localServoMap,  uint8_t serviceID):
         FlightComponentHandler(networkmanager,serviceID,[](const std::string& msg){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(msg);}),
-        m_localPyroMap(localPyroMap)
+        m_localPyroMap(localPyroMap),
+        m_localServoMap(localServoMap)
         {};
 
         void update(); // calls update on all engines
@@ -54,5 +55,6 @@ class EngineHandler : public FlightComponentHandler<Engine,EngineHandler>{
     
     private:
         const Types::LocalPyroMap_t& m_localPyroMap;
+        const Types::LocalServoMap_t& m_localServoMap;
 
 };

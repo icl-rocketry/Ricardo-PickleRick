@@ -9,5 +9,5 @@
     "editor.bracketPairColorization.enabled": true,
     "editor.guides.bracketPairs": "active",
     "git.ignoreLimitWarning": true,
-    "idf.port": "/dev/cu.usbmodem101"
+    "idf.port": "/dev/tty.usbmodem2101"
 }

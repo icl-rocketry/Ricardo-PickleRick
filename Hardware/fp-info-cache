@@ -1,4 +1,277 @@
-23918029656338777
+23987391012857604
+0_CAPACITOR_ELM
+C_0603_1608Metric_Pad1.08x0.95mm_HandSolder
+Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator
+capacitor handsolder
+0
+2
+2
+0_CAPACITOR_ELM
+C_1206_3216Metric_Pad1.33x1.80mm_HandSolder
+Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC_7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator
+capacitor handsolder
+0
+2
+2
+0_CAPACITOR_ELM
+C_1210_3225Metric_Pad1.33x2.70mm_HandSolder
+Capacitor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC_7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator
+capacitor handsolder
+0
+2
+2
+0_CAPACITOR_ELM
+EEE0JA331XP
+SMD_Lytic_D8
+Capacitor Polarised
+0
+2
+2
+0_CONNECTOR_ELM
+FTSH-105-XX-YYY-DV-K-P-TR
+FTSH-105-XX-YYY-DV-K-P-TR
+Connector
+0
+10
+10
+0_CONNECTOR_ELM
+JST_PH_B2B-PH-SM4-TB_1x02-1MP_P2.00mm_Vertical
+JST PH series connector, B2B-PH-SM4-TB (http://www.jst-mfg.com/product/pdf/eng/ePH.pdf), generated with kicad-footprint-generator
+connector JST PH vertical
+0
+4
+4
+0_CONNECTOR_ELM
+Molex_Mini-Fit_Jr_5566-02A_2x01_P4.20mm_Vertical
+Molex Mini-Fit Jr. Power Connectors, old mpn/engineering number: 5566-02A, example for new mpn: 39-28-x02x, 1 Pins per row, Mounting:  (http://www.molex.com/pdm_docs/sd/039281043_sd.pdf), generated with kicad-footprint-generator
+connector Molex Mini-Fit_Jr side entry
+0
+2
+2
+0_CONNECTOR_ELM
+Molex_PicoBlade_53398-0271_1x02-1MP_P1.25mm_Vertical
+Molex PicoBlade series connector, 53398-0271 (http://www.molex.com/pdm_docs/sd/533980271_sd.pdf), generated with kicad-footprint-generator
+connector Molex PicoBlade side entry
+0
+4
+4
+0_CONNECTOR_ELM
+Molex_PicoBlade_53398-0371_1x03-1MP_P1.25mm_Vertical
+Molex PicoBlade series connector, 53398-0371 (http://www.molex.com/pdm_docs/sd/533980271_sd.pdf), generated with kicad-footprint-generator
+connector Molex PicoBlade side entry
+0
+5
+5
+0_CONNECTOR_ELM
+SMD_PIN_Header_10_Pin
+surface-mounted straight pin header, 1x10, 2.54mm pitch, single row, style 2 (pin 1 right)
+Surface mounted pin header SMD 1x10 2.54mm single row style2 pin1 right
+0
+10
+10
+0_CONNECTOR_ELM
+U.FL_Hirose_U.FL-R-SMT-1_Vertical
+Hirose U.FL Coaxial https://www.hirose.com/product/en/products/U.FL/U.FL-R-SMT-1%2810%29/
+Hirose U.FL Coaxial
+0
+3
+2
+0_DIODE_ELM
+D_SOD-123
+D_SOD-123F
+D_SOD-123F
+0
+2
+2
+0_DIODE_ELM
+D_SOD-123F
+D_SOD-123F
+D_SOD-123F
+0
+2
+2
+0_DIODE_ELM
+D_SOD-128
+D_SOD-128 (CFP5 SlimSMAW), https://assets.nexperia.com/documents/outline-drawing/SOD128.pdf
+D_SOD-128
+0
+2
+2
+0_DIODE_ELM
+D_SOD-323F_HandSoldering
+SOD-323
+SOD-323
+0
+2
+2
+0_DIODE_ELM
+D_SOD-323_HandSoldering
+SOD-323
+SOD-323
+0
+2
+2
+0_FUSE_ELM
+Fuse_1206_3216Metric
+Fuse SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator
+fuse
+0
+2
+2
+0_IC_ELM
+DFN-12-1EP_3x3mm_P0.45mm_EP1.65x2.38mm_ThermalVias
+DFN, 12 Pin (https://www.analog.com/media/en/package-pcb-resources/package/pkg_pdf/ltc-legacy-dfn/DFN_12_05-08-1725.pdf), generated with kicad-footprint-generator ipc_noLead_generator.py
+DFN NoLead
+0
+24
+13
+0_IC_ELM
+RAK3172SiP
+RAK3172-SiP-3
+Integrated Circuit
+0
+73
+73
+0_IC_ELM
+SOP65P640X110-15N
+HTSSOP-14
+Integrated Circuit
+0
+15
+15
+0_IC_ELM
+Texas_R-PDSO-G8_EP2.95x4.9mm_Mask2.4x3.1mm_ThermalVias
+HSOIC, 8 Pin (http://www.ti.com/lit/ds/symlink/lmr14030.pdf#page=28, http://www.ti.com/lit/ml/msoi002j/msoi002j.pdf), generated with kicad-footprint-generator ipc_gullwing_generator.py
+HSOIC SO
+0
+23
+9
+0_IC_ELM
+Texas_RGV0016A_VQFN-16-1EP_4x4mm_P0.65mm_EP2.1x2.1mm_ThermalVias
+Texas RGV0016A VQFN, 16 Pin (http://www.ti.com/lit/ds/symlink/ina3221.pdf#page=44), generated with kicad-footprint-generator ipc_noLead_generator.py
+Texas VQFN NoLead
+0
+31
+17
+0_INDUCTOR_ELM
+7447714220
+WE-PD_1030/105054
+Inductor
+0
+2
+2
+0_INDUCTOR_ELM
+CDRH62BNP
+CDRH62BNP-100MC-B-2
+Inductor
+0
+2
+2
+0_INDUCTOR_ELM
+L_0603_1608Metric_Pad1.05x0.95mm_HandSolder
+Inductor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal with elongated pad for handsoldering. (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator
+inductor handsolder
+0
+2
+2
+0_INDUCTOR_ELM
+L_0805_2012Metric_Pad1.05x1.20mm_HandSolder
+Inductor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 80, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator
+inductor handsolder
+0
+2
+2
+0_INDUCTOR_ELM
+WE-PD_7332_7345_PLASTIC_BASE54
+WE-PD_7332/7345_PLASTIC_BASE54
+Inductor
+0
+2
+2
+0_LOGO_ELM
+signalight_2mm
+
+
+0
+0
+0
+0_LOGO_ELM
+signalight_4mm
+
+
+0
+0
+0
+0_LOGO_ELM
+signalight_6mm
+
+
+0
+0
+0
+0_LOGO_ELM
+signalight_8mm
+
+
+0
+0
+0
+0_LOGO_ELM
+signalight_10mm
+
+
+0
+0
+0
+0_MISC_ELM
+7106DGTR_HS_FP
+
+
+0
+2
+2
+0_MISC_ELM
+SW_SPST_B3U-1000P
+Ultra-small-sized Tactile Switch with High Contact Reliability, Top-actuated Model, without Ground Terminal, without Boss
+Tactile Switch
+0
+2
+2
+0_RESISTOR_ELM
+R_0603_1608Metric_Pad0.98x0.95mm_HandSolder
+Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator
+resistor handsolder
+0
+2
+2
+0_RESISTOR_ELM
+R_1206_3216Metric_Pad1.30x1.75mm_HandSolder
+Resistor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC_7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator
+resistor handsolder
+0
+2
+2
+0_RESISTOR_ELM
+R_2512_6332Metric_Pad1.40x3.35mm_HandSolder
+Resistor SMD 2512 (6332 Metric), square (rectangular) end terminal, IPC_7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator
+resistor handsolder
+0
+2
+2
+0_TRANSISTOR_ELM
+SOT-323_SC-70
+SOT-323, SC-70
+SOT-323 SC-70
+0
+3
+3
+0_TRANSISTOR_ELM
+TO-252-2
+TO-252/DPAK SMD package, http://www.infineon.com/cms/en/product/packages/PG-TO252/PG-TO252-3-1/
+DPAK TO-252 DPAK-3 TO-252-3 SOT-428
+0
+7
+3
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -2305,7 +2578,7 @@ tactile switch Omron B3F right angle through hole
 Button_Switch_THT
 SW_Slide-03_Wuerth-WS-SLTV_10x2.5x6.4_P2.54mm
 Wuerth, WS-SLTV, 450301014042, https://www.we-online.com/components/products/datasheet/450301014042.pdf
-switch single-pole double-throw SPDT würth wurth
+switch single-pole opposite-side-connection double-throw SPDT würth wurth
 0
 3
 3
@@ -8315,6 +8588,13 @@ Combo Connector microSD and microSIM
 0
 25
 18
+Connector_Card
+SD_Card_Device_16mm_SlotDepth
+SD card device PCB layout, contacts and mechanicalm, 16mm slot depth. Manufacture with PCB thickness of 1.4mm, http://www.convict.lu/pdf/ProdManualSDCardv1.9.pdf
+SD Card
+0
+9
+9
 Connector_Card
 SD_Hirose_DM1AA_SF_PEJ82
 SD, SMD, top-mount, push-push (https://www.hirose.com/product/document?clcode=CL0609-0004-8-82&productname=DM1AA-SF-PEJ(82)&series=DM1&documenttype=2DDrawing&lang=en&documentid=0000915301)
@@ -48488,258 +48768,6 @@ conn samtec discrete wire terminal
 0
 22
 21
-Connector_Samtec_MicroPower
-Samtec_UMPS-02-XX.X-X-V-S-W_1x02-1MP_P2.0mm_Socket_WeldTab
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-10
-3
-Connector_Samtec_MicroPower
-Samtec_UMPS-02-XX.X-X-V-S_1x02_P2.0mm_Socket
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-2
-2
-Connector_Samtec_MicroPower
-Samtec_UMPS-03-XX.X-X-V-S-W_1x03-1MP_P2.0mm_Socket_WeldTab
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-11
-4
-Connector_Samtec_MicroPower
-Samtec_UMPS-03-XX.X-X-V-S_1x03_P2.0mm_Socket
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-3
-3
-Connector_Samtec_MicroPower
-Samtec_UMPS-04-XX.X-X-V-S-W_1x04-1MP_P2.0mm_Socket_WeldTab
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-12
-5
-Connector_Samtec_MicroPower
-Samtec_UMPS-04-XX.X-X-V-S_1x04_P2.0mm_Socket
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-4
-4
-Connector_Samtec_MicroPower
-Samtec_UMPS-05-XX.X-X-V-S-W_1x05-1MP_P2.0mm_Socket_WeldTab
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-13
-6
-Connector_Samtec_MicroPower
-Samtec_UMPS-05-XX.X-X-V-S_1x05_P2.0mm_Socket
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-5
-5
-Connector_Samtec_MicroPower
-Samtec_UMPS-06-XX.X-X-V-S-W_1x06-1MP_P2.0mm_Socket_WeldTab
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-14
-7
-Connector_Samtec_MicroPower
-Samtec_UMPS-06-XX.X-X-V-S_1x06_P2.0mm_Socket
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-6
-6
-Connector_Samtec_MicroPower
-Samtec_UMPS-07-XX.X-X-V-S-W_1x07-1MP_P2.0mm_Socket_WeldTab
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-15
-8
-Connector_Samtec_MicroPower
-Samtec_UMPS-07-XX.X-X-V-S_1x07_P2.0mm_Socket
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-7
-7
-Connector_Samtec_MicroPower
-Samtec_UMPS-08-XX.X-X-V-S-W_1x08-1MP_P2.0mm_Socket_WeldTab
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-16
-9
-Connector_Samtec_MicroPower
-Samtec_UMPS-08-XX.X-X-V-S_1x08_P2.0mm_Socket
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-8
-8
-Connector_Samtec_MicroPower
-Samtec_UMPS-09-XX.X-X-V-S-W_1x09-1MP_P2.0mm_Socket_WeldTab
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-17
-10
-Connector_Samtec_MicroPower
-Samtec_UMPS-09-XX.X-X-V-S_1x09_P2.0mm_Socket
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-9
-9
-Connector_Samtec_MicroPower
-Samtec_UMPS-10-XX.X-X-V-S-W_1x10-1MP_P2.0mm_Socket_WeldTab
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-18
-11
-Connector_Samtec_MicroPower
-Samtec_UMPS-10-XX.X-X-V-S_1x10_P2.0mm_Socket
-2.00 mm mPOWER Ultra Micro Power Socket (source: https://suddendocs.samtec.com/prints/umps-xx-xx.x-xx-v-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power socket
-0
-10
-10
-Connector_Samtec_MicroPower
-Samtec_UMPT-02-XX.X-X-V-S-W_1x02-1MP_P2.0mm_Terminal_WeldTab
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-10
-3
-Connector_Samtec_MicroPower
-Samtec_UMPT-02-XX.X-X-V-S_1x02_P2.0mm_Terminal
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-2
-2
-Connector_Samtec_MicroPower
-Samtec_UMPT-03-XX.X-X-V-S-W_1x03-1MP_P2.0mm_Terminal_WeldTab
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-11
-4
-Connector_Samtec_MicroPower
-Samtec_UMPT-03-XX.X-X-V-S_1x03_P2.0mm_Terminal
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-3
-3
-Connector_Samtec_MicroPower
-Samtec_UMPT-04-XX.X-X-V-S-W_1x04-1MP_P2.0mm_Terminal_WeldTab
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-12
-5
-Connector_Samtec_MicroPower
-Samtec_UMPT-04-XX.X-X-V-S_1x04_P2.0mm_Terminal
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-4
-4
-Connector_Samtec_MicroPower
-Samtec_UMPT-05-XX.X-X-V-S-W_1x05-1MP_P2.0mm_Terminal_WeldTab
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-13
-6
-Connector_Samtec_MicroPower
-Samtec_UMPT-05-XX.X-X-V-S_1x05_P2.0mm_Terminal
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-5
-5
-Connector_Samtec_MicroPower
-Samtec_UMPT-06-XX.X-X-V-S-W_1x06-1MP_P2.0mm_Terminal_WeldTab
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-14
-7
-Connector_Samtec_MicroPower
-Samtec_UMPT-06-XX.X-X-V-S_1x06_P2.0mm_Terminal
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-6
-6
-Connector_Samtec_MicroPower
-Samtec_UMPT-07-XX.X-X-V-S-W_1x07-1MP_P2.0mm_Terminal_WeldTab
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-15
-8
-Connector_Samtec_MicroPower
-Samtec_UMPT-07-XX.X-X-V-S_1x07_P2.0mm_Terminal
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-7
-7
-Connector_Samtec_MicroPower
-Samtec_UMPT-08-XX.X-X-V-S-W_1x08-1MP_P2.0mm_Terminal_WeldTab
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-16
-9
-Connector_Samtec_MicroPower
-Samtec_UMPT-08-XX.X-X-V-S_1x08_P2.0mm_Terminal
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-8
-8
-Connector_Samtec_MicroPower
-Samtec_UMPT-09-XX.X-X-V-S-W_1x09-1MP_P2.0mm_Terminal_WeldTab
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-17
-10
-Connector_Samtec_MicroPower
-Samtec_UMPT-09-XX.X-X-V-S_1x09_P2.0mm_Terminal
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-9
-9
-Connector_Samtec_MicroPower
-Samtec_UMPT-10-XX.X-X-V-S-W_1x10-1MP_P2.0mm_Terminal_WeldTab
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-18
-11
-Connector_Samtec_MicroPower
-Samtec_UMPT-10-XX.X-X-V-S_1x10_P2.0mm_Terminal
-2.00 mm mPOWER Ultra Micro Power Terminal, Vertical (source: https://suddendocs.samtec.com/prints/umpt-xx-xx.x-xx-v-x-x-x-x-xr-footprint.pdf)
-conn samtec ultra-mirco-power terminal
-0
-10
-10
 Connector_Stocko
 Stocko_MKS_1651-6-0-202_1x2_P2.50mm_Vertical
 Stocko MKS 16xx series connector, (https://www.stocko-contact.com/downloads/steckverbindersystem-raster-2,5-mm.pdf#page=15), generated with kicad-footprint-generator
@@ -49616,6 +49644,13 @@ usb usb-c 2.0 pd
 20
 17
 Connector_USB
+USB_C_Receptacle_HRO_TYPE-C-31-M-17
+USB Type-C receptacle for USB 2.0, 6 pin, https://omo-oss-file.thefastfile.com/portal-saas/new2023011311465142457/cms/file/134891b2-9b01-4104-89d3-96207243f692.pdf
+usb usb-c 2.0 pd
+0
+10
+7
+Connector_USB
 USB_C_Receptacle_JAE_DX07S016JA1R1500
 USB TYPE C, USB 2.0, SMT, https://www.jae.com/en/connectors/series/detail/product/id=91780
 USB C Type-C Receptacle SMD USB 2.0
@@ -49811,69 +49846,6 @@ Mini USB 2.0 Type B
 0
 9
 6
-Connector_Video
-DVI-D_Molex_74320-4004_Horizontal
-DVI-D Dual Link connector, horizontal, 24 pins, Molex P/N 74320-4004, https://www.molex.com/content/dam/molex/molex-dot-com/products/automated/en-us/salesdrawingpdf/743/74320/743204004_sd.pdf?inline
-dvi right angle
-0
-26
-25
-Connector_Video
-DVI-I_Molex_74320-1004_Horizontal
-DVI-I Dual Link connector, horizontal, 29 pins, Molex P/N 74320-1004, https://www.molex.com/content/dam/molex/molex-dot-com/products/automated/en-us/salesdrawingpdf/743/74320/743201004_sd.pdf?inline
-dvi right angle
-0
-32
-30
-Connector_Video
-HDMI_A_Amphenol_10029449-x01xLF_Horizontal
-HDMI Type A connector, Amphenol 10029449-001TLF 10029449-001RLF 10029449-101TLF 10029449-101RLF, Right Angle(https://cdn.amphenol-icc.com/media/wysiwyg/files/drawing/10029449.pdf)
-hdmi right angle
-0
-23
-20
-Connector_Video
-HDMI_A_Contact_Technology_HDMI-19APL2_Horizontal
-HDMI Contact Technology Type A http://www.contactswitch.com/en/download.aspx?id=1449
-HDMI Contact Technology Type A
-0
-23
-20
-Connector_Video
-HDMI_A_Kycon_KDMIX-SL1-NS-WS-B15_VerticalRightAngle
-HDMI, Type A, Kycon KDMIX-SL1-NS-WS-B15, Vertical Right Angle, http://www.kycon.com/Pub_Eng_Draw/KDMIX-SL1-NS-WS-B15.pdf
-hdmi type a
-0
-23
-20
-Connector_Video
-HDMI_A_Molex_208658-1001_Horizontal
-HDMI Molex Type A https://www.molex.com/pdm_docs/sd/2086581001_sd.pdf
-HDMI Molex Type A
-0
-23
-20
-Connector_Video
-HDMI_Micro-D_Molex_46765-0x01
-HDMI, Micro, Type D, SMD, 0.4mm pitch, 19 ckt, right angle (http://www.molex.com/pdm_docs/sd/467651301_sd.pdf)
-hdmi micro type d right angle smd
-0
-23
-20
-Connector_Video
-HDMI_Micro-D_Molex_46765-1x01
-HDMI, Micro, Type D, THT, 0.4mm pitch, 19 ckt, right angle (http://www.molex.com/pdm_docs/sd/467651301_sd.pdf)
-hdmi micro type d right angle tht
-0
-23
-20
-Connector_Video
-HDMI_Micro-D_Molex_46765-2x0x
-HDMI, Micro, Type D, THT/SMD hybrid, 0.4mm pitch, 19 ckt, right angle (http://www.molex.com/pdm_docs/sd/467651301_sd.pdf)
-hdmi micro type d right angle tht smd hybrid 
-0
-23
-20
 Connector_Wago
 Wago_734-132_1x02_P3.50mm_Vertical
 Molex 734 Male header (for PCBs); Straight solder pin 1 x 1 mm, 734-132 , 2 Pins (http://www.farnell.com/datasheets/2157639.pdf), generated with kicad-footprint-generator
@@ -71122,7 +71094,7 @@ DFN 0.45
 Package_DFN_QFN
 DFN-8-1EP_2x3mm_P0.5mm_EP0.61x2.2mm
 DFN, 8 Pin (https://www.analog.com/media/en/package-pcb-resources/package/pkg_pdf/ltc-legacy-dfn/05081702_c_ddb8.pdf), generated with kicad-footprint-generator ipc_noLead_generator.py
-DFN NoLead Linear-DDB
+DFN NoLead
 0
 11
 9
@@ -74353,6 +74325,13 @@ ti vqfn-hr rnn0018a
 0
 26
 18
+Package_DFN_QFN
+Texas_RPU0010A_VQFN-HR-10_2x2mm_P0.5mm
+VQFN-HR, 10 Pin (https://www.ti.com/lit/ds/symlink/tps62912.pdf#page=39)
+VQFN-HR NO LEAD
+0
+10
+10
 Package_DFN_QFN
 Texas_RSA_VQFN-16-1EP_4x4mm_P0.65mm_EP2.7x2.7mm
 Texas RSA VQFN, 16 Pin (http://www.ti.com/lit/ds/symlink/msp430g2001.pdf#page=44), generated with kicad-footprint-generator ipc_noLead_generator.py
@@ -83888,6 +83867,13 @@ TO-220-3 Vertical RM 2.54mm
 3
 3
 Package_TO_SOT_THT
+TO-220-3_Vertical_no_silk
+TO-220-3, Vertical, RM 2.54mm, see https://www.vishay.com/docs/66542/to-220-1.pdf
+TO-220-3 Vertical RM 2.54mm
+0
+3
+3
+Package_TO_SOT_THT
 TO-220-4_Horizontal_TabDown
 TO-220-4, Horizontal, RM 2.54mm
 TO-220-4 Horizontal RM 2.54mm
@@ -86870,6 +86856,13 @@ DPDT relay, Finder 40.52, 8A, 250V, body size 29x12.4mm, height 25mm, pitch 5x7.
 8
 8
 Relay_THT
+Relay_DPDT_Finder_40.62
+DPDT relay, Finder 40.62, 10A, 250V, body size 29x12.4mm, height 25mm, pitch 5x7.5mm, https://cdn.findernet.com/app/uploads/S40EN.pdf
+2-Form-C
+0
+8
+8
+Relay_THT
 Relay_DPDT_Fujitsu_FTR-F1C
 https://www.fujitsu.com/downloads/MICRO/fcai/relays/ftr-f1.pdf
 relay dpdt fujitsu tht
@@ -87072,6 +87065,13 @@ SPDT relay, Finder 40.52, 10/12A, 250V, body size 29x12.4mm, height 25mm, pitch 
 0
 5
 5
+Relay_THT
+Relay_SPDT_Finder_40.61
+SPDT relay, Finder 40.61, 16A, 250V, body size 29x12.4mm, height 25mm, pitch 5x7.5mm, https://cdn.findernet.com/app/uploads/S40EN.pdf
+2-Form-C
+0
+8
+8
 Relay_THT
 Relay_SPDT_Fujitsu_FTR-LYCA005x_FormC_Vertical
 Relay, SPDT Form C, vertical mount, 6A, 5-60V, https://www.fujitsu.com/sg/imagesgig5/ftr-ly.pdf
@@ -89263,6 +89263,13 @@ hall current
 0
 6
 6
+Sensor_Current
+LEM_LA25-NP
+LEM LA 25-NP Current Transducer (https://www.lem.com/sites/default/files/products_datasheets/la%2025-np.pdf)
+Current sensor LEM
+0
+13
+13
 Sensor_Current
 LEM_LA25-P
 LEM Current Transducer (https://www.lem.com/sites/default/files/products_datasheets/la_25-p.pdf)
@@ -96585,917 +96592,966 @@ Varistor VF
 0
 2
 2
-iclr-hw
+iclr
 95
 
 
 0
 0
 0
-iclr-hw
+iclr
 292227-7
 
 
 0
 9
 9
-iclr-hw
+iclr
 1053131104
 
 
 0
 4
 4
-iclr-hw
+iclr
 9775026360R
 
 
 0
 2
 2
-iclr-hw
+iclr
 ADS131M06IRSNR
 
 
 0
 33
 33
-iclr-hw
+iclr
 AMASS_XT60PW-F
 
 
 0
 4
 4
-iclr-hw
+iclr
 AMASS_XT60PW-M
 
 
 0
 4
 4
-iclr-hw
+iclr
 AMPHENOL_12401598E4#2A
 
 
 0
 28
 28
-iclr-hw
+iclr
 ANT_AMCA31-2R450G-S1F-T3
 
 
 0
 2
 2
-iclr-hw
+iclr
 Axes_Lefthand_Xup
 
 
 0
 0
 0
-iclr-hw
+iclr
 Axes_Magnetic_Lefthand_Xdown
 
 
 0
 0
 0
-iclr-hw
+iclr
+BSZ025N04LS
+BSZ025N04LS-2
+MOSFET (N-Channel)
+0
+10
+10
+iclr
 BUK9M1140HX
 BUK9M11-40HX
 MOSFET (N-Channel)
 0
 11
 11
-iclr-hw
+iclr
 CAPC2012X145N
 
 
 0
 2
 2
-iclr-hw
+iclr
 CMT052575SMTTR
 CMT-0525-75-SMT-TR-1
 Loudspeaker or Buzzer
 0
 3
 3
-iclr-hw
+iclr
+CONN8_08S4TR2000_JAE
+
+ST1W008S4TR2000 
+0
+13
+13
+iclr
 CONV_MAX77827AEFD+T
 
 
 0
 12
 12
-iclr-hw
+iclr
 Chad
 
 
 0
 0
 0
-iclr-hw
+iclr
 Crystal_SMD_2016-4Pin_2.0x1.6mm
 SMD Crystal SERIES SMD2016/4 http://www.q-crystal.com/upload/5/2015552223166229.pdf, 2.0x1.6mm^2 package
 SMD SMT crystal
 0
 4
 4
-iclr-hw
+iclr
 D5V0FS4U10LP7
 D5V0FS4U10LP-7-1
 TVS Diode (Uni-directional)
 0
 10
 10
-iclr-hw
+iclr
 DDTCCRUB_COTS_Charger
 
 
 0
 4
 4
-iclr-hw
+iclr
 DIOM6959X245N
 
 
 0
 2
 2
-iclr-hw
+iclr
 DIO_V3PAN50-M3_I
 
 
 0
 2
 2
-iclr-hw
+iclr
 DPAK228P990X239-4N
 
 
 0
 3
 3
-iclr-hw
+iclr
 EXL1V07053R3R
 EXL1V0705-3R3-R-1
 Inductor
 0
 2
 2
-iclr-hw
+iclr
 GCT_USB4110-GF-A_REVB
 
 
 0
 16
 16
-iclr-hw
+iclr
 IC_ESP32-S3
 
 
 0
 69
 69
-iclr-hw
+iclr
 IC_TPS61089RNRR
 
 
 0
 12
 12
-iclr-hw
+iclr
 INDC1006X60N
 
 
 0
 2
 2
-iclr-hw
+iclr
 INDM8681X400N
 
 
 0
 2
 2
-iclr-hw
+iclr
 INDPM3030X200N
 74438
 Inductor
 0
 2
 2
-iclr-hw
+iclr
 INDPM110100X540N
 SRP1050WA-100M
 Inductor
 0
 2
 2
-iclr-hw
+iclr
 INDPM112100X400N
 WLPMA0A040M2R2LC
 Inductor
 0
 2
 2
-iclr-hw
+iclr
 IND_ETQP5M330YFM
 
 
 0
 2
 2
-iclr-hw
+iclr
 IND_SPM10065VT-3R3M-D
 
 
 0
 2
 2
-iclr-hw
+iclr
 IND_SRP6540-390M
 
 
 0
 2
 2
-iclr-hw
+iclr
 JAE_ST1W008S4TR2000
 
 
 0
 13
 13
-iclr-hw
+iclr
 Kermit
 
 
 0
 0
 0
-iclr-hw
+iclr
 LGA88-1.4-17.8X15.8X2.4MM
 
 
 0
 88
 88
-iclr-hw
+iclr
 LM2596_COTS_Buck
 
 
 0
 4
 4
-iclr-hw
+iclr
 LM2623QNHLRQ1
 
 
 0
 15
 15
-iclr-hw
+iclr
 LMQ
 
 
 0
 0
 0
-iclr-hw
+iclr
 MAX1771CSA&plus_
 
 
 0
 8
 8
-iclr-hw
+iclr
 MGAH1004R68M-10
 
 
 0
 2
 2
-iclr-hw
+iclr
 MIT_logo
 
 
 0
 0
 0
-iclr-hw
+iclr
 MOLEX_78646-3001
 
 
 0
 14
 14
-iclr-hw
+iclr
 MP28167GQ-A-P
 
 
 0
 16
 16
-iclr-hw
+iclr
 MP28167GQ-A-Z
 
 
 0
 16
 16
-iclr-hw
+iclr
 MPLAL60504R7
 MPL-AL6050-4R7-1
 Inductor
 0
 2
 2
-iclr-hw
+iclr
 Molex_Mini-Fit_Jr_5569-06A2_2x03_P4.20mm_Horizontal
 Molex Mini-Fit Jr. Power Connectors, old mpn/engineering number: 5569-06A2, example for new mpn: 39-30-0060, 3 Pins per row, Mounting: Snap-in Plastic Peg PCB Lock (http://www.molex.com/pdm_docs/sd/039300020_sd.pdf), generated with kicad-footprint-generator
 connector Molex Mini-Fit_Jr top entryplastic_peg
 0
 6
 6
-iclr-hw
+iclr
 Molex_Mini-Fit_Jr_5569-06A2_2x03_P4.20mm_Horizontal_No_Mounting_Holes
 Molex Mini-Fit Jr. Power Connectors, old mpn/engineering number: 5569-06A2, example for new mpn: 39-30-0060, 3 Pins per row, Mounting: Snap-in Plastic Peg PCB Lock (http://www.molex.com/pdm_docs/sd/039300020_sd.pdf), generated with kicad-footprint-generator
 connector Molex Mini-Fit_Jr top entryplastic_peg
 0
 6
 6
-iclr-hw
+iclr
 Molex_Mini-Fit_Jr_5569-08A2_2x04_P4.20mm_Horizontal
 Molex Mini-Fit Jr. Power Connectors, old mpn/engineering number: 5569-08A2, example for new mpn: 39-30-0080, 4 Pins per row, Mounting: Snap-in Plastic Peg PCB Lock (http://www.molex.com/pdm_docs/sd/039300020_sd.pdf), generated with kicad-footprint-generator
 connector Molex Mini-Fit_Jr top entryplastic_peg
 0
 8
 8
-iclr-hw
+iclr
 Molex_Nano-Fit_105313-xx02_1x02_P2.50mm_Horizontal
 Molex Nano-Fit Power Connectors, 105313-xx02, 2 Pins per row (http://www.molex.com/pdm_docs/sd/1053131208_sd.pdf), generated with kicad-footprint-generator
 connector Molex Nano-Fit top entry
 0
 2
 2
-iclr-hw
+iclr
 Molex_Nano-Fit_105313-xx02_1x02_P2.50mm_Horizontal_No_Mounting_Holes
 Molex Nano-Fit Power Connectors, 105313-xx02, 2 Pins per row (http://www.molex.com/pdm_docs/sd/1053131208_sd.pdf), generated with kicad-footprint-generator
 connector Molex Nano-Fit top entry
 0
 2
 2
-iclr-hw
+iclr
 Molex_Nano-Fit_105313-xx03_1x03_P2.50mm_Horizontal
 Molex Nano-Fit Power Connectors, 105313-xx03, 3 Pins per row (http://www.molex.com/pdm_docs/sd/1053131208_sd.pdf), generated with kicad-footprint-generator
 connector Molex Nano-Fit top entry
 0
 3
 3
-iclr-hw
+iclr
 P160KN0QC20A10K
 P160KN-0QC20A10K-2
 Variable Resistor
 0
 3
 3
-iclr-hw
+iclr
 P0848NL
 P0848NL-3
 Inductor
 0
 2
 2
-iclr-hw
+iclr
 PHOENIX_1757242
 
 
 0
 2
 2
-iclr-hw
+iclr
 PQFN50P300X300X80-16N
 
 
 0
 16
 16
-iclr-hw
+iclr
 PQFN50P300X300X100-16N
 
 
 0
 16
 16
-iclr-hw
+iclr
 PXP01230QLJ
 SOT8002-1
 MOSFET (P-Channel)
 0
 9
 9
-iclr-hw
+iclr
 QFN28G_0.5-5X5MM
 
 
 0
 29
 29
-iclr-hw
+iclr
 QFN40P700X700X90-57N
 
 
 0
 57
 57
-iclr-hw
+iclr
 QFN50P400X400X80-21N-D
 T2044Y+6C
 Integrated Circuit
 0
 21
 21
-iclr-hw
+iclr
 QFN50P400X400X95-24N
 
 
 0
 24
 24
-iclr-hw
+iclr
+QFN50P500X500X90-29N
+TMC2209-LA
+Integrated Circuit
+0
+29
+29
+iclr
 QFN65P400X400X100-17N
 
 
 0
 17
 17
-iclr-hw
+iclr
 QFN300X300X100-16N
 
 
 0
 16
 16
-iclr-hw
+iclr
 QFP50P900X900X120-48N
 PFB (S-PQFP-G48) PLASTIC QUAD FLATPACK
 Integrated Circuit
 0
 48
 48
-iclr-hw
+iclr
 RCLAMP3346PQTNT
 RCLAMP3346PQTNT-2
 Diode
 0
 7
 7
-iclr-hw
+iclr
 SDM02U30LP37B
 SDM02U30LP3-7B-4
 Schottky Diode
 0
 2
 2
-iclr-hw
+iclr
 SER2011202MLD
 SER2011-202MLD-1
 Inductor
 0
 3
 3
-iclr-hw
+iclr
 SI7315DNT1GE3
 SI7315DN-T1-GE3-1
 MOSFET (P-Channel)
 0
 9
 9
-iclr-hw
+iclr
 SIS862DNT1GE3
 PowerPAK 1212-8 Single_2
 MOSFET (P-Channel)
 0
 11
 11
-iclr-hw
+iclr
 SODFL3516X70N
 S Series_1
 Diode
 0
 2
 2
-iclr-hw
+iclr
 SOIC127P599X175-8N
 
 
 0
 8
 8
-iclr-hw
+iclr
 SOIC127P599X175-9N
 
 
 0
 9
 9
-iclr-hw
+iclr
 SOIC127P600X100-9N
 HTSOP-J8-12
 Integrated Circuit
 0
 9
 9
-iclr-hw
+iclr
 SOIC127P600X170-9N
 
 
 0
 15
 15
-iclr-hw
+iclr
+SON50P300X300X80-13N-D
+DRR0012E_2021
+Integrated Circuit
+0
+13
+13
+iclr
 SON50P400X400X100-13N
 DNT0012B_-
 Integrated Circuit
 0
 13
 13
-iclr-hw
+iclr
+SON65P300X300X100-9N-D
+8 lead
+Integrated Circuit
+0
+9
+9
+iclr
 SOP40P640X120-14N
 
 
 0
 14
 14
-iclr-hw
+iclr
 SOP50P310X90-8N
 
 
 0
 8
 8
-iclr-hw
+iclr
 SOP50P490X110-10N
 
 
 0
 10
 10
-iclr-hw
+iclr
 SOP65P637X110-16N
 
 
 0
 17
 17
-iclr-hw
+iclr
 SOT-723
 http://toshiba.semicon-storage.com/info/docget.jsp?did=5879&prodName=RN1104MFV
 sot 723
 0
 3
 3
-iclr-hw
+iclr
 SOT65P210X110-6N
 
 
 0
 6
 6
-iclr-hw
+iclr
 SOT95P280X145-6N
 
 
 0
 6
 6
-iclr-hw
+iclr
 SOT95P282X145-5N
 SOT25_
 Integrated Circuit
 0
 5
 5
-iclr-hw
+iclr
 SOTFL50P160X60-8N
 DRL0008A
 Integrated Circuit
 0
 8
 8
-iclr-hw
+iclr
 SQS850ENT1_GE3
 PowerPAK 1212-8 Single
 MOSFET (P-Channel)
 0
 11
 11
-iclr-hw
+iclr
 SR0502CTG
 SOT-143
 TVS Diode (Uni-directional)
 0
 4
 4
-iclr-hw
+iclr
 SRP5050FA5R6M
 SRP5050FA-5R6M-2
 Inductor
 0
 2
 2
-iclr-hw
+iclr
 SiC437BEDT1GE3
 SiC437BED-T1-GE3-7
 Integrated Circuit
 0
 30
 30
-iclr-hw
+iclr
 SmallerSolderJP
 Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator
 resistor
 0
 2
 2
-iclr-hw
+iclr
+Spark_Gap_0.4x0.4_0.2mm_gap
+
+
+0
+2
+2
+iclr
 TO127P457X1016X2052-7P
 
 
 0
 7
 7
-iclr-hw
+iclr
 TO254P483X1016X2222-3P
 
 
 0
 3
 3
-iclr-hw
+iclr
 TPS259830ONRGER
 TPS259830ONRGER-2
 Integrated Circuit
 0
 26
 26
-iclr-hw
+iclr
 TRANS_SSM6J511NU,LF
 
 
 0
 8
 8
-iclr-hw
+iclr
 Texas_PowerVFQFN_15
 
 
 0
 13
 13
-iclr-hw
+iclr
 TopTrumps
 
 
 0
 0
 0
-iclr-hw
+iclr
 USB_C_Receptacle_Palconn_UTC16-G
 http://www.palpilot.com/wp-content/uploads/2017/05/UTC027-GKN-OR-Rev-A.pdf
 USB C Type-C Receptacle USB2.0
 0
 20
 17
-iclr-hw
+iclr
+V8PAM10SM3I
+V8PAM10S-M3/I-5
+Schottky Diode
+0
+2
+2
+iclr
 VIA-0.6mm
 
 
 0
 1
 1
-iclr-hw
+iclr
 VLAD
 
 
 0
 0
 0
-iclr-hw
+iclr
 VSON-10-1EP_2.5x2.5mm_Pitch0.5mm_ThermalPad
 VSON 10 Thermal on 11 3x3mm Pitch 0.5mm http://chip.tomsk.ru/chip/chipdoc.nsf/Package/D8A64DD165C2AAD9472579400024FC41!OpenDocument
 VSON 10 Thermal on 11 3x3mm Pitch 0.5mm
 0
 17
 11
-iclr-hw
+iclr
 Write_Pad
 
 
 0
 0
 0
-iclr-hw
+iclr
 XBEE
 DIGI XBEE AND XBEE-PRO RF MODULES
 DIGI XBEE AND XBEE-PRO RF MODULES
 0
 20
 20
-iclr-hw
+iclr
 XC6230H001ERG
 XC6230H001ER-G-3
 Integrated Circuit
 0
 9
 9
-iclr-hw
+iclr
 XDCR_DPS310
 
 
 0
 8
 8
-iclr-hw
+iclr
 XFL2010183MEC
 XFL2010-183MEC-1
 Inductor
 0
 2
 2
-iclr-hw
+iclr
 XT30PWF
 XT30PW-F-2
 Connector
 0
 4
 4
-iclr-hw
+iclr
 XT30PWM
 XT30PW-M
 Connector
 0
 4
 4
-iclr-hw
+iclr
 astronautPete30mmwide
 
 
 0
 0
 0
-iclr-hw
+iclr
 buckaroo
 
 
 0
 0
 0
-iclr-hw
+iclr
 buffkermit
 
 
 0
 0
 0
-iclr-hw
+iclr
 cheshire
 
 
 0
 0
 0
-iclr-hw
+iclr
 chinesebuck
 
 
 0
 0
 0
-iclr-hw
+iclr
 daisychain
 
 
 0
 0
 0
-iclr-hw
+iclr
 iclr_logo
 
 
 0
 0
 0
-iclr-hw
+iclr
 iclr_logo_estd2018_6mm
 
 
 0
 0
 0
-iclr-hw
+iclr
 iclr_logo_estd2018_8mm
 
 
 0
 0
 0
-iclr-hw
+iclr
 iclr_logo_estd2018_10mm
 
 
 0
 0
 0
-iclr-hw
+iclr
 kachow
 
 
 0
 0
 0
-iclr-hw
+iclr
 max1771cpa&plus_
 
 
 0
 8
 8
-iclr-hw
+iclr
 microSIM_JAE_SF53S006VCBR2000
 https://www.jae.com/z-en/pdf_download_exec.cfm?param=SJ115712.pdf
 microSIM GSM Card
 0
 14
 7
-iclr-hw
+iclr
 nocap
 
 
 0
 0
 0
-iclr-hw
+iclr
 orientation_marker
 
 
 0
 0
 0
-iclr-hw
+iclr
 pickle_ric
 
 
 0
 0
 0
-iclr-hw
+iclr
 rae_logo_2mm
 
 
 0
 0
 0
-iclr-hw
+iclr
 rae_logo_4mm
 
 
 0
 0
 0
-iclr-hw
+iclr
 rae_logo_6mm
 
 
 0
 0
 0
-iclr-hw
+iclr
 rae_logo_8mm
 
 
 0
 0
 0
-iclr-hw
+iclr
 ricardo_logo
 
 
 0
 0
 0
-iclr-hw
+iclr
 spider-man
 
 
 0
 0
 0
-iclr-hw
+iclr
 witcher_switcher
 
 

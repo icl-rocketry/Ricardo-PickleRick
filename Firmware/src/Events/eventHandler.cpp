@@ -6,6 +6,7 @@
 
 #include <libriccore/riccorelogging.h>
 #include <librrc/Helpers/jsonconfighelper.h>
+#include <librrc/Local/remoteactuatoradapter.h>
 
 #include "event.h"
 #include "condition.h"
@@ -139,101 +140,154 @@ condition_t EventHandler::configureCondition(JsonVariantConst condition, uint8_t
     if (recursion_level > condition_recursion_max_depth){
         throw std::runtime_error("EventHandler max recursion depth reached!"); // this needs to fail quietly too
     }
-    
-    if (condition.is<JsonObjectConst>())
+
+    if (!condition.is<JsonObjectConst>())
     {
-
-        auto conditionJson = condition.as<JsonObjectConst>();
-
-        if (conditionJson.containsKey("condition")){
-
-            auto subconditionarray = conditionJson["condition"].as<JsonArrayConst>(); // required explict cast to JsonArray type
-            size_t arraysize = subconditionarray.size();
-
-            if (arraysize == 0){
-                throw std::runtime_error("EventHandler no conditions provided"); // we can fail safe here by returning false
-            }
-            if (arraysize == 1){
-                return configureCondition(subconditionarray[0],recursion_level); // no change to recursion depth
-            }
-
-            conditionOperator_t op;
-            
-            if (conditionJson["operator"].as<std::string>() == "AND"){
-                op = ConditionOperator::AND;
-            }else if (conditionJson["operator"].as<std::string>() == "OR"){
-                op = ConditionOperator::OR;
-            }else{
-                throw std::runtime_error("Invalid Operator Supplied");
-            }
-            
-            //generate decision tree
-
-            //get initial condition
-            #ifdef _RICDEBUG
-            _decisiontree += "  (";
-            #endif
-
-            auto conditionCombination = configureCondition(subconditionarray[0],recursion_level + 1);
-            
-            for (int i = 1; i < arraysize;i++){
-                #ifdef _RICDEBUG
-                _decisiontree += "  ";
-                _decisiontree += conditionJson["operator"].as<std::string>();
-                _decisiontree += "  ";
-                #endif
-
-                conditionCombination = ConditionCombination(conditionCombination,
-                                                             configureCondition(subconditionarray[i],recursion_level + 1),
-                                                             op);
-                #ifdef _RICDEBUG
-                _decisiontree += " ) ";
-                #endif
-
-            }
-            
-
-            return conditionCombination;
-
-        }else if (conditionJson.containsKey("flightVar")){ // expand here to allow for the other types i.e networked sensor / local pyros etc
-
-            // what happens if config requests that flight var is time since event on its self?
-            // if it is the only condition and u are testing time_triggered then the event will never trigger
-            // if the conditon is 'and' with another condition it will again never trigger
-            // if the conditon is or'ed then if the other condition is met, the event will trigger. If the conditon comparing
-            // time trigered is less than, the result is no different to just testing the other conditon. If using more than, 
-            // we effectivley latch the output of the event, it will always be on meaning the action will be continually called
-            
-            flightVariableOperator_t op;
-            if (conditionJson["operator"].as<std::string>() == "LESSTHAN"){
-                op = ConditionOperator::LESSTHAN;
-            }else if (conditionJson["operator"].as<std::string>() == "MORETHAN"){
-                op = ConditionOperator::MORETHAN;
-            }else{
-                throw std::runtime_error("Invalid Operator Supplied");
-            }
-
-            #ifdef _RICDEBUG
-            serializeJson(conditionJson,_decisiontree);
-            #endif
-
-            return Condition(_flightvariables.get(conditionJson["flightVar"].as<std::string>()), 
-                             conditionJson["component"].as<int>(),
-                             conditionJson["threshold"].as<float>(),
-                             op); // while this looks like we are returning an Condtion object, as the return type of the function is std::function<bool()> and the operator() is defined for condtion, we are in fact returning a callable function
-        }else{
-            std::string condition_string;
-            serializeJson(conditionJson,condition_string);
-            throw std::runtime_error("EventHandler Bad Condition Type " + condition_string);
-        }
-
-
-    }else{
-        
         throw std::runtime_error("EventHandler Invalid type deserialized : " + condition.as<std::string>() + " depth : " + std::to_string(recursion_level));
     }
 
+    auto conditionJson = condition.as<JsonObjectConst>();
+
+
+    if (conditionJson.containsKey("condition")){
+
+        auto subconditionarray = conditionJson["condition"].as<JsonArrayConst>(); // required explict cast to JsonArray type
+        size_t arraysize = subconditionarray.size();
+
+        if (arraysize == 0){
+            throw std::runtime_error("EventHandler no conditions provided"); // we can fail safe here by returning false
+        }
+        if (arraysize == 1){
+            return configureCondition(subconditionarray[0],recursion_level); // no change to recursion depth
+        }
+
+        conditionOperator_t op;
+        
+        if (conditionJson["operator"].as<std::string>() == "AND"){
+            op = ConditionOperator::AND;
+        }else if (conditionJson["operator"].as<std::string>() == "OR"){
+            op = ConditionOperator::OR;
+        }else{
+            throw std::runtime_error("Invalid Operator Supplied");
+        }
+        
+        //generate decision tree
+
+        //get initial condition
+        #ifdef _RICDEBUG
+        _decisiontree += "  (";
+        #endif
+
+        auto conditionCombination = configureCondition(subconditionarray[0],recursion_level + 1);
+        
+        for (int i = 1; i < arraysize;i++){
+            #ifdef _RICDEBUG
+            _decisiontree += "  ";
+            _decisiontree += conditionJson["operator"].as<std::string>();
+            _decisiontree += "  ";
+            #endif
+
+            conditionCombination = ConditionCombination(conditionCombination,
+                                                            configureCondition(subconditionarray[i],recursion_level + 1),
+                                                            op);
+            #ifdef _RICDEBUG
+            _decisiontree += " ) ";
+            #endif
+
+        }
+        
+
+        return conditionCombination;
+
+    }
+    
+
+    //iterate thru call map 
+    //!O(n) but this doesnt matter right now, could redo to use explict keys in JSON and use that
+    //! to lookup in map but thats a future thing.
+    for (const auto& [key, configureConditionFunction] : configureConditionMap)
+    {
+        if (conditionJson[key])
+        {
+            return configureConditionFunction(this,conditionJson);
+        }
+    }
+    
+    
+    //fall through
+
+    std::string condition_string;
+    serializeJson(conditionJson,condition_string);
+    throw std::runtime_error("EventHandler Bad Condition Type " + condition_string);
+
+
+
+    //networkcomponentstate
+    //networkcomponentvalue
+    //command id recieved for manual triggers
+    //pyro continuity
+
 }
+
+condition_t EventHandler::configureFlightVarCondition(JsonObjectConst conf)
+{
+    // what happens if config requests that flight var is time since event on its self?
+        // if it is the only condition and u are testing time_triggered then the event will never trigger
+        // if the conditon is 'and' with another condition it will again never trigger
+        // if the conditon is or'ed then if the other condition is met, the event will trigger. If the conditon comparing
+        // time trigered is less than, the result is no different to just testing the other conditon. If using more than, 
+        // we effectivley latch the output of the event, it will always be on meaning the action will be continually called
+        
+        flightVariableOperator_t op;
+        if (conf["operator"].as<std::string>() == "LESSTHAN"){
+            op = ConditionOperator::LESSTHAN;
+        }else if (conf["operator"].as<std::string>() == "MORETHAN"){
+            op = ConditionOperator::MORETHAN;
+        }else{
+            throw std::runtime_error("Invalid Operator Supplied");
+        }
+
+        #ifdef _RICDEBUG
+        serializeJson(conf,_decisiontree);
+        #endif
+
+        return Condition(_flightvariables.get(conf["flightVar"].as<std::string>()), 
+                            conf["component"].as<int>(),
+                            conf["threshold"].as<float>(),
+                            op); // while this looks like we are returning an Condtion object, as the return type of the function is std::function<bool()> and the operator() is defined for condtion, we are in fact returning a callable function
+
+}
+
+condition_t EventHandler::configureLocalPyroCondition(JsonObjectConst conf)
+{
+    if (!conf["continuity"])
+    {
+        throw std::runtime_error("EventHandler Condition no state given ");
+    }
+
+    auto localPyroChannel = conf["localPyroChannel"].as<int>();
+    //check if channel exists
+    if (localPyroChannel > m_localPyroMap.size())
+    {
+        throw std::runtime_error("EventHandler Condition localPyroChannel out of range");
+    }
+
+    bool continuity = conf["continuity"].as<bool>();
+
+    auto condtionFunc = [localPyroChannel,continuity,this]() -> bool {
+        auto localPyro = RemoteActuatorAdapter<Types::LocalPyro_t>(0,*m_localPyroMap.at(localPyroChannel),[](std::string msg){});
+        localPyro.updateState(); // force pyro to read continuity
+        auto state = localPyro.getState();
+        if (!state.flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::ERROR_CONTINUITY) && continuity)
+        {
+            return true; 
+        }
+        return false; 
+    };
+
+    return condtionFunc;
+}
+
 
 void EventHandler::update(const SensorStructs::state_t& state)
 {
