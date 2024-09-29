@@ -100,7 +100,7 @@ void Sensors::update()
 
 const SensorStructs::raw_measurements_t& Sensors::getData()
 {
-    //TODO make this threadsafe maybe use a double buffer to make it lock free
+   
     return sensors_raw;
 }
 
