@@ -42,17 +42,17 @@ Types::CoreTypes::State_ptr_t Launch::update()
     int engines_in_error = _system.enginehandler.flightCheck();
     _system.enginehandler.update();
 
-    // if ((deployers_in_error == 0) && (engines_in_error == 0) && _system.systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK))
-    // {
-    //     _system.systemstatus.deleteFlag(SYSTEM_FLAG::ERROR_FLIGHTCHECK);
-    // }
-    // else
-    // {
-    //     if (!_system.systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK))
-    //     {
-    //         _system.systemstatus.newFlag(SYSTEM_FLAG::ERROR_FLIGHTCHECK);
-    //     }
-    // }
+    if ((deployers_in_error == 0) && (engines_in_error == 0) && _system.systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK))
+    {
+        _system.systemstatus.deleteFlag(SYSTEM_FLAG::ERROR_FLIGHTCHECK);
+    }
+    else
+    {
+        if (!_system.systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK))
+        {
+            _system.systemstatus.newFlag(SYSTEM_FLAG::ERROR_FLIGHTCHECK);
+        }
+    }
 
     // if (!_system.systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK) && _system.estimator.getData().acceleration(2) < -1){ // launch acceleration threshold comparison of down acceleration with a threshold of 1.5 g idk if this is okay lol?
     if (_system.estimator.getData().acceleration(2) < -(2*9.81) && _system.estimator.getData().position(2) < -50)
