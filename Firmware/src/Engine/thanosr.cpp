@@ -101,6 +101,7 @@ void ThanosR::armEngine()
 void ThanosR::shutdown()
 {
     m_engine->execute(m_shutdown_command_arg);
+    m_eReg->execute(2); // shut down ereg
     Engine::shutdown();
     m_state.runState = static_cast<uint8_t>(ENGINE_RUN_STATE::SHUTDOWN);
 }

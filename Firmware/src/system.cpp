@@ -196,7 +196,7 @@ void System::setupPins()
     pinMode(PinMap::MagCs, OUTPUT);
     pinMode(PinMap::SdCs_1, OUTPUT);
     pinMode(PinMap::SdCs_2, OUTPUT);
-    pinMode(PinMap::DepSwitch, OUTPUT);
+    
 
     // initialise cs pins
     digitalWrite(PinMap::LoraCs, HIGH);
@@ -208,7 +208,10 @@ void System::setupPins()
     digitalWrite(PinMap::SdCs_2, HIGH);
     //! Pulling up for now Will change when we write
     //! the active current monitor
-    digitalWrite(PinMap::DepSwitch, HIGH); 
+    #if HARDWARE_VERSION == 3
+        pinMode(PinMap::DepSwitch, OUTPUT);
+        digitalWrite(PinMap::DepSwitch, HIGH); 
+    #endif
 }
 
 void System::loadConfig()
@@ -384,9 +387,12 @@ void System::configureNetwork()
     networkmanager.addInterface(&canbus);
 
     networkmanager.enableAutoRouteGen(true);
-    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,2});
+    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,2,3});
 
-    // RoutingTable flightRouting;
+    //  RoutingTable flightRouting;
+
+    // #ifdef ROCKET
+
     // flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION_GATEWAY,Route{2,1,{}});
     // flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION,Route{2,2,{}});
     // flightRouting.setRoute(17,Route{3,2,{}});
@@ -410,6 +416,15 @@ void System::configureNetwork()
     // flightRouting.setRoute(101,Route{3,2,{}});
     // flightRouting.setRoute(102,Route{3,2,{}});
     // flightRouting.setRoute(150,Route{2,2,{}});
+
+    // #elif ROCKET_GND
+
+
+    // #endif
+
+
+
+
 
     
     // networkmanager.setRoutingTable(flightRouting);
