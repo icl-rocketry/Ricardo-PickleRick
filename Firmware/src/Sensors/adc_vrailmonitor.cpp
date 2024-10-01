@@ -1,4 +1,4 @@
-#include "VRailMonitor.h"
+#include "adc_vrailmonitor.h"
 
 #include <string>
 
@@ -12,7 +12,7 @@
 #include "sensorStructs.h"
 
 
-VRailMonitor::VRailMonitor(std::string_view vrail_name,const uint8_t pin, const float r1,const float r2):
+ADC_VRailMonitor::ADC_VRailMonitor(std::string_view vrail_name,const uint8_t pin, const float r1,const float r2):
     _name(vrail_name),
     _pin(pin),
     _channel(ADC_CHANNEL_0),//default
@@ -25,7 +25,7 @@ VRailMonitor::VRailMonitor(std::string_view vrail_name,const uint8_t pin, const 
     _minVoltage(0)
 {};
 
-void VRailMonitor::setup(uint16_t maxVoltage, uint16_t lowVoltage,uint16_t minVoltage){
+void ADC_VRailMonitor::setup(int maxVoltage, int lowVoltage,int minVoltage){
     _maxVoltage = maxVoltage;
     _lowVoltage = lowVoltage;
     _minVoltage = minVoltage;
@@ -61,7 +61,7 @@ void VRailMonitor::setup(uint16_t maxVoltage, uint16_t lowVoltage,uint16_t minVo
     
 }
 
-void VRailMonitor::update(SensorStructs::V_RAIL_t &data)
+void ADC_VRailMonitor::update(SensorStructs::ADC_V_RAIL_t &data)
 {
     if(!_adcInitialized)
     {
@@ -83,7 +83,7 @@ void VRailMonitor::update(SensorStructs::V_RAIL_t &data)
 
         uint32_t reading = esp_adc_cal_raw_to_voltage(raw_reading,&_adcCal);
 
-        data.volt = (uint16_t)(factor * (float)reading); // voltage in mV
+        data.volt = (int)(factor * (float)reading); // voltage in mV
 
         if ((data.volt < _lowVoltage) && !_lowVoltageTriggered)
         {
@@ -102,7 +102,7 @@ void VRailMonitor::update(SensorStructs::V_RAIL_t &data)
         }
         else
         {
-            data.percent = uint16_t(((float)(data.volt - _minVoltage) / (float)(_maxVoltage - _minVoltage)) * 100.0);
+            data.percent = int(((float)(data.volt - _minVoltage) / (float)(_maxVoltage - _minVoltage)) * 100.0);
         }
     }
 }

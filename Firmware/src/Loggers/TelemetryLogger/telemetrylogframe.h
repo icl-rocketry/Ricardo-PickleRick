@@ -32,8 +32,10 @@ private:
             &TelemetryLogframe::baro_alt,
             &TelemetryLogframe::baro_temp,
             &TelemetryLogframe::baro_press,
-            &TelemetryLogframe::batt_volt,
-            &TelemetryLogframe::batt_percent,
+            &TelemetryLogframe::logic_voltage,
+            &TelemetryLogframe::logic_percent,
+            &TelemetryLogframe::dep_voltage,
+            &TelemetryLogframe::dep_current,
             &TelemetryLogframe::roll,
             &TelemetryLogframe::pitch,
             &TelemetryLogframe::yaw,
@@ -77,7 +79,10 @@ public:
     //baro
     float baro_alt,baro_temp,baro_press;
     //battery
-    uint16_t batt_volt,batt_percent;
+    int logic_voltage;
+    int logic_percent;
+    int dep_voltage;
+    int dep_current;
     //orientation
     float roll, pitch, yaw;
     float q0,q1,q2,q3;

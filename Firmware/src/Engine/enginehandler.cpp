@@ -16,7 +16,7 @@
 #include "simpleengine.h"
 #include "hypnos.h"
 #include "thanos.h"
-
+#include "thanosr.h"
 
 void EngineHandler::update(){ // call update on all engines
     for (auto& engine : *this){
@@ -67,6 +67,13 @@ void EngineHandler::setupIndividual_impl(size_t id, JsonObjectConst engineconfig
     }
     else if (type == "Thanos"){
         addObject(std::make_unique<Thanos>(id,
+                                            engineconfig,
+                                            getaddNetworkCallbackFunction(id),
+                                            _networkmanager,
+                                            _serviceID));   
+    }
+    else if (type == "ThanosR"){
+        addObject(std::make_unique<ThanosR>(id,
                                             engineconfig,
                                             getaddNetworkCallbackFunction(id),
                                             _networkmanager,

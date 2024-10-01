@@ -8,7 +8,7 @@
 
 #include <libriccore/riccorelogging.h>
 
-class VRailMonitor
+class ADC_VRailMonitor
 {
 public:
     /**
@@ -19,7 +19,7 @@ public:
      * @param r1 value of r1 in potential divider (unitless)
      * @param r2 value of r2 in potential divider (unitless)
      */
-    VRailMonitor(std::string_view vrail_name,const uint8_t pin, const float r1,const float r2);
+    ADC_VRailMonitor(std::string_view vrail_name,const uint8_t pin, const float r1,const float r2);
     /**
      * @brief Set max, low and min voltage levels. Use max and min to accurately report battery percentage
      * 
@@ -27,13 +27,13 @@ public:
      * @param lowVoltage low voltage in mV
      * @param minVoltage minium voltage in mV
      */
-    void setup(uint16_t maxVoltage, uint16_t lowVoltage, uint16_t minVoltage);
+    void setup(int maxVoltage, int lowVoltage,int minVoltage);
     /**
      * @brief Read data into sensor struct
      * 
      * @param data 
      */
-    void update(SensorStructs::V_RAIL_t &data);
+    void update(SensorStructs::ADC_V_RAIL_t &data);
 
 private:
     /**
@@ -87,9 +87,9 @@ private:
      */
     const float factor;
 
-    uint16_t _maxVoltage;
-    uint16_t _lowVoltage;
-    uint16_t _minVoltage;
+    int _maxVoltage;
+    int _lowVoltage;
+    int _minVoltage;
 
     bool _lowVoltageTriggered;
 

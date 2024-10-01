@@ -196,6 +196,7 @@ void System::setupPins()
     pinMode(PinMap::MagCs, OUTPUT);
     pinMode(PinMap::SdCs_1, OUTPUT);
     pinMode(PinMap::SdCs_2, OUTPUT);
+    pinMode(PinMap::DepSwitch, OUTPUT);
 
     // initialise cs pins
     digitalWrite(PinMap::LoraCs, HIGH);
@@ -205,6 +206,9 @@ void System::setupPins()
     digitalWrite(PinMap::MagCs, HIGH);
     digitalWrite(PinMap::SdCs_1, HIGH);
     digitalWrite(PinMap::SdCs_2, HIGH);
+    //! Pulling up for now Will change when we write
+    //! the active current monitor
+    digitalWrite(PinMap::DepSwitch, HIGH); 
 }
 
 void System::loadConfig()
@@ -337,8 +341,10 @@ void System::logTelemetry()
         logframe.baro_alt = raw_sensors.baro.alt;
         logframe.baro_temp = raw_sensors.baro.temp;
         logframe.baro_press = raw_sensors.baro.press;
-        logframe.batt_volt = raw_sensors.logicrail.volt;
-        logframe.batt_percent = raw_sensors.logicrail.percent;
+        logframe.logic_voltage = raw_sensors.logicrail.volt;
+        logframe.logic_percent = raw_sensors.logicrail.percent;
+        logframe.dep_voltage = raw_sensors.deprail.volt;
+        logframe.dep_current = raw_sensors.deprail.current;
         logframe.roll = estimator_state.eulerAngles[0];
         logframe.pitch = estimator_state.eulerAngles[1];
         logframe.yaw = estimator_state.eulerAngles[2];

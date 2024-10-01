@@ -59,6 +59,7 @@ class ThanosR : public Engine
         static constexpr uint8_t m_ignition_command_arg = 1;
         static constexpr uint8_t m_shutdown_command_arg = 2;
 
+        static constexpr uint64_t m_ignitionDelay = 500;
         static constexpr uint64_t m_oxVentDelay = 1000;
         static constexpr uint64_t m_fuelVentDelay = 5000;
 

@@ -30,7 +30,12 @@
 #include "ms5607.h"
 #include "icm_20608.h"
 #include "h3lis331dl.h"
-#include "vrailmonitor.h"
+#include "adc_vrailmonitor.h"
+#include "ina_vrailmonitor.h"
+
+#if HARDWARE_VERSION != 3  
+    #warning "Hardware Version is not 3, INA dep rail monitor will not be initialized!"
+#endif
 
 Sensors::Sensors(SPIClass& spi,TwoWire& I2C,Types::CoreTypes::SystemStatus_t& systemstatus) :
     _systemstatus(systemstatus),
@@ -39,7 +44,8 @@ Sensors::Sensors(SPIClass& spi,TwoWire& I2C,Types::CoreTypes::SystemStatus_t& sy
     accelgyro(spi,systemstatus,PinMap::ImuCs_1),
     accel(spi,systemstatus,PinMap::ImuCs_2),
     mag(spi,PinMap::MagCs,systemstatus),
-    logicrail("Logic Rail",PinMap::BattVolt,8,1)
+    logicrail("Logic Rail",PinMap::LogicVolt,8,1),
+    deprail("Deployment Rail",I2C,0x45)
 {}
 
 void Sensors::setup(JsonObjectConst config){
@@ -62,13 +68,23 @@ void Sensors::setup(JsonObjectConst config){
     // setIfContains(config,"Y_FLIP",axesFlipICM[1],false);
     // setIfContains(config,"Z_FLIP",axesFlipICM[2],false);
 
-    uint16_t logicMaxVoltage = 4200;
-    uint16_t logicLowVoltage = 3400;
-    uint16_t logicMinVoltage = 3200;
+    int logicMaxVoltage = 4200;
+    int logicLowVoltage = 3400;
+    int logicMinVoltage = 3200;
 
     setIfContains(config,"LOGIC_MAX_VOLTAGE",logicMaxVoltage,false);
     setIfContains(config,"LOGIC_LOW_VOLTAGE",logicLowVoltage,false);
     setIfContains(config,"LOGIC_MIN_VOLTAGE",logicMinVoltage,false);
+
+    int depMaxVoltage = 28000;
+    int depLowVoltage = 3400;
+    int depMinVoltage = 3200;
+
+    setIfContains(config,"DEPLOYMENT_MAX_VOLTAGE",depMaxVoltage,false);
+    setIfContains(config,"DEPLOYMENT_LOW_VOLTAGE",depLowVoltage,false);
+    setIfContains(config,"DEPLOYMENT_MIN_VOLTAGE",depMinVoltage,false);
+
+
 
     gps.setup();
     baro.setup();
@@ -76,6 +92,7 @@ void Sensors::setup(JsonObjectConst config){
     accel.setup(axesOrderH3LIS,axesFlipH3LIS);
     mag.setup(axesOrderMMC,axesFlipMMC);
     logicrail.setup(logicMaxVoltage,logicLowVoltage,logicMinVoltage);
+    deprail.setup(depMaxVoltage,depLowVoltage,depMinVoltage);
     
     
 };
@@ -95,7 +112,7 @@ void Sensors::update()
     accel.update(sensors_raw.accel);
     mag.update(sensors_raw.mag);
     logicrail.update(sensors_raw.logicrail);
-
+    deprail.update(sensors_raw.deprail);
 };
 
 const SensorStructs::raw_measurements_t& Sensors::getData()

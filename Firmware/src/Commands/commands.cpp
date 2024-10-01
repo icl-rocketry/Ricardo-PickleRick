@@ -166,8 +166,10 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 	telemetry.baro_press = raw_sensors.baro.press;
 	telemetry.baro_alt = raw_sensors.baro.alt;
 
-	telemetry.batt_voltage = raw_sensors.logicrail.volt;
-	telemetry.batt_percent= raw_sensors.logicrail.percent;
+	telemetry.logic_voltage = raw_sensors.logicrail.volt;
+	telemetry.dep_voltage = raw_sensors.deprail.volt;
+	telemetry.dep_current = raw_sensors.deprail.current;
+
 
 	telemetry.launch_lat = estimator_state.gps_launch_lat;
 	telemetry.launch_lng = estimator_state.gps_launch_long;

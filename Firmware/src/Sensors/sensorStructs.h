@@ -69,18 +69,44 @@ namespace SensorStructs
         uint8_t second;
     };
 
-    struct V_RAIL_t{
+    struct ADC_V_RAIL_t{
         /**
          * @brief Voltage in mV
          * 
          */
-        uint16_t volt;
+        int volt;
         
         /**
          * @brief Percentage in reference to max voltage expeceted 
          * 
          */
-        uint16_t percent;
+        int percent;
+    };
+
+    struct INA_V_RAIL_t{
+        /**
+         * @brief Voltage in mV
+         * 
+         */
+        int volt;
+
+        /**
+         * @brief Current in mA
+         * 
+         */
+        int current;
+
+        /**
+         * @brief Power in mW
+         * 
+         */
+        int power;
+        
+        /**
+         * @brief Percentage in reference to max voltage expeceted 
+         * 
+         */
+        int percent;
     };
 
     struct raw_measurements_t
@@ -90,7 +116,8 @@ namespace SensorStructs
         MAG_3AXIS_t mag;
         BARO_t baro;
         GPS_t gps;
-        V_RAIL_t logicrail;
+        ADC_V_RAIL_t logicrail;
+        INA_V_RAIL_t deprail;
 
         uint64_t system_time;
     };

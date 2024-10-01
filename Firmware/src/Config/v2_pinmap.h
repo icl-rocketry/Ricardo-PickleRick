@@ -33,7 +33,7 @@ namespace PickleRickV2Pins{
     static constexpr int SdDet_1 = 6;
     static constexpr int SdDet_2 = 7;
 
-    static constexpr int BattVolt = 2;
+    static constexpr int LogicVolt = 2;
     static constexpr int LoraInt = 5;
 
     //PCA9634 Mapping -> NB this does not match schmatic or silkscreen (will update in v3 pickle)

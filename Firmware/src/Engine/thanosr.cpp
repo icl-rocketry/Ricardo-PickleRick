@@ -1,4 +1,4 @@
-#include "thanos-r.h"
+#include "thanosr.h"
 #include <librrc/Helpers/jsonconfighelper.h>
 
 ThanosR::ThanosR(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunction_t addNetworkCallbackFunction, RnpNetworkManager &networkmanager, uint8_t handlerServiceID) : 
@@ -114,7 +114,23 @@ void ThanosR::ignite()
 
 void ThanosR::update()
 {
-    if(m_state.runState == static_cast<uint8_t>(ENGINE_RUN_STATE::SHUTDOWN)){
+    if (m_state.runState == static_cast<uint8_t>(ENGINE_RUN_STATE::IGNITION)){
+        if (millis() - getStatePtr()->ignitionTime > m_ignitionDelay){
+            //igntion delay is the delay between firing the pyro and
+            //openign the main valves. after we open the main valves we want to 
+            // enable the e-reg 
+            m_eReg->execute(1); // enter into controlled state
+            m_state.runState = static_cast<uint8_t>(ENGINE_RUN_STATE::RUNNING);
+        }
+    }
+    else if(m_state.runState == static_cast<uint8_t>(ENGINE_RUN_STATE::SHUTDOWN)){
+        /*when shutdown is called, the engine will close the main oxidiser vlave
+        but keep the main fuel valve open so that we fully drain the fuel tank.
+        We wait for m_oxVentDelay before opening the oxidiser vent valves to vent
+        the oxidier tank, and we also open the pressurant solenoid valve to vent the nitrogen
+        tank. Finally once the time since shutdown is greater that m_fuelVentDelay we open
+        the fuel solenoid vent valve to vent the fuel tank.
+        */
         if(millis() - getStatePtr()->shutdownTime > m_oxVentDelay){
             m_oxServoVentValve->execute(m_oxServoVentValveOpen);
             m_oxSolenoidVentValve->execute(m_solenoidOpenArg);

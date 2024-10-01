@@ -2,6 +2,10 @@
 
 void INA219::update()
 {
+    if (!m_initialized)
+    {
+        return;
+    }
 
     if (millis() - _prevUpdate > _pollDelta)
     {
@@ -24,15 +28,28 @@ void INA219::update()
 
 }
 
-void INA219::setup(float resistance, float maxCurrent, INA219::PGAGain Gain, INA219::ADCSettings ShuntVADCsettings, INA219::ADCSettings BusVADCsettings, INA219::Modes DeviceMode, INA219::busVRange vRange)
+bool INA219::setup(float resistance, float maxCurrent, INA219::PGAGain Gain, INA219::ADCSettings ShuntVADCsettings, INA219::ADCSettings BusVADCsettings, INA219::Modes DeviceMode, INA219::busVRange vRange)
 {
+    if (!alive())
+    {
+        return false;
+    }
+
     reset();
     setBusVRange(vRange);
     setGain(Gain);
     setShuntVADC(ShuntVADCsettings);
     setBusVADC(BusVADCsettings);
     setMode(DeviceMode);
-    setCalibration(resistance, maxCurrent);    
+    setCalibration(resistance, maxCurrent); 
+
+    m_initialized = true;   
+    return true;
+}
+
+bool INA219::alive(){
+    _wire.beginTransmission(_deviceAddr);
+    return !_wire.endTransmission();
 }
 
 void INA219::writeRegister(INA219::Registers address, uint16_t value)

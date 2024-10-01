@@ -63,7 +63,7 @@ public:
         FSR32V
     };
 
-    void setup(float resistance, float maxCurrent, PGAGain Gain = PGAGain::gain2, ADCSettings ShuntVADCsettings = ADCSettings::avrg64samp, ADCSettings BusVADCsettings = ADCSettings::avrg128samp, Modes DeviceMode = Modes::ShuntandBusConti, busVRange vRange = busVRange::FSR32V);
+    bool setup(float resistance, float maxCurrent, PGAGain Gain = PGAGain::gain2, ADCSettings ShuntVADCsettings = ADCSettings::avrg64samp, ADCSettings BusVADCsettings = ADCSettings::avrg128samp, Modes DeviceMode = Modes::ShuntandBusConti, busVRange vRange = busVRange::FSR32V);
 
     void update();
 
@@ -89,6 +89,9 @@ private:
     void setBusVADC(INA219::ADCSettings ADCsetting);
     void setMode(INA219::Modes Mode);
     void reset();
+
+    bool alive();
+    bool m_initialized = false;
 
     // shadow registers, initialised to default value
     uint16_t _configReg = 0x399F;
