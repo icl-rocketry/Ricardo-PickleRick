@@ -106,6 +106,7 @@ void ThanosR::disarmEngine()
     m_fuelSolenoidVentValve->disarm();
     m_prssSolenoidVentValve->disarm();
     m_eReg->disarm();
+    
 }
 
 void ThanosR::shutdown()
