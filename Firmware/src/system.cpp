@@ -387,48 +387,34 @@ void System::configureNetwork()
     networkmanager.addInterface(&canbus);
 
     networkmanager.enableAutoRouteGen(true);
-    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,2,3});
+    networkmanager.setNoRouteAction(NOROUTE_ACTION::DUMP, {1,2});
 
-    //  RoutingTable flightRouting;
+    RoutingTable flightRouting;
 
-    // #ifdef ROCKET
-
-    // flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION_GATEWAY,Route{2,1,{}});
-    // flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION,Route{2,2,{}});
-    // flightRouting.setRoute(17,Route{3,2,{}});
-    // flightRouting.setRoute(18,Route{3,2,{}});
-    // flightRouting.setRoute(5,Route{3,2,{}});
-    // flightRouting.setRoute(6,Route{3,2,{}});
-    // flightRouting.setRoute(7,Route{3,2,{}});
-    // flightRouting.setRoute(8,Route{3,2,{}});
-    // flightRouting.setRoute(9,Route{3,2,{}});
-    // flightRouting.setRoute(10,Route{3,2,{}});
-    // flightRouting.setRoute(11,Route{3,2,{}});
-    // flightRouting.setRoute(12,Route{3,2,{}});
-    // flightRouting.setRoute(13,Route{3,2,{}});
-    // flightRouting.setRoute(14,Route{3,2,{}});
-    // flightRouting.setRoute(15,Route{3,2,{}});
-    // flightRouting.setRoute(16,Route{3,2,{}});
-    // flightRouting.setRoute(50,Route{3,2,{}});
-    // flightRouting.setRoute(51,Route{3,2,{}});
-    // flightRouting.setRoute(52,Route{3,2,{}});
-    // flightRouting.setRoute(100,Route{3,2,{}});
-    // flightRouting.setRoute(101,Route{3,2,{}});
-    // flightRouting.setRoute(102,Route{3,2,{}});
-    // flightRouting.setRoute(150,Route{2,2,{}});
-
-    // #elif ROCKET_GND
-
-
-    // #endif
-
-
-
-
-
-    
-    // networkmanager.setRoutingTable(flightRouting);
-    // networkmanager.updateBaseTable(); // save the new base table
+    #if ROCKET_TABLE
+        flightRouting.setRoute((uint8_t) 5,Route{2,1,{}}); // Rocket GS Pickle
+        flightRouting.setRoute((uint8_t) 20,Route{3,1,{}}); // PDU0
+        flightRouting.setRoute((uint8_t) 21,Route{3,1,{}}); // PDU1
+        flightRouting.setRoute((uint8_t) 30,Route{3,1,{}}); // Recovery F&S
+        flightRouting.setRoute((uint8_t) 14,Route{3,1,{}}); // Solenoid F&S
+        flightRouting.setRoute((uint8_t) 13,Route{3,1,{}}); // E-reg
+        flightRouting.setRoute((uint8_t) 12,Route{3,1,{}}); // Sensor board
+        flightRouting.setRoute((uint8_t) 11,Route{3,1,{}}); // Ox vent
+        flightRouting.setRoute((uint8_t) 10,Route{3,1,{}}); // Engine controller
+        flightRouting.setRoute((uint8_t) 31,Route{3,1,{}}); // Payload deployer
+        flightRouting.setRoute((uint8_t) 40,Route{3,1,{}}); // Camera board
+        flightRouting.setRoute((uint8_t) 41,Route{3,1,{}}); // Canard board
+    #elif ROCKET_GS_TABLE
+        flightRouting.setRoute((uint8_t) 2,Route{2,1,{}}); // Rocket Pickle
+        flightRouting.setRoute((uint8_t) 200,Route{3,1,{}}); // Payload GS Pickle
+    #elif PAYLOAD_TABLE
+        flightRouting.setRoute((uint8_t) 6,Route{2,1,{}}); // Payload GS Pickle
+    #elif PAYLOAD_GS_TABLE
+        flightRouting.setRoute((uint8_t) 200,Route{2,1,{}}); // Payload Pickle
+    #endif
+  
+    networkmanager.setRoutingTable(flightRouting);
+    networkmanager.updateBaseTable(); // save the new base table
 
 };
 
