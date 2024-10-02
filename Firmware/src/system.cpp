@@ -404,6 +404,7 @@ void System::configureNetwork()
         flightRouting.setRoute((uint8_t) 31,Route{3,1,{}}); // Payload deployer
         flightRouting.setRoute((uint8_t) 40,Route{3,1,{}}); // Camera board
         flightRouting.setRoute((uint8_t) 41,Route{3,1,{}}); // Canard board
+        flightRouting.setRoute((uint8_t) 3,Route{3,1,{}}); // GSS Chad
     #elif ROCKET_GS_TABLE
         flightRouting.setRoute((uint8_t) 2,Route{2,1,{}}); // Rocket Pickle
         flightRouting.setRoute((uint8_t) 200,Route{3,1,{}}); // Payload GS Pickle
