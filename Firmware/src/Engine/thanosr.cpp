@@ -98,6 +98,16 @@ void ThanosR::armEngine()
     m_eReg->arm();
 }
 
+void ThanosR::disarmEngine()
+{
+    m_engine->disarm();
+    m_oxServoVentValve->disarm();
+    m_oxSolenoidVentValve->disarm();
+    m_fuelSolenoidVentValve->disarm();
+    m_prssSolenoidVentValve->disarm();
+    m_eReg->disarm();
+}
+
 void ThanosR::shutdown()
 {
     m_engine->execute(m_shutdown_command_arg);

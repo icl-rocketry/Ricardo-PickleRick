@@ -89,6 +89,8 @@ public:
 
     virtual void armEngine() = 0;
 
+    virtual void disarmEngine() = 0;
+
     virtual void update() = 0;
 
     /**

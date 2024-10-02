@@ -111,6 +111,12 @@ void Hypnos::armEngine(){
     _igniter->arm();
 };
 
+void Hypnos::disarmEngine(){
+    _ventValve->disarm();
+    _oxidiserValve->disarm();
+    _igniter->disarm();
+}
+
 void Hypnos::shutdown(){
     shutdown_called=true;
     if (motor_lockout){

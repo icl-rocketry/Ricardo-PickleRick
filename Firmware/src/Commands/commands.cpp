@@ -56,7 +56,10 @@ void Commands::LaunchAbortCommand(System& system,const  RnpPacketSerialized& pac
 	// }
 	system.statemachine.changeState(std::make_unique<Preflight>(system));
 	//TODO log
-
+	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Launch Aborted, Entering preflight state");
+	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Disarming all engines and deployers");
+	system.enginehandler.disarmComponents();
+	system.deploymenthandler.disarmComponents();
 }
 
 void Commands::FlightAbortCommand(System& system, const RnpPacketSerialized& packet)
@@ -64,6 +67,7 @@ void Commands::FlightAbortCommand(System& system, const RnpPacketSerialized& pac
 	//flight abort
 	//TODO log
 	system.statemachine.changeState(std::make_unique<Recovery>(system));
+	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Flight Aborted, Entering recovery state");
 }
 
 void Commands::SetHomeCommand(System& system, const RnpPacketSerialized& packet) 
@@ -100,9 +104,7 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 
 	telemetry.header.type = 101;
 	telemetry.header.source = system.networkmanager.getAddress();
-	// this is not great as it assumes a single command handler with the same service ID
-	// would be better if we could pass some context through the function paramters so it has an idea who has called it
-	// or make it much clearer that only a single command handler should exist in the system
+	
 	telemetry.header.source_service = static_cast<uint8_t>(DEFAULT_SERVICES::COMMAND);
 	telemetry.header.destination = commandpacket.header.source;
 	telemetry.header.destination_service = commandpacket.header.source_service;

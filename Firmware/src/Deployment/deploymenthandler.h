@@ -59,6 +59,7 @@ class DeploymentHandler : public FlightComponentHandler<RocketActuator,Deploymen
          */
         uint8_t flightCheck_impl();
         void armComponents_impl();
+        void disarmComponents_impl();
          
     private:
         static constexpr uint16_t _networkRetryInterval = 5000; // 5 seconds before a new update state request is sent

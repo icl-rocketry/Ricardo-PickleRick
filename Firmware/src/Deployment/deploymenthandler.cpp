@@ -101,5 +101,11 @@ void DeploymentHandler::armComponents_impl()
     }
 }
 
-
+void DeploymentHandler::disarmComponents_impl()
+{
+    for (auto &component : *this)
+    {
+        component->disarm();
+    }
+}
 

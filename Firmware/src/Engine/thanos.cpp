@@ -90,6 +90,15 @@ void Thanos::armEngine()
     _fuelPrssValve->arm();
 }
 
+void Thanos::disarmEngine()
+{
+    _engine->disarm();
+    _igniter->disarm();
+    _oxVentValve->disarm();
+    _fuelVentValve->disarm();
+    _fuelPrssValve->disarm();
+}
+
 void Thanos::shutdown()
 {
     _engine->execute(shutdown_command_arg);

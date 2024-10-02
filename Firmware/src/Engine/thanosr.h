@@ -22,6 +22,8 @@ class ThanosR : public Engine
 
         void armEngine() override;
 
+        void disarmEngine() override;
+
         void execute(int32_t func) override;
 
         /**

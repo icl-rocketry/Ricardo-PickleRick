@@ -38,6 +38,12 @@ void EngineHandler::armComponents_impl(){
     }
 }
 
+void EngineHandler::disarmComponents_impl(){
+    for (auto& engine: *this){
+        engine->disarmEngine();
+    }
+}
+
 void EngineHandler::shutdownAllEngines(){
     for (auto& engine: *this){
         engine->execute(0);

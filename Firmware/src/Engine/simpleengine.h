@@ -19,6 +19,8 @@ class SimpleEngine:public Engine{
 
         void armEngine() override;
 
+        void disarmEngine() override;
+
         void update() override {}; //empty we dont need an update as this a simple on and off
 
         /**

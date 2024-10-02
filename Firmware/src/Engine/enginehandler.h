@@ -45,6 +45,7 @@ class EngineHandler : public FlightComponentHandler<Engine,EngineHandler>{
         uint8_t flightCheck_impl();
 
         void armComponents_impl();
+        void disarmComponents_impl();
         /**
          * @brief Function to allow engines to add network callbacks directly to the network callback map.
          * Wraps the provided network callback to check that engine exists at the correct ID.

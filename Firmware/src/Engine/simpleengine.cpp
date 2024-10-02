@@ -93,3 +93,7 @@ void SimpleEngine::armEngine(){
     _igniter->arm();
 }
 
+void SimpleEngine::disarmEngine(){
+    _igniter->disarm();
+}
+
