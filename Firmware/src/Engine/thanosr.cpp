@@ -143,13 +143,15 @@ void ThanosR::update()
         tank. Finally once the time since shutdown is greater that m_fuelVentDelay we open
         the fuel solenoid vent valve to vent the fuel tank.
         */
-        if(millis() - getStatePtr()->shutdownTime > m_oxVentDelay){
+        if(millis() - getStatePtr()->shutdownTime > m_oxVentDelay && !m_oxVented){
             m_oxServoVentValve->execute(m_oxServoVentValveOpen);
             m_oxSolenoidVentValve->execute(m_solenoidOpenArg);
             m_prssSolenoidVentValve->execute(m_solenoidOpenArg);
+            m_oxVented = true;
         } 
-        if (millis() - getStatePtr()->shutdownTime > m_fuelVentDelay){
+        if (millis() - getStatePtr()->shutdownTime > m_fuelVentDelay && !m_fuelVented){
             m_fuelSolenoidVentValve->execute(m_solenoidOpenArg);
+            m_fuelVented = true;
         }
     }
 }

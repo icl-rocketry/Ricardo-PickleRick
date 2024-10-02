@@ -63,7 +63,9 @@ class ThanosR : public Engine
 
         static constexpr uint64_t m_ignitionDelay = 500;
         static constexpr uint64_t m_oxVentDelay = 1000;
+        bool m_oxVented = false;
         static constexpr uint64_t m_fuelVentDelay = 5000;
+        bool m_fuelVented = false;
 
         //helper function to add component to network callback
         template<typename T>
