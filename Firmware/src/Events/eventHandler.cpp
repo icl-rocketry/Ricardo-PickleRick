@@ -313,6 +313,12 @@ uint32_t EventHandler::timeTriggered(uint8_t eventID)
         return 0; //this is bad
     }
 
+}
 
+void EventHandler::reset(){
+    for (auto& event : _eventList)
+    {
+        event->reset();
+    }
 }
 

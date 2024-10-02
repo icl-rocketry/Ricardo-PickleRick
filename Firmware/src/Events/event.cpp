@@ -32,3 +32,11 @@ void Event::update()
 		}
 	}
 }
+
+
+void Event::reset(){
+    _previouslyFired = false;
+	_timeTriggered = 0;
+	_lastActionTime = 0;
+}
+

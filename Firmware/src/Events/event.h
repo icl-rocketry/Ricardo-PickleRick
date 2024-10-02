@@ -31,6 +31,8 @@ public:
 
     uint32_t timeTriggered() { return _timeTriggered; };
 
+    void reset();
+
 private:
     /**
      * @brief Event identifier

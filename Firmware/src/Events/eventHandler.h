@@ -41,6 +41,12 @@ class EventHandler{
          */
         uint32_t timeTriggered(uint8_t eventID);
 
+        /**
+         * @brief Reset all events
+         * 
+         */
+        void reset();
+
         
 
     private:

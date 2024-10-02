@@ -54,12 +54,18 @@ void Commands::LaunchAbortCommand(System& system,const  RnpPacketSerialized& pac
 	// 	//might be worth waiting for acceleration to be 0 after rocket engine cut
 	// 	system.statemachine.changeState(new Recovery(&system));
 	// }
-	system.statemachine.changeState(std::make_unique<Preflight>(system));
+	
 	//TODO log
-	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Launch Aborted, Entering preflight state");
+	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Launch Aborted, Entering Preflight state");
 	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Disarming all engines and deployers");
 	system.enginehandler.disarmComponents();
 	system.deploymenthandler.disarmComponents();
+
+	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Resetting event handler");
+	system.eventhandler.reset();
+
+	system.statemachine.changeState(std::make_unique<Preflight>(system));
+
 }
 
 void Commands::FlightAbortCommand(System& system, const RnpPacketSerialized& packet)
@@ -104,7 +110,7 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 
 	telemetry.header.type = 101;
 	telemetry.header.source = system.networkmanager.getAddress();
-	
+
 	telemetry.header.source_service = static_cast<uint8_t>(DEFAULT_SERVICES::COMMAND);
 	telemetry.header.destination = commandpacket.header.source;
 	telemetry.header.destination_service = commandpacket.header.source_service;
