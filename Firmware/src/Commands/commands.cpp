@@ -63,6 +63,8 @@ void Commands::LaunchAbortCommand(System& system,const  RnpPacketSerialized& pac
 
 	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Resetting event handler");
 	system.eventhandler.reset();
+	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Reset Ignition Time");
+	system.estimator.setIgnitionTime(0);
 
 	system.statemachine.changeState(std::make_unique<Preflight>(system));
 
