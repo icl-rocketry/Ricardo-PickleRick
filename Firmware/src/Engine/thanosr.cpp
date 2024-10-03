@@ -106,7 +106,9 @@ void ThanosR::disarmEngine()
     m_fuelSolenoidVentValve->disarm();
     m_prssSolenoidVentValve->disarm();
     m_eReg->disarm();
-    
+    //reset variables
+    m_oxVented = false;
+    m_fuelVented = false;
 }
 
 void ThanosR::shutdown()
@@ -160,12 +162,12 @@ uint8_t ThanosR::flightCheck()
 {
     uint8_t res = 0;
 
-    res += m_engine->flightCheck(m_networkRetryInterval,m_componentStateExpiry,"Engine:" + std::to_string(getID()));
-    res += m_oxServoVentValve->flightCheck(m_networkRetryInterval,m_componentStateExpiry,"Engine:" + std::to_string(getID()));
-    res += m_oxSolenoidVentValve->flightCheck(m_networkRetryInterval,m_componentStateExpiry,"Engine:" + std::to_string(getID()));
-    res += m_fuelSolenoidVentValve->flightCheck(m_networkRetryInterval,m_componentStateExpiry,"Engine:" + std::to_string(getID()));
-    res += m_prssSolenoidVentValve->flightCheck(m_networkRetryInterval,m_componentStateExpiry,"Engine:" + std::to_string(getID()));
-    res += m_eReg->flightCheck(m_networkRetryInterval,m_componentStateExpiry,"Engine:" + std::to_string(getID()));
+    res += m_engine->flightCheck(m_networkRetryInterval, m_componentStateExpiry, "Engine " + std::to_string(getID()) + ": Stark Engine Controller");
+    res += m_oxServoVentValve->flightCheck(m_networkRetryInterval, m_componentStateExpiry, "Engine " + std::to_string(getID()) + ": Ox Vent");
+    res += m_oxSolenoidVentValve->flightCheck(m_networkRetryInterval, m_componentStateExpiry, "Engine " + std::to_string(getID()) + ": Ox Solenoid");
+    res += m_fuelSolenoidVentValve->flightCheck(m_networkRetryInterval, m_componentStateExpiry, "Engine " + std::to_string(getID()) + ": Fuel Solenoid");
+    res += m_prssSolenoidVentValve->flightCheck(m_networkRetryInterval, m_componentStateExpiry, "Engine " + std::to_string(getID()) + ": Pressurant Solenoid");
+    res += m_eReg->flightCheck(m_networkRetryInterval, m_componentStateExpiry, "Engine " + std::to_string(getID()) + ": E-Reg");
     
     return res;
     
