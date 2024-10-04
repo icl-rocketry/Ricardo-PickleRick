@@ -372,11 +372,11 @@ void System::logTelemetry()
         logframe.snr = radio_info->snr;
         logframe.packet_snr = radio_info->packet_snr;
 
-        logframe.timestamp = micros();
+        logframe.timestamp = esp_timer_get_time();
 
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::TELEMETRY>(logframe);
 
-        prev_telemetry_log_time = micros();
+        prev_telemetry_log_time = esp_timer_get_time();
     }
 }
 
