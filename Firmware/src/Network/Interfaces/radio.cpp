@@ -95,7 +95,7 @@ void Radio::getPacket(){
 
         std::vector<uint8_t> data(packetSize);
         loraRadio.readBytes(data.data(),packetSize);
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio receive");
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio receive");
         // std::string message = "Packet RSSI: " + std::to_string(loraRadio.packetRssi()) + ", SNR: " + std::to_string(loraRadio.packetSnr());
         // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(message);
         if (_packetBuffer == nullptr){
@@ -192,7 +192,7 @@ void Radio::sendFromBuffer()
 
 size_t Radio::send(std::vector<uint8_t> &data){
     if (loraRadio.beginPacket()){
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Send");
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Send");
         loraRadio.write(data.data(), data.size());
         loraRadio.endPacket(true); // asynchronous send 
         _txDone = false;
