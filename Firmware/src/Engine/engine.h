@@ -42,10 +42,10 @@ enum class ENGINE_CONNECTION_STATE : uint8_t
 
 struct EngineState
 {
-    uint8_t runState;
-    uint8_t connectionState;
-    uint32_t ignitionTime;
-    uint32_t shutdownTime;
+    uint8_t runState = static_cast<uint8_t>(ENGINE_RUN_STATE::SHUTDOWN);
+    uint8_t connectionState = static_cast<uint8_t>(ENGINE_CONNECTION_STATE::CONNECTED);
+    uint32_t ignitionTime = 0;
+    uint32_t shutdownTime = 0;
 };
 using addNetworkCallbackFunction_t = std::function<void(uint8_t, uint8_t, std::function<void(std::unique_ptr<RnpPacketSerialized>)>, bool)>;
 class Engine : public Controllable

@@ -109,6 +109,7 @@ void ThanosR::disarmEngine()
     //reset variables
     m_oxVented = false;
     m_fuelVented = false;
+    m_ignited = false;
 }
 
 void ThanosR::shutdown()
@@ -123,11 +124,13 @@ void ThanosR::ignite()
 {
     m_engine->execute(m_ignition_command_arg);
     Engine::ignite();
+    m_ignited = true;
     m_state.runState = static_cast<uint8_t>(ENGINE_RUN_STATE::IGNITION);
 }
 
 void ThanosR::update()
 {
+
     if (m_state.runState == static_cast<uint8_t>(ENGINE_RUN_STATE::IGNITION)){
         if (millis() - getStatePtr()->ignitionTime > m_ignitionDelay){
             //igntion delay is the delay between firing the pyro and
@@ -137,7 +140,7 @@ void ThanosR::update()
             m_state.runState = static_cast<uint8_t>(ENGINE_RUN_STATE::RUNNING);
         }
     }
-    else if(m_state.runState == static_cast<uint8_t>(ENGINE_RUN_STATE::SHUTDOWN)){
+    else if(m_state.runState == static_cast<uint8_t>(ENGINE_RUN_STATE::SHUTDOWN) && m_ignited){
         /*when shutdown is called, the engine will close the main oxidiser vlave
         but keep the main fuel valve open so that we fully drain the fuel tank.
         We wait for m_oxVentDelay before opening the oxidiser vent valves to vent
@@ -145,13 +148,14 @@ void ThanosR::update()
         tank. Finally once the time since shutdown is greater that m_fuelVentDelay we open
         the fuel solenoid vent valve to vent the fuel tank.
         */
-        if(millis() - getStatePtr()->shutdownTime > m_oxVentDelay && !m_oxVented){
+        
+        if((millis() - getStatePtr()->shutdownTime > m_oxVentDelay) && !m_oxVented){
             m_oxServoVentValve->execute(m_oxServoVentValveOpen);
             m_oxSolenoidVentValve->execute(m_solenoidOpenArg);
             m_prssSolenoidVentValve->execute(m_solenoidOpenArg);
             m_oxVented = true;
         } 
-        if (millis() - getStatePtr()->shutdownTime > m_fuelVentDelay && !m_fuelVented){
+        if ((millis() - getStatePtr()->shutdownTime > m_fuelVentDelay) && !m_fuelVented){
             m_fuelSolenoidVentValve->execute(m_solenoidOpenArg);
             m_fuelVented = true;
         }
