@@ -16,15 +16,18 @@ namespace MelodyLibrary {
     extern melody_t<3> confirmation;
     extern melody_t<4> heartbeat;
     extern melody_t<4> beepbeep;
+    extern melody_t<208> pirates;
 
 
-    static const std::array<melody_base_t*,6> songLibrary{
+
+    static const std::array<melody_base_t*,7> songLibrary{
         &Fireflies,
         &zeldatheme,
         &cantinaband,
         &gameofthrones,
         &miichannel,
-        &nevergonnagiveyouup
+        &nevergonnagiveyouup,
+        &pirates
         };
 
 };

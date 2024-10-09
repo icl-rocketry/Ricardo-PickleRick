@@ -393,6 +393,19 @@ void Commands::FreeRamCommand(System& system, const RnpPacketSerialized& packet)
 	
 }
 
+void Commands::ApogeeOverrideCommand(System& system, const RnpPacketSerialized& packet)
+{
+	SimpleCommandPacket commandpacket(packet);
+
+	system.systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_APOGEE, "Apogee Triggered!");
+	system.estimator.setApogeeTime(millis());
+
+	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Apogee Time Overriden, transitioning to Recovery State!");
+	system.statemachine.changeState(std::make_unique<Recovery>(system));
+}
+
+
+
 //!TEMP
 void Commands::Radio_SetFreq(System& system, const RnpPacketSerialized& packet)
 {

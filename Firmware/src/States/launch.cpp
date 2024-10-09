@@ -47,6 +47,7 @@ Types::CoreTypes::State_ptr_t Launch::update()
         if (_system.systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK))
         {
             _system.systemstatus.deleteFlag(SYSTEM_FLAG::ERROR_FLIGHTCHECK);
+
         }
     }
     else
@@ -54,6 +55,7 @@ Types::CoreTypes::State_ptr_t Launch::update()
         if (!_system.systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK))
         {
             _system.systemstatus.newFlag(SYSTEM_FLAG::ERROR_FLIGHTCHECK);
+            
         }
     }
 

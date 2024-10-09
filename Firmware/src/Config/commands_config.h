@@ -51,6 +51,7 @@ namespace Commands
         Radio_SetSYNC = 203,
         Radio_SetPower = 204,
         Liftoff_Override = 130,
+        Apogee_Override = 131,
         Free_Ram = 250
     };
 
@@ -90,8 +91,7 @@ namespace Commands
         {ID::Radio_SetSF, Radio_SetSF},
         {ID::Radio_SetSYNC, Radio_SetSYNC},
         {ID::Flight_Abort, FlightAbortCommand},
-        {ID::Liftoff_Override, LiftoffOverrideCommand}};
-
-
+        {ID::Liftoff_Override, LiftoffOverrideCommand},
+        {ID::Apogee_Override, ApogeeOverrideCommand}};
 
 };

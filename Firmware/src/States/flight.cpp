@@ -48,6 +48,7 @@ Types::CoreTypes::State_ptr_t Flight::update()
         _system.systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST, "Entered Coast Phase");
         _system.systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST);
     }
+    
     ApogeeInfo apogeeinfo = _system.apogeedetect.checkApogee(-_system.estimator.getData().position(2),-_system.estimator.getData().velocity(2), millis());
     if (apogeeinfo.reached)
     {
