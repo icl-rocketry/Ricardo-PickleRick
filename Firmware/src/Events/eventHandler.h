@@ -8,6 +8,9 @@
 
 #include <libriccore/riccorelogging.h>
 
+#include <librnp/rnp_networkmanager.h>
+
+
 #include "event.h"
 #include "flightVariables.h"
 
@@ -22,7 +25,8 @@ class EventHandler{
 
     public:
 
-        EventHandler(EngineHandler& enginehandler, DeploymentHandler& deploymenthandler, const Types::LocalPyroMap_t& localPyroMap, const Types::LocalServoMap_t& localServoMap):
+        EventHandler(EngineHandler& enginehandler, DeploymentHandler& deploymenthandler, RnpNetworkManager& networkmanager, const Types::LocalPyroMap_t& localPyroMap, const Types::LocalServoMap_t& localServoMap):
+        m_networkmanager(networkmanager),
         _flightvariables(rocketState, *this),
         _enginehandler(enginehandler),
         _deploymenthandler(deploymenthandler),
@@ -51,6 +55,8 @@ class EventHandler{
 
     private:
         SensorStructs::state_t rocketState;
+
+        RnpNetworkManager& m_networkmanager;
         
         FlightVariables _flightvariables;
 
@@ -61,6 +67,7 @@ class EventHandler{
         const Types::LocalServoMap_t& m_localServoMap;
 
         action_t configureAction(JsonVariantConst actions);
+        
         condition_t configureCondition(JsonVariantConst condition,uint8_t recursion_level = 0);
         
         static constexpr uint8_t condition_recursion_max_depth = 6;

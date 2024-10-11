@@ -61,7 +61,7 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    deploymenthandler(networkmanager, localPyroMap, localServoMap, static_cast<uint8_t>(Services::ID::DeploymentHandler)),
                    enginehandler(networkmanager, localPyroMap, localServoMap, static_cast<uint8_t>(Services::ID::EngineHandler)),
                    controllerhandler(enginehandler),
-                   eventhandler(enginehandler, deploymenthandler, localPyroMap, localServoMap),
+                   eventhandler(enginehandler, deploymenthandler, networkmanager, localPyroMap, localServoMap),
                    apogeedetect(20),
                    primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus),
                    pyroPinExpander0(0x20,I2C),

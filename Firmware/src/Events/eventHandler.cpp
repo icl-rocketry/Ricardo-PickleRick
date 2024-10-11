@@ -7,6 +7,9 @@
 #include <libriccore/riccorelogging.h>
 #include <librrc/Helpers/jsonconfighelper.h>
 #include <librrc/Local/remoteactuatoradapter.h>
+#include <librnp/default_packets/simplecommandpacket.h>
+
+#include "Config/services_config.h"
 
 #include "event.h"
 #include "condition.h"
@@ -86,16 +89,47 @@ action_t EventHandler::configureAction(JsonVariantConst actions){
 
         auto actionJson = actions.as<JsonObjectConst>();
         std::string actionType = actionJson["type"];
-        int actionID = actionJson["id"];
-        int actionParam = actionJson["param"];
-
+        
+    
         if (actionType == "engine")
         {
+            int actionID = actionJson["id"];
+            int actionParam = actionJson["param"];
             return [actionParam,actionID,this](){_enginehandler.getActionFunc(actionID)(actionParam);}; 
         }
         else if (actionType == "deployment")
         {
+            int actionID = actionJson["id"];
+            int actionParam = actionJson["param"];
             return [actionParam,actionID,this](){_deploymenthandler.getActionFunc(actionID)(actionParam);};
+        }
+        //TODO add generic command functor
+        else if (actionType == "command")
+        {   
+            uint8_t source = m_networkmanager.getAddress();
+            uint8_t source_service = static_cast<uint8_t>(Services::ID::EventHandler);
+
+            uint8_t destination = actions["destination"];
+            uint8_t destination_service = actions["destination_service"];
+            uint8_t command_id = actions["command_id"];
+            int32_t command_arg = actions["command_arg"];
+
+            //consturct command packet
+            SimpleCommandPacket command_packet(command_id,command_arg);
+            command_packet.header.source = source;
+            command_packet.header.source_service = source_service;
+            command_packet.header.destination = destination;
+            command_packet.header.destination_service = destination_service;
+            command_packet.command = command_id;
+            command_packet.arg = command_arg;
+
+            auto commandFunctor = [this,command_packet]()
+            {
+                SimpleCommandPacket command = command_packet;
+                this->m_networkmanager.sendPacket(command);
+            };
+
+            return commandFunctor;
         }
         else if (actionType == "null")
         {
