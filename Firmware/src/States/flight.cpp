@@ -27,6 +27,8 @@ void Flight::initialize()
     State::initialize();
     _system.commandhandler.enableCommands({Commands::ID::Flight_Abort});
     
+    _system.tunezhandler.play(MelodyLibrary::pirates,true);
+    
 };
 
 Types::CoreTypes::State_ptr_t Flight::update()
@@ -48,7 +50,7 @@ Types::CoreTypes::State_ptr_t Flight::update()
         _system.systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST, "Entered Coast Phase");
         _system.systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST);
     }
-    
+
     ApogeeInfo apogeeinfo = _system.apogeedetect.checkApogee(-_system.estimator.getData().position(2),-_system.estimator.getData().velocity(2), millis());
     if (apogeeinfo.reached)
     {
@@ -69,6 +71,7 @@ Types::CoreTypes::State_ptr_t Flight::update()
 void Flight::exit()
 {
     State::exit();
+    _system.tunezhandler.clear();
     _system.commandhandler.resetCommands();
 };
 

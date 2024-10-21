@@ -22,9 +22,10 @@ void Launch::initialize()
     _system.commandhandler.enableCommands({Commands::ID::Ignition,
                                            Commands::ID::Launch_Abort,
                                            Commands::ID::Liftoff_Override});
-                                           
+
+    
     _system.tunezhandler.play(MelodyLibrary::confirmation);
-    _system.tunezhandler.play(MelodyLibrary::beepbeep,true);
+    _system.tunezhandler.play(MelodyLibrary::miichannel,true);
 
     // arm deployers and engines
 
@@ -76,5 +77,6 @@ void Launch::exit()
 {
     State::exit();
     _system.commandhandler.resetCommands();
+    _system.tunezhandler.clear();
 
 };
