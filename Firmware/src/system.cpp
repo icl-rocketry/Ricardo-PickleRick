@@ -68,7 +68,8 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    pyro0(PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Cont),networkmanager),
                    pyro1(PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Cont),networkmanager),
                    pyro2(PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Cont),networkmanager),
-                   pyro3(PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Cont),networkmanager)
+                   pyro3(PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Cont),networkmanager),
+                   pid(networkmanager)
                    {};
 
 void System::systemSetup()
@@ -108,6 +109,10 @@ void System::systemSetup()
     // initialize statemachine with preflight state
     statemachine.initalize(std::make_unique<Preflight>(*this));
 
+    pid.Setup();
+    
+    sendtest_1();
+    sendtest_3();
 };
 
 void System::systemUpdate()
@@ -116,6 +121,35 @@ void System::systemUpdate()
     sensors.update();
     estimator.update(sensors.getData());
     logTelemetry();
+    auto CurrentData = estimator.getData();
+    // if (CurrentData.eulerAngles[0] > 3.14/2)  {
+    //     digitalWrite(PinMap::SdDet_1, HIGH);
+    // } else {
+    //     digitalWrite(PinMap::SdDet_1, LOW);
+    // }
+    // if (count < 10)
+    // {
+    //     sendtest_1();
+    //     arg = !arg;
+    //     delay(1000);
+    //     sendtest_2(arg,outputValues(0,0));
+    //     count++;
+    // }
+
+    // CurrentData.eulerAngles[0]; // Roll
+    // CurrentData.eulerAngles[1]; // Pitch
+    // CurrentData.eulerAngles[2]; // Yaw
+
+    // CurrentData.position(0); // x
+	// CurrentData.position(1); // y
+	// CurrentData.position(2); // z
+
+    Eigen::Matrix<float,1, 6> inputMatrix = {CurrentData.position(0),CurrentData.position(1),CurrentData.position(2),CurrentData.eulerAngles[0], CurrentData.eulerAngles[1],CurrentData.eulerAngles[2]};
+    Eigen::Matrix<float,1, 4> outputValues = pid.outputMatrix(inputMatrix);
+
+    sendtest_2(outputValues(0,0));
+    sendtest_4(outputValues(0,1));
+    delay(500);
 };
 
 void System::setupSPI()
@@ -168,6 +202,7 @@ void System::setupPins()
     pinMode(PinMap::MagCs, OUTPUT);
     pinMode(PinMap::SdCs_1, OUTPUT);
     pinMode(PinMap::SdCs_2, OUTPUT);
+    pinMode(PinMap::SdDet_1, OUTPUT);
 
     // initialise cs pins
     digitalWrite(PinMap::LoraCs, HIGH);
@@ -377,3 +412,53 @@ void System::configureNetwork()
     networkmanager.updateBaseTable(); // save the new base table
 
 };
+
+void System::sendtest_1()
+{
+    SimpleCommandPacket test_command_1(3, 0);
+    test_command_1.header.source_service = 10;
+    test_command_1.header.source = 2;
+    test_command_1.header.destination_service = 11;
+    test_command_1.header.destination = 104;
+    test_command_1.header.uid = 0;
+    networkmanager.sendPacket(test_command_1);
+}
+
+void System::sendtest_2(float servoAngle1)
+{
+    servoAngle1 = (servoAngle1 + 3.1415)*(90/3.1415);
+    int sA1 = std::round(servoAngle1);
+    
+    SimpleCommandPacket test_command_2(2,sA1);
+    test_command_2.header.source_service = 10;
+    test_command_2.header.source = 2;
+    test_command_2.header.destination_service = 11;
+    test_command_2.header.destination = 104;
+    test_command_2.header.uid = 1;
+    networkmanager.sendPacket(test_command_2);
+}
+
+void System::sendtest_3()
+{
+    SimpleCommandPacket test_command_3(3, 0);
+    test_command_3.header.source_service = 10;
+    test_command_3.header.source = 2;
+    test_command_3.header.destination_service = 10;
+    test_command_3.header.destination = 104;
+    test_command_3.header.uid = 0;
+    networkmanager.sendPacket(test_command_3);
+}
+
+void System::sendtest_4(float servoAngle2)
+{
+    servoAngle2 = (servoAngle2 + 3.1415)*(90/3.1415);
+    int sA2 = std::round(servoAngle2);
+    
+    SimpleCommandPacket test_command_4(2,sA2);
+    test_command_4.header.source_service = 10;
+    test_command_4.header.source = 2;
+    test_command_4.header.destination_service = 10;
+    test_command_4.header.destination = 104;
+    test_command_4.header.uid = 1;
+    networkmanager.sendPacket(test_command_4);
+}

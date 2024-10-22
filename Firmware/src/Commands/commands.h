@@ -14,7 +14,7 @@
 // Forward declaration required here as commands.h contains command function signatures, so is included in Config/commands_config.h which is 
 // then included in system.h as the command id enum type is required in the generation of the riccoresystem template. Better solutions may
 //exist but currently this seems okay
-#include "config/forward_decl.h" 
+#include "Config/forward_decl.h" 
 
 #include <librnp/rnp_packet.h>
 

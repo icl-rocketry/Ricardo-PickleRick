@@ -19,6 +19,8 @@
 
 #include "Commands/commands.h"
 
+#include "GNC/PID.h"
+
 #include "Network/Interfaces/radio.h"
 #include <libriccore/networkinterfaces/can/canbus.h>
 
@@ -70,6 +72,8 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         SdFat_Store primarysd;
 
+        Eigen::Matrix<float, 1, 6> inputMatrix;
+
     private:
 
         void setupSPI();
@@ -80,6 +84,10 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void loadConfig();
         void initializeLoggers();
         void logTelemetry();
+        void sendtest_1();
+        void sendtest_2(float servoAngle1);
+        void sendtest_3();
+        void sendtest_4(float servoAngle2);
 
         static constexpr std::string_view log_path = "/Logs";
         static constexpr std::string_view config_path = "/Config/rml.jsonc";
@@ -94,6 +102,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         Types::LocalPyro_t pyro1;
         Types::LocalPyro_t pyro2;
         Types::LocalPyro_t pyro3;
+        PID pid;
         const std::array<Types::LocalPyro_t*,4> localPyroMap = {&pyro0,&pyro1,&pyro2,&pyro3};
 
         uint32_t prevTime;
