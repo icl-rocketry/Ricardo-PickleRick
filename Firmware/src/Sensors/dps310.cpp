@@ -23,10 +23,27 @@ DPS310::DPS310(SPIClass &spi, Types::CoreTypes::SystemStatus_t &systemstatus, ui
 
 void DPS310::setup()
 {
+    //! initial dummy transaction for some random inexplicable reason
+    //TODO if you are bored try to fix this, or dont...
+    _spi.beginTransaction(SPISettings(DPS3xx__SPI_MAX_FREQ,
+                                      MSBFIRST,
+                                      SPI_MODE3));
+    _spi.transfer(0xFF); // start at PSR_B2
+    _spi.endTransaction();
 
     begin(_spi, _cs);
+    // the dps library, while it pretends to check the product id and rev id, it actually only checks if it 
+    //gets a response, so here we will proerply check if the prod id and rev id are as expected......
+   
+    if (m_productID != 0 || m_revisionID != 1)
+    {
+        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_BARO, "DPS310 failed to respond with expected prod and rev ID, Prod Id:" + std::to_string(m_productID) + ", Rev Id: " + std::to_string(m_revisionID));
+        return;
+
+    }
 
     int error = startMeasureBothCont(temp_mr, temp_osr, press_mr, press_osr);
+
     if (error)
     {
         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_BARO, "DPS310 failed to start with code: " + std::to_string(error));
@@ -44,6 +61,7 @@ void DPS310::setup()
     loadDPSCalibrationValues();
 
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("DPS310 Initialized!");
+    
     _initialized = true;
 }
 

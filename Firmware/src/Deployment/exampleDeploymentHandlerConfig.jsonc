@@ -10,10 +10,8 @@
 		},
 		{
 			"id":1,
-			"type":"i2c_act_pyro",
-			"address":20,
-			"channel":0,
-			"invertContinuity":false
+			"type":"local_pyro",
+			"channel":0
 		}
 	]
 }

@@ -14,24 +14,27 @@ namespace MelodyLibrary {
     extern melody_t<286> miichannel;
     extern melody_t<340> nevergonnagiveyouup;
     extern melody_t<3> confirmation;
+    extern melody_t<4> heartbeat;
+    extern melody_t<4> beepbeep;
+    extern melody_t<208> pirates;
+    extern melody_t<60> waydownwego;
+    extern melody_t<99> tetris;
+    extern melody_t<169> surprise;
+    extern melody_t<224> mario;
 
-    // enum class SONGS:uint8_t{
-    // FIREFLIES,
-    // ZELDATHEME,
-    // CANTINABAND,
-    // GAMEOFTHRONES,
-    // MIICHANNEL,
-    // NEVERGONNAGIVEYOUUP,
-    // COUNT
-    // };
-
-    static const std::array<melody_base_t*,6> songLibrary{
+    static const std::array<melody_base_t*,11> songLibrary{
         &Fireflies,
         &zeldatheme,
         &cantinaband,
         &gameofthrones,
         &miichannel,
-        &nevergonnagiveyouup};
+        &nevergonnagiveyouup,
+        &pirates,
+        &waydownwego,
+        &tetris,
+        &surprise,
+        &mario
+        };
 
 };
 

@@ -57,7 +57,7 @@ void DpsClass::begin(SPIClass &bus, int32_t chipSelect, uint8_t threeWire)
     m_spibus = &bus;
     m_chipSelect = chipSelect;
 
-    // Init bus LEAVE MY SPI BUS ALONE SHEESH
+    //! Init bus LEAVE MY SPI BUS ALONE SHEESH
     // m_spibus->begin();
     // m_spibus->setDataMode(SPI_MODE3); -> they are using spi settings so what is the point of this
 

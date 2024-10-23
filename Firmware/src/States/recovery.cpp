@@ -16,7 +16,7 @@ _system(system)
 void Recovery::initialize(){
     State::initialize();
     _system.commandhandler.enableCommands({Commands::ID::Reset});
-    _system.tunezhandler.play(MelodyLibrary::zeldatheme,true); // play startup sound
+    _system.tunezhandler.play(MelodyLibrary::tetris,true); // play startup sound
     _system.enginehandler.shutdownAllEngines();
 };
 

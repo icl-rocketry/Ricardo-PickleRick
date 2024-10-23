@@ -37,6 +37,7 @@ void Debug::initialize(){
                                                Commands::ID::Enter_Launch,
                                                Commands::ID::Enter_Flight,
                                                Commands::ID::Enter_Recovery,
+                                               Commands::ID::Apogee_Override,
                                                Commands::ID::Exit_Debug},true); 
        
         _system.networkmanager.registerService(static_cast<uint8_t>(Services::ID::HITL),_system.sensors.getHitlCallback()); //register hitl handler callback

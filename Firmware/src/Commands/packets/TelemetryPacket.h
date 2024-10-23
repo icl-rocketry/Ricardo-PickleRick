@@ -46,8 +46,9 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::baro_temp,
                 &TelemetryPacket::baro_press,
                 &TelemetryPacket::baro_alt,
-                &TelemetryPacket::batt_voltage,
-                &TelemetryPacket::batt_percent,
+                &TelemetryPacket::logic_voltage,
+                &TelemetryPacket::dep_voltage,
+                &TelemetryPacket::dep_current,
                 &TelemetryPacket::launch_lat,
                 &TelemetryPacket::launch_lng,
                 &TelemetryPacket::launch_alt,
@@ -101,8 +102,10 @@ class TelemetryPacket : public RnpPacket{
         float mx, my, mz;// magnetometer (uT)
         //barometer
         float baro_temp, baro_press,baro_alt;
-        //battery
-        uint16_t batt_voltage,batt_percent;
+        //voltage rail data
+        int logic_voltage;
+        int dep_voltage;
+        int dep_current;
         //launch site
         float launch_lat,launch_lng;
         long launch_alt;

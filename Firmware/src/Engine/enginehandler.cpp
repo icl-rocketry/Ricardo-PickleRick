@@ -11,12 +11,12 @@
 
 #include "engine.h"
 
-#include "Helpers/jsonconfighelper.h"
+#include <librrc/Helpers/jsonconfighelper.h>
 
 #include "simpleengine.h"
 #include "hypnos.h"
 #include "thanos.h"
-
+#include "thanosr.h"
 
 void EngineHandler::update(){ // call update on all engines
     for (auto& engine : *this){
@@ -38,6 +38,12 @@ void EngineHandler::armComponents_impl(){
     }
 }
 
+void EngineHandler::disarmComponents_impl(){
+    for (auto& engine: *this){
+        engine->disarmEngine();
+    }
+}
+
 void EngineHandler::shutdownAllEngines(){
     for (auto& engine: *this){
         engine->execute(0);
@@ -46,13 +52,14 @@ void EngineHandler::shutdownAllEngines(){
 
 
 void EngineHandler::setupIndividual_impl(size_t id, JsonObjectConst engineconfig){
-    using namespace JsonConfigHelper;
+    using namespace LIBRRC::JsonConfigHelper;
 
     auto type = getIfContains<std::string>(engineconfig,"type");
 
     if (type == "SimpleEngine"){
         addObject(std::make_unique<SimpleEngine>(id,
                                                  engineconfig,
+                                                 m_localPyroMap,
                                                  getaddNetworkCallbackFunction(id),
                                                  _networkmanager,
                                                  _serviceID));
@@ -66,6 +73,13 @@ void EngineHandler::setupIndividual_impl(size_t id, JsonObjectConst engineconfig
     }
     else if (type == "Thanos"){
         addObject(std::make_unique<Thanos>(id,
+                                            engineconfig,
+                                            getaddNetworkCallbackFunction(id),
+                                            _networkmanager,
+                                            _serviceID));   
+    }
+    else if (type == "ThanosR"){
+        addObject(std::make_unique<ThanosR>(id,
                                             engineconfig,
                                             getaddNetworkCallbackFunction(id),
                                             _networkmanager,

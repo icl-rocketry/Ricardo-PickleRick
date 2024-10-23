@@ -116,5 +116,5 @@ melody_t<110> MelodyLibrary::zeldatheme = { { {
 {NOTE_F4,75},
 {NOTE_F4,150}
 } }, 
-true 
+false 
  };

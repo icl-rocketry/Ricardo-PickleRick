@@ -16,11 +16,11 @@
 #include <ArduinoJson.h>
 #include <memory>
 #include <string>
-#include "Helpers/jsonconfighelper.h"
+#include <librrc/Helpers/jsonconfighelper.h>
 
-#include <librrc/rocketactuator.h>
-#include <librrc/networkactuator.h>
-#include <librrc/networksensor.h>
+#include <librrc/Interface/rocketactuator.h>
+#include <librrc/Interface/networkactuator.h>
+#include <librrc/Interface/networksensor.h>
 
 #include <libriccore/riccorelogging.h>
 
@@ -44,6 +44,8 @@ public:
     void update() override;
 
     void armEngine() override;
+
+    void disarmEngine() override ;
 
     void execute(int32_t func) override;
 
@@ -120,7 +122,7 @@ private:
     template<typename T>
     void addComponentNetworkCallback(T* component,JsonObjectConst componentconf,addNetworkCallbackFunction_t addNetworkCallbackFunction)
     {
-        using namespace JsonConfigHelper;
+        using namespace LIBRRC::JsonConfigHelper;
         addNetworkCallbackFunction(getIfContains<uint8_t>(componentconf,"address"),
                             getIfContains<uint8_t>(componentconf,"destination_service"),
                             [this,component](packetptr_t packetptr)

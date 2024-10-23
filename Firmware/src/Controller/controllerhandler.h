@@ -11,7 +11,7 @@
 #include "controllable.h"
 #include "Engine/enginehandler.h"
 
-#include <librrc/configurabledynamichandler.h>
+#include <librrc/Handler/configurabledynamichandler.h>
 
 
 

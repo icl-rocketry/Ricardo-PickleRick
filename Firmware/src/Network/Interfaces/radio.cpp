@@ -19,7 +19,7 @@
 
 #include "Config/pinmap_config.h"
 
-Radio::Radio(SPIClass& spi, int cs,int reset, int dio,Types::CoreTypes::SystemStatus_t& systemstatus,RADIO_MODE mode,uint8_t id,std::string name):
+Radio::Radio(SPIClass& spi, int cs,int reset, int dio,Types::CoreTypes::SystemStatus_t& systemstatus, RADIO_MODE mode,uint8_t id,std::string name):
 RnpInterface(id,name),
 _config(defaultConfig),
 _spi(spi),
@@ -34,6 +34,8 @@ _received(true)
     _info.MTU = 256;
     _info.sendBufferSize = 2048;
     _info.mode=mode;
+    _info.prevTimeSent = 0;
+    _info.prevTimeReceived = 0;
 };
 
 
@@ -42,6 +44,7 @@ void Radio::setup(){
     loraRadio.setPins(csPin,resetPin,dioPin);
     loraRadio.setSPI(_spi);
     //load defaut config and restart the radio
+    // loadConf();
     restart();
     loraRadio.setTxPower(20,1); //20 dbm, mux antenna output to PA_Boost (req. for 20dbm)
 };
@@ -57,7 +60,7 @@ void Radio::sendPacket(RnpPacket& data)
         return;
     }
     if (dataSize + _currentSendBufferSize > _info.sendBufferSize){
-        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LORA," Lora Send Buffer Overflow!");
+        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LORA,"Lora Send Buffer Overflow!");
         ++_info.txerror;
         _info.sendBufferOverflow = true;
         return;
@@ -77,6 +80,7 @@ void Radio::update(){
     getPacket();
     checkSendBuffer();
     checkTx();
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(loraRadio.readRegister(0x1f)));
 }
 
 
@@ -92,7 +96,9 @@ void Radio::getPacket(){
 
         std::vector<uint8_t> data(packetSize);
         loraRadio.readBytes(data.data(),packetSize);
-        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Receive");
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio receive");
+        // std::string message = "Packet RSSI: " + std::to_string(loraRadio.packetRssi()) + ", SNR: " + std::to_string(loraRadio.packetSnr());
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(message);
         if (_packetBuffer == nullptr){
             return;
         }
@@ -108,31 +114,62 @@ void Radio::getPacket(){
             return;
         }
 
+        _received=true;
+        _info.prevTimeReceived = millis();
+
         //update source interface
         packet_ptr->header.src_iface = getID();
-        _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer
-        _received=true;
+
+        switch(_info.mode)
+        {
+            case(RADIO_MODE::SYNC):
+            {
+                syncModeReceive_Hook(std::move(packet_ptr));
+                break;
+            }
+            default:
+            {
+                _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer
+                break;
+            }
+        }
+
+        //place radio back into rx mode
+        loraRadio.parsePacket();
+        
+        
 
     }
 }
 
 void Radio::checkSendBuffer(){
-    if (_sendBuffer.size() == 0){
-        return; // exit if nothing in the buffer
-    }
+    // if (_sendBuffer.size() == 0){
+    //     return; // exit if nothing in the buffer
+    // }
     
     switch(_info.mode)
     {
         case(RADIO_MODE::SIMPLE):
-        {
-            sendFromBuffer();
+        {  
+            if (_sendBuffer.size())
+            {
+                sendFromBuffer();
+            }
+            
             break;
         }
         case(RADIO_MODE::TURN_TIMEOUT):
         {
-            if (_received || (millis()-_info.prevTimeSent > turnTimeout)){
-                sendFromBuffer();
+            if (_sendBuffer.size()){
+                if (_received || (millis()-_info.prevTimeSent > turnTimeout)){
+                    sendFromBuffer();
+                }
             }
+            break;
+        }
+        case(RADIO_MODE::SYNC):
+        {
+            syncModeTransmit_Hook();
             break;
         }
         default:
@@ -181,7 +218,9 @@ void Radio::checkTx(){
 const RnpInterfaceInfo* Radio::getInfo()
 {
      _info.rssi = loraRadio.rssi();
+     _info.packet_rssi = loraRadio.packetRssi();
      _info.snr = loraRadio.packetSnr();  
+     _info.packet_snr = loraRadio.packetSnr();
      _info.freqError = loraRadio.packetFrequencyError();
      return &_info;
 };
@@ -194,9 +233,17 @@ void Radio::setConfig(RadioConfig config)
     restart();
 }
 
+void Radio::setConfig(RadioConfig config, bool overrideNVS)
+{
+    if (overrideNVS)
+    {
+        setConfig(config);
+    }
+}
+
 void Radio::restart(){
     if (!loraRadio.begin(_config.frequency)){
-        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LORA,"loraRadio setting up");      
+        _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LORA,"loraRadio Failed to start!");     
         return;
     };
     if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_LORA)){
@@ -207,5 +254,98 @@ void Radio::restart(){
     loraRadio.setSignalBandwidth(_config.bandwidth);
     loraRadio.setSpreadingFactor(_config.spreading_factor);
     loraRadio.enableCrc();
+    loraRadio.setTxPower(_config.txPower,1);
 
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::string("Radio config: ") + std::string("Freq = ") + std::to_string(_config.frequency) + std::string(", BW = ") + std::to_string(_config.bandwidth) +
+                    std::string(", SF = ") + std::to_string(_config.spreading_factor) + std::string(", TxPower = ") + std::to_string(_config.txPower)); 
+
+}
+
+void Radio::syncModeTransmit_Hook()
+{
+    if (syncmodeinfo.mode == SYNCMODE_MODE::RX && 
+        millis() - _info.prevTimeReceived < syncmodeinfo.guardTime)
+    {
+        return;
+    }
+
+    if (millis() - _info.prevTimeReceived > syncmodeinfo.connectionTimeout)
+    {
+        syncmodeinfo.state = SYNCMODE_STATE::DISCONNECTED;
+    }
+
+    if (_sendBuffer.size())
+    {
+        sendFromBuffer();
+    }
+    else //send a sync packet
+    { 
+        //construct sync packet
+        //! using rnp pakcet for ease here but could be a future optimization
+        //create empty packet with empty header -> default values
+        RnpPacket syncPacket(RnpHeader{});
+        //update start byte to refelct different protocol
+        syncPacket.header.start_byte = syncPacketStartByte;
+
+        std::vector<uint8_t> serializedSyncPacket;
+        syncPacket.serialize(serializedSyncPacket);
+        
+        switch (syncmodeinfo.state)
+        {
+            case (SYNCMODE_STATE::DISCONNECTED):
+            {
+                //in disconnected state we beacon the sync messages wrt the beacon delta 
+                if ( millis() - _info.prevTimeSent > syncmodeinfo.beaconDelta)
+                {
+                    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Beacon Send");
+                    send(serializedSyncPacket);
+                }
+                break;
+            }
+            case (SYNCMODE_STATE::CONNECTED):
+            {
+                if ( millis() - _info.prevTimeSent > 100)
+                {
+                    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Sync Send");
+                    send(serializedSyncPacket);
+                }
+                break;
+            }
+        }
+        loraRadio.parsePacket();
+    }
+    // place driver in receive mode
+    syncmodeinfo.mode = SYNCMODE_MODE::RX;
+    //force driver back into rx mode?
+
+
+}
+
+void Radio::syncModeReceive_Hook(std::unique_ptr<RnpPacketSerialized> packet_ptr)
+{   
+    //we have received so place driver in transmit mode
+    syncmodeinfo.mode = SYNCMODE_MODE::TX;
+    //update state to connected
+    syncmodeinfo.state = SYNCMODE_STATE::CONNECTED;
+
+    switch(packet_ptr->header.start_byte)
+    {
+        case (0xAF):
+        {
+            //normal rnp packet
+            _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer
+            break;
+        }
+        case (0xBF):
+        {
+            RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Sync Receive");
+            //sync packet
+            //dont push sync packets to packet buffer, just dump them yea
+            break;
+        }
+
+
+    }
+   
+    
 }

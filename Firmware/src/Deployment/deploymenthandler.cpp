@@ -7,37 +7,42 @@
 #include <librnp/rnp_networkmanager.h>
 #include <ArduinoJson.h>
 
-#include "Helpers/jsonconfighelper.h"
+#include <librrc/Helpers/jsonconfighelper.h>
 
-#include <librrc/rocketcomponent.h>
-#include <librrc/rocketcomponenttype.h>
+#include <librrc/Interface/rocketcomponent.h>
+#include <librrc/Interface/rocketcomponenttype.h>
 
-#include <librrc/networkactuator.h>
-#include <librrc/packets/nrcpackets.h>
+#include <librrc/Interface/networkactuator.h>
+#include <librrc/Packets/nrcpackets.h>
+#include <librrc/Local/remoteactuatoradapter.h>
+#include <librrc/Remote/nrcremotepyro.h>
 
-#include <librrc/i2cpyro.h>
+#include "Config/types.h"
+
 
 
 
 void DeploymentHandler::setupIndividual_impl(size_t id,JsonObjectConst deployerconfig)
 {
-   using namespace JsonConfigHelper;
+   using namespace LIBRRC::JsonConfigHelper;
  
    auto type = getIfContains<std::string>(deployerconfig,"type");
 
 
-    if (type == "i2c_act_servo"){
-        throw std::runtime_error("i2c servo Not implemented!");
-    }else if (type == "i2c_act_pyro"){
-        auto address = getIfContains<uint8_t>(deployerconfig,"address");
-        auto channel = getIfContains<uint8_t>(deployerconfig,"channel");
-        auto invertContinuity = getIfContains<bool>(deployerconfig,"invertContinuity");
-        addObject(std::make_unique<I2CPyro>(id, 
-                                            address,
-                                            channel,
-                                            invertContinuity, 
-                                            _wire,
-                                            _logcb));
+    if (type == "local_pyro"){
+        uint8_t channel = getIfContains<uint8_t>(deployerconfig,"channel");
+        if (channel > 3)
+        {
+            throw std::runtime_error("Local pyro channel out of range!");
+        }
+        //retrive nrcremotepyro instance correspondign to channel number
+        Types::LocalPyro_t& localPyro = *(m_localPyroMap.at(channel));
+
+
+        //add object to dep handler and use adapter to convert to local type
+        addObject(std::make_unique<RemoteActuatorAdapter<Types::LocalPyro_t>>(id,localPyro,_logcb));
+
+
     }else if (type == "net_actuator"){
         auto address = getIfContains<uint8_t>(deployerconfig,"address");
         auto destination_service = getIfContains<uint8_t>(deployerconfig,"destination_service");
@@ -56,7 +61,21 @@ void DeploymentHandler::setupIndividual_impl(size_t id,JsonObjectConst deployerc
                                 }
                             );
             
-    }else{
+    }else if (type == "local_servo"){
+        uint8_t channel = getIfContains<uint8_t>(deployerconfig,"channel");
+        if (channel > 3)
+        {
+            throw std::runtime_error("Local servo channel out of range!");
+        }
+        //retrive nrcremotepyro instance correspondign to channel number
+        Types::LocalServo_t& localServo = *(m_localServoMap.at(channel));
+
+
+        //add object to dep handler and use adapter to convert to local type
+        addObject(std::make_unique<RemoteActuatorAdapter<Types::LocalServo_t>>(id,localServo,_logcb));
+
+    }
+    else{
         throw std::runtime_error("Invalid type!");
     }
 
@@ -82,5 +101,11 @@ void DeploymentHandler::armComponents_impl()
     }
 }
 
-
+void DeploymentHandler::disarmComponents_impl()
+{
+    for (auto &component : *this)
+    {
+        component->disarm();
+    }
+}
 

@@ -14,7 +14,7 @@
 // Forward declaration required here as commands.h contains command function signatures, so is included in Config/commands_config.h which is 
 // then included in system.h as the command id enum type is required in the generation of the riccoresystem template. Better solutions may
 //exist but currently this seems okay
-#include "config/forward_decl.h" 
+#include "Config/forward_decl.h" 
 
 #include <librnp/rnp_packet.h>
 
@@ -27,6 +27,7 @@ namespace Commands{
     void StartLoggingCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void StopLoggingCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void TelemetryCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void RadioTestCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     // void ClearFlashCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     // void ClearSDCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void PlaySongCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
@@ -52,4 +53,13 @@ namespace Commands{
     void FireInfoCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void FreeRamCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void FlightAbortCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void ApogeeOverrideCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+
+    //!TEMP COMMANDS - TO BE REIMPLEMENTED PROPERLY
+    void Radio_SetFreq(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void Radio_SetBW(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void Radio_SetSF(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void Radio_SetSYNC(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void Radio_SetPower(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void LiftoffOverrideCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
 }

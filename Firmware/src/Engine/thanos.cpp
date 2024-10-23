@@ -1,10 +1,10 @@
 #include "thanos.h"
-#include "Helpers/jsonconfighelper.h"
+#include <librrc/Helpers/jsonconfighelper.h>
 
 Thanos::Thanos(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunction_t addNetworkCallbackFunction, RnpNetworkManager &networkmanager, uint8_t handlerServiceID) : 
 Engine(id, networkmanager, handlerServiceID)
 {
-    using namespace JsonConfigHelper;
+    using namespace LIBRRC::JsonConfigHelper;
 
     auto engineConf = getIfContains<JsonObjectConst>(engineConfig, "engine");
     _engine = std::make_unique<NetworkActuator>(0,
@@ -13,7 +13,7 @@ Engine(id, networkmanager, handlerServiceID)
                                                  getIfContains<uint8_t>(engineConf, "destination_service"),
                                                  _networkmanager,
                                                  getLogCB());
-                
+    
     addComponentNetworkCallback(_engine.get(),engineConf,addNetworkCallbackFunction);
 
     auto igniterConf = getIfContains<JsonObjectConst>(engineConfig, "igniter");
@@ -88,6 +88,15 @@ void Thanos::armEngine()
     _oxVentValve->arm();
     _fuelVentValve->arm();
     _fuelPrssValve->arm();
+}
+
+void Thanos::disarmEngine()
+{
+    _engine->disarm();
+    _igniter->disarm();
+    _oxVentValve->disarm();
+    _fuelVentValve->disarm();
+    _fuelPrssValve->disarm();
 }
 
 void Thanos::shutdown()

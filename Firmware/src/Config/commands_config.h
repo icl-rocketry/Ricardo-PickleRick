@@ -24,6 +24,7 @@ namespace Commands
         Start_Logging = 5,
         Stop_Logging = 6,
         Telemetry = 8,
+        Radio_Test = 9,
         Print_Flash_filesystem = 12,
         Print_Sd_filesystem = 13,
         Play_Song = 14,
@@ -32,7 +33,7 @@ namespace Commands
         Reset_Orientation = 50,
         Reset_Localization = 51,
         Set_Beta = 52,
-        Calibrate_AccelGyro_Bias = 60,
+        Calibrate_AccelGyro_Bias = 60, // bias callibration requires sensor z axis aligned with up directioN!
         Calibrate_Mag_Full = 61, //changed for compatibility
         Calibrate_HighGAccel_Bias = 62,
         Calibrate_Baro = 63,
@@ -44,10 +45,17 @@ namespace Commands
         Enter_Recovery = 105,
         Exit_Debug = 106,
         Flight_Abort = 120,
+        Radio_SetFreq = 200,
+        Radio_SetSF = 201,
+        Radio_SetBW = 202,
+        Radio_SetSYNC = 203,
+        Radio_SetPower = 204,
+        Liftoff_Override = 130,
+        Apogee_Override = 131,
         Free_Ram = 250
     };
 
-    inline std::initializer_list<ID> defaultEnabledCommands = {ID::Free_Ram,ID::Telemetry};
+    inline std::initializer_list<ID> defaultEnabledCommands = {ID::Free_Ram,ID::Telemetry,ID::Radio_Test};
 
     inline std::unordered_map<ID, std::function<void(ForwardDecl_SystemClass &, const RnpPacketSerialized &)>> command_map{
         {ID::Launch, LaunchCommand},
@@ -57,6 +65,7 @@ namespace Commands
         {ID::Start_Logging, StartLoggingCommand},
         {ID::Stop_Logging, StopLoggingCommand},
         {ID::Telemetry, TelemetryCommand},
+        {ID::Radio_Test, RadioTestCommand},
         {ID::Play_Song, PlaySongCommand},
         {ID::Skip_Song, SkipSongCommand},
         {ID::Clear_Song_Queue, ClearSongQueueCommand},
@@ -75,8 +84,14 @@ namespace Commands
         {ID::Enter_Recovery, EnterRecoveryCommand},
         {ID::Exit_Debug, ExitDebugCommand},
         {ID::Free_Ram, FreeRamCommand},
-        {ID::Flight_Abort, FlightAbortCommand}};
-
-
+        {ID::Flight_Abort, FlightAbortCommand},
+        {ID::Radio_SetFreq, Radio_SetFreq},
+        {ID::Radio_SetBW, Radio_SetBW},
+        {ID::Radio_SetPower, Radio_SetPower},
+        {ID::Radio_SetSF, Radio_SetSF},
+        {ID::Radio_SetSYNC, Radio_SetSYNC},
+        {ID::Flight_Abort, FlightAbortCommand},
+        {ID::Liftoff_Override, LiftoffOverrideCommand},
+        {ID::Apogee_Override, ApogeeOverrideCommand}};
 
 };

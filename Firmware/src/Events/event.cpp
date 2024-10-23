@@ -28,7 +28,17 @@ void Event::update()
 		{
 			_action();
 			_lastActionTime = millis();
-			 RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Event:" + std::to_string(_eventID) + " fired at " + std::to_string(_timeTriggered));
+			 RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Event:" + std::to_string(_eventID) + " : " + _name +" triggered at " + std::to_string(_timeTriggered));
 		}
 	}
 }
+
+
+void Event::reset(){
+    _previouslyFired = false;
+	_timeTriggered = 0;
+	_lastActionTime = 0;
+
+	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Event:" + std::to_string(_eventID) + " : " + _name +" reset");
+}
+

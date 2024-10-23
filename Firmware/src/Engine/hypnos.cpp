@@ -1,5 +1,5 @@
 #include "hypnos.h"
-#include "Helpers/jsonconfighelper.h"
+#include <librrc/Helpers/jsonconfighelper.h>
 
 Hypnos::Hypnos(uint8_t id, JsonObjectConst engineConfig, addNetworkCallbackFunction_t addNetworkCallbackFunction, RnpNetworkManager &networkmanager, uint8_t handlerServiceID) : 
 Engine(id, networkmanager, handlerServiceID),
@@ -7,7 +7,7 @@ _igniterFired(false),
 motor_lockout(true),
 shutdown_called(false)
 {
-    using namespace JsonConfigHelper;
+    using namespace LIBRRC::JsonConfigHelper;
     //setup components from config
 
     auto igniterConf = getIfContains<JsonObjectConst>(engineConfig, "igniter");
@@ -111,6 +111,12 @@ void Hypnos::armEngine(){
     _igniter->arm();
 };
 
+void Hypnos::disarmEngine(){
+    _ventValve->disarm();
+    _oxidiserValve->disarm();
+    _igniter->disarm();
+}
+
 void Hypnos::shutdown(){
     shutdown_called=true;
     if (motor_lockout){
@@ -170,10 +176,10 @@ void Hypnos::updateSensors()
 {
      if (millis() - _prevSensorUpdateTime > _sensorUpdateDelta)
     {
-        if (millis() - _chamberPressure->getState()->lastNewStateUpdateTime < _networkTimeout){
+        if (millis() - _chamberPressure->getLastStateUpdateTime() < _networkTimeout){
             _chamberPressure->updateState();
             _chamberPressureTimeout = false;
-            log("Chamber Pressure:" + std::to_string(static_cast<const NetworkSensorState*>(_chamberPressure->getState())->sensorValue));
+            log("Chamber Pressure:" + std::to_string(_chamberPressure->getValue()));
         }else{
             if (!_chamberPressureTimeout){
                 log("Chamber Pressure Timeout!");
@@ -182,10 +188,10 @@ void Hypnos::updateSensors()
             // component timed out -> maybe timeout detection should be in the component rather than here
         }
 
-        if (millis() - _tankPressure->getState()->lastNewStateUpdateTime < _networkTimeout){
+        if (millis() - _tankPressure->getLastStateUpdateTime() < _networkTimeout){
             _tankPressure->updateState();
             _tankPressureTimeout = false;
-            log("Tank Pressure:" + std::to_string(static_cast<const NetworkSensorState*>(_tankPressure->getState())->sensorValue));
+            log("Tank Pressure:" + std::to_string(_tankPressure->getValue()));
         }else{
             // component timed out 
             if (!_tankPressureTimeout){

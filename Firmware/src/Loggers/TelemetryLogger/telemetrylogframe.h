@@ -32,8 +32,10 @@ private:
             &TelemetryLogframe::baro_alt,
             &TelemetryLogframe::baro_temp,
             &TelemetryLogframe::baro_press,
-            &TelemetryLogframe::batt_volt,
-            &TelemetryLogframe::batt_percent,
+            &TelemetryLogframe::logic_voltage,
+            &TelemetryLogframe::logic_percent,
+            &TelemetryLogframe::dep_voltage,
+            &TelemetryLogframe::dep_current,
             &TelemetryLogframe::roll,
             &TelemetryLogframe::pitch,
             &TelemetryLogframe::yaw,
@@ -51,7 +53,9 @@ private:
             &TelemetryLogframe::ae,
             &TelemetryLogframe::ad,
             &TelemetryLogframe::rssi,
+            &TelemetryLogframe::packet_rssi,
             &TelemetryLogframe::snr,
+            &TelemetryLogframe::packet_snr,
             &TelemetryLogframe::timestamp
             
            
@@ -65,7 +69,7 @@ public:
     float gps_long, gps_lat;
     long gps_alt;
     long gps_v_n, gps_v_e, gps_v_d;
-    uint8_t gps_sat, gps_fix; // these cant be uint8_t as this is a typedef to unsigned char so cannot be converted to a numeric string
+    uint8_t gps_sat, gps_fix; 
     //imu
     float ax, ay, az;
     float h_ax, h_ay, h_az;
@@ -75,7 +79,10 @@ public:
     //baro
     float baro_alt,baro_temp,baro_press;
     //battery
-    uint16_t batt_volt,batt_percent;
+    int logic_voltage;
+    int logic_percent;
+    int dep_voltage;
+    int dep_current;
     //orientation
     float roll, pitch, yaw;
     float q0,q1,q2,q3;
@@ -86,10 +93,9 @@ public:
     //linear acceleration
     float an,ae,ad;
     //radio details
-    int16_t rssi; 
-    float snr;
+    int16_t rssi, packet_rssi;
+    float snr, packet_snr;
 
-    
     uint64_t timestamp;
 
     std::string stringify()const{

@@ -1,62 +1,202 @@
 {
-    "Pyros":
-    //"Num": 42069, // Number of pyros
-    [
-        {
-            "type": "bt",
-            "address": "0x69696969",
-            "fire_duration": 1000
-        }, // fire duration in ms
-        {
-            "type": "local",
-            "fire_pin": 10,
-            "continuity_pin": 11,
-            "fire_duration": 69420
-        }
-    ],
-    "Engine": [
-        {
-            "type": "solid",
-            "interface": 0
-        } // filll up later
-    ],
-    "Events": // id is the index of the pyro/engine in their respective arrays
-    [
-        {
-            "single_fire": true,
-            "cooldown":0,
-            "action":[
-                {
-                    "type":"engine",
-                    "id":0,
-                    "param":1
-                },
-                {
-                    "type":"deployment",
-                    "id":2,
-                    "param":50
-                }
-            ],
-            "condition":{
+    
+    "Deployers": [
+		{ 
+			"id": 0,//drogue
+			"type": "net_actuator", 
+			"address": 17,
+			"destination_service": 10
+		},
+		{ 
+			"id": 1,//main
+			"type": "net_actuator", 
+			"address": 17,
+			"destination_service": 11
+		},
+		{ 
+			"id": 2,//payload deploy
+			"type": "net_actuator", 
+			"address": 13,
+			"destination_service": 10
+		},
+		{ 
+			"id": 3,//local deploy
+			"type": "local_pyro", 
+			"channel":3
+		}
+	],
+	"Engines": [
+		{
+			"id":0,
+			"type":"Thanos",
+			"engine":
+			{
+				"address":12,
+				"destination_service":10
+			},
+			"igniter":
+			{
+				"address":11,
+				"destination_service":11
+			},
+			"fuelVentValve":
+			{
+				"address":7,
+				"destination_service":10,
+				"closed_position" : 0,
+				"open_position": 180
+			},
+			"oxVentValve":
+			{
+				"address":9,
+				"destination_service":10,
+				"closed_position":0,
+				"open_position":180
+			},
+			"fuelPrssValve":
+			{
+				"address":7,
+				"destination_service":11,
+				"closed_position":0,
+				"open_position":180
+			}
+		
+		}
+	],
+	"Controllers": [
+	],
+	"Events":
+	[
+		{// engine ignition event
+            "id":0,
+			"single_fire": true,
+			"cooldown": 0,
+			"action": [
+				{
+					"type": "engine",
+					"id": 0,
+					"param": 1
+				},
+				{
+					"type": "deployment",
+					"id": 3,
+					"param": 10000
+				}
+			],
+			"condition": {
+				"operator": "MORETHAN",
+				"flightVar": "TimeSinceIgnition",
+				"threshold": 0
+			}
+		},
+		{ // engine shutdown event 
+            "id":1,
+			"single_fire": true,
+			"cooldown": 0,
+			"action": [
+				{
+					"type": "engine",
+					"id": 0,
+					"param": 0
+				}
+			],
+			"condition": {
+				"operator": "MORETHAN",
+				"flightVar": "TimeSinceIgnition",
+				"threshold": 6720
+			}
+		},
+		{ // drogue deployment event
+            "id":2,
+			"single_fire": true,
+			"cooldown": 0,
+			"action": [
+				{
+					"type": "deployment",
+					"id": 0,
+					"param": 10000
+				}
+			],
+			"condition": {
+				"operator": "MORETHAN",
+				"flightVar": "TimeSinceApogee",
+				"threshold": 0
+			}
+		},
+		{ // payload deployment event
+            "id":3, 
+			"single_fire": true,
+			"cooldown": 0,
+			"action": [
+				{
+					"type": "deployment",
+					"id": 2,
+					"param": 0
+				}
+			],
+			"condition": {
+				"operator": "MORETHAN",
+				"flightVar": "TimeSinceApogee",
+				"threshold": 10000
+			}
+		},
+		{ //main deployment event
+            "id":4,
+			"single_fire": true,
+			"cooldown": 0,
+			"action": [
+				{
+					"type": "deployment",
+					"id": 1,
+					"param": 10000
+				}
+			],
+			"condition":{
                 "operator":"AND",
                 "condition":[
                     {
                     "operator": "MORETHAN",
-                    "flightVar": "Acceleration",
-                    "component": 1,
-                    "threshold": 10
+                    "flightVar": "Position", 
+                    "component": 2, 
+                    "threshold": -500 //500m AGL in NED
                     },
                     {
                     "operator": "MORETHAN",
-                    "flightVar": "Velocity",
-                    "component": 1,
-                    "threshold": 15
+                    "flightVar": "TimeSinceApogee",
+                    "threshold": 0
                     }
                 ]
             }
-
-        }
-    ]
+		},
+        { //main deployment event
+            "id":5,
+			"single_fire": true,
+			"cooldown": 0,
+			"action": [
+				{
+					"type": "deployment",
+					"id": 1,
+					"param": 10000
+				}
+			],
+			"condition":[
+                {
+                "operator": "TRUE", //FALSE
+                "flightVar": "ComponentState", 
+                "mask": 4 // bit mask for the state i.e 4 = 0b00000100
+                },
+                {
+                "operator": "MORETHAN",
+                "flightVar": "ComponentValue",
+                "threshold": 0
+                }
+            ]
+                    
+                
+            
+		}
+	]
+    
 }
 // A or B or C
 // A or (B or C)

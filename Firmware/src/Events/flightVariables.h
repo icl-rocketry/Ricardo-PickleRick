@@ -78,6 +78,36 @@ class FlightVariables{
 		flightVariable_t Acceleration(int arg);
 
         /**
+         * @brief retrieves parameters related to the orientaiton of the rocket wrt rocket axes [rad]
+         * 
+         * @param arg  
+         *            0: Roll
+         *            1: Pitch
+         *            2: Yaw
+         * @return flightVariable_t 
+         */
+        flightVariable_t RocketOrientation(int arg);
+
+        /**
+         * @brief retrieves parameters related to the orientaiton of the rocket wrt board axes [rad]
+         * 
+         * @param arg  
+         *            0: Roll
+         *            1: Pitch
+         *            2: Yaw
+         * @return flightVariable_t 
+         */
+        flightVariable_t BoardOrientation(int arg);
+        
+        /**
+         * @brief returns the tilt (nutation) [rad]
+         * 
+         * @param arg 
+         * @return flightVariable_t 
+         */
+        flightVariable_t Tilt(int arg);
+
+        /**
          * @brief Helpfer function to get component of a eigen vector
          * 
          * @param var Eigen Vector

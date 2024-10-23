@@ -1,8 +1,8 @@
 #pragma once
 
 #include "engine.h"
-#include "Helpers/jsonconfighelper.h"
-#include <librrc/networkactuator.h>
+#include <librrc/Helpers/jsonconfighelper.h>
+#include <librrc/Interface/networkactuator.h>
 
 
 struct ThanosState : public EngineState{};
@@ -21,6 +21,9 @@ class Thanos : public Engine
         void update() override;
 
         void armEngine() override;
+
+   
+        void disarmEngine() override ;
 
         void execute(int32_t func) override;
 
@@ -68,7 +71,7 @@ class Thanos : public Engine
         template<typename T>
         void addComponentNetworkCallback(T* component,JsonObjectConst componentconf,addNetworkCallbackFunction_t addNetworkCallbackFunction)
         {
-            using namespace JsonConfigHelper;
+            using namespace LIBRRC::JsonConfigHelper;
             addNetworkCallbackFunction(getIfContains<uint8_t>(componentconf,"address"),
                                 getIfContains<uint8_t>(componentconf,"destination_service"),
                                 [this,component](packetptr_t packetptr)

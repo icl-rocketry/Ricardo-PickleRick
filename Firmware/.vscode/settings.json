@@ -3,10 +3,11 @@
     "files.associations": {
         "*.ipp": "cpp",
         "core": "cpp",
-        "eigen": "cpp"
+        "eigen": "cpp",
+        "esp_vfs_semihost.h": "c"
     },
     "editor.bracketPairColorization.enabled": true,
     "editor.guides.bracketPairs": "active",
     "git.ignoreLimitWarning": true,
-    "idf.port": "/dev/cu.usbmodem101"
+    "idf.port": "/dev/tty.usbmodem2101"
 }

@@ -165,9 +165,9 @@ void H3LIS331DL::readAxes(float &x, float &y, float &z)
 
     readRawAxes(xi, yi, zi);
 
-    std::array<float, 3> accel = axeshelper(std::array<float, 3>{-raw_to_g * (float)(xi + offset_ax),
-                                                                 -raw_to_g * (float)(yi + offset_ay),
-                                                                 -raw_to_g * (float)(zi + offset_az)});
+    std::array<float, 3> accel = axeshelper(std::array<float, 3>{raw_to_g * (float)(xi + offset_ax),
+                                                                 raw_to_g * (float)(yi + offset_ay),
+                                                                 raw_to_g * (float)(zi + offset_az)});
 
     x = accel[0];
     y = accel[1];
@@ -201,7 +201,9 @@ void H3LIS331DL::calibrateBias()
 
         offset_ax = -sum_ax / number_measurements;
         offset_ay = -sum_ay / number_measurements;
-        offset_az = 1 / raw_to_g - sum_az / number_measurements;
+        
+        offset_az = (1 / raw_to_g) - sum_az / number_measurements; 
+        // offset_az = (- 1 / raw_to_g) - sum_az / number_measurements; //!This is wrong
 
         writeAccelBias();
 

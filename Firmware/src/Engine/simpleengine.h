@@ -3,20 +3,23 @@
 #include <ArduinoJson.h>
 #include <memory>
 
-#include <librrc/rocketactuator.h>
+#include <librrc/Interface/rocketactuator.h>
+#include "Config/types.h"
 
 #include "engine.h"
 
 
 class SimpleEngine:public Engine{
     public:
-        SimpleEngine(uint8_t id,JsonObjectConst engineConfig,addNetworkCallbackFunction_t addNetworkCallbackF,RnpNetworkManager& networkmanager,uint8_t handlerServiceID);
+        SimpleEngine(uint8_t id, JsonObjectConst engineConfig, const Types::LocalPyroMap_t &localPyroMap, addNetworkCallbackFunction_t addNetworkCallbackF, RnpNetworkManager &networkmanager, uint8_t handlerServiceID);
 
         void updateState() override;
 
         uint8_t flightCheck() override;
 
         void armEngine() override;
+
+        void disarmEngine() override;
 
         void update() override {}; //empty we dont need an update as this a simple on and off
 

@@ -63,6 +63,12 @@ class DPS310 : private Dps3xx{
          */
         static constexpr int press_osr = 3;
 
+        /**
+         * @brief 
+         * 
+         * @param pressure 
+         * @return float [m]
+         */
         float toAltitude(const float& pressure);
 
         void loadDPSCalibrationValues();

@@ -70,5 +70,5 @@ melody_t<64> MelodyLibrary::cantinaband = { { {
 {NOTE_B4,300},
 {NOTE_G4,300}
 } }, 
-true 
+false 
  };

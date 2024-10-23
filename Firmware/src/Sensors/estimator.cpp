@@ -7,27 +7,34 @@
 
 #include <ArduinoJson.h>
 #include <libriccore/riccorelogging.h>
+#include <librrc/Helpers/jsonconfighelper.h>
 
 #include "Config/types.h"
 #include "Config/systemflags_config.h"
 
 #include "sensors.h"
 
-
-
 Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus) : _systemstatus(systemstatus),
-                                                   update_frequency(2000), // 500Hz update
-                                                   _homeSet(false),
-                                                   madgwick(0.5f, 0.005f) // beta | gyroscope sample time step (s)
-                                                   {};
+                                                                       update_frequency(2000), // 500Hz update
+                                                                       _homeSet(false),
+                                                                       madgwick(0.5f, 0.005f), // beta | gyroscope sample time step (s)
+                                                                     //   refOrientation(1.0,0.0,0.0,0.0)
+                                                                        refOrientation(0.707,0.0,0.707,0.0)
+                                                                       {};
 
 void Estimator::setup()
 {
+   resetLocalization();
+   resetOrientation();
+};
+
+void Estimator::configure(JsonObjectConst conf)
+{
    // update board orientation this is applied when converthing back to sensor frame where the orientaiton of sensor matters
    // upside down should be retireved from config file
+   setRefOrientation(conf["Orientation"]);
+}
 
-   localizationkf.reset();
-};
 
 void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 {
@@ -57,7 +64,8 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 
             if (_homeSet) // if no home, this falls thru to the no home
             {
-               localizationkf.baroUpdate(raw_sensors.baro.alt - state.baro_ref_alt);
+               
+               baroUpdate(raw_sensors.baro.alt);
                changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_IMU_NO_GPS, "no IMU and GPS");
                predictLocalizationKF(dt_seconds);
                return;
@@ -84,9 +92,9 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
       { // we have imu so calculate orientation and update localizationkf
          if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_MAG))
          {
-            updateOrientation(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz,
-                              raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az,
-                              dt_seconds);
+            computeOrientation(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz,
+                               raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az,
+                               dt_seconds);
             // check that there isnt a bigger error
             if (_homeSet)
             {
@@ -95,10 +103,10 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
          }
          else
          {
-            updateOrientation(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz,
-                              raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az,
-                              raw_sensors.mag.mx, raw_sensors.mag.my, raw_sensors.mag.mz,
-                              dt_seconds);
+            computeOrientation(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz,
+                               raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az,
+                               raw_sensors.mag.mx, raw_sensors.mag.my, raw_sensors.mag.mz,
+                               dt_seconds);
          }
          // transform angular rates from body frame to earth frame
          updateAngularRates(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz);
@@ -148,7 +156,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
       }
       else
       {
-         localizationkf.baroUpdate(raw_sensors.baro.alt - state.baro_ref_alt);
+         baroUpdate(raw_sensors.baro.alt);
       }
 
       predictLocalizationKF(dt_seconds);
@@ -177,39 +185,80 @@ void Estimator::setHome(const SensorStructs::raw_measurements_t &raw_sensors)
    _homeSet = true;
 }
 
-void Estimator::updateOrientation(const float &gx, const float &gy, const float &gz,
-                                  const float &ax, const float &ay, const float &az,
-                                  const float &mx, const float &my, const float &mz, float dt)
+void Estimator::computeOrientation(const float &gx, const float &gy, const float &gz,
+                                   const float &ax, const float &ay, const float &az,
+                                   const float &mx, const float &my, const float &mz, float dt)
 {
 
    // calculate orientation solution
    madgwick.setDeltaT(dt); // update integration time
+
    madgwick.update(gx, gy, gz, ax, ay, az, mx, my, mz);
-   // update orientation
-   state.orientation = madgwick.getOrientation();
-   state.eulerAngles = madgwick.getEulerAngles();
+   // madgwick.update(gx, gy, gz, ax, ay, az-2, mx, my, mz);
+
+   updateOrientation();
 }
 
-void Estimator::updateOrientation(const float &gx, const float &gy, const float &gz,
-                                  const float &ax, const float &ay, const float &az, float dt)
+void Estimator::computeOrientation(const float &gx, const float &gy, const float &gz,
+                                   const float &ax, const float &ay, const float &az, float dt)
 {
 
    // calculate orientation solution
    madgwick.setDeltaT(dt); // update integration time
+
    madgwick.updateIMU(gx, gy, gz, ax, ay, az);
+   // update orientation
+   updateOrientation();
+}
+
+void Estimator::updateOrientation()
+{
+
    // update orientation
    state.orientation = madgwick.getOrientation();
    state.eulerAngles = madgwick.getEulerAngles();
+
+
+   // state.eulerAngles = quat2rpy(state.orientation);
+   // state.rocketOrientation = (refOrientation * state.orientation * refOrientation.inverse()).normalized();
+   // state.rocketEulerAngles = quat2rpy(state.rocketOrientation);
+
+   // float q0 = state.rocketOrientation.w();
+   // float q1 = state.rocketOrientation.x();
+   // float q2 = state.rocketOrientation.y();
+   // float q3 = state.rocketOrientation.z();
+
+   // float roll = atan2f(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2);
+	// float pitch = asinf(-2.0f * (q1*q3 - q0*q2));
+	// float yaw = atan2f(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3);
+   // // state.rocketEulerAngles =  state.rocketOrientation.toRotationMatrix().eulerAngles(0, 1, 2);
+   // state.rocketEulerAngles = Eigen::Vector3f(roll,pitch,yaw);
+
+   state.tilt = calculateNutation(state.eulerAngles);
+}
+
+Eigen::Vector3f Estimator::quat2rpy(Eigen::Quaternionf quat)
+{
+   float q0 = state.orientation.w();
+   float q1 = state.orientation.x();
+   float q2 = state.orientation.y();
+   float q3 = state.orientation.z();
+
+   float yaw   = atan2f(2.0 * (q1 * q2 + q0 * q3), q0 * q0 + q1 * q1 - q2 * q2 - q3 * q3);
+   float pitch = -asinf(2.0 * (q1 * q3 - q0 * q2));
+   float roll  = atan2f(2.0 * (q0 * q1 + q2 * q3), q0 * q0 - q1 * q1 - q2 * q2 + q3 * q3);
+
+   return Eigen::Vector3f{roll,pitch,yaw};
 }
 
 void Estimator::updateAngularRates(const float &gx, const float &gy, const float &gz)
 {
-   madgwick.getInverseRotationMatrix() * Eigen::Vector3f{gx, gy, gz};
+   madgwick.getInverseRotationMatrix() * Eigen::Vector3f{gx, gy, gz}; // this might be incorrect?
 }
 
 Eigen::Vector3f Estimator::getLinearAcceleration(const float &ax, const float &ay, const float &az)
 {
-   return (madgwick.getRotationMatrix() * Eigen::Vector3f{ax, ay, az}) - Eigen::Vector3f{0, 0, 1};
+   return (madgwick.getRotationMatrix() * Eigen::Vector3f{ax, ay, az}) + Eigen::Vector3f{0, 0, 1};
 };
 
 void Estimator::changeEstimatorState(ESTIMATOR_STATE status, std::string logmessage)
@@ -261,7 +310,6 @@ void Estimator::setApogeeTime(uint32_t time)
 {
    state.apogeeTime = time;
    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Apogee detected at " + std::to_string(time));
-   
 }
 
 const SensorStructs::state_t &Estimator::getData()
@@ -276,4 +324,78 @@ void Estimator::predictLocalizationKF(const float &dt)
    state.acceleration = localizationkf.getAcceleration();
    state.velocity = localizationkf.getVelocity();
    state.position = localizationkf.getPosition();
+}
+
+float Estimator::calculateNutation(const Eigen::Vector3f &euler)
+{
+   //domain of acos is [0,pi] -> tilt angle will always be an absolute value 
+   return acos(cos(euler(1) - (3.1415*0.5)) * cos(euler(2)));
+}
+
+void Estimator::baroUpdate(const float& altitude)
+{
+   if (altitude > BARO_MAX_ALT)
+   {
+      return;
+   }
+   localizationkf.baroUpdate(altitude - state.baro_ref_alt);
+}
+
+void Estimator::setRefOrientation(JsonObjectConst conf)
+{
+   using namespace LIBRRC::JsonConfigHelper;
+   try
+   {
+      std::string type = getIfContains<std::string>(conf,"type","");
+      if (type == "")
+      {
+         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("No Orientation Type Given, using Default!");
+         return;
+      }
+      else if (type == "euler") //extepd format r,p,y
+      {
+         float roll = getIfContains<float>(conf,"roll");
+         float pitch = getIfContains<float>(conf,"pitch");
+         float yaw = getIfContains<float>(conf,"yaw");
+  
+         refOrientation = Eigen::AngleAxisf(roll,  Eigen::Vector3f::UnitX())
+                              * Eigen::AngleAxisf(pitch,  Eigen::Vector3f::UnitY())
+                              * Eigen::AngleAxisf(yaw,  Eigen::Vector3f::UnitZ());
+                              
+         refOrientation.normalize(); //ensure ref orinetation is normalized
+
+      }
+      else if (type == "quaternion") //exepcetd format w,x,y,z
+      {
+         refOrientation = Eigen::Quaternionf({getIfContains<float>(conf,"w"),
+                                              getIfContains<float>(conf,"x"),
+                                              getIfContains<float>(conf,"y"),
+                                              getIfContains<float>(conf,"z")});
+         refOrientation.normalize(); //ensure ref orinetation is normalized
+      }
+      else if (type == "axisAlign")
+      {
+         int x_axis = getIfContains<int>(conf,"x_axis");
+         int y_axis = getIfContains<int>(conf,"y_axis");
+         int z_axis = getIfContains<int>(conf,"z_axis");
+         int x_inv = getIfContains<int>(conf,"x_inv") ? -1 : 1;
+         int y_inv = getIfContains<int>(conf,"y_inv") ? -1 : 1;
+         int z_inv = getIfContains<int>(conf,"z_inv") ? -1 : 1;
+
+      }
+      else
+      {
+         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Illegal Orientation Type Given, using Default!");
+         return;
+      }
+   }
+   catch (const std::exception &e)
+   {
+      RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Exception occured while processing orientation! - " + std::string(e.what()));
+
+      return;
+   }
+
+   RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Ref Orientation updated to:" );
+
 }
