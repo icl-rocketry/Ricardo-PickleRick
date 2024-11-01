@@ -18,7 +18,7 @@
 	url = https://github.com/sparkfun/SparkFun_u-blox_GNSS_v3.git
 [submodule "Firmware/lib/SdFat"]
 	path = Firmware/lib/SdFat
-	url = https://github.com/greiman/SdFat.git
+	url = https://github.com/icl-rocketry/SdFat.git
 [submodule "Firmware/lib/arduino-LoRa"]
 	path = Firmware/lib/arduino-LoRa
 	url = git@github.com:icl-rocketry/arduino-LoRa.git
