@@ -7,7 +7,6 @@
 #include <libriccore/riccoresystem.h>
 #include <libriccore/storage/wrappedfile.h>
 
-
 #include "Config/systemflags_config.h"
 #include "Config/commands_config.h"
 #include "Config/pinmap_config.h"
@@ -39,9 +38,6 @@
 
 #include "hal/usb_serial_jtag_ll.h"
 
-
-
-
 #ifdef CONFIG_IDF_TARGET_ESP32S3
 static constexpr int VSPI_BUS_NUM = 0;
 static constexpr int HSPI_BUS_NUM = 1;
@@ -54,7 +50,7 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    vspi(VSPI_BUS_NUM),
                    hspi(HSPI_BUS_NUM),
                    I2C(0),
-                   radio(hspi,  PinMap::LoraCs, PinMap::LoraReset, -1, systemstatus, RADIO_MODE::TURN_TIMEOUT,  2),
+                   radio(hspi, PinMap::LoraCs, PinMap::LoraReset, -1, systemstatus, RADIO_MODE::TURN_TIMEOUT, 2),
                    canbus(systemstatus, PinMap::TxCan, PinMap::RxCan, 3),
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
@@ -63,21 +59,19 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    controllerhandler(enginehandler),
                    eventhandler(enginehandler, deploymenthandler),
                    apogeedetect(20),
-                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus),
-                   pyroPinExpander0(0x20,I2C),
-                   pyro0(PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Cont),networkmanager),
-                   pyro1(PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Cont),networkmanager),
-                   pyro2(PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Cont),networkmanager),
-                   pyro3(PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Cont),networkmanager),
-                   pid(networkmanager)
-                   {};
+                   primarysd(vspi, PinMap::SdCs_1, SD_SCK_MHZ(20), false, &systemstatus),
+                   pyroPinExpander0(0x20, I2C),
+                   pyro0(PCA9534Gpio(pyroPinExpander0, PinMap::Ch0Fire), PCA9534Gpio(pyroPinExpander0, PinMap::Ch0Cont), networkmanager),
+                   pyro1(PCA9534Gpio(pyroPinExpander0, PinMap::Ch1Fire), PCA9534Gpio(pyroPinExpander0, PinMap::Ch1Cont), networkmanager),
+                   pyro2(PCA9534Gpio(pyroPinExpander0, PinMap::Ch2Fire), PCA9534Gpio(pyroPinExpander0, PinMap::Ch2Cont), networkmanager),
+                   pyro3(PCA9534Gpio(pyroPinExpander0, PinMap::Ch3Fire), PCA9534Gpio(pyroPinExpander0, PinMap::Ch3Cont), networkmanager),
+                   pid(networkmanager) {};
 
 void System::systemSetup()
 {
 
     Serial.setRxBufferSize(GeneralConfig::SerialRxSize);
     Serial.begin(GeneralConfig::SerialBaud);
-  
 
     setupPins();
     // intialize i2c interface
@@ -87,7 +81,7 @@ void System::systemSetup()
 
     primarysd.setup();
 
-    initializeLoggers();    
+    initializeLoggers();
 
     tunezhandler.setup();
     // network interfaces
@@ -97,9 +91,7 @@ void System::systemSetup()
     // add interfaces to netmanager
     configureNetwork();
 
-    
-
-    //register pryo services
+    // register pryo services
     setupLocalPyros();
 
     loadConfig();
@@ -110,56 +102,70 @@ void System::systemSetup()
     statemachine.initalize(std::make_unique<Preflight>(*this));
 
     pid.Setup();
-    
+
     sendtest_1();
     sendtest_3();
 };
 
+uint32_t lastTime;
+bool reset = 1;
+
 void System::systemUpdate()
 {
-    tunezhandler.update();
+    // tunezhandler.update();
     sensors.update();
     estimator.update(sensors.getData());
     logTelemetry();
     auto CurrentData = estimator.getData();
+    auto CurrentSensors = sensors.getData();
+
     // if (CurrentData.eulerAngles[0] > 3.14/2)  {
     //     digitalWrite(PinMap::SdDet_1, HIGH);
     // } else {
     //     digitalWrite(PinMap::SdDet_1, LOW);
     // }
-    // if (count < 10)
-    // {
-    //     sendtest_1();
-    //     arg = !arg;
-    //     delay(1000);
-    //     sendtest_2(arg,outputValues(0,0));
-    //     count++;
-    // }
 
-    // CurrentData.eulerAngles[0]; // Roll
-    // CurrentData.eulerAngles[1]; // Pitch
-    // CurrentData.eulerAngles[2]; // Yaw
+    CurrentData.eulerAngles[0]; // Roll
+    CurrentData.eulerAngles[1]; // Pitch
+    CurrentData.eulerAngles[2]; // Yaw
 
-    // CurrentData.position(0); // x
-	// CurrentData.position(1); // y
-	// CurrentData.position(2); // z
+    CurrentData.position(0); // x
+    CurrentData.position(1); // y
+    CurrentData.position(2); // z
 
-    Eigen::Matrix<float,1, 6> inputMatrix = {CurrentData.position(0),CurrentData.position(1),CurrentData.position(2),CurrentData.eulerAngles[0], CurrentData.eulerAngles[1],CurrentData.eulerAngles[2]};
-    Eigen::Matrix<float,1, 4> outputValues = pid.outputMatrix(inputMatrix);
+    // Eigen::Matrix<float,1, 6> inputMatrix = {CurrentData.position(0),CurrentData.position(1),CurrentData.position(2),CurrentData.eulerAngles[0], CurrentData.eulerAngles[1],CurrentData.eulerAngles[2]};
+    // Eigen::Matrix<float,1, 4> outputValues = pid.outputMatrix(inputMatrix);
 
-    sendtest_2(outputValues(0,0));
-    sendtest_4(outputValues(0,1));
-    delay(500);
+    if (millis() > 100)
+    {
+
+        if (millis() - lastTime > 100)
+        {
+            if (reset)
+            {
+                sendtest_2(30*sin(millis()));
+                sendtest_4(30*cos(millis()));
+                // reset = 0;
+            }
+            // else
+            // {
+            //     sendtest_2(0);
+            //     sendtest_4(0);
+            //     reset = 1;
+            // }
+            lastTime = millis();
+        }
+    }
 };
 
 void System::setupSPI()
 {
-    vspi.begin(PinMap::V_SCLK,PinMap::V_MISO,PinMap::V_MOSI);
+    vspi.begin(PinMap::V_SCLK, PinMap::V_MISO, PinMap::V_MOSI);
     vspi.setFrequency(1000000);
     vspi.setBitOrder(MSBFIRST);
     vspi.setDataMode(SPI_MODE0);
 
-    hspi.begin(PinMap::H_SCLK,PinMap::H_MISO,PinMap::H_MOSI);
+    hspi.begin(PinMap::H_SCLK, PinMap::H_MISO, PinMap::H_MOSI);
     hspi.setFrequency(8000000);
     hspi.setBitOrder(MSBFIRST);
     hspi.setDataMode(SPI_MODE0);
@@ -180,17 +186,16 @@ void System::setupLocalPyros()
         pyro1.setup();
         pyro2.setup();
         pyro3.setup();
-        
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro0),pyro0.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro1),pyro1.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro2),pyro2.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro3),pyro3.getThisNetworkCallback());
+
+        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro0), pyro0.getThisNetworkCallback());
+        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro1), pyro1.getThisNetworkCallback());
+        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro2), pyro2.getThisNetworkCallback());
+        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro3), pyro3.getThisNetworkCallback());
     }
     else
     {
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pyro pin expander failed to respond");
     }
-
 };
 
 void System::setupPins()
@@ -216,28 +221,26 @@ void System::setupPins()
 
 void System::loadConfig()
 {
-    DynamicJsonDocument configDoc(16384); //allocate 16kb for config doc MAXSIZE
+    DynamicJsonDocument configDoc(16384); // allocate 16kb for config doc MAXSIZE
     DeserializationError jsonError;
     // get wrapped file for config doc -> returns nullptr if cant open
-    
 
-    //only try load file if sd card is present
+    // only try load file if sd card is present
     if (primarysd.getState() == StoreBase::STATE::NOMINAL)
     {
 
         primarysd.mkdir("/Config"); // ensure config directory exists
 
-        std::unique_ptr<WrappedFile> config_file_ptr = primarysd.open(config_path,FILE_MODE::READ);
+        std::unique_ptr<WrappedFile> config_file_ptr = primarysd.open(config_path, FILE_MODE::READ);
 
         if (config_file_ptr != nullptr)
         {
-            //cast non-owning wrapped file ptr to sdfat_wrappedfile ptr
-            SdFat_WrappedFile* sdfat_wrapped_file_ptr = reinterpret_cast<SdFat_WrappedFile*>(config_file_ptr.get());
-            //lock the file store device lock
+            // cast non-owning wrapped file ptr to sdfat_wrappedfile ptr
+            SdFat_WrappedFile *sdfat_wrapped_file_ptr = reinterpret_cast<SdFat_WrappedFile *>(config_file_ptr.get());
+            // lock the file store device lock
             {
-            RicCoreThread::ScopedLock sl(sdfat_wrapped_file_ptr->getDevLock());
-            jsonError = deserializeJson(configDoc,sdfat_wrapped_file_ptr->IStream());
-
+                RicCoreThread::ScopedLock sl(sdfat_wrapped_file_ptr->getDevLock());
+                jsonError = deserializeJson(configDoc, sdfat_wrapped_file_ptr->IStream());
             }
         }
         else
@@ -250,8 +253,8 @@ void System::loadConfig()
             RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Error deserializing JSON - " + std::string(jsonError.c_str()));
         }
     }
-    
-    //enumerate deployers engines controllers and events from config file
+
+    // enumerate deployers engines controllers and events from config file
     try
     {
         sensors.setup(configDoc.as<JsonObjectConst>()["Sensors"]);
@@ -259,44 +262,43 @@ void System::loadConfig()
         enginehandler.setup(configDoc.as<JsonObjectConst>()["Engines"]);
         controllerhandler.setup(configDoc.as<JsonObjectConst>()["Controllers"]);
         eventhandler.setup(configDoc.as<JsonObjectConst>()["Events"]);
-
     }
     catch (const std::exception &e)
     {
-         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Exception occured while loading flight config! - " + std::string(e.what()));
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Exception occured while loading flight config! - " + std::string(e.what()));
 
-         throw e; //continue throwing as we dont want to continue
+        throw e; // continue throwing as we dont want to continue
     }
-   
+
     //   //register deployment and engine handler services
     networkmanager.registerService(static_cast<uint8_t>(Services::ID::DeploymentHandler), deploymenthandler.getThisNetworkCallback());
     networkmanager.registerService(static_cast<uint8_t>(Services::ID::EngineHandler), enginehandler.getThisNetworkCallback());
 }
 
 void System::initializeLoggers()
-{   
-    //check if sd card is mounted
+{
+    // check if sd card is mounted
     if (primarysd.getState() != StoreBase::STATE::NOMINAL)
     {
-        
-        loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(nullptr,networkmanager);
+
+        loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(nullptr, networkmanager);
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("SD Init Failed");
         return;
     }
 
-    //open log files
-    //get unique directory for logs
-    std::string log_directory_path = primarysd.generateUniquePath(log_path,"");
-    //make new directory
+    // open log files
+    // get unique directory for logs
+    std::string log_directory_path = primarysd.generateUniquePath(log_path, "");
+    // make new directory
     primarysd.mkdir(log_directory_path);
 
-    std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END));
-    std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50); 
-    
+    std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt", static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END));
+    std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt", static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END), 50);
+
     // intialize sys logger
-    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(std::move(syslogfile),networkmanager);
-   
-    //initialize telemetry logger
+    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(std::move(syslogfile), networkmanager);
+
+    // initialize telemetry logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::TELEMETRY>().initialize(std::move(telemetrylogfile));
 
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("SD Init Complete");
@@ -307,16 +309,16 @@ void System::logTelemetry()
     if (micros() - prev_telemetry_log_time > telemetry_log_delta)
     {
         // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(uxTaskGetStackHighWaterMark(primarysd.getHandle())));
-        
+
         // std::string logstring = "int:" + std::to_string(usb_serial_jtag_ll_get_intsts_mask());
         // std::stringstream s;
         // s << std::hex << Serial.getRxQueue() <<"\n";
         // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("sd card state: " + std::to_string(primarysd.getError()));
 
-        const SensorStructs::raw_measurements_t& raw_sensors = sensors.getData();
-        const SensorStructs::state_t& estimator_state =  estimator.getData();
+        const SensorStructs::raw_measurements_t &raw_sensors = sensors.getData();
+        const SensorStructs::state_t &estimator_state = estimator.getData();
         TelemetryLogframe logframe;
-        
+
         logframe.gps_long = raw_sensors.gps.lng;
         logframe.gps_lat = raw_sensors.gps.lat;
         logframe.gps_alt = raw_sensors.gps.alt;
@@ -360,7 +362,7 @@ void System::logTelemetry()
         logframe.ae = estimator_state.acceleration[1];
         logframe.ad = estimator_state.acceleration[2];
 
-        const RadioInterfaceInfo* radio_info = reinterpret_cast<const RadioInterfaceInfo*>(radio.getInfo());
+        const RadioInterfaceInfo *radio_info = reinterpret_cast<const RadioInterfaceInfo *>(radio.getInfo());
 
         logframe.rssi = radio_info->rssi;
         logframe.snr = radio_info->snr;
@@ -374,91 +376,89 @@ void System::logTelemetry()
 }
 
 void System::configureNetwork()
-{   
+{
     networkmanager.setNodeType(NODETYPE::HUB);
     networkmanager.addInterface(&radio);
     networkmanager.addInterface(&canbus);
 
     networkmanager.enableAutoRouteGen(true);
-    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,3});
+    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1, 3});
 
     RoutingTable flightRouting;
-    flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION_GATEWAY,Route{2,1,{}});
-    flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION,Route{2,2,{}});
-    flightRouting.setRoute(17,Route{3,2,{}});
-    flightRouting.setRoute(18,Route{3,2,{}});
-    flightRouting.setRoute(5,Route{3,2,{}});
-    flightRouting.setRoute(6,Route{3,2,{}});
-    flightRouting.setRoute(7,Route{3,2,{}});
-    flightRouting.setRoute(8,Route{3,2,{}});
-    flightRouting.setRoute(9,Route{3,2,{}});
-    flightRouting.setRoute(10,Route{3,2,{}});
-    flightRouting.setRoute(11,Route{3,2,{}});
-    flightRouting.setRoute(12,Route{3,2,{}});
-    flightRouting.setRoute(13,Route{3,2,{}});
-    flightRouting.setRoute(14,Route{3,2,{}});
-    flightRouting.setRoute(15,Route{3,2,{}});
-    flightRouting.setRoute(16,Route{3,2,{}});
-    flightRouting.setRoute(50,Route{3,2,{}});
-    flightRouting.setRoute(51,Route{3,2,{}});
-    flightRouting.setRoute(52,Route{3,2,{}});
-    flightRouting.setRoute(100,Route{3,2,{}});
-    flightRouting.setRoute(101,Route{3,2,{}});
-    flightRouting.setRoute(102,Route{3,2,{}});
-    flightRouting.setRoute(150,Route{2,2,{}});
+    flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION_GATEWAY, Route{2, 1, {}});
+    flightRouting.setRoute((uint8_t)DEFAULT_ADDRESS::GROUNDSTATION, Route{2, 2, {}});
+    flightRouting.setRoute(17, Route{3, 2, {}});
+    flightRouting.setRoute(18, Route{3, 2, {}});
+    flightRouting.setRoute(5, Route{3, 2, {}});
+    flightRouting.setRoute(6, Route{3, 2, {}});
+    flightRouting.setRoute(7, Route{3, 2, {}});
+    flightRouting.setRoute(8, Route{3, 2, {}});
+    flightRouting.setRoute(9, Route{3, 2, {}});
+    flightRouting.setRoute(10, Route{3, 2, {}});
+    flightRouting.setRoute(11, Route{3, 2, {}});
+    flightRouting.setRoute(12, Route{3, 2, {}});
+    flightRouting.setRoute(13, Route{3, 2, {}});
+    flightRouting.setRoute(14, Route{3, 2, {}});
+    flightRouting.setRoute(15, Route{3, 2, {}});
+    flightRouting.setRoute(16, Route{3, 2, {}});
+    flightRouting.setRoute(50, Route{3, 2, {}});
+    flightRouting.setRoute(51, Route{3, 2, {}});
+    flightRouting.setRoute(52, Route{3, 2, {}});
+    flightRouting.setRoute(100, Route{3, 2, {}});
+    flightRouting.setRoute(101, Route{3, 2, {}});
+    flightRouting.setRoute(102, Route{3, 2, {}});
+    flightRouting.setRoute(150, Route{2, 2, {}});
 
-    
     networkmanager.setRoutingTable(flightRouting);
     networkmanager.updateBaseTable(); // save the new base table
-
 };
 
 void System::sendtest_1()
 {
     SimpleCommandPacket test_command_1(3, 0);
-    test_command_1.header.source_service = 10;
+    test_command_1.header.source_service = 1;
     test_command_1.header.source = 2;
     test_command_1.header.destination_service = 11;
-    test_command_1.header.destination = 104;
+    test_command_1.header.destination = 102;
     test_command_1.header.uid = 0;
     networkmanager.sendPacket(test_command_1);
 }
 
 void System::sendtest_2(float servoAngle1)
 {
-    servoAngle1 = (servoAngle1 + 3.1415)*(90/3.1415);
-    int sA1 = std::round(servoAngle1);
-    
-    SimpleCommandPacket test_command_2(2,sA1);
-    test_command_2.header.source_service = 10;
+    servoAngle1 = (servoAngle1) * (180 / 3.1415);
+    int32_t sA1 = std::round(servoAngle1);
+
+    SimpleCommandPacket test_command_2(2, sA1);
+    test_command_2.header.source_service = 1;
     test_command_2.header.source = 2;
     test_command_2.header.destination_service = 11;
-    test_command_2.header.destination = 104;
-    test_command_2.header.uid = 1;
+    test_command_2.header.destination = 102;
+    test_command_2.header.uid = 0;
     networkmanager.sendPacket(test_command_2);
 }
 
 void System::sendtest_3()
 {
     SimpleCommandPacket test_command_3(3, 0);
-    test_command_3.header.source_service = 10;
+    test_command_3.header.source_service = 1;
     test_command_3.header.source = 2;
     test_command_3.header.destination_service = 10;
-    test_command_3.header.destination = 104;
+    test_command_3.header.destination = 102;
     test_command_3.header.uid = 0;
     networkmanager.sendPacket(test_command_3);
 }
 
 void System::sendtest_4(float servoAngle2)
 {
-    servoAngle2 = (servoAngle2 + 3.1415)*(90/3.1415);
-    int sA2 = std::round(servoAngle2);
-    
-    SimpleCommandPacket test_command_4(2,sA2);
-    test_command_4.header.source_service = 10;
+    servoAngle2 = (servoAngle2) * (180 / 3.1415);
+    int32_t sA2 = std::round(servoAngle2);
+
+    SimpleCommandPacket test_command_4(2, sA2);
+    test_command_4.header.source_service = 1;
     test_command_4.header.source = 2;
     test_command_4.header.destination_service = 10;
-    test_command_4.header.destination = 104;
-    test_command_4.header.uid = 1;
+    test_command_4.header.destination = 102;
+    test_command_4.header.uid = 0;
     networkmanager.sendPacket(test_command_4);
 }
