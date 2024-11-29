@@ -101,7 +101,7 @@ void System::systemSetup()
     // initialize statemachine with preflight state
     statemachine.initalize(std::make_unique<Preflight>(*this));
 
-    pid.Setup();
+    pid.setup();
 
     sendtest_1();
     sendtest_3();

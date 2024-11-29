@@ -6,54 +6,51 @@
 #include <vector>
 
 
-class PIDcalibrationpacket : public RnpPacket{
+class PIDCalibrationPacket : public RnpPacket{
     private:
     //serializer framework
         static constexpr auto getSerializer()
         {
             auto ret = RnpSerializer(
-                &PIDcalibrationpacket::PIDcontroller1,
-                &PIDcalibrationpacket::PIDcontroller2,
-                &PIDcalibrationpacket::PIDcontroller3,
-                &PIDcalibrationpacket::K_11,
-                &PIDcalibrationpacket::K_12,
-                &PIDcalibrationpacket::K_13,
-                &PIDcalibrationpacket::K_14,
-                &PIDcalibrationpacket::K_15,
-                &PIDcalibrationpacket::K_16,
-                &PIDcalibrationpacket::K_21,
-                &PIDcalibrationpacket::K_22,
-                &PIDcalibrationpacket::K_23,
-                &PIDcalibrationpacket::K_24,
-                &PIDcalibrationpacket::K_25,
-                &PIDcalibrationpacket::K_26,
-                &PIDcalibrationpacket::K_31,
-                &PIDcalibrationpacket::K_32,
-                &PIDcalibrationpacket::K_33,
-                &PIDcalibrationpacket::K_34,
-                &PIDcalibrationpacket::K_35,
-                &PIDcalibrationpacket::K_36,
-                &PIDcalibrationpacket::K_41,
-                &PIDcalibrationpacket::K_42,
-                &PIDcalibrationpacket::K_43,
-                &PIDcalibrationpacket::K_44,
-                &PIDcalibrationpacket::K_45,
-                &PIDcalibrationpacket::K_46
+                &PIDCalibrationPacket::K_11,
+                &PIDCalibrationPacket::K_12,
+                &PIDCalibrationPacket::K_13,
+                &PIDCalibrationPacket::K_14,
+                &PIDCalibrationPacket::K_15,
+                &PIDCalibrationPacket::K_16
+                // &PIDCalibrationPacket::K_21,
+                // &PIDCalibrationPacket::K_22,
+                // &PIDCalibrationPacket::K_23,
+                // &PIDCalibrationPacket::K_24,
+                // &PIDCalibrationPacket::K_25,
+                // &PIDCalibrationPacket::K_26,
+                // &PIDCalibrationPacket::K_31,
+                // &PIDCalibrationPacket::K_32,
+                // &PIDCalibrationPacket::K_33,
+                // &PIDCalibrationPacket::K_34,
+                // &PIDCalibrationPacket::K_35,
+                // &PIDCalibrationPacket::K_36,
+                // &PIDCalibrationPacket::K_41,
+                // &PIDCalibrationPacket::K_42,
+                // &PIDCalibrationPacket::K_43,
+                // &PIDCalibrationPacket::K_44,
+                // &PIDCalibrationPacket::K_45,
+                // &PIDCalibrationPacket::K_46
             );
 
             return ret;
         }
         
     public:
-        ~PIDcalibrationpacket();
+        ~PIDCalibrationPacket();
 
-        PIDcalibrationpacket();
+        PIDCalibrationPacket();
         /**
          * @brief Deserialize Packet
          * 
          * @param data 
          */
-        PIDcalibrationpacket(const RnpPacketSerialized& packet);
+        PIDCalibrationPacket(const RnpPacketSerialized& packet);
 
         /**
          * @brief Serialize Packet

@@ -1,28 +1,28 @@
-#include "PIDcalibrationpacket.h"
+#include "PIDCalibrationPacket.h"
 #include <vector>
 
 
 
-PIDcalibrationpacket::~PIDcalibrationpacket()
+PIDCalibrationPacket::~PIDCalibrationPacket()
 {};
 
-PIDcalibrationpacket::PIDcalibrationpacket():
+PIDCalibrationPacket::PIDCalibrationPacket():
 RnpPacket(0,
           105,
           size())
 {};
 
-PIDcalibrationpacket::PIDcalibrationpacket(const RnpPacketSerialized& packet):
+PIDCalibrationPacket::PIDCalibrationPacket(const RnpPacketSerialized& packet):
 RnpPacket(packet,size())
 {
     getSerializer().deserialize(*this,packet.getBody());
 };
 
-void PIDcalibrationpacket::deserializeBody(std::vector<uint8_t>& buf){
+void PIDCalibrationPacket::deserializeBody(std::vector<uint8_t>& buf){
     getSerializer().deserialize(*this, buf);
 }
 
-void PIDcalibrationpacket::serialize(std::vector<uint8_t>& buf){
+void PIDCalibrationPacket::serialize(std::vector<uint8_t>& buf){
     RnpPacket::serialize(buf);
 	size_t bufsize = buf.size();
 	buf.resize(bufsize + size());

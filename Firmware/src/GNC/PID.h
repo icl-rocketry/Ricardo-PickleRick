@@ -19,7 +19,7 @@ class PID : public NRCRemoteActuatorBase<PID>
         Eigen::Matrix<float,1, 4> outputMatrix(Eigen::Matrix<float,1, 6> inputMatrix);
         void setup();
         void updateErrors(Eigen::Matrix<float,1, 6> currentPosition);
-        void save_pid_gains();
+        void check_gains();
 
     private:
         Eigen::Matrix<float,4, 6> K_p;
@@ -31,5 +31,7 @@ class PID : public NRCRemoteActuatorBase<PID>
         Eigen::Matrix<float,1, 6> integral_error_riemman; 
         Eigen::Matrix<float,1, 6> integral_error_trapezoid; 
         Eigen::Matrix<float,1, 6> previousError; 
+        void calibrate_impl(packetptr_t packetptr);
+
 };
 
