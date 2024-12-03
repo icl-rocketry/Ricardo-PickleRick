@@ -4,6 +4,8 @@
 #include <ArduinoJson.h>
 #include <librrc/Helpers/jsonconfighelper.h>
 
+#include "Impl/ODriveUARTImpl.h"
+
 class ODriveController {
 public:
     /**
@@ -13,6 +15,11 @@ public:
         UART,
         CAN
     };
+
+    /**
+     * @brief Privately construct a new ODriveController object using a serial Stream.
+     */
+    ODriveController(Stream& serial);
 
     /** @brief Factory method for constructing the ODrive controller from a config setup. */    
     static ODriveController fromConfig(JsonObjectConst config);
@@ -47,13 +54,9 @@ public:
      * @param xAxis Position command for the motor on the x-axis (Motor 0).
      * @param yAxis Position command for the motor on the y-axis (Motor 1).
      */
-    void position(float xAxis, float yAxis) const;
+    void position(float xAxis, float yAxis);
 
-    enum RestartType {
-        REBOOT,
-        SAVE,
-        ERASE
-    };
+    using SysCommand = ODriveArduino::ODriveSysCommand;
 
     /**
      * @brief Blocking call to restart the connected ODrive.
@@ -61,10 +64,8 @@ public:
      * The call is blocking as it awaits a valid response from the ODrive.
      * 
      * @param type The type of restart call.
-     * @return true Successfully restarted ODrive.
-     * @return false 
      */
-    bool restart(RestartType type);
+    void command(SysCommand type);
 
     /**
      * @brief Query the status of the ODrive, returns wether or not the ODrive sent a 
@@ -75,12 +76,8 @@ public:
      * @return true 
      * @return false 
      */
-    explicit operator bool() const;
+    explicit operator bool();
 private:
-    /**
-     * @brief Privately construct a new ODriveController object.
-     */
-    ODriveController();
 
     //! @brief The status from the ODrive from the last status check
     bool operational = false;
@@ -105,4 +102,6 @@ private:
 
     //! @brief Current number of turns from minimum.
     float currentTurns = 0;
+
+    ODriveArduino uartDriver;
 };
