@@ -31,7 +31,6 @@ class PID : public NRCRemoteActuatorBase<PID>
         Eigen::Matrix<float,1, 6> integral_error_riemman; 
         Eigen::Matrix<float,1, 6> integral_error_trapezoid; 
         Eigen::Matrix<float,1, 6> previousError; 
+        Eigen::Matrix<float,1, 6> derivative_error; 
         void calibrate_impl(packetptr_t packetptr);
-
 };
-
