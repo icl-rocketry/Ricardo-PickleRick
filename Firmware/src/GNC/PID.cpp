@@ -10,15 +10,20 @@ void PID::setup(){
     integral_error_trapezoid << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
 }
 
+void PID::update(Eigen::Matrix<float,1, 6> currentPosition){
+    updateErrors(currentPosition); 
+    sendActuationCommands()
+}
+
 void PID::updateErrors(Eigen::Matrix<float,1, 6> currentPosition){
 
-   Serial.println("Current position: " + String(currentPosition(0,3))); 
+    // Serial.println("Current position: " + String(currentPosition(0,3))); 
 
     //Proportional Error = setpoint - inputMatrix; 
     for (int i = 0; i < setpoint.cols(); i++) {
         error (0,i) = setpoint(0,i) - currentPosition(0,i);
         }
-    Serial.println("Proportional Error: " + String(error(0,3))); 
+    // Serial.println("Proportional Error: " + String(error(0,3))); 
 
 
     //Integral Error = 
@@ -26,21 +31,29 @@ void PID::updateErrors(Eigen::Matrix<float,1, 6> currentPosition){
     for (int i = 0; i < setpoint.cols(); i++) {
         integral_error_riemman(0,i) += error(0,i)*timestep ; 
         }
-    Serial.println("Int Riemman Error: " + String(integral_error_riemman(0,3))); 
+    // Serial.println("Int Riemman Error: " + String(integral_error_riemman(0,3))); 
 
         //Trapezoid Rule
     for (int i = 0; i < setpoint.cols(); i++) {
         integral_error_trapezoid(0,i) += (error(0,i) + previousError(0,i))*timestep*0.5 ; 
         }
-    Serial.println("Int Tra Error: " + String(integral_error_trapezoid(0,3))); 
+    // Serial.println("Int Tra Error: " + String(integral_error_trapezoid(0,3))); 
 
     //Derivative Error = 
     for (int i = 0; i < setpoint.cols(); i++) {
         derivative_error(0,i) = (error(0,i) - previousError(0,i))/timestep ; 
         }
-    Serial.println("Derivative Error: " + String(derivative_error(0,3))); 
+    // Serial.println("Derivative Error: " + String(derivative_error(0,3))); 
 
     previousError = error; 
+}
+
+Eigen::Matrix<float,1, 4> PID::updateActuationValues(Eigen::Matrix<float,1, 6> inputMatrix){
+    return (K_p*error + K_i*integral_error_riemman + K_d*derivative_error)
+}
+
+void PID::sendActuationCommands() {
+
 }
 
 void PID::createTestK_p() {
@@ -49,7 +62,6 @@ void PID::createTestK_p() {
     0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0;
 }
-
 
 void PID::calibrate_impl(packetptr_t packetptr) { // saves pid gains for all p, i & d matrices
     PIDCalibrationPacket calibrate_comm(*packetptr);
@@ -91,3 +103,39 @@ void PID::check_gains() {
     }
 }
 
+void PID::armServos() {
+    SimpleCommandPacket arm_alpha(3, 0);
+    test_command_1.header.source_service = 1;
+    test_command_1.header.source = 2;
+    test_command_1.header.destination_service = 10;
+    test_command_1.header.destination = 102;
+    test_command_1.header.uid = 0;
+    networkmanager.sendPacket(arm_alpha);
+
+    SimpleCommandPacket arm_beta(3, 0);
+    test_command_1.header.source_service = 1;
+    test_command_1.header.source = 2;
+    test_command_1.header.destination_service = 11;
+    test_command_1.header.destination = 102;
+    test_command_1.header.uid = 0;
+    networkmanager.sendPacket(arm_beta);
+}
+
+void PID::changeServoAngle(int servo, int angle) {
+
+    servoAngle1 = (servoAngle1) * (180 / 3.1415);
+    int32_t sA1 = std::round(servoAngle1);
+
+    SimpleCommandPacket test_command_2(2, sA1);
+    test_command_2.header.source_service = 1;
+    test_command_2.header.source = 2;
+    test_command_2.header.destination_service = 11;
+    test_command_2.header.destination = 102;
+    test_command_2.header.uid = 0;
+    networkmanager.sendPacket(test_command_2);
+
+}
+
+void PID::changePropPower(int prop, int power) {
+
+}
