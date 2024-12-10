@@ -16,7 +16,7 @@ class PID : public NRCRemoteActuatorBase<PID>
         NRCRemoteActuatorBase(networkmanager) 
         {};
 
-        Eigen::Matrix<float,1, 4> updateActuationValues(Eigen::Matrix<float,1, 6> inputMatrix);
+        void updateActuationValues();
         void setup();
         void update(Eigen::Matrix<float,1, 6> currentPosition);
         void check_gains();
@@ -32,12 +32,15 @@ class PID : public NRCRemoteActuatorBase<PID>
         Eigen::Matrix<float,1, 6> error;
         Eigen::Matrix<float,1, 6> integral_error_riemman; 
         Eigen::Matrix<float,1, 6> integral_error_trapezoid; 
-        Eigen::Matrix<float,1, 6> previousError; 
+        Eigen::Matrix<float,1, 6> previous_error; //update this change later
         Eigen::Matrix<float,1, 6> derivative_error; 
+        Eigen::Matrix<float,1, 4> actuation_values; 
 
         void calibrate_impl(packetptr_t packetptr);
         void createTestK_p();
         void updateErrors(Eigen::Matrix<float,1, 6> currentPosition);
         void armServos();
         void changeServoAngle(int servo, int angle);
+        void changePropPower(int prop, int power) ;
+
 };
