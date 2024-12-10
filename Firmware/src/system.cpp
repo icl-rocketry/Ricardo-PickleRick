@@ -117,14 +117,6 @@ void System::systemUpdate()
     estimator.update(sensors.getData());
     logTelemetry();
     auto CurrentData = estimator.getData();
-    auto CurrentSensors = sensors.getData();
-
-    // if (CurrentData.eulerAngles[0] > 3.14/2)  {
-    //     digitalWrite(PinMap::SdDet_1, HIGH);
-    // } else {
-    //     digitalWrite(PinMap::SdDet_1, LOW);
-    // }
-
     CurrentData.eulerAngles[0]; // Roll
     CurrentData.eulerAngles[1]; // Pitch
     CurrentData.eulerAngles[2]; // Yaw
@@ -133,29 +125,8 @@ void System::systemUpdate()
     CurrentData.position(1); // y
     CurrentData.position(2); // z
 
-    // Eigen::Matrix<float,1, 6> inputMatrix = {CurrentData.position(0),CurrentData.position(1),CurrentData.position(2),CurrentData.eulerAngles[0], CurrentData.eulerAngles[1],CurrentData.eulerAngles[2]};
-    // Eigen::Matrix<float,1, 4> outputValues = pid.outputMatrix(inputMatrix);
-
-    if (millis() > 100)
-    {
-
-        if (millis() - lastTime > 100)
-        {
-            if (reset)
-            {
-                sendtest_2(30*sin(millis()));
-                sendtest_4(30*cos(millis()));
-                // reset = 0;
-            }
-            // else
-            // {
-            //     sendtest_2(0);
-            //     sendtest_4(0);
-            //     reset = 1;
-            // }
-            lastTime = millis();
-        }
-    }
+    Eigen::Matrix<float,1, 6> inputMatrix = {CurrentData.position(0),CurrentData.position(1),CurrentData.position(2),CurrentData.eulerAngles[0] *(180/PI), CurrentData.eulerAngles[1]*(180/PI),CurrentData.eulerAngles[2]*(180/PI)};
+    pid.update(inputMatrix);
 };
 
 void System::setupSPI()

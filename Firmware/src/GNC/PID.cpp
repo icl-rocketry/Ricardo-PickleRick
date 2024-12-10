@@ -5,11 +5,12 @@ void PID::setup(){
     createTestK_p(); 
     createTestK_i(); 
     createTestK_d(); //cpp is a sequencial language
-    setpoint << 1.0, 2.0, 3.0, 4.0, 5.0, 6.0;
+    setpoint << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
     previous_error << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
     timestep = 0.01; 
     integral_error_riemman << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
     integral_error_trapezoid << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    armServos();
 }
 
 void PID::update(Eigen::Matrix<float,1, 6> currentPosition){
@@ -52,7 +53,7 @@ void PID::updateErrors(Eigen::Matrix<float,1, 6> currentPosition){
 }
 
 void PID::updateActuationValues(){
-    actuation_values = K_p * error + K_i * integral_error_riemman + K_d * derivative_error; 
+    actuation_values = error * K_p; // + K_i * integral_error_riemman + K_d * derivative_error; 
 }
 
 void PID::sendActuationCommands() {
@@ -65,8 +66,8 @@ void PID::sendActuationCommands() {
 void PID::createTestK_p() {
     K_p << 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0;
+    0, 0, 0, 0.1, 0, 0,
+    0, 0, 0, 0, 0.1, 0;
 }
 
 void PID::createTestK_i() {
@@ -130,7 +131,7 @@ void PID::armServos() {
     arm_alpha.header.destination_service = 10;
     arm_alpha.header.destination = 102;
     arm_alpha.header.uid = 0;
-    networkmanager.sendPacket(arm_alpha);
+    m_networkmanager.sendPacket(arm_alpha);
 
     SimpleCommandPacket arm_beta(3, 0);
     arm_beta.header.source_service = 1;
@@ -138,21 +139,29 @@ void PID::armServos() {
     arm_beta.header.destination_service = 11;
     arm_beta.header.destination = 102;
     arm_beta.header.uid = 0;
-    networkmanager.sendPacket(arm_beta);
+    m_networkmanager.sendPacket(arm_beta);
 }
 
 void PID::changeServoAngle(int servo, int angle) {
 
     uint8_t des_ser; 
 
-    if (servo = 0) {
+    if (servo == 0) {
         des_ser = 10; 
     }
-    if (servo = 1) {
+    if (servo == 1) {
         des_ser = 11; 
     }
 
     angle += 100; // chenge a num from -100 to +100 to a num from 0 to 200 that the servo can take
+    
+    if (angle >  200) {
+        angle = 200;
+    }
+    if (angle < 0) {
+        angle = 0;
+    }
+    angle = round((angle/10));
 
     SimpleCommandPacket actuate_servo(2, angle); //2 is the fire command
     actuate_servo.header.source_service = 1;
@@ -160,17 +169,17 @@ void PID::changeServoAngle(int servo, int angle) {
     actuate_servo.header.destination_service = des_ser;
     actuate_servo.header.destination = 102;
     actuate_servo.header.uid = 0;
-    networkmanager.sendPacket(actuate_servo);
+    m_networkmanager.sendPacket(actuate_servo);
 }
 
 void PID::changePropPower(int prop, int power) {
 
     uint8_t des_ser; 
 
-    if (prop = 0) {
+    if (prop == 0) {
          des_ser = 10; 
     }
-    if (prop = 1) {
+    if (prop == 1) {
         des_ser = 11; 
     }
 
@@ -182,6 +191,6 @@ void PID::changePropPower(int prop, int power) {
     actuate_prop.header.destination_service = des_ser;
     actuate_prop.header.destination = 102;
     actuate_prop.header.uid = 0; //unknown
-    networkmanager.sendPacket(actuate_prop);
+    m_networkmanager.sendPacket(actuate_prop);
 
 }

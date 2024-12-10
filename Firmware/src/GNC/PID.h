@@ -13,7 +13,7 @@ class PID : public NRCRemoteActuatorBase<PID>
 {
     public:
         PID(RnpNetworkManager &networkmanager):
-        NRCRemoteActuatorBase(networkmanager) 
+        NRCRemoteActuatorBase(networkmanager), m_networkmanager(networkmanager) 
         {};
 
         void updateActuationValues();
@@ -22,6 +22,8 @@ class PID : public NRCRemoteActuatorBase<PID>
         void check_gains();
         void sendActuationCommands();
     private:
+        RnpNetworkManager &m_networkmanager;
+        
         Eigen::Matrix<float,4, 6> K_p;
         Eigen::Matrix<float,4, 6> K_i;
         Eigen::Matrix<float,4, 6> K_d;
@@ -38,6 +40,8 @@ class PID : public NRCRemoteActuatorBase<PID>
 
         void calibrate_impl(packetptr_t packetptr);
         void createTestK_p();
+        void createTestK_i();
+        void createTestK_d();
         void updateErrors(Eigen::Matrix<float,1, 6> currentPosition);
         void armServos();
         void changeServoAngle(int servo, int angle);
