@@ -11,12 +11,16 @@ void PID::setup(){
     integral_error_riemman << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
     integral_error_trapezoid << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
     armServos();
+    previousSampleTime = millis();
 }
 
 void PID::update(Eigen::Matrix<float,1, 6> currentPosition){
-    updateErrors(currentPosition); 
-    updateActuationValues(); 
-    sendActuationCommands();
+    if (millis() - previousSampleTime >= actuationDelta) {
+        updateErrors(currentPosition); 
+        updateActuationValues(); 
+        sendActuationCommands();
+        previousSampleTime = millis();
+    }
 }
 
 void PID::updateErrors(Eigen::Matrix<float,1, 6> currentPosition){
@@ -54,34 +58,41 @@ void PID::updateErrors(Eigen::Matrix<float,1, 6> currentPosition){
 
 void PID::updateActuationValues(){
     actuation_values = error * K_p; // + K_i * integral_error_riemman + K_d * derivative_error; 
+    // Serial.println("Actuation Values: " + String(actuation_values(0,0)) + " " + String(actuation_values(0,1)) + " " + String(actuation_values(0,2)) + " " + String(actuation_values(0,3)));
 }
 
 void PID::sendActuationCommands() {
-    changeServoAngle(0,actuation_values(0,0)); 
-    changeServoAngle(1,actuation_values(0,1)); 
-    changePropPower(0,actuation_values(0,2)); 
-    changePropPower(1,actuation_values(0,3)); 
+    changeServoAngle(0,actuation_values(0,0)); // pitch servo
+    changeServoAngle(1,actuation_values(0,1)); // roll servo
+    // changePropPower(0,actuation_values(0,2)); 
+    // changePropPower(1,actuation_values(0,3)); 
 }
 
 void PID::createTestK_p() {
-    K_p << 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0.1, 0, 0,
-    0, 0, 0, 0, 0.1, 0;
+    K_p << 0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 1, 0, 0,
+    -1, 0, 0, 0,
+    0, 0, 0, 0;
 }
 
 void PID::createTestK_i() {
-    K_i << 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0;
+    K_i << 0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0;
 }
 
 void PID::createTestK_d() {
-    K_d << 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0;
+    K_d << 0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0;
 }
 
 void PID::calibrate_impl(packetptr_t packetptr) { // saves pid gains for all p, i & d matrices
@@ -107,7 +118,7 @@ void PID::check_gains() {
     if(calibSerialised.size() == 0)
     {
         // setNormalState(0); // default is nominally closed
-        Serial.println('no data') ;// default NC
+        Serial.println("no data") ;// default NC
         return;
     }
     Serial.println("PID data:");
@@ -132,7 +143,7 @@ void PID::armServos() {
     arm_alpha.header.destination = 102;
     arm_alpha.header.uid = 0;
     m_networkmanager.sendPacket(arm_alpha);
-
+    delay(100);
     SimpleCommandPacket arm_beta(3, 0);
     arm_beta.header.source_service = 1;
     arm_beta.header.source = 2;
@@ -142,27 +153,23 @@ void PID::armServos() {
     m_networkmanager.sendPacket(arm_beta);
 }
 
-void PID::changeServoAngle(int servo, int angle) {
+void PID::changeServoAngle(int servo, int angle) { // angle should be -10 to 10
 
+    angle = angle * 10; // scale the angle to 0.1 degree = 1 argument degree
     uint8_t des_ser; 
 
-    if (servo == 0) {
+    if (servo == 0) { // mapped from 0 - 300 w 185 as 0
         des_ser = 10; 
+        angle += 185;
     }
-    if (servo == 1) {
+    if (servo == 1) { // mapped from 0 - 300 w 120 as 0
         des_ser = 11; 
+        angle += 120;
     }
 
-    angle += 100; // chenge a num from -100 to +100 to a num from 0 to 200 that the servo can take
-    
-    if (angle >  200) {
-        angle = 200;
-    }
-    if (angle < 0) {
-        angle = 0;
-    }
-    angle = round((angle/10));
 
+    angle = round(angle); //round to the nearest integer
+    Serial.println("Servo: " + String(servo) + ", Angle: " + String(angle));
     SimpleCommandPacket actuate_servo(2, angle); //2 is the fire command
     actuate_servo.header.source_service = 1;
     actuate_servo.header.source = 2;
@@ -189,7 +196,7 @@ void PID::changePropPower(int prop, int power) {
     actuate_prop.header.source_service = 1;
     actuate_prop.header.source = 2;
     actuate_prop.header.destination_service = des_ser;
-    actuate_prop.header.destination = 102;
+    actuate_prop.header.destination = 103;
     actuate_prop.header.uid = 0; //unknown
     m_networkmanager.sendPacket(actuate_prop);
 

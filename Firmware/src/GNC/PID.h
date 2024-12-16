@@ -3,7 +3,7 @@
 #include <librnp/rnp_networkmanager.h>
 
 #include <librrc/Helpers/nvsstore.h>
-#include "GNC/PIDcalibrationpacket.h"
+#include "GNC/pidcalibrationpacket.h"
 
 #include <Arduino.h>
 
@@ -24,13 +24,14 @@ class PID : public NRCRemoteActuatorBase<PID>
     private:
         RnpNetworkManager &m_networkmanager;
         
-        Eigen::Matrix<float,4, 6> K_p;
-        Eigen::Matrix<float,4, 6> K_i;
-        Eigen::Matrix<float,4, 6> K_d;
+        Eigen::Matrix<float,6, 4> K_p;
+        Eigen::Matrix<float,6, 4> K_i;
+        Eigen::Matrix<float,6, 4> K_d;
 
         Eigen::Matrix<float,1, 6> setpoint;
         float timestep; 
-
+        unsigned long previousSampleTime;
+        unsigned long actuationDelta = 100; // 1 second
         Eigen::Matrix<float,1, 6> error;
         Eigen::Matrix<float,1, 6> integral_error_riemman; 
         Eigen::Matrix<float,1, 6> integral_error_trapezoid; 

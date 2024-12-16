@@ -102,30 +102,31 @@ void System::systemSetup()
     statemachine.initalize(std::make_unique<Preflight>(*this));
 
     pid.setup();
-
-    sendtest_1();
-    sendtest_3();
 };
-
-uint32_t lastTime;
-bool reset = 1;
-
 void System::systemUpdate()
 {
     // tunezhandler.update();
     sensors.update();
     estimator.update(sensors.getData());
     logTelemetry();
+
     auto CurrentData = estimator.getData();
-    CurrentData.eulerAngles[0]; // Roll
-    CurrentData.eulerAngles[1]; // Pitch
-    CurrentData.eulerAngles[2]; // Yaw
+    // CurrentData.eulerAngles[0]; // Roll
+    // CurrentData.eulerAngles[1]; // Pitch
+    // CurrentData.eulerAngles[2]; // Yaw
 
-    CurrentData.position(0); // x
-    CurrentData.position(1); // y
-    CurrentData.position(2); // z
+    // CurrentData.position(0); // x
+    // CurrentData.position(1); // y
+    // CurrentData.position(2); // z
 
-    Eigen::Matrix<float,1, 6> inputMatrix = {CurrentData.position(0),CurrentData.position(1),CurrentData.position(2),CurrentData.eulerAngles[0] *(180/PI), CurrentData.eulerAngles[1]*(180/PI),CurrentData.eulerAngles[2]*(180/PI)};
+    Eigen::Matrix<float,1,6> inputMatrix = {
+        CurrentData.position(0),
+        CurrentData.position(1),
+        CurrentData.position(2),
+        static_cast<float>(CurrentData.eulerAngles[0] * (180 / PI)),
+        static_cast<float>(CurrentData.eulerAngles[1] * (180 / PI)),
+        static_cast<float>(CurrentData.eulerAngles[2] * (180 / PI))
+    };
     pid.update(inputMatrix);
 };
 
