@@ -215,9 +215,12 @@ void Estimator::updateOrientation()
 {
 
    // update orientation
+   
    state.orientation = madgwick.getOrientation();
-   state.eulerAngles = madgwick.getEulerAngles();
+   state.eulerAngles = quat2rpy(state.orientation);
 
+   state.rocketOrientation = (state.orientation * refOrientation).normalized();
+   state.rocketEulerAngles = quat2rpy(state.rocketOrientation);
 
    // state.eulerAngles = quat2rpy(state.orientation);
    // state.rocketOrientation = (refOrientation * state.orientation * refOrientation.inverse()).normalized();
@@ -244,9 +247,10 @@ Eigen::Vector3f Estimator::quat2rpy(Eigen::Quaternionf quat)
    float q2 = state.orientation.y();
    float q3 = state.orientation.z();
 
-   float yaw   = atan2f(2.0 * (q1 * q2 + q0 * q3), q0 * q0 + q1 * q1 - q2 * q2 - q3 * q3);
-   float pitch = -asinf(2.0 * (q1 * q3 - q0 * q2));
-   float roll  = atan2f(2.0 * (q0 * q1 + q2 * q3), q0 * q0 - q1 * q1 - q2 * q2 + q3 * q3);
+   float roll = atan2f(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2);
+   float pitch = asinf(-2.0f * (q1*q3 - q0*q2));
+   float yaw = atan2f(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3);
+   
 
    return Eigen::Vector3f{roll,pitch,yaw};
 }
