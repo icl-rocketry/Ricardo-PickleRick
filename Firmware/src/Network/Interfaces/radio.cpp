@@ -28,7 +28,11 @@ csPin(cs),
 resetPin(reset),
 dioPin(dio),
 _currentSendBufferSize(0),
-_txDone(true),
+m_receiveBuffer( xQueueCreateStatic(m_receiveBufferSize,
+                                    m_receiveBufferElementSize,
+                                    m_receiveBufferStorage.data(),
+                                    &m_receiveBufferMgmt) ),
+m_txDone(true),
 _received(true)
 {
     _info.MTU = 256;
@@ -38,11 +42,21 @@ _received(true)
     _info.prevTimeReceived = 0;
 };
 
+Radio::~Radio()
+{
+    //temporary cleanup of interrupt handlers idk if it will actually cover all cases
+    //! check destruction order!!
+    loraRadio.onReceive([](int packetSize){return;});
+    loraRadio.onTxDone([](){return;});
+}
 
 void Radio::setup(){
     //setup loraRadio module
     loraRadio.setPins(csPin,resetPin,dioPin);
     loraRadio.setSPI(_spi);
+    //setup intterupt handlers
+    loraRadio.onReceive([this](int packetSize){this->rxHandler(packetSize);});
+    loraRadio.onTxDone([this](){this->txDoneHandler();});
     //load defaut config and restart the radio
     // loadConf();
     restart();
@@ -71,81 +85,92 @@ void Radio::sendPacket(RnpPacket& data)
     _sendBuffer.push(serializedPacket); // add to send buffer
     _info.sendBufferOverflow = false;
     _currentSendBufferSize += dataSize;
-    checkSendBuffer(); // see if we can send 
+    serviceSendBuffer(); // see if we can send 
     
 
 }
 
 void Radio::update(){
-    getPacket();
-    checkSendBuffer();
-    checkTx();
+    serviceReceiveBuffer();
+    serviceSendBuffer();
+    serviceReceiveBufferErrors();
+    // if (m_txDone)
+    // {
+    //      //change lora mode to receive continous
+        
+    // }
+    // checkTx();
     // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(loraRadio.readRegister(0x1f)));
 }
 
 
-void Radio::getPacket(){
-    // check if radio is still transmitting
-    if (!_txDone){  // this maybe able to be replaced wiht the begin packet method
+void Radio::serviceReceiveBuffer(){
+
+    if (m_receiveBuffer == nullptr){
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Receive Buffer Queue Not Initialized!");
         return;
     }
 
-    int packetSize = loraRadio.parsePacket(); // put radio back into single receive mode and check for packets
-
-    if (packetSize){
-
-        std::vector<uint8_t> data(packetSize);
-        loraRadio.readBytes(data.data(),packetSize);
-        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio receive");
-        // std::string message = "Packet RSSI: " + std::to_string(loraRadio.packetRssi()) + ", SNR: " + std::to_string(loraRadio.packetSnr());
-        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(message);
-        if (_packetBuffer == nullptr){
-            return;
-        }
-        std::unique_ptr<RnpPacketSerialized> packet_ptr;
-
-        try
-        {
-            packet_ptr = std::make_unique<RnpPacketSerialized>(data);
-        }
-        catch (std::exception& e)
-        {
-            RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Deserialization error: " + std::string(e.what()));
-            return;
-        }
-
-        _received=true;
-        _info.prevTimeReceived = millis();
-
-        //update source interface
-        packet_ptr->header.src_iface = getID();
-
-        switch(_info.mode)
-        {
-            case(RADIO_MODE::SYNC):
-            {
-                syncModeReceive_Hook(std::move(packet_ptr));
-                break;
-            }
-            default:
-            {
-                _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer
-                break;
-            }
-        }
-
-        //place radio back into rx mode
-        loraRadio.parsePacket();
-        
-        
-
+    if (!uxQueueMessagesWaiting(m_receiveBuffer)){
+        return;
     }
+
+    std::vector<uint8_t> data;
+
+    if (!xQueueReceive(m_receiveBuffer, static_cast<void*>(&data), 0)){
+        //log the error
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Receive Buffer Queue Error");
+        return;
+    }
+
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio receive");
+    // std::string message = "Packet RSSI: " + std::to_string(loraRadio.packetRssi()) + ", SNR: " + std::to_string(loraRadio.packetSnr());
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(message);
+    if (_packetBuffer == nullptr){
+        return;
+    }
+    std::unique_ptr<RnpPacketSerialized> packet_ptr;
+
+    try
+    {
+        packet_ptr = std::make_unique<RnpPacketSerialized>(data);
+    }
+    catch (std::exception& e)
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Deserialization error: " + std::string(e.what()));
+        return;
+    }
+
+    //probably want to eventualyl move this to the isr for more accurate reception
+    _received=true;
+    _info.prevTimeReceived = millis();
+
+    //update source interface
+    packet_ptr->header.src_iface = getID();
+
+    switch(_info.mode)
+    {
+        case(RADIO_MODE::SYNC):
+        {
+            syncModeReceive_Hook(std::move(packet_ptr));
+            break;
+        }
+        default:
+        {
+            _packetBuffer->push(std::move(packet_ptr));//add packet ptr  to buffer
+            break;
+        }
+    }    
+
 }
 
-void Radio::checkSendBuffer(){
-    // if (_sendBuffer.size() == 0){
-    //     return; // exit if nothing in the buffer
-    // }
+void Radio::serviceSendBuffer(){
+
+
+    if (!m_txDone)
+    {
+        return;
+    }
     
     switch(_info.mode)
     {
@@ -193,10 +218,10 @@ void Radio::sendFromBuffer()
 
 size_t Radio::send(std::vector<uint8_t> &data){
     if (loraRadio.beginPacket()){
-        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Send");
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Send");
         loraRadio.write(data.data(), data.size());
         loraRadio.endPacket(true); // asynchronous send 
-        _txDone = false;
+        m_txDone = false;
         _info.prevTimeSent = millis();
         _received = false; // used for turn_timeout mode
         return data.size();
@@ -205,15 +230,71 @@ size_t Radio::send(std::vector<uint8_t> &data){
     }
 }
 
-void Radio::checkTx(){
-    if (_txDone){
-        return;
-    }
-    if (!loraRadio.isTransmitting()){
-        _txDone = true;
-    }
+// void Radio::checkTx(){
+//     if (m_txDone){
+//         return;
+//     }
+//     if (!loraRadio.isTransmitting()){
+//         m_txDone = true;
+//     }
+// }
+
+IRAM_ATTR void Radio::txDoneHandler()
+{
+    m_txDone = true;
+    loraRadio.receive();
 }
 
+IRAM_ATTR void Radio::rxHandler(int packetSize)
+{
+    if (!packetSize){
+        // idk problem for future me to sort out
+        return;
+    }
+    //copy packet out
+    //send to freertos queue NB isr
+    std::vector<uint8_t> radioData(packetSize);
+    loraRadio.readBytes(radioData.data(),packetSize);
+    //send to freertos queue NB isr
+    //TODO
+
+    if (m_receiveBuffer == nullptr){
+        //queue failed to intialize
+        //TODO log this
+        return;
+    }
+
+    if (xQueueIsQueueFullFromISR(m_receiveBuffer)){
+        //TODO handle overflow
+        m_receiveBufferOverflow = true;
+        m_dumpedPackets++;
+ 
+    }
+    else {
+        std::vector<uint8_t>* radioDataPtr = new std::vector<uint8_t>(packetSize);
+        radioData.swap(*radioDataPtr);
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        
+        if(!xQueueSendToBackFromISR(m_receiveBuffer, static_cast<void*>(radioDataPtr), &xHigherPriorityTaskWoken)){
+            delete radioDataPtr;
+            //todo log faield to send error
+        }
+    }
+
+}
+
+void Radio::serviceReceiveBufferErrors(){
+    if (m_receiveBufferOverflow){
+        //TODO handle overflow
+        m_receiveBufferOverflow = false;
+
+        uint8_t currentDumped = m_dumpedPackets;
+        uint8_t nDumped = currentDumped - m_prevDumpedPackets;
+        m_prevDumpedPackets = currentDumped;
+
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Radio Receive Buffer Overflow: " + std::to_string(nDumped) + " packets dumped");
+    }
+}
 
 const RnpInterfaceInfo* Radio::getInfo()
 {
@@ -255,6 +336,8 @@ void Radio::restart(){
     loraRadio.setSpreadingFactor(_config.spreading_factor);
     loraRadio.enableCrc();
     loraRadio.setTxPower(_config.txPower,1);
+    //place radio into receive mode
+    loraRadio.receive();
 
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::string("Radio config: ") + std::string("Freq = ") + std::to_string(_config.frequency) + std::string(", BW = ") + std::to_string(_config.bandwidth) +
                     std::string(", SF = ") + std::to_string(_config.spreading_factor) + std::string(", TxPower = ") + std::to_string(_config.txPower)); 
@@ -312,7 +395,8 @@ void Radio::syncModeTransmit_Hook()
                 break;
             }
         }
-        loraRadio.parsePacket();
+        //!
+        // loraRadio.parsePacket();
     }
     // place driver in receive mode
     syncmodeinfo.mode = SYNCMODE_MODE::RX;

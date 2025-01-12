@@ -2,11 +2,16 @@
 //c++ stl
 #include <memory>
 #include <vector>
+#include <array>
 #include <string>
 #include <queue>
+#include <atomic>
 //arduino + esp32 
 #include <Arduino.h>
 #include <SPI.h>
+//freertos
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
 
 //Ric libraries
 #include <libriccore/riccorelogging.h>
@@ -57,10 +62,13 @@ class Radio : public RnpInterface
 {
 public:
     Radio(SPIClass &spi, int cs,int reset, int dio, Types::CoreTypes::SystemStatus_t &systemstatus, RADIO_MODE mode = RADIO_MODE::SIMPLE,  uint8_t id = 2, std::string name = "Radio");
+    ~Radio();
+
     void setup() override;
 
     void sendPacket(RnpPacket &data) override;
     void update() override;
+
     const RnpInterfaceInfo *getInfo() override;
     const RadioConfig& getConfig();
     void setConfig(RadioConfig config);
@@ -175,16 +183,37 @@ private:
 
     RadioInterfaceInfo _info;
 
+    //send buffer
     std::queue<std::vector<uint8_t>> _sendBuffer;
     size_t _currentSendBufferSize;
 
-    bool _txDone;
+    //receive buffer
+    QueueHandle_t m_receiveBuffer;
+    static constexpr size_t m_receiveBufferSize = 20; //max size is 5120B
+    static constexpr size_t m_receiveBufferElementSize = sizeof(std::vector<uint8_t>);
 
-    void getPacket();
-    void checkSendBuffer();
+    std::array<uint8_t,m_receiveBufferSize*m_receiveBufferElementSize> m_receiveBufferStorage;
+    StaticQueue_t m_receiveBufferMgmt;
+
+    //receive buffer error handling
+    std::atomic<bool> m_receiveBufferOverflow;
+    uint8_t m_prevDumpedPackets;
+    std::atomic<uint8_t> m_dumpedPackets;
+
+    std::atomic<bool> m_txDone;
+
+    void serviceReceiveBuffer();
+    void serviceSendBuffer();
+    void serviceReceiveBufferErrors();
+
     size_t send(std::vector<uint8_t> &data);
-    void checkTx();
+    // void checkTx();
     void sendFromBuffer();
+
+    //Interrupt Handlers
+    //TODO handle class destruction safely handling dandling this reference!
+    IRAM_ATTR void txDoneHandler();
+    IRAM_ATTR void rxHandler(int packetSize);
 
     static constexpr int turnTimeout = 250;
     bool _received;
