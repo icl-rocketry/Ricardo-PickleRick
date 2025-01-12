@@ -190,13 +190,12 @@ private:
     //receive buffer
     QueueHandle_t m_receiveBuffer;
     static constexpr size_t m_receiveBufferSize = 20; //max size is 5120B
-    static constexpr size_t m_receiveBufferElementSize = sizeof(std::vector<uint8_t>);
+    static constexpr size_t m_receiveBufferElementSize = sizeof(std::vector<uint8_t>*);
 
     std::array<uint8_t,m_receiveBufferSize*m_receiveBufferElementSize> m_receiveBufferStorage;
     StaticQueue_t m_receiveBufferMgmt;
 
     //receive buffer error handling
-    std::atomic<bool> m_receiveBufferOverflow;
     uint8_t m_prevDumpedPackets;
     std::atomic<uint8_t> m_dumpedPackets;
 
@@ -204,7 +203,6 @@ private:
 
     void serviceReceiveBuffer();
     void serviceSendBuffer();
-    void serviceReceiveBufferErrors();
 
     size_t send(std::vector<uint8_t> &data);
     // void checkTx();
