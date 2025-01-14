@@ -17,8 +17,6 @@
 #include <SPI.h>
 #include <Wire.h>
 
-#include "config.h"
-
 #include "sensorStructs.h"
 
 #include "Config/types.h"

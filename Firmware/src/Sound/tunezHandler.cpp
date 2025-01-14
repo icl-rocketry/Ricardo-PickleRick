@@ -11,6 +11,10 @@ TunezHandler::TunezHandler()
     tune_queue.reserve(10); //we shoudlnt really need more than 10
 };
 
+TunezHandler::~TunezHandler(){
+    ledcDetach(PinMap::Buzzer);
+}
+
 void TunezHandler::setup()
 {
     // ledcSetup(0,50,10);
