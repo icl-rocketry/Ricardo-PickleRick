@@ -14,11 +14,14 @@
 Max_M10S::Max_M10S(TwoWire& wire, Types::CoreTypes::SystemStatus_t& systemstatus) :
     gnss(),
     _wire(wire),
-    _systemstatus(systemstatus)
+    _systemstatus(systemstatus),
+    _i2cerror(true)
 {}
 
 void Max_M10S::setup(const uint8_t address)
 {
+
+
     if(!gnss.begin(_wire,address)){
         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_GPS,"GPS I2C not found at address");
         _i2cerror = true;
