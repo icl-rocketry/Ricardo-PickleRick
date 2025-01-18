@@ -2,20 +2,27 @@
 
 #include <vector> 
 #include <queue>
+#include <array>
 #include <algorithm>
 #include <array>
 #include <Eigen/Dense>
 
 
 /**
- * @brief Simple ringbuf implementation based on std::queue
+ * @brief Simple ringbuf implementation based on std::array
  * 
  * @tparam T 
  * @tparam LEN 
  */
 template<typename T,size_t LEN>
-class RingBuf : private std::queue<T> {
-    public:
+class RingBuf : private std::array<T,LEN> {
+    public:        
+        RingBuf(T defaultValue = {}):
+        idx(0),
+        curr_size(0),
+        m_defaultValue(defaultValue)
+        {};
+
         /**
          * @brief inserts a new value at the front and returns the removed value. 
          * Returns zero if len != maxLen
@@ -24,30 +31,38 @@ class RingBuf : private std::queue<T> {
          * @return T 
          */
         T pop_push_back(T val){
-            // push new element on queue
-            this->push(val);
             
-            const size_t curr_size = this->size();
+            //retrieve old val
+            T oldVal = (*this)[idx];
+            // push new element on queue
+            (*this)[idx] = val;
+            
+            //increment idx, implement rollover
+            idx++;
 
-            if (curr_size == LEN + 1){
-                T lastVal = this->front();
-                this->pop();
-                return lastVal;
-            }else 
-            if (curr_size < LEN + 1){
-                return 0;
-            }else
-            if (curr_size > LEN + 1){
-                throw std::runtime_error("RingBuf size exceeded!");
-            }
-            return 0;
+            if (idx >= LEN) idx = 0;
+        
+            //increment curr_size up to max size (LEN)
+            curr_size = std::min(LEN,curr_size+1);
+
+            if (curr_size == LEN){
+                return oldVal; // the next index represents the oldest value in the ring buffer
+            } 
+
+            return m_defaultValue;
 
         };
 
-        using std::queue<T>::size;
+        size_t size()
+        {
+            return curr_size;
+        }
 
     private:
-        static constexpr size_t maxLen = LEN; // no idea why this is here
+    
+        size_t idx;
+        size_t curr_size;
+        const T m_defaultValue;
 
 };
 
