@@ -20,8 +20,8 @@ void TunezHandler::setup()
     // ledcSetup(0,50,10);
     // ledcAttachPin(PinMap::Buzzer,0);
     ledcAttach(PinMap::Buzzer,50,10);
-    ledcWrite(0,_volume); //max volume
-    ledcWriteTone(0,0); //write 0 hz so no noise
+    ledcWrite(PinMap::Buzzer,_volume); //max volume
+    ledcWriteTone(PinMap::Buzzer,0); //write 0 hz so no noise
 
 };
 
@@ -77,7 +77,7 @@ void TunezHandler::update(){
                 uint16_t new_frequency = tune_queue.front().melody->getNote(tune_queue.front().index).pitch;
                 note_duration = tune_queue.front().melody->getNote(tune_queue.front().index).duration;
                 //update ledc driver with new frequnecy
-                ledcWriteTone(0,new_frequency);
+                ledcWriteTone(PinMap::Buzzer,new_frequency);
                 tune_queue.front().index++; //increment index by 1
             }else{
                 //reached the end of the melody
@@ -92,7 +92,7 @@ void TunezHandler::update(){
             
         }
     }else{
-        ledcWriteTone(0,0);
+        ledcWriteTone(PinMap::Buzzer,0);
        
     }
 };
