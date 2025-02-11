@@ -29,15 +29,8 @@
 
 #include "Sound/tunezHandler.h"
 
-#include "Events/eventHandler.h"
-#include "Deployment/deploymenthandler.h"
-#include "Deployment/PCA9534.h"
-#include "Deployment/PCA9534Gpio.h"
-#include "Engine/enginehandler.h"
-#include "Controller/controllerhandler.h"
 #include "Storage/sdfat_store.h"
 
-#include "ApogeeDetection/apogeedetect.h"
 
 class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 {
@@ -60,14 +53,6 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         Sensors sensors;
         Estimator estimator;
 
-        DeploymentHandler deploymenthandler;
-        EngineHandler enginehandler;
-
-        ControllerHandler controllerhandler;
-        EventHandler eventhandler;
-
-        ApogeeDetect apogeedetect;
-        
         TunezHandler tunezhandler;
 
         SdFat_Store primarysd;
@@ -80,14 +65,9 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void setupI2C();
         void setupPins();
         void configureNetwork();
-        void setupLocalPyros();
         void loadConfig();
         void initializeLoggers();
         void logTelemetry();
-        void sendtest_1();
-        void sendtest_2(float servoAngle1);
-        void sendtest_3();
-        void sendtest_4(float servoAngle2);
 
         static constexpr std::string_view log_path = "/Logs";
         static constexpr std::string_view config_path = "/Config/rml.jsonc";
@@ -96,14 +76,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         uint32_t telemetry_log_delta = 5000; //200hz
         uint32_t prev_telemetry_log_time;
         
-        PCA9534 pyroPinExpander0;
-
-        Types::LocalPyro_t pyro0;
-        Types::LocalPyro_t pyro1;
-        Types::LocalPyro_t pyro2;
-        Types::LocalPyro_t pyro3;
         PID pid;
-        const std::array<Types::LocalPyro_t*,4> localPyroMap = {&pyro0,&pyro1,&pyro2,&pyro3};
 
         uint32_t prevTime;
         

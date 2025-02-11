@@ -5,21 +5,24 @@ void PID::setup(){
     createTestK_p(); 
     createTestK_i(); 
     createTestK_d(); //cpp is a sequencial language
-    setpoint << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-    previous_error << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-    timestep = 0.01; 
-    integral_error_riemman << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-    integral_error_trapezoid << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+
+    m_setpoint << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+
+    
+    m_timestep = 0.01; 
+    m_previous_error << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    m_integral_error_riemman << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    m_integral_error_trapezoid << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
     armServos();
-    previousSampleTime = millis();
+    m_previousSampleTime = millis();
 }
 
 void PID::update(Eigen::Matrix<float,1, 6> currentPosition){
-    if (millis() - previousSampleTime >= actuationDelta) {
+    if (millis() - m_previousSampleTime >= m_actuationDelta) {
         updateErrors(currentPosition); 
         updateActuationValues(); 
-        sendActuationCommands();
-        previousSampleTime = millis();
+        // sendActuationCommands();
+        m_previousSampleTime = millis();
     }
 }
 
@@ -28,48 +31,48 @@ void PID::updateErrors(Eigen::Matrix<float,1, 6> currentPosition){
     // Serial.println("Current position: " + String(currentPosition(0,3))); 
 
     //Proportional Error = setpoint - inputMatrix; 
-    for (int i = 0; i < setpoint.cols(); i++) {
-        error (0,i) = setpoint(0,i) - currentPosition(0,i);
+    for (int i = 0; i < m_setpoint.cols(); i++) {
+        m_error (0,i) = m_setpoint(0,i) - currentPosition(0,i);
         }
     // Serial.println("Proportional Error: " + String(error(0,3))); 
 
 
     //Integral Error = 
         //Righthand Riemman Sum
-    for (int i = 0; i < setpoint.cols(); i++) {
-        integral_error_riemman(0,i) += error(0,i)*timestep ; 
+    for (int i = 0; i < m_setpoint.cols(); i++) {
+        m_integral_error_riemman(0,i) += m_error(0,i)*m_timestep ; 
         }
     // Serial.println("Int Riemman Error: " + String(integral_error_riemman(0,3))); 
 
         //Trapezoid Rule
-    for (int i = 0; i < setpoint.cols(); i++) {
-        integral_error_trapezoid(0,i) += (error(0,i) + previous_error(0,i))*timestep*0.5 ; 
+    for (int i = 0; i < m_setpoint.cols(); i++) {
+        m_integral_error_trapezoid(0,i) += (m_error(0,i) + m_previous_error(0,i))*m_timestep*0.5 ; 
         }
     // Serial.println("Int Tra Error: " + String(integral_error_trapezoid(0,3))); 
 
     //Derivative Error = 
-    for (int i = 0; i < setpoint.cols(); i++) {
-        derivative_error(0,i) = (error(0,i) - previous_error(0,i))/timestep ; 
+    for (int i = 0; i < m_setpoint.cols(); i++) {
+        m_derivative_error(0,i) = (m_error(0,i) - m_previous_error(0,i))/m_timestep ; 
         }
     // Serial.println("Derivative Error: " + String(derivative_error(0,3))); 
 
-    previous_error = error; 
+    m_previous_error = m_error; 
 }
 
 void PID::updateActuationValues(){
-    actuation_values = error * K_p; // + K_i * integral_error_riemman + K_d * derivative_error; 
+    m_actuation_values = m_error * m_K_p; // + K_i * integral_error_riemman + K_d * derivative_error; 
     // Serial.println("Actuation Values: " + String(actuation_values(0,0)) + " " + String(actuation_values(0,1)) + " " + String(actuation_values(0,2)) + " " + String(actuation_values(0,3)));
 }
 
 void PID::sendActuationCommands() {
-    changeServoAngle(0,actuation_values(0,0)); // pitch servo
-    changeServoAngle(1,actuation_values(0,1)); // roll servo
+    changeServoAngle(0,m_actuation_values(0,0)); // pitch servo
+    changeServoAngle(1,m_actuation_values(0,1)); // roll servo
     // changePropPower(0,actuation_values(0,2)); 
     // changePropPower(1,actuation_values(0,3)); 
 }
 
 void PID::createTestK_p() {
-    K_p << 0, 0, 0, 0,
+    m_K_p << 0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 1, 0, 0,
@@ -78,7 +81,7 @@ void PID::createTestK_p() {
 }
 
 void PID::createTestK_i() {
-    K_i << 0, 0, 0, 0,
+    m_K_i << 0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
@@ -87,7 +90,7 @@ void PID::createTestK_i() {
 }
 
 void PID::createTestK_d() {
-    K_d << 0, 0, 0, 0,
+    m_K_d << 0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
@@ -199,5 +202,25 @@ void PID::changePropPower(int prop, int power) {
     actuate_prop.header.destination = 103;
     actuate_prop.header.uid = 0; //unknown
     m_networkmanager.sendPacket(actuate_prop);
+
+}
+
+void PID::telemetry_impl(packetptr_t packetptr) {
+    SimpleCommandPacket packet(*packetptr);
+
+	PIDTelemetryPacket telemetry;
+
+	telemetry.header.type = 108;
+	telemetry.header.source = packet.header.destination;
+	telemetry.header.source_service = m_serviceID;
+	telemetry.header.destination = packet.header.source;
+	telemetry.header.destination_service = packet.header.source_service;
+	telemetry.header.uid = packet.header.uid; 
+	telemetry.pitch_angle = m_actuation_values(0,0);
+	telemetry.roll_angle = m_actuation_values(0,1);
+	telemetry.prop_0 = m_actuation_values(0,2);
+	telemetry.prop_1 = m_actuation_values(0,3);
+
+	m_networkmanager.sendPacket(telemetry);
 
 }

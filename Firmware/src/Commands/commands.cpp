@@ -1,14 +1,3 @@
-/**
- * @file commands.cpp
- * @author Kiran de Silva (kd619@ic.ac.uk)
- * @brief Implementation of commands for system
- * @version 0.1
- * @date 2023-06-17
- * 
- * @copyright Copyright (c) 2023
- * 
- */
-
 #include "commands.h"
 
 #include <memory>
@@ -23,47 +12,12 @@
 
 #include "system.h"
 
-#include "States/launch.h"
-#include "States/preflight.h"
-#include "States/flight.h"
-#include "States/recovery.h"
-#include "States/debug.h"
-
 #include "Config/services_config.h"
 
 
-void Commands::LaunchCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	system.statemachine.changeState(std::make_unique<Launch>(system));
-}
 
-void Commands::ResetCommand(System& system, const RnpPacketSerialized& packet) 
-{	
-	system.statemachine.changeState(std::make_unique<Preflight>(system));
-}
 
-void Commands::LaunchAbortCommand(System& system,const  RnpPacketSerialized& packet) 
-{
-	// if(system.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_LAUNCH)){
-	// 	//check if we are in no abort time region
-	// 	//close all valves
-	// 	system.statemachine.changeState(new Preflight(&system));
-	// }else if (system.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_FLIGHT)){
-	// 	//this behaviour needs to be confirmed with recovery 
-	// 	//might be worth waiting for acceleration to be 0 after rocket engine cut
-	// 	system.statemachine.changeState(new Recovery(&system));
-	// }
-	system.statemachine.changeState(std::make_unique<Preflight>(system));
-	//TODO log
 
-}
-
-void Commands::FlightAbortCommand(System& system, const RnpPacketSerialized& packet)
-{
-	//flight abort
-	//TODO log
-	system.statemachine.changeState(std::make_unique<Recovery>(system));
-}
 
 void Commands::SetHomeCommand(System& system, const RnpPacketSerialized& packet) 
 {
@@ -250,53 +204,6 @@ void Commands::CalibrateBaroCommand(System& system, const RnpPacketSerialized& p
 	system.sensors.calibrateBaro();
 	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
 }
-
-void Commands::IgnitionCommand(System& system, const RnpPacketSerialized& packet)
-{
-
-	uint32_t currentTime = millis();
-	system.estimator.setIgnitionTime(currentTime); // set igintion time
-	
-	
-}
-
-void Commands::EnterDebugCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	
-	system.statemachine.changeState(std::make_unique<Debug>(system));
-
-}
-
-void Commands::EnterPreflightCommand(System& system, const RnpPacketSerialized& packet) 
-{
-
-	system.statemachine.changeState(std::make_unique<Preflight>(system));
-}
-
-
-void Commands::EnterLaunchCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	system.statemachine.changeState(std::make_unique<Launch>(system));
-}
-
-void Commands::EnterFlightCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	system.statemachine.changeState(std::make_unique<Flight>(system));
-}
-
-void Commands::EnterRecoveryCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	system.statemachine.changeState(std::make_unique<Recovery>(system));
-}
-
-void Commands::ExitDebugCommand(System& system, const RnpPacketSerialized& packet) 
-{
-
-	system.statemachine.changeState(std::make_unique<Debug>(system));
-	system.systemstatus.deleteFlag(SYSTEM_FLAG::DEBUG); // delete system flag to signify exiting debug mode
-	system.statemachine.changeState(std::make_unique<Preflight>(system));
-}
-
 
 void Commands::FreeRamCommand(System& system, const RnpPacketSerialized& packet)
 {	

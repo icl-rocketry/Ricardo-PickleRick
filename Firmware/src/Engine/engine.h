@@ -19,8 +19,6 @@
 #include <librnp/rnp_networkmanager.h>
 #include <ArduinoJson.h>
 
-#include "Controller/controllable.h"
-
 #include <librnp/rnp_networkcallbackmap.h>
 #include <librrc/Interface/rocketcomponent.h>
 
@@ -48,8 +46,7 @@ struct EngineState
     uint32_t shutdownTime;
 };
 using addNetworkCallbackFunction_t = std::function<void(uint8_t, uint8_t, std::function<void(std::unique_ptr<RnpPacketSerialized>)>, bool)>;
-class Engine : public Controllable
-{
+class Engine {
 public:
     /**
      * @brief Construct a new Engine object, setup the engine, as the engine also could contain networked compoentns, a reference to he addNetworkCallback function is passed by reference so we can add

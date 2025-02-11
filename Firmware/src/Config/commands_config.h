@@ -50,9 +50,6 @@ namespace Commands
     inline std::initializer_list<ID> defaultEnabledCommands = {ID::Free_Ram,ID::Telemetry};
 
     inline std::unordered_map<ID, std::function<void(ForwardDecl_SystemClass &, const RnpPacketSerialized &)>> command_map{
-        {ID::Launch, LaunchCommand},
-        {ID::Reset, ResetCommand},
-        {ID::Launch_Abort, LaunchAbortCommand},
         {ID::Set_Home, SetHomeCommand},
         {ID::Start_Logging, StartLoggingCommand},
         {ID::Stop_Logging, StopLoggingCommand},
@@ -64,18 +61,10 @@ namespace Commands
         {ID::Calibrate_HighGAccel_Bias, CalibrateHighGAccelBiasCommand},
         {ID::Calibrate_Mag_Full, CalibrateMagFullCommand},
         {ID::Calibrate_Baro, CalibrateBaroCommand},
-        {ID::Ignition, IgnitionCommand},
         {ID::Set_Beta, SetBetaCommand},
         {ID::Reset_Orientation, ResetOrientationCommand},
-        {ID::Reset_Localization, ResetLocalizationCommand},
-        {ID::Enter_Debug, EnterDebugCommand},
-        {ID::Enter_Preflight, EnterPreflightCommand},
-        {ID::Enter_Launch, EnterLaunchCommand},
-        {ID::Enter_Flight, EnterFlightCommand},
-        {ID::Enter_Recovery, EnterRecoveryCommand},
-        {ID::Exit_Debug, ExitDebugCommand},
-        {ID::Free_Ram, FreeRamCommand},
-        {ID::Flight_Abort, FlightAbortCommand}};
+        {ID::Reset_Localization, ResetLocalizationCommand}
+    };
 
 
 

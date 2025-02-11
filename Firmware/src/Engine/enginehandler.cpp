@@ -13,8 +13,6 @@
 
 #include <librrc/Helpers/jsonconfighelper.h>
 
-#include "simpleengine.h"
-#include "hypnos.h"
 #include "thanos.h"
 
 
@@ -50,22 +48,7 @@ void EngineHandler::setupIndividual_impl(size_t id, JsonObjectConst engineconfig
 
     auto type = getIfContains<std::string>(engineconfig,"type");
 
-    if (type == "SimpleEngine"){
-        addObject(std::make_unique<SimpleEngine>(id,
-                                                 engineconfig,
-                                                 m_localPyroMap,
-                                                 getaddNetworkCallbackFunction(id),
-                                                 _networkmanager,
-                                                 _serviceID));
-    }
-    else if (type == "Hypnos"){
-        addObject(std::make_unique<Hypnos>(id,
-                                            engineconfig,
-                                            getaddNetworkCallbackFunction(id),
-                                            _networkmanager,
-                                            _serviceID));   
-    }
-    else if (type == "Thanos"){
+    if (type == "Thanos"){
         addObject(std::make_unique<Thanos>(id,
                                             engineconfig,
                                             getaddNetworkCallbackFunction(id),

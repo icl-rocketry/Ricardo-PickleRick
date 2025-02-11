@@ -24,12 +24,6 @@
 
 #include "Sound/tunezHandler.h"
 
-#include "Events/eventHandler.h"
-#include "Deployment/deploymenthandler.h"
-#include "Deployment/PCA9534.h"
-#include "Deployment/PCA9534Gpio.h"
-#include "Engine/enginehandler.h"
-#include "Controller/controllerhandler.h"
 #include "Storage/sdfat_store.h"
 #include "Storage/sdfat_file.h"
 #include "Loggers/TelemetryLogger/telemetrylogframe.h"
@@ -54,18 +48,8 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    canbus(systemstatus, PinMap::TxCan, PinMap::RxCan, 3),
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
-                   deploymenthandler(networkmanager, localPyroMap, static_cast<uint8_t>(Services::ID::DeploymentHandler)),
-                   enginehandler(networkmanager, localPyroMap, static_cast<uint8_t>(Services::ID::EngineHandler)),
-                   controllerhandler(enginehandler),
-                   eventhandler(enginehandler, deploymenthandler),
-                   apogeedetect(20),
                    primarysd(vspi, PinMap::SdCs_1, SD_SCK_MHZ(20), false, &systemstatus),
-                   pyroPinExpander0(0x20, I2C),
-                   pyro0(PCA9534Gpio(pyroPinExpander0, PinMap::Ch0Fire), PCA9534Gpio(pyroPinExpander0, PinMap::Ch0Cont), networkmanager),
-                   pyro1(PCA9534Gpio(pyroPinExpander0, PinMap::Ch1Fire), PCA9534Gpio(pyroPinExpander0, PinMap::Ch1Cont), networkmanager),
-                   pyro2(PCA9534Gpio(pyroPinExpander0, PinMap::Ch2Fire), PCA9534Gpio(pyroPinExpander0, PinMap::Ch2Cont), networkmanager),
-                   pyro3(PCA9534Gpio(pyroPinExpander0, PinMap::Ch3Fire), PCA9534Gpio(pyroPinExpander0, PinMap::Ch3Cont), networkmanager),
-                   pid(networkmanager) {};
+                   pid("pid1", Services::ID::PID,networkmanager) {};
 
 void System::systemSetup()
 {
@@ -74,9 +58,7 @@ void System::systemSetup()
     Serial.begin(GeneralConfig::SerialBaud);
 
     setupPins();
-    // intialize i2c interface
     setupI2C();
-    // initalize spi interface
     setupSPI();
 
     primarysd.setup();
@@ -84,15 +66,13 @@ void System::systemSetup()
     initializeLoggers();
 
     tunezhandler.setup();
+
     // network interfaces
     radio.setup();
     canbus.setup();
 
     // add interfaces to netmanager
     configureNetwork();
-
-    // register pryo services
-    setupLocalPyros();
 
     loadConfig();
 
@@ -102,7 +82,9 @@ void System::systemSetup()
     statemachine.initalize(std::make_unique<Preflight>(*this));
 
     pid.setup();
+    networkmanager.registerService(static_cast<uint8_t>(Services::ID::PID), pid.getThisNetworkCallback());
 };
+
 void System::systemUpdate()
 {
     // tunezhandler.update();
@@ -111,13 +93,6 @@ void System::systemUpdate()
     logTelemetry();
 
     auto CurrentData = estimator.getData();
-    // CurrentData.eulerAngles[0]; // Roll
-    // CurrentData.eulerAngles[1]; // Pitch
-    // CurrentData.eulerAngles[2]; // Yaw
-
-    // CurrentData.position(0); // x
-    // CurrentData.position(1); // y
-    // CurrentData.position(2); // z
 
     Eigen::Matrix<float,1,6> inputMatrix = {
         CurrentData.position(0),
@@ -127,7 +102,9 @@ void System::systemUpdate()
         static_cast<float>(CurrentData.eulerAngles[1] * (180 / PI)),
         static_cast<float>(CurrentData.eulerAngles[2] * (180 / PI))
     };
+    
     pid.update(inputMatrix);
+
 };
 
 void System::setupSPI()
@@ -147,28 +124,6 @@ void System::setupI2C()
 {
     I2C.begin(PinMap::_SDA, PinMap::_SCL, GeneralConfig::I2C_FREQUENCY);
 }
-
-void System::setupLocalPyros()
-{
-    if (pyroPinExpander0.alive())
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pyro pin expander alive");
-
-        pyro0.setup();
-        pyro1.setup();
-        pyro2.setup();
-        pyro3.setup();
-
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro0), pyro0.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro1), pyro1.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro2), pyro2.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro3), pyro3.getThisNetworkCallback());
-    }
-    else
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pyro pin expander failed to respond");
-    }
-};
 
 void System::setupPins()
 {
@@ -230,10 +185,6 @@ void System::loadConfig()
     try
     {
         sensors.setup(configDoc.as<JsonObjectConst>()["Sensors"]);
-        deploymenthandler.setup(configDoc.as<JsonObjectConst>()["Deployers"]);
-        enginehandler.setup(configDoc.as<JsonObjectConst>()["Engines"]);
-        controllerhandler.setup(configDoc.as<JsonObjectConst>()["Controllers"]);
-        eventhandler.setup(configDoc.as<JsonObjectConst>()["Events"]);
     }
     catch (const std::exception &e)
     {
@@ -241,10 +192,6 @@ void System::loadConfig()
 
         throw e; // continue throwing as we dont want to continue
     }
-
-    //   //register deployment and engine handler services
-    networkmanager.registerService(static_cast<uint8_t>(Services::ID::DeploymentHandler), deploymenthandler.getThisNetworkCallback());
-    networkmanager.registerService(static_cast<uint8_t>(Services::ID::EngineHandler), enginehandler.getThisNetworkCallback());
 }
 
 void System::initializeLoggers()

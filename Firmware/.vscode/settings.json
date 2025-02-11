@@ -4,7 +4,9 @@
         "*.ipp": "cpp",
         "core": "cpp",
         "eigen": "cpp",
-        "esp_vfs_semihost.h": "c"
+        "esp_vfs_semihost.h": "c",
+        "array": "cpp",
+        "streambuf": "cpp"
     },
     "editor.bracketPairColorization.enabled": true,
     "editor.guides.bracketPairs": "active",

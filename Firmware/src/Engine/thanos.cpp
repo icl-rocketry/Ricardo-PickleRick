@@ -129,5 +129,3 @@ uint8_t Thanos::flightCheck()
     return res;
     
 }
-
-void Thanos::control(std::vector<float> u){};
