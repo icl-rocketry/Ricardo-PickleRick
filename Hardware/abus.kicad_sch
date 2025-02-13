@@ -814,7 +814,6 @@
 	(hierarchical_label "RX"
 		(shape input)
 		(at 100.33 62.23 90)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -826,7 +825,6 @@
 	(hierarchical_label "RX"
 		(shape input)
 		(at 121.92 66.04 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -838,7 +836,6 @@
 	(hierarchical_label "TX"
 		(shape input)
 		(at 92.71 62.23 90)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -850,7 +847,6 @@
 	(hierarchical_label "TX"
 		(shape input)
 		(at 121.92 68.58 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)

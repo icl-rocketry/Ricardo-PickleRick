@@ -1783,7 +1783,6 @@
 	(hierarchical_label "RXD"
 		(shape input)
 		(at 116.84 86.36 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1795,7 +1794,6 @@
 	(hierarchical_label "SDA"
 		(shape input)
 		(at 116.84 93.98 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1807,7 +1805,6 @@
 	(hierarchical_label "TXD"
 		(shape input)
 		(at 116.84 88.9 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1819,7 +1816,6 @@
 	(hierarchical_label "SCL"
 		(shape input)
 		(at 116.84 96.52 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1831,7 +1827,6 @@
 	(hierarchical_label "PPS"
 		(shape input)
 		(at 154.94 104.14 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
