@@ -9345,7 +9345,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_Molex:Molex_Pico-Clasp_202396-0707_1x07-1MP_P1.00mm_Horizontal"
+		(property "Footprint" "iclr:Molex_Pico-Clasp_202396-0707_1x07-1MP_P1.00mm_Horizontal"
 			(at 264.16 33.02 0)
 			(effects
 				(font

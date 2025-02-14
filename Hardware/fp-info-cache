@@ -1,4 +1,4 @@
-24735262843185512
+24738758386146488
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -99078,6 +99078,13 @@ connector Molex Nano-Fit top entry
 4
 4
 iclr
+Molex_Pico-Clasp_202396-0707_1x07-1MP_P1.00mm_Horizontal
+Molex Pico-Clasp series connector, 202396-0707 (http://www.molex.com/pdm_docs/sd/2023960207_sd.pdf), generated with kicad-footprint-generator
+connector Molex Pico-Clasp top entry
+0
+9
+8
+iclr
 P160KN0QC20A10K
 P160KN-0QC20A10K-2
 Variable Resistor
@@ -99700,6 +99707,13 @@ spider-man
 0
 0
 0
+iclr
+ublox_MAX
+ublox MAX 6/7/8, (https://www.u-blox.com/sites/default/files/MAX-8-M8-FW3_HardwareIntegrationManual_%28UBX-15030059%29.pdf)
+GPS ublox MAX 6/7/8
+0
+18
+18
 iclr
 witcher_switcher
 

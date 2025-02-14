@@ -2469,7 +2469,7 @@
 				)
 			)
 		)
-		(property "Footprint" "RF_GPS:ublox_MAX"
+		(property "Footprint" "iclr:ublox_MAX"
 			(at 149.86 113.03 0)
 			(effects
 				(font
