@@ -36,20 +36,17 @@ namespace Commands
         Calibrate_Mag_Full = 61, //changed for compatibility
         Calibrate_HighGAccel_Bias = 62,
         Calibrate_Baro = 63,
-        Ignition = 69,
-        Enter_Debug = 100,
-        Enter_Preflight = 101,
-        Enter_Launch = 103,
-        Enter_Flight = 104,
-        Enter_Recovery = 105,
-        Exit_Debug = 106,
-        Flight_Abort = 120,
-        Free_Ram = 250
+        Free_Ram = 250,
+        Enter_Flight = 100,
+        Enter_Hard_Abort = 101,
+        Enter_Soft_Abort = 102,
+        Enter_Land = 103
     };
 
     inline std::initializer_list<ID> defaultEnabledCommands = {ID::Free_Ram,ID::Telemetry};
 
     inline std::unordered_map<ID, std::function<void(ForwardDecl_SystemClass &, const RnpPacketSerialized &)>> command_map{
+        {ID::Reset, ResetCommand},
         {ID::Set_Home, SetHomeCommand},
         {ID::Start_Logging, StartLoggingCommand},
         {ID::Stop_Logging, StopLoggingCommand},
@@ -63,9 +60,11 @@ namespace Commands
         {ID::Calibrate_Baro, CalibrateBaroCommand},
         {ID::Set_Beta, SetBetaCommand},
         {ID::Reset_Orientation, ResetOrientationCommand},
-        {ID::Reset_Localization, ResetLocalizationCommand}
-    };
-
-
-
+        {ID::Reset_Localization, ResetLocalizationCommand},
+        {ID::Free_Ram, FreeRamCommand},
+        {ID::Enter_Flight, EnterFlightCommand},
+        {ID::Enter_Hard_Abort, EnterHardAbortCommand},
+        {ID::Enter_Soft_Abort, EnterSoftAbortCommand},
+        {ID::Enter_Land, EnterLandCommand}
+        };
 };

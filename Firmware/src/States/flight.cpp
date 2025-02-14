@@ -1,88 +1,66 @@
-// #include "flight.h"
+#include "flight.h"
 
-// #include <memory>
+Flight::Flight(System &system) : 
+        State(SYSTEM_FLAG::STATE_FLIGHT, system.systemstatus),
+        _system(system) {};
 
-// #include <libriccore/fsm/state.h>
-// #include <libriccore/systemstatus/systemstatus.h>
-// #include <libriccore/commands/commandhandler.h>
-// #include <libriccore/riccorelogging.h>
+void Flight::initialize()
+{
+    State::initialize();
+    _system.commandhandler.enableCommands({
+                                            Commands::ID::Telemetry,
+                                            Commands::ID::Enter_Hard_Abort,
+                                            Commands::ID::Enter_Soft_Abort,
+                                            Commands::ID::Enter_Land,
+                                          });
+    _system.estimator.setFlightTime(millis());
+};
 
-// #include "Config/systemflags_config.h"
-// #include "Config/types.h"
-// #include "Config/commands_config.h"
+Types::CoreTypes::State_ptr_t Flight::update()
+{
+    auto current_Data = _system.estimator.getData(); 
+    float roll = current_Data.eulerAngles[0];
+    float pitch = current_Data.eulerAngles[1];
+    float yaw = current_Data.eulerAngles[2];
 
-// #include "system.h"
+    float x = current_Data.position[0];
+    float y = current_Data.position[1];
+    float z = current_Data.position[2];
 
-// #include "recovery.h"
+    uint32_t t = current_Data.flightTime;
+    uint32_t current_time = millis();       
 
-// #include "ApogeeDetection/apogeedetect.h"
+    // Condition A
 
-// Flight::Flight(System &system) : State(SYSTEM_FLAG::STATE_FLIGHT, system.systemstatus),
-//                                  _system(system)
-//                                  // apogeedetect(200,_system.logcontroller)
-//                                  {};
+    // Also Implement a chack for low battery !!!!!!
+    if ((current_time - t ) > 15000) {
+        return std::make_unique<Landing>(_system);
+    }
 
-// void Flight::initialize()
-// {
-//     State::initialize();
-//     _system.commandhandler.enableCommands({Commands::ID::Flight_Abort});
-    
-// };
+    // Condition D
+    if ((roll > 3.142/2) || (pitch > 3.142/2) || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
+    { 
+        return std::make_unique<Hard_Abort>(_system);
+    }
+    else
+    {
+        return nullptr;
+    }
 
-// Types::CoreTypes::State_ptr_t Flight::update()
-// {
+    // Condition E
+    if ((abs(x) > 3) || (abs(y) > 3) || (abs(z) > 6))
+    { 
+        return std::make_unique<Soft_Abort>(_system);
+    }
+    else
+    {
+        return nullptr;
+    }
 
-//     _system.enginehandler.update();
-//     _system.controllerhandler.update(_system.estimator.getData());
-//     _system.eventhandler.update(_system.estimator.getData());
+};
 
-//     float Ad = _system.estimator.getData().acceleration(2);
-
-//     if (Ad < 0 && !_system.systemstatus.flagSetOr(SYSTEM_FLAG::FLIGHTPHASE_BOOST))
-//     {
-//         _system.systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST, "Entered Boost Phase");
-//         _system.systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST);
-//     }
-//     else if (Ad > 0 && !_system.systemstatus.flagSetOr(SYSTEM_FLAG::FLIGHTPHASE_COAST))
-//     {
-//         _system.systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST, "Entered Coast Phase");
-//         _system.systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST);
-//     }
-//     ApogeeInfo apogeeinfo = _system.apogeedetect.checkApogee(-_system.estimator.getData().position(2),-_system.estimator.getData().velocity(2), millis());
-//     if (apogeeinfo.reached)
-//     {
-//         _system.systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST);
-//         _system.systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST);
-//         _system.systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_APOGEE, "Apogee Detected!!");
-//         _system.estimator.setApogeeTime(apogeeinfo.time);
-//         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Apogee at " + std::to_string(apogeeinfo.altitude));
-      
-//         return std::make_unique<Recovery>(_system);
-//     }
-//     else
-//     {
-//         return nullptr;
-//     }
-// };
-
-// void Flight::exit()
-// {
-//     State::exit();
-//     _system.commandhandler.resetCommands();
-// };
-
-// // bool Flight::apogeeDetect(){ // 20hz
-
-// //     if (millis() - prevApogeeDetectTime >= apogeeDelta){
-// //         prevApogeeDetectTime = millis();
-// //         altitudeHistory.at(0) = altitudeHistory.at(1);
-// //         altitudeHistory.at(1) = altitudeHistory.at(2);
-// //         altitudeHistory.at(2) = _system.sensors.getData().baro.alt;
-
-// //         if ( (altitudeHistory.at(2) < altitudeHistory.at(1)) && (altitudeHistory.at(1) < altitudeHistory.at(0)) && abs(altitudeHistory.at(2) - altitudeHistory.at(0)) > 2){
-// //             return true;
-// //         }
-// //     }
-
-// //     return false;
-// // }
+void Flight::exit()
+{
+    State::exit();
+    _system.commandhandler.resetCommands();
+};

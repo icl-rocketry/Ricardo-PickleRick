@@ -262,23 +262,10 @@ void Estimator::resetLocalization()
    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Estimator Reset");
 }
 
-void Estimator::setIgnitionTime(uint32_t time)
+void Estimator::setFlightTime(uint32_t time)
 {
-   state.ignitionTime = time;
-   RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Ignition commanded at " + std::to_string(time));
-}
-
-void Estimator::setLiftoffTime(uint32_t time)
-{
-   state.liftoffTime = time;
-   RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Liftoff detected at " + std::to_string(time));
-}
-
-void Estimator::setApogeeTime(uint32_t time)
-{
-   state.apogeeTime = time;
-   RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Apogee detected at " + std::to_string(time));
-   
+   state.flightTime = time;
+   RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Flight commanded at " + std::to_string(time));
 }
 
 const SensorStructs::state_t &Estimator::getData()

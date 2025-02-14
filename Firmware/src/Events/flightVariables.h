@@ -45,9 +45,6 @@ class FlightVariables{
          */
         EventHandler& _eventhandler;
 
-        flightVariable_t TimeSinceIgnition(int arg=0);
-        flightVariable_t TimeSinceLiftoff(int arg=0);
-        flightVariable_t TimeSinceApogee(int arg=0);
         /**
          * @brief Get Time since Event
          * 

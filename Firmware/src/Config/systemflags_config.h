@@ -5,13 +5,13 @@
 
 enum class SYSTEM_FLAG:uint32_t{
     //state flags
-    STATE_DEBUG = (1 << 0), 
-    STATE_PREFLIGHT = (1 << 1),
-    STATE_LAUNCH = (1 << 2),
-    STATE_FLIGHT = (1 << 3),
-    STATE_RECOVERY = (1 << 4),
-    STATE_SETUP = (1 << 5),
-    STATE_GROUNDSTATION = (1 << 6),
+    STATE_PRE_FLIGHT = (1 << 0),
+    STATE_FLIGHT = (1 << 1),
+    STATE_LANDING = (1 << 2), 
+    STATE_POST_FLIGHT = (1 << 3),
+    STATE_HARD_ABORT = (1 << 4),
+    STATE_SOFT_ABORT = (1 << 5),
+
     //flags
     DEBUG = (1 << 7),
     //critical messages 

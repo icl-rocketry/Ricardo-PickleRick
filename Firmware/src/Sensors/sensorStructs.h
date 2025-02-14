@@ -111,9 +111,7 @@ namespace SensorStructs
         float baro_ref_alt;
 
         //times -> all must be initialized to zero
-        uint32_t ignitionTime{0};
-        uint32_t liftoffTime{0};
-        uint32_t apogeeTime{0};
+        uint32_t flightTime{0};
 
         /**
          * @brief Estimator state -> maybe change this to be a bitfield lol

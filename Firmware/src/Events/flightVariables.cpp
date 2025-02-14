@@ -8,15 +8,7 @@
 
 #include "eventHandler.h"
 
-
-
-
-
-
 const std::unordered_map<std::string, memberFunc_t> FlightVariables::function_map {
-	{"TimeSinceIgnition", &FlightVariables::TimeSinceIgnition},
-	{"TimeSinceLiftoff", &FlightVariables::TimeSinceLiftoff},
-	{"TimeSinceApogee", &FlightVariables::TimeSinceApogee},
 	{"TimeSinceEvent", &FlightVariables::TimeSinceEvent},
 	{"Position", &FlightVariables::Position},
 	{"Velocity", &FlightVariables::Velocity},
@@ -25,21 +17,6 @@ const std::unordered_map<std::string, memberFunc_t> FlightVariables::function_ma
 	//networkcomponentvalue
 	//pyro continuity
 };
-
-flightVariable_t FlightVariables::TimeSinceIgnition(int arg) 
-{
-	return timeSince(_state.ignitionTime);
-}
-
-flightVariable_t FlightVariables::TimeSinceLiftoff(int arg) 
-{
-	return timeSince(_state.liftoffTime);
-}
-
-flightVariable_t FlightVariables::TimeSinceApogee(int arg) 
-{
-	return timeSince(_state.apogeeTime);
-}
 
 flightVariable_t FlightVariables::TimeSinceEvent(int arg) 
 {

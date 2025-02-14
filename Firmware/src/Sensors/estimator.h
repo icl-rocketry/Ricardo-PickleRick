@@ -41,9 +41,7 @@ class Estimator{
         void resetOrientation();
         void resetLocalization();
 
-        void setIgnitionTime(uint32_t time);
-        void setLiftoffTime(uint32_t time);
-        void setApogeeTime(uint32_t time);
+        void setFlightTime(uint32_t time);
 
         const SensorStructs::state_t& getData();
 

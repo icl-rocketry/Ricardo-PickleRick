@@ -1,6 +1,5 @@
 
 #include "preflight.h"
-#include "launch.h"
 
 
 #include <librnp/rnp_default_address.h>
@@ -15,14 +14,12 @@
 #include "system.h"
 
 Preflight::Preflight(System& system):
-State(SYSTEM_FLAG::STATE_PREFLIGHT,system.systemstatus),
-_system(system)
-{};
+        State(SYSTEM_FLAG::STATE_PRE_FLIGHT,system.systemstatus),
+        _system(system) {};
 
 void Preflight::initialize(){
     State::initialize();
-    //enable commands
-    _system.commandhandler.enableCommands({Commands::ID::Launch,
+    _system.commandhandler.enableCommands({
                                            Commands::ID::Set_Home,
                                            Commands::ID::Stop_Logging,
                                            Commands::ID::Print_Flash_filesystem,
@@ -37,10 +34,8 @@ void Preflight::initialize(){
                                            Commands::ID::Calibrate_HighGAccel_Bias,
                                            Commands::ID::Calibrate_Mag_Full,
                                            Commands::ID::Calibrate_Baro,
-                                           Commands::ID::Enter_Debug
-                                            });
-   
-    
+                                           Commands::ID::Enter_Flight
+                                          });    
 
     _system.tunezhandler.play(MelodyLibrary::zeldatheme,true);
 

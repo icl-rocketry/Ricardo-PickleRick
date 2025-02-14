@@ -13,11 +13,17 @@
 #include "system.h"
 
 #include "Config/services_config.h"
+#include "States/preflight.h"
+#include "States/flight.h"
+#include "States/hardAbort.h"
+#include "States/softAbort.h"
+#include "States/landing.h"
 
 
-
-
-
+void Commands::ResetCommand(System& system, const RnpPacketSerialized& packet) 
+{	
+	system.statemachine.changeState(std::make_unique<Preflight>(system));
+}
 
 void Commands::SetHomeCommand(System& system, const RnpPacketSerialized& packet) 
 {
@@ -239,3 +245,25 @@ void Commands::FreeRamCommand(System& system, const RnpPacketSerialized& packet)
 	}
 	
 }
+
+void Commands::EnterFlightCommand(System& system, const RnpPacketSerialized& packet)
+{
+	system.statemachine.changeState(std::make_unique<Flight>(system));
+}
+
+void Commands::EnterHardAbortCommand(System& system, const RnpPacketSerialized& packet)
+{
+	system.statemachine.changeState(std::make_unique<Hard_Abort>(system));
+}
+
+void Commands::EnterSoftAbortCommand(System& system, const RnpPacketSerialized& packet)
+{
+	system.statemachine.changeState(std::make_unique<Soft_Abort>(system));
+}
+
+void Commands::EnterLandCommand(System& system, const RnpPacketSerialized& packet)
+{	
+	system.statemachine.changeState(std::make_unique<Landing>(system));
+}
+
+
