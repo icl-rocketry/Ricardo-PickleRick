@@ -23,6 +23,9 @@ class PID : public NRCRemoteControllerBase<PID>
         void update(Eigen::Matrix<float,1, 6> currentPosition);
         void check_gains();
         void sendActuationCommands();
+        float getThrust1(){return m_actuation_values(0,2);};
+        float getThrust2(){return m_actuation_values(0,3);};
+
     private:
         RnpNetworkManager &m_networkmanager;
         uint8_t m_serviceID;

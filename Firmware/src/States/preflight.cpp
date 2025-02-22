@@ -41,7 +41,6 @@ void Preflight::initialize(){
 
 };
 
-
 Types::CoreTypes::State_ptr_t Preflight::update(){
     return nullptr;
 };

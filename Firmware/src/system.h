@@ -59,6 +59,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         Eigen::Matrix<float, 1, 6> inputMatrix;
 
+        PID pid;
     private:
 
         void setupSPI();
@@ -76,7 +77,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         uint32_t telemetry_log_delta = 5000; //200hz
         uint32_t prev_telemetry_log_time;
         
-        PID pid;
+        
 
         uint32_t prevTime;
         

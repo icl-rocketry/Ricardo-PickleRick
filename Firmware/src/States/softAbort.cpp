@@ -40,7 +40,7 @@ Types::CoreTypes::State_ptr_t Soft_Abort::update()
     auto z = current_Data.position[2];
 
     // Condition H
-    if ((roll > 3.142/2) || (pitch > 3.142/2) || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
+    if ((abs(roll) > 3.142/2) || (abs(pitch) > 3.142/2) || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
     { 
         return std::make_unique<Hard_Abort>(_system);
     }

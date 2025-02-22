@@ -12,7 +12,7 @@
 #include "Config/commands_config.h"
 
 #include "system.h"
-
+#include "preflight.h"
 
 Landing::Landing(System &system) : 
     State(SYSTEM_FLAG::STATE_LANDING, system.systemstatus),
@@ -40,8 +40,11 @@ Types::CoreTypes::State_ptr_t Landing::update()
     auto y = current_Data.position[1];
     auto z = current_Data.position[2];
 
+    uint32_t t = current_Data.flightTime;
+    uint32_t current_time = millis();       
+
     // Condition F
-    if ((roll > 3.142/2) || (pitch > 3.142/2) || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
+    if ((abs(roll) > 3.142/2) || (abs(pitch) > 3.142/2) || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
     { 
         return std::make_unique<Hard_Abort>(_system);
     }
@@ -59,6 +62,16 @@ Types::CoreTypes::State_ptr_t Landing::update()
     {
         return nullptr;
     }
+
+    // Check if landed (uses vertical acceleration, maybe fix?)
+    if ((_system.pid.getThrust1() == 0) && ((_system.pid.getThrust2() == 0)) && (current_Data.acceleration[2] < -0.9)) {
+        return std::make_unique<Preflight>(_system);
+    }
+
+    if ((current_time - t ) > 10000) {
+        return std::make_unique<Preflight>(_system);
+    }
+
 };
 
 void Landing::exit()
