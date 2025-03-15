@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Eigen/Dense>
 #include "librrc/Remote/nrcremotecontrollerbase.h"
 #include <librnp/rnp_networkmanager.h>
@@ -7,24 +9,27 @@
 #include "GNC/PIDTelemetryPacket.h"
 #include "Config/services_config.h"
 #include <Arduino.h>
-
+ 
 
 
 class PID : public NRCRemoteControllerBase<PID>
 {
     public:
-        PID(std::string name, Services::ID serviceID, RnpNetworkManager &networkmanager):
+        PID(std::string name, Services::ID serviceID, RnpNetworkManager& networkmanager):
             NRCRemoteControllerBase(name, networkmanager), 
             m_networkmanager(networkmanager),
             m_serviceID(static_cast<uint8_t>(serviceID)) {};
 
-        void updateActuationValues();
+        void updateOutputValue();
         void setup();
+        void setup(Eigen::Matrix<float,1, 6> m_personal_setpoint, Eigen::Matrix<float,6, 4> m_personal_test_matrix);
         void update(Eigen::Matrix<float,1, 6> currentPosition);
         void check_gains();
         void sendActuationCommands();
         float getThrust1(){return m_actuation_values(0,2);};
         float getThrust2(){return m_actuation_values(0,3);};
+        void updateControllerError();
+        Eigen::Matrix<float,1, 4> getControllerError(); 
 
     private:
         RnpNetworkManager &m_networkmanager;
@@ -32,7 +37,7 @@ class PID : public NRCRemoteControllerBase<PID>
         Eigen::Matrix<float,6, 4> m_K_p;
         Eigen::Matrix<float,6, 4> m_K_i;
         Eigen::Matrix<float,6, 4> m_K_d;
-
+        Eigen::Matrix<float,6, 4> m_target_matrix; //
         Eigen::Matrix<float,1, 6> m_setpoint;
         float m_timestep; 
         unsigned long m_previousSampleTime;
@@ -42,8 +47,11 @@ class PID : public NRCRemoteControllerBase<PID>
         Eigen::Matrix<float,1, 6> m_integral_error_trapezoid; 
         Eigen::Matrix<float,1, 6> m_previous_error; //update this change later
         Eigen::Matrix<float,1, 6> m_derivative_error; 
+        Eigen::Matrix<float,1, 6> m_sum_error; //
         Eigen::Matrix<float,1, 4> m_actuation_values; 
+        Eigen::Matrix<float,1, 4> m_controller_error; //
 
+        void createTargetMatrix(); //
         void createTestK_p();
         void createTestK_i();
         void createTestK_d();

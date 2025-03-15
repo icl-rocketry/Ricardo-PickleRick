@@ -1,13 +1,28 @@
-#include <Eigen/Dense>
 #include "PID.h"
 
 void PID::setup(){
     createTestK_p(); 
     createTestK_i(); 
-    createTestK_d(); //cpp is a sequencial language
+    createTestK_d(); 
 
     m_setpoint << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    
+    m_timestep = 0.01; 
+    m_previous_error << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    m_integral_error_riemman << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    m_integral_error_trapezoid << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    armServos();
+    m_previousSampleTime = millis();
+}
 
+void PID::setup(Eigen::Matrix<float,1, 6> m_personal_setpoint, Eigen::Matrix<float,6, 4> m_personal_test_matrix){
+    // createTargetMatrix(); //
+    createTestK_p(); 
+    createTestK_i(); 
+    createTestK_d(); 
+
+    m_setpoint = m_personal_setpoint;
+    m_K_p = m_personal_test_matrix; 
     
     m_timestep = 0.01; 
     m_previous_error << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
@@ -20,10 +35,15 @@ void PID::setup(){
 void PID::update(Eigen::Matrix<float,1, 6> currentPosition){
     if (millis() - m_previousSampleTime >= m_actuationDelta) {
         updateErrors(currentPosition); 
-        updateActuationValues(); 
+        updateOutputValue(); 
         // sendActuationCommands();
+        // updateControllerError(); 
         m_previousSampleTime = millis();
     }
+}
+
+Eigen::Matrix<float,1, 4> PID::getControllerError() {
+    return m_controller_error; 
 }
 
 void PID::updateErrors(Eigen::Matrix<float,1, 6> currentPosition){
@@ -56,19 +76,39 @@ void PID::updateErrors(Eigen::Matrix<float,1, 6> currentPosition){
         }
     // Serial.println("Derivative Error: " + String(derivative_error(0,3))); 
 
-    m_previous_error = m_error; 
+    for (int i = 0; i < m_setpoint.cols(); i++) {
+        // 加权：
+        // m_sum_error(0,i) = (m_error(0,i)*1 + m_integral_error_riemman(0,i)*1 +  m_integral_error_trapezoid(0,i)*1 + m_derivative_error(0,i)*1) ; 
+        // 现在只用一个prop error：
+        m_sum_error(0,i) = (m_error(0,i)*1 + m_integral_error_riemman(0,i)*0 +  m_integral_error_trapezoid(0,i)*0 + m_derivative_error(0,i)*0) ; 
+        }
+
+    m_previous_error = m_error; //only m_error for now
 }
 
-void PID::updateActuationValues(){
+void PID::updateOutputValue(){
     m_actuation_values = m_error * m_K_p; // + K_i * integral_error_riemman + K_d * derivative_error; 
     // Serial.println("Actuation Values: " + String(actuation_values(0,0)) + " " + String(actuation_values(0,1)) + " " + String(actuation_values(0,2)) + " " + String(actuation_values(0,3)));
 }
+
+// void PID::updateControllerError(){
+//     m_controller_error = m_sum_error * m_test_matrix; 
+// }
 
 void PID::sendActuationCommands() {
     changeServoAngle(0,m_actuation_values(0,0)); // pitch servo
     changeServoAngle(1,m_actuation_values(0,1)); // roll servo
     // changePropPower(0,actuation_values(0,2)); 
     // changePropPower(1,actuation_values(0,3)); 
+}
+
+void PID::createTargetMatrix() {
+    m_K_p << 0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 0, 0;
 }
 
 void PID::createTestK_p() {
