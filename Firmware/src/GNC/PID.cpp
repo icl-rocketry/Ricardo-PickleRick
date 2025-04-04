@@ -1,51 +1,37 @@
 #include "PID.h"
 
-void PID::setup(){
-    createTestK_p(); 
-    createTestK_i(); 
-    createTestK_d(); 
-
-    m_setpoint << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-    
-    m_timestep = 0.01; 
-    m_previous_error << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-    m_integral_error_riemman << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-    m_integral_error_trapezoid << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-    armServos();
-    m_previousSampleTime = millis();
-}
-
-void PID::setup(Eigen::Matrix<float,1, 6> m_personal_setpoint, Eigen::Matrix<float,6, 4> m_personal_test_matrix){
-    // createTargetMatrix(); //
+void PID::setup(Eigen::Matrix<float,1, 6> m_personal_setpoint){
     createTestK_p(); 
     createTestK_i(); 
     createTestK_d(); 
 
     m_setpoint = m_personal_setpoint;
-    m_K_p = m_personal_test_matrix; 
     
-    m_timestep = 0.01; 
+    m_timestep = 0.001; 
     m_previous_error << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
     m_integral_error_riemman << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
     m_integral_error_trapezoid << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-    armServos();
     m_previousSampleTime = millis();
 }
 
 void PID::update(Eigen::Matrix<float,1, 6> currentPosition){
-    if (millis() - m_previousSampleTime >= m_actuationDelta) {
+    if (millis() - m_previousSampleTime >= m_timestep*1000) {
         updateErrors(currentPosition); 
-        updateOutputValue(); 
-        // sendActuationCommands();
-        // updateControllerError(); 
+        updateOutputValues(); 
         m_previousSampleTime = millis();
     }
 }
 
-Eigen::Matrix<float,1, 4> PID::getControllerError() {
-    return m_controller_error; 
+void PID::reset() {
+    m_error << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    m_integral_error_riemman << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    m_integral_error_trapezoid << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    m_previous_error << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    m_derivative_error << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    m_sum_error << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    m_output_values << 0.0, 0.0, 0.0, 0.0;
+    m_previousSampleTime = millis();
 }
-
 void PID::updateErrors(Eigen::Matrix<float,1, 6> currentPosition){
 
     // Serial.println("Current position: " + String(currentPosition(0,3))); 
@@ -86,37 +72,21 @@ void PID::updateErrors(Eigen::Matrix<float,1, 6> currentPosition){
     m_previous_error = m_error; //only m_error for now
 }
 
-void PID::updateOutputValue(){
-    m_actuation_values = m_error * m_K_p; // + K_i * integral_error_riemman + K_d * derivative_error; 
+void PID::updateOutputValues(){
+    m_output_values = m_error * m_K_p; // + K_i * integral_error_riemman + K_d * derivative_error; 
     // Serial.println("Actuation Values: " + String(actuation_values(0,0)) + " " + String(actuation_values(0,1)) + " " + String(actuation_values(0,2)) + " " + String(actuation_values(0,3)));
 }
 
-// void PID::updateControllerError(){
-//     m_controller_error = m_sum_error * m_test_matrix; 
-// }
-
-void PID::sendActuationCommands() {
-    changeServoAngle(0,m_actuation_values(0,0)); // pitch servo
-    changeServoAngle(1,m_actuation_values(0,1)); // roll servo
-    // changePropPower(0,actuation_values(0,2)); 
-    // changePropPower(1,actuation_values(0,3)); 
-}
-
-void PID::createTargetMatrix() {
-    m_K_p << 0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 0, 0;
+Eigen::Matrix<float,1, 4> PID::getOutputValues() {
+    return m_output_values;
 }
 
 void PID::createTestK_p() {
     m_K_p << 0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
-    0, 1, 0, 0,
     -1, 0, 0, 0,
+    0, -1, 0, 0,
     0, 0, 0, 0;
 }
 
@@ -149,8 +119,6 @@ void PID::calibrate_impl(packetptr_t packetptr) { // saves pid gains for all p, 
     _NVS.saveBytes(serializedData);
 
     // READ FUN
-
-   
 };
 
 void PID::check_gains() {
@@ -178,73 +146,6 @@ void PID::check_gains() {
     }
 }
 
-void PID::armServos() {
-    SimpleCommandPacket arm_alpha(3, 0); //3 here is the arm command
-    arm_alpha.header.source_service = 1;
-    arm_alpha.header.source = 2;
-    arm_alpha.header.destination_service = 10;
-    arm_alpha.header.destination = 102;
-    arm_alpha.header.uid = 0;
-    m_networkmanager.sendPacket(arm_alpha);
-    delay(100);
-    SimpleCommandPacket arm_beta(3, 0);
-    arm_beta.header.source_service = 1;
-    arm_beta.header.source = 2;
-    arm_beta.header.destination_service = 11;
-    arm_beta.header.destination = 102;
-    arm_beta.header.uid = 0;
-    m_networkmanager.sendPacket(arm_beta);
-}
-
-void PID::changeServoAngle(int servo, int angle) { // angle should be -10 to 10
-
-    angle = angle * 10; // scale the angle to 0.1 degree = 1 argument degree
-    uint8_t des_ser; 
-
-    if (servo == 0) { // mapped from 0 - 300 w 185 as 0
-        des_ser = 10; 
-        angle += 185;
-    }
-    if (servo == 1) { // mapped from 0 - 300 w 120 as 0
-        des_ser = 11; 
-        angle += 120;
-    }
-
-
-    angle = round(angle); //round to the nearest integer
-    Serial.println("Servo: " + String(servo) + ", Angle: " + String(angle));
-    SimpleCommandPacket actuate_servo(2, angle); //2 is the fire command
-    actuate_servo.header.source_service = 1;
-    actuate_servo.header.source = 2;
-    actuate_servo.header.destination_service = des_ser;
-    actuate_servo.header.destination = 102;
-    actuate_servo.header.uid = 0;
-    m_networkmanager.sendPacket(actuate_servo);
-}
-
-void PID::changePropPower(int prop, int power) {
-
-    uint8_t des_ser; 
-
-    if (prop == 0) {
-         des_ser = 10; 
-    }
-    if (prop == 1) {
-        des_ser = 11; 
-    }
-
-    //the power is already between 0 and 100 so no need to change
-
-    SimpleCommandPacket actuate_prop(2, power); //2 is the fire command
-    actuate_prop.header.source_service = 1;
-    actuate_prop.header.source = 2;
-    actuate_prop.header.destination_service = des_ser;
-    actuate_prop.header.destination = 103;
-    actuate_prop.header.uid = 0; //unknown
-    m_networkmanager.sendPacket(actuate_prop);
-
-}
-
 void PID::telemetry_impl(packetptr_t packetptr) {
     SimpleCommandPacket packet(*packetptr);
 
@@ -256,10 +157,10 @@ void PID::telemetry_impl(packetptr_t packetptr) {
 	telemetry.header.destination = packet.header.source;
 	telemetry.header.destination_service = packet.header.source_service;
 	telemetry.header.uid = packet.header.uid; 
-	telemetry.pitch_angle = m_actuation_values(0,0);
-	telemetry.roll_angle = m_actuation_values(0,1);
-	telemetry.prop_0 = m_actuation_values(0,2);
-	telemetry.prop_1 = m_actuation_values(0,3);
+	telemetry.pitch_angle = m_output_values(0,0);
+	telemetry.roll_angle = m_output_values(0,1);
+	telemetry.prop_0 = m_output_values(0,2);
+	telemetry.prop_1 = m_output_values(0,3);
 
 	m_networkmanager.sendPacket(telemetry);
 

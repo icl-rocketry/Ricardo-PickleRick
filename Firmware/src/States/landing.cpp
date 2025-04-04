@@ -27,6 +27,8 @@ void Landing::initialize()
                                            Commands::ID::Enter_Hard_Abort,
                                            Commands::ID::Enter_Soft_Abort,
                                           });
+
+    _system.estimator.setFlightTime(millis());
 };
 
 Types::CoreTypes::State_ptr_t Landing::update()
@@ -44,34 +46,26 @@ Types::CoreTypes::State_ptr_t Landing::update()
     uint32_t current_time = millis();       
 
     // Condition F
-    if ((abs(roll) > 3.142/2) || (abs(pitch) > 3.142/2) || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
+    if ((abs(roll) > 3.142/2) || (abs(pitch) > 3.142/2)) // || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
     { 
         return std::make_unique<Hard_Abort>(_system);
     }
-    else
-    {
-        return nullptr;
-    }
 
-    // Condition G
-    if ((abs(x) > 3) || (abs(y) > 3) || (abs(z) > 6))
-    { 
-        return std::make_unique<Soft_Abort>(_system);
-    }
-    else
-    {
-        return nullptr;
-    }
+    // // Condition G
+    // if ((abs(x) > 3) || (abs(y) > 3) || (abs(z) > 6))
+    // { 
+    //     return std::make_unique<Soft_Abort>(_system);
+    // }
 
     // Check if landed (uses vertical acceleration, maybe fix?)
-    if ((_system.pid.getThrust1() == 0) && ((_system.pid.getThrust2() == 0)) && (current_Data.acceleration[2] < -0.9)) {
-        return std::make_unique<Preflight>(_system);
-    }
+    // if ((_system.pid1.getThrust1() == 0) && ((_system.pid1.getThrust2() == 0)) && (current_Data.acceleration[2] < -0.9)) {
+    //     return std::make_unique<Preflight>(_system);
+    // }
 
     if ((current_time - t ) > 10000) {
         return std::make_unique<Preflight>(_system);
     }
-
+    return nullptr;
 };
 
 void Landing::exit()

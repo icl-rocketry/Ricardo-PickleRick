@@ -11,45 +11,53 @@
 #include <Arduino.h>
 #include "GNC/PID.h"
 
-class GNCcontroller {
+class GNCcontroller : public NRCRemoteControllerBase<GNCcontroller>
+{
     public: 
-        GNCcontroller(PID& pid1 , PID& pid2) :
+        GNCcontroller(std::string name, Services::ID serviceID, RnpNetworkManager& networkmanager, PID& pid1 , PID& pid2):
+            NRCRemoteControllerBase(name, networkmanager), 
+            m_networkmanager(networkmanager),
+            m_serviceID(static_cast<uint8_t>(serviceID)),
             pid1(pid1), 
-            pid2(pid2) {};
+            pid2(pid2) 
+            {};
+
         void setup(); 
+        void start();
         void update(Eigen::Matrix<float,1, 6> currentInput); 
+        void stop();
 
-        void first_PID_caculation_matrix(); 
-        void first_PID_caculation_PID(); 
-        void angle_error_to_input_second();
-        void second_PID_caculation_matrix(); 
-        void second_PID_caculation_PID(); 
-
-        Eigen::Matrix<float,1, 4> getOutput(); 
-        void sendActuationCommands(); 
-
-        void create_input_first(); 
-        void create_angle_error(); 
-        void create_input_second(); 
-        void create_output_second(); 
-        // void create_m_first();
-        // void create_m_second();
-        void create_m_first_PID_config();
-        void create_m_second_PID_config();
-
+        
     private: 
+        
+        void sendArmingCommands(); 
+        void sendDisarmingCommands();
+        void sendActuationCommands(Eigen::Matrix<float,1, 4> actuation_values);
+        void armServos();
+        void disarmServos();
+        void changeServoAngle(int servo, int angle);
+        void armProps();
+        void disarmProps();
+        void changePropPower(int prop, int power);
+
+        RnpNetworkManager &m_networkmanager;
+        uint8_t m_serviceID;
+        unsigned long m_previousSampleTime;
+        unsigned long m_actuationDelta = 10; // 0.1 second
+
         Eigen::Matrix<float,1, 6> input_first;
-        Eigen::Matrix<float,1, 4> angle_error;
+        Eigen::Matrix<float,1, 4> output_first;
         Eigen::Matrix<float,1, 6> input_second; 
         Eigen::Matrix<float,1, 4> output_second;
-        // Eigen::Matrix<float,6, 4> m_first; //sumulation
-        // Eigen::Matrix<float,6, 4> m_second; //sumulation
-        Eigen::Matrix<float,6, 4> m_first_PID_config; //actual
-        Eigen::Matrix<float,6, 4> m_second_PID_config; //actual
 
         Eigen::Matrix<float,1, 6> setpoint_first; 
         Eigen::Matrix<float,1, 6> setpoint_second; 
 
+        void telemetry_impl(packetptr_t packetptr);
+
         PID& pid1; 
         PID& pid2; 
+                
+        friend class NRCRemoteBase<GNCcontroller>;
+        friend class NRCRemoteControllerBase<GNCcontroller>;
 }; 

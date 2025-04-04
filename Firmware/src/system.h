@@ -20,6 +20,7 @@
 #include "Commands/commands.h"
 
 #include "GNC/PID.h"
+#include "GNC/GNCcontroller.h"
 
 #include "Network/Interfaces/radio.h"
 #include <libriccore/networkinterfaces/can/canbus.h>
@@ -59,7 +60,9 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         Eigen::Matrix<float, 1, 6> inputMatrix;
 
-        PID pid;
+        PID pid1;
+        PID pid2;
+        GNCcontroller controller;
     private:
 
         void setupSPI();

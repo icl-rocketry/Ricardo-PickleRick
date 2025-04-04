@@ -49,7 +49,9 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
                    primarysd(vspi, PinMap::SdCs_1, SD_SCK_MHZ(20), false, &systemstatus),
-                   pid("pid1", Services::ID::PID,networkmanager) {};
+                   pid1("pid1", Services::ID::PID1, networkmanager),
+                   pid2("pid2", Services::ID::PID2, networkmanager),
+                   controller("controller", Services::ID::CONTROLLER, networkmanager, pid1, pid2) {};
 
 void System::systemSetup()
 {
@@ -81,8 +83,9 @@ void System::systemSetup()
     // initialize statemachine with preflight state
     statemachine.initalize(std::make_unique<Preflight>(*this));
 
-    pid.setup();
-    networkmanager.registerService(static_cast<uint8_t>(Services::ID::PID), pid.getThisNetworkCallback());
+    controller.setup();
+    networkmanager.registerService(static_cast<uint8_t>(Services::ID::CONTROLLER), controller.getThisNetworkCallback());
+    // networkmanager.registerService(static_cast<uint8_t>(Services::ID::PID2), pid2.getThisNetworkCallback());
 };
 
 void System::systemUpdate()
@@ -91,19 +94,6 @@ void System::systemUpdate()
     sensors.update();
     estimator.update(sensors.getData());
     logTelemetry();
-
-    auto CurrentData = estimator.getData();
-
-    Eigen::Matrix<float,1,6> inputMatrix = {
-        CurrentData.position(0),
-        CurrentData.position(1),
-        CurrentData.position(2),
-        static_cast<float>(CurrentData.eulerAngles[0] * (180 / PI)),
-        static_cast<float>(CurrentData.eulerAngles[1] * (180 / PI)),
-        static_cast<float>(CurrentData.eulerAngles[2] * (180 / PI))
-    };
-    
-    pid.update(inputMatrix);
 
 };
 
