@@ -26,6 +26,19 @@ void GNCcontroller::update(Eigen::Matrix<float,1, 6> currentInput){
         sendActuationCommands(output_first);
     }
 }
+void GNCcontroller::update(Eigen::Matrix<float,1, 6> currentInput, float scaling_factor){
+    if (millis() - m_previousSampleTime >= m_actuationDelta) {
+        input_first = currentInput; 
+        pid1.update(input_first);
+        output_first = pid1.getOutputValues();
+        output_first(0,2) = 1;
+        output_first(0,3) = 1;
+        output_first(0,2) *= scaling_factor;
+        output_first(0,3) *= scaling_factor;
+        sendActuationCommands(output_first);
+        // pid2.update(input_second);       
+    }
+}
 
 void GNCcontroller::stop() {
     changeServoAngle(0,0);
@@ -50,6 +63,13 @@ void GNCcontroller::sendActuationCommands(Eigen::Matrix<float,1, 4> actuation_va
     // changePropPower(1,actuation_values(0,3)); 
 }
 
+void GNCcontroller::sendActuationCommands(Eigen::Matrix<float,1, 4> actuation_values, float scaling_factor) {
+    changeServoAngle(0,actuation_values(0,0)); // pitch servo
+    changeServoAngle(1,actuation_values(0,1)); // roll servo
+    changePropPower(0,actuation_values(0,2)*scaling_factor); 
+    changePropPower(1,actuation_values(0,3)*scaling_factor); 
+    
+}
 void GNCcontroller::armServos() {
     SimpleCommandPacket arm_alpha(3, 0); //3 here is the arm command
     arm_alpha.header.source_service = 1;

@@ -25,6 +25,7 @@ class GNCcontroller : public NRCRemoteControllerBase<GNCcontroller>
         void setup(); 
         void start();
         void update(Eigen::Matrix<float,1, 6> currentInput); 
+        void update(Eigen::Matrix<float,1, 6> currentInput,float scaling_factor); 
         void stop();
 
         
@@ -33,6 +34,7 @@ class GNCcontroller : public NRCRemoteControllerBase<GNCcontroller>
         void sendArmingCommands(); 
         void sendDisarmingCommands();
         void sendActuationCommands(Eigen::Matrix<float,1, 4> actuation_values);
+        void sendActuationCommands(Eigen::Matrix<float,1, 4> actuation_values,float scaling_factor);
         void armServos();
         void disarmServos();
         void changeServoAngle(int servo, int angle);

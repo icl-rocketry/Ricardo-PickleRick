@@ -42,8 +42,11 @@ Types::CoreTypes::State_ptr_t Landing::update()
     auto y = current_Data.position[1];
     auto z = current_Data.position[2];
 
-    uint32_t t = current_Data.flightTime;
-    uint32_t current_time = millis();       
+    uint32_t t = current_Data.flightTime; // tim @ start landing
+    uint32_t current_time = millis(); 
+    uint32_t time_landing = current_time - t;
+    float scaling_factor = time_landing/current_time; 
+
 
     // Condition F
     if ((abs(roll) > 3.142/2) || (abs(pitch) > 3.142/2)) // || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
@@ -64,7 +67,21 @@ Types::CoreTypes::State_ptr_t Landing::update()
 
     if ((current_time - t ) > 10000) {
         return std::make_unique<Preflight>(_system);
+        
     }
+
+    Eigen::Matrix<float,1,6> inputMatrix = {
+
+        current_Data.eulerAngles[0],
+        current_Data.eulerAngles[1],
+        current_Data.eulerAngles[2],
+        static_cast<float>(current_Data.position[0] * (180 / PI)),
+        static_cast<float>(current_Data.position[1] * (180 / PI)),
+        static_cast<float>(current_Data.position[2] * (180 / PI))
+    };
+    _system.controller.update(inputMatrix);
+
+
     return nullptr;
 };
 
@@ -72,5 +89,6 @@ void Landing::exit()
 {
     State::exit();
     _system.commandhandler.resetCommands();
+    
 };
 
