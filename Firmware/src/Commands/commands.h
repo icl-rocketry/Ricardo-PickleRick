@@ -18,8 +18,9 @@ namespace Commands{
     void PlaySongCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void SkipSongCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void ClearSongQueueCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void ResetOrientationCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void RefreshOrientationCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void ResetLocalizationCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void ResetOrientationCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void SetBetaCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void CalibrateAccelGyroBiasCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void CalibrateHighGAccelBiasCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);

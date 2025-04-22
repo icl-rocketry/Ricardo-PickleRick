@@ -69,18 +69,44 @@ namespace SensorStructs
         uint8_t second;
     };
 
-    struct V_RAIL_t{
+    struct ADC_V_RAIL_t{
         /**
          * @brief Voltage in mV
          * 
          */
-        uint16_t volt;
+        int volt;
         
         /**
          * @brief Percentage in reference to max voltage expeceted 
          * 
          */
-        uint16_t percent;
+        int percent;
+    };
+
+    struct INA_V_RAIL_t{
+        /**
+         * @brief Voltage in mV
+         * 
+         */
+        int volt;
+
+        /**
+         * @brief Current in mA
+         * 
+         */
+        int current;
+
+        /**
+         * @brief Power in mW
+         * 
+         */
+        int power;
+        
+        /**
+         * @brief Percentage in reference to max voltage expeceted 
+         * 
+         */
+        int percent;
     };
 
     struct raw_measurements_t
@@ -90,16 +116,27 @@ namespace SensorStructs
         MAG_3AXIS_t mag;
         BARO_t baro;
         GPS_t gps;
-        V_RAIL_t logicrail;
+        ADC_V_RAIL_t logicrail;
+        INA_V_RAIL_t deprail;
 
         uint64_t system_time;
     };
 
     struct state_t
     {
-
+        //? NOTE these orientations are with respect to the board orientation where
+        //? z points from the bottom to the top of the board, x points towards the SMA connectors,
+        //? and y completes the right hand coordinate system.
+        //? Euler angles use the roll pitch yaw convetion, meaning roll is aligned with the x axis,
+        //? pitch aligned with the y axis and yaw aligned with the z axis of the board.
         Eigen::Quaternionf orientation; //(quaternion)
-        Eigen::Vector3f eulerAngles;    //(deg) (roll pitch yaw)
+        Eigen::Vector3f eulerAngles;    //(rad) (roll pitch yaw)
+
+        Eigen::Quaternionf rocketOrientation; // (quaternion)
+        Eigen::Vector3f rocketEulerAngles; // (rad)
+
+        float tilt; //angle of tilt (nuation?) (rad)
+
         Eigen::Vector3f position;       //(m) relative to callibration site (NED)
         Eigen::Vector3f velocity;       //(ms-1) (NED)
         Eigen::Vector3f acceleration;   //(ms-2) (NED)

@@ -29,6 +29,7 @@ void Preflight::initialize(){
                                            Commands::ID::Clear_Song_Queue,
                                            Commands::ID::Reset_Orientation,
                                            Commands::ID::Reset_Localization,
+                                           Commands::ID::Refresh_Orientation,
                                            Commands::ID::Set_Beta,
                                            Commands::ID::Calibrate_AccelGyro_Bias,
                                            Commands::ID::Calibrate_HighGAccel_Bias,

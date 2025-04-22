@@ -29,9 +29,10 @@ namespace Commands
         Play_Song = 14,
         Skip_Song = 15,
         Clear_Song_Queue = 16,
-        Reset_Orientation = 50,
+        Refresh_Orientation = 50,
         Reset_Localization = 51,
         Set_Beta = 52,
+        Reset_Orientation = 53,
         Calibrate_AccelGyro_Bias = 60, // bias callibration requires sensor z axis aligned with up directioN!
         Calibrate_Mag_Full = 61, //changed for compatibility
         Calibrate_HighGAccel_Bias = 62,
@@ -59,6 +60,7 @@ namespace Commands
         {ID::Calibrate_Mag_Full, CalibrateMagFullCommand},
         {ID::Calibrate_Baro, CalibrateBaroCommand},
         {ID::Set_Beta, SetBetaCommand},
+        {ID::Refresh_Orientation, RefreshOrientationCommand},
         {ID::Reset_Orientation, ResetOrientationCommand},
         {ID::Reset_Localization, ResetLocalizationCommand},
         {ID::Free_Ram, FreeRamCommand},

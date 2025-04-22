@@ -35,7 +35,8 @@
 #include "icm_20608.h"
 #include "h3lis331dl.h"
 #include "mmc5983ma.h"
-#include "vrailmonitor.h"
+#include "adc_vrailmonitor.h"
+#include "ina_vrailmonitor.h"
 
 class Sensors
 {
@@ -65,12 +66,13 @@ private:
     Types::CoreTypes::SystemStatus_t& _systemstatus;
 
     Max_M10S gps;
-    // MS5607 baro;
     DPS310 baro;
     ICM_20608 accelgyro;
     H3LIS331DL accel;
     MMC5983MA mag;
-    VRailMonitor logicrail;
+    ADC_VRailMonitor logicrail;
+    INA_VRailMonitor deprail;
+
 
     /**
      * @brief Handle fake sensor data packets from hardware in the loop service

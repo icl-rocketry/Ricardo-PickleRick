@@ -155,6 +155,14 @@ void Commands::ResetOrientationCommand(System& system, const RnpPacketSerialized
 {
 	
 	system.estimator.resetOrientation();
+	system.estimator.refreshOrientation();
+	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
+}
+
+void Commands::RefreshOrientationCommand(System& system, const RnpPacketSerialized& packet) 
+{
+	
+	system.estimator.refreshOrientation();
 	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
 }
 
