@@ -22,3 +22,6 @@
 [submodule "Firmware/lib/arduino-LoRa"]
 	path = Firmware/lib/arduino-LoRa
 	url = git@github.com:icl-rocketry/arduino-LoRa.git
+[submodule "Firmware/components/librrp"]
+	path = Firmware/components/librrp
+	url = git@github.com:icl-rocketry/librrp.git
