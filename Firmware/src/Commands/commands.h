@@ -56,10 +56,10 @@ namespace Commands{
     void ApogeeOverrideCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
 
     //!TEMP COMMANDS - TO BE REIMPLEMENTED PROPERLY
-    void Radio_SetFreq(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void Radio_SetBW(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void Radio_SetSF(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void Radio_SetSYNC(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void Radio_SetPower(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void LiftoffOverrideCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    // void Radio_SetFreq(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    // void Radio_SetBW(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    // void Radio_SetSF(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    // void Radio_SetSYNC(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    // void Radio_SetPower(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    // void LiftoffOverrideCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
 }

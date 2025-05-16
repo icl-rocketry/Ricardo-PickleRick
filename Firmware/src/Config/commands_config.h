@@ -85,13 +85,7 @@ namespace Commands
         {ID::Exit_Debug, ExitDebugCommand},
         {ID::Free_Ram, FreeRamCommand},
         {ID::Flight_Abort, FlightAbortCommand},
-        {ID::Radio_SetFreq, Radio_SetFreq},
-        {ID::Radio_SetBW, Radio_SetBW},
-        {ID::Radio_SetPower, Radio_SetPower},
-        {ID::Radio_SetSF, Radio_SetSF},
-        {ID::Radio_SetSYNC, Radio_SetSYNC},
         {ID::Flight_Abort, FlightAbortCommand},
-        {ID::Liftoff_Override, LiftoffOverrideCommand},
         {ID::Apogee_Override, ApogeeOverrideCommand}};
 
 };

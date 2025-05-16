@@ -1,4 +1,10 @@
 dependencies:
+  RadioLib:
+    component_hash: null
+    source:
+      path: /home/artem/RAE/Ricardo-PickleRick/Firmware/components/librrp/lib/RadioLib
+      type: local
+    version: 7.1.2
   chmorgan/esp-libhelix-mp3:
     component_hash: cbb76089dc2c5749f7b470e2e70aedc44c9da519e04eb9a67d4c7ec275229e53
     source:
@@ -154,6 +160,6 @@ dependencies:
       service_url: https://api.components.espressif.com/
       type: service
     version: 1.19.2
-manifest_hash: 0def83bc275681a2badadab716ad9a682eef308b2417d9ea73cb6a682972b789
+manifest_hash: c25e667eb28d8a81b7161a925db7223062fbe4073f7dcf09c478d9d4ec1d84d2
 target: esp32s3
 version: 1.0.0

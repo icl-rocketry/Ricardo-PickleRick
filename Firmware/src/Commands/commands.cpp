@@ -349,14 +349,6 @@ void Commands::ExitDebugCommand(System& system, const RnpPacketSerialized& packe
 	system.statemachine.changeState(std::make_unique<Preflight>(system));
 }
 
-void Commands::LiftoffOverrideCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	system.estimator.setLiftoffTime(millis());
-	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
-	system.statemachine.changeState(std::make_unique<Flight>(system));
-	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Liftoff Override triggered, Forcing into flight mode!");
-}
-
 
 void Commands::FreeRamCommand(System& system, const RnpPacketSerialized& packet)
 {	
@@ -407,47 +399,47 @@ void Commands::ApogeeOverrideCommand(System& system, const RnpPacketSerialized& 
 
 
 //!TEMP
-void Commands::Radio_SetFreq(System& system, const RnpPacketSerialized& packet)
-{
-	SimpleCommandPacket commandpacket(packet);
+// void Commands::Radio_SetFreq(System& system, const RnpPacketSerialized& packet)
+// {
+// 	SimpleCommandPacket commandpacket(packet);
 
-	long frequency = commandpacket.arg;
+// 	long frequency = commandpacket.arg;
 
-	system.radio.setFreq(frequency);
-}
+// 	system.radio.setFreq(frequency);
+// }
 
-void Commands::Radio_SetBW(System& system, const RnpPacketSerialized& packet)
-{
-	SimpleCommandPacket commandpacket(packet);
+// void Commands::Radio_SetBW(System& system, const RnpPacketSerialized& packet)
+// {
+// 	SimpleCommandPacket commandpacket(packet);
 
-	long bandwidth = commandpacket.arg;
+// 	long bandwidth = commandpacket.arg;
 
-	system.radio.setBW(bandwidth);
-}
+// 	system.radio.setBW(bandwidth);
+// }
 
-void Commands::Radio_SetSF(System& system, const RnpPacketSerialized& packet)
-{
-	SimpleCommandPacket commandpacket(packet);
+// void Commands::Radio_SetSF(System& system, const RnpPacketSerialized& packet)
+// {
+// 	SimpleCommandPacket commandpacket(packet);
 
-	uint8_t SF = static_cast<uint8_t>(commandpacket.arg);
+// 	uint8_t SF = static_cast<uint8_t>(commandpacket.arg);
 
-	system.radio.setSF(SF);
-}
+// 	system.radio.setSF(SF);
+// }
 
-void Commands::Radio_SetPower(System& system, const RnpPacketSerialized& packet)
-{
-	SimpleCommandPacket commandpacket(packet);
+// void Commands::Radio_SetPower(System& system, const RnpPacketSerialized& packet)
+// {
+// 	SimpleCommandPacket commandpacket(packet);
 
-	uint8_t Power = static_cast<uint8_t>(commandpacket.arg);
+// 	uint8_t Power = static_cast<uint8_t>(commandpacket.arg);
 
-	system.radio.setPower(Power);
-}
+// 	system.radio.setPower(Power);
+// }
 
-void Commands::Radio_SetSYNC(System& system, const RnpPacketSerialized& packet)
-{
-	SimpleCommandPacket commandpacket(packet);
+// void Commands::Radio_SetSYNC(System& system, const RnpPacketSerialized& packet)
+// {
+// 	SimpleCommandPacket commandpacket(packet);
 
-	uint8_t SW = static_cast<uint8_t>(commandpacket.arg);
+// 	uint8_t SW = static_cast<uint8_t>(commandpacket.arg);
 
-	system.radio.setSW(SW);
-}
+// 	system.radio.setSW(SW);
+// }

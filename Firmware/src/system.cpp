@@ -16,7 +16,6 @@
 
 #include "Commands/commands.h"
 
-#include "Network/Interfaces/radio.h"
 #include <libriccore/networkinterfaces/can/canbus.h>
 
 #include "Sensors/sensors.h"
@@ -54,7 +53,8 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    vspi(VSPI_BUS_NUM),
                    hspi(HSPI_BUS_NUM),
                    I2C(0),
-                   radio(hspi,  PinMap::LoraCs, PinMap::LoraReset, PinMap::LoraInt, systemstatus, RADIO_MODE::TURN_TIMEOUT, 2),
+				   sx1280(PinMap::LoraCs, PinMap::LoraInt, PinMap::LoraReset, PinMap::LoraGPIO, hspi),
+				   radio(sx1280, networkmanager),
                    canbus(systemstatus, PinMap::TxCan, PinMap::RxCan, 3),
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
@@ -99,7 +99,10 @@ void System::systemSetup()
     canbus.setup();
 
     // add interfaces to netmanager
-    configureNetwork();
+    networkmanager.setNodeType(NODETYPE::HUB);
+    networkmanager.addInterface(&radio);
+    networkmanager.enableAutoRouteGen(true);
+    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {2});
 
     //register pryo services
     setupLocalPyros();
@@ -120,6 +123,7 @@ void System::systemUpdate()
     tunezhandler.update();
     sensors.update();
     estimator.update(sensors.getData());
+	radio.update();
     logTelemetry();
 };
 
@@ -131,7 +135,7 @@ void System::setupSPI()
     vspi.setDataMode(SPI_MODE0);
 
     hspi.begin(PinMap::H_SCLK,PinMap::H_MISO,PinMap::H_MOSI);
-    hspi.setFrequency(8000000);
+    hspi.setFrequency(2000000);
     hspi.setBitOrder(MSBFIRST);
     hspi.setDataMode(SPI_MODE0);
 }
@@ -254,7 +258,7 @@ void System::loadConfig()
     //enumerate deployers engines controllers and events from config file
     try
     {
-        configureRadio(configDoc.as<JsonObjectConst>()["Radio"]);
+        // configureRadio(configDoc.as<JsonObjectConst>()["Radio"]);
         estimator.configure(configDoc.as<JsonObjectConst>()["Estimator"]);
 
         sensors.setup(configDoc.as<JsonObjectConst>()["Sensors"]);
@@ -316,6 +320,7 @@ void System::logTelemetry()
         // s << std::hex << Serial.getRxQueue() <<"\n";
         // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("sd card state: " + std::to_string(primarysd.getError()));
 
+		Serial.println("hello");
         const SensorStructs::raw_measurements_t& raw_sensors = sensors.getData();
         const SensorStructs::state_t& estimator_state =  estimator.getData();
         TelemetryLogframe logframe;
@@ -421,25 +426,25 @@ void System::configureNetwork()
 
 };
 
-void System::configureRadio(JsonObjectConst conf)
-{
-    using namespace LIBRRC::JsonConfigHelper;
+// void System::configureRadio(JsonObjectConst conf)
+// {
+//     using namespace LIBRRC::JsonConfigHelper;
 
-    RadioConfig radioConfig = radio.getConfig(); // get default config
-    try
-    {
-        bool override = getIfContains<bool>(conf,"Override",false);
+//     RadioConfig radioConfig = radio.getConfig(); // get default config
+//     try
+//     {
+//         bool override = getIfContains<bool>(conf,"Override",false);
 
-        radioConfig.frequency = getIfContains<long>(conf,"Frequency",radioConfig.frequency);
-        radioConfig.sync_byte = getIfContains<int>(conf,"SyncByte",radioConfig.sync_byte); // default 0xf3
-        radioConfig.bandwidth = getIfContains<long>(conf,"Bandwidth",radioConfig.bandwidth);
-        radioConfig.spreading_factor = getIfContains<int>(conf,"SpreadingFactor",radioConfig.spreading_factor);
-        radioConfig.txPower = getIfContains<int>(conf,"TxPower",radioConfig.txPower);
-        radio.setConfig(radioConfig,override);
-    }
-    catch (const std::exception &e)
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Exception occured while loading flight config! - " + std::string(e.what()));
-        return;
-    }
-}
+//         radioConfig.frequency = getIfContains<long>(conf,"Frequency",radioConfig.frequency);
+//         radioConfig.sync_byte = getIfContains<int>(conf,"SyncByte",radioConfig.sync_byte); // default 0xf3
+//         radioConfig.bandwidth = getIfContains<long>(conf,"Bandwidth",radioConfig.bandwidth);
+//         radioConfig.spreading_factor = getIfContains<int>(conf,"SpreadingFactor",radioConfig.spreading_factor);
+//         radioConfig.txPower = getIfContains<int>(conf,"TxPower",radioConfig.txPower);
+//         radio.setConfig(radioConfig,override);
+//     }
+//     catch (const std::exception &e)
+//     {
+//         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Exception occured while loading flight config! - " + std::string(e.what()));
+//         return;
+//     }
+// }

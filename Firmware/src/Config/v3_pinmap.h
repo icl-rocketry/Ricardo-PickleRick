@@ -8,6 +8,8 @@ namespace PickleRickV3Pins{
     static constexpr int LoraReset = 9;
     static constexpr int LoraCs = 10;
     static constexpr int LoraInt = 4;
+    static constexpr int LoraGPIO = 40;
+
 
     //VSPI
     static constexpr int V_SCLK = 37;
