@@ -45,7 +45,7 @@ class GNCcontroller : public NRCRemoteControllerBase<GNCcontroller>
         RnpNetworkManager &m_networkmanager;
         uint8_t m_serviceID;
         unsigned long m_previousSampleTime;
-        unsigned long m_actuationDelta = 10; // 0.1 second
+        unsigned long m_actuationDelta = 10; // 0.01 second
 
         Eigen::Matrix<float,1, 6> input_first;
         Eigen::Matrix<float,1, 4> output_first;
