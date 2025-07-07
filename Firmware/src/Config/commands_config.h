@@ -29,6 +29,7 @@ namespace Commands
         Play_Song = 14,
         Skip_Song = 15,
         Clear_Song_Queue = 16,
+        Set_Orientation = 44,
         Reset_Orientation = 50,
         Reset_Localization = 51,
         Set_Beta = 52,
@@ -48,6 +49,7 @@ namespace Commands
     inline std::unordered_map<ID, std::function<void(ForwardDecl_SystemClass &, const RnpPacketSerialized &)>> command_map{
         {ID::Reset, ResetCommand},
         {ID::Set_Home, SetHomeCommand},
+        {ID::Set_Orientation, SetOrientationCommand},
         {ID::Start_Logging, StartLoggingCommand},
         {ID::Stop_Logging, StopLoggingCommand},
         {ID::Telemetry, TelemetryCommand},

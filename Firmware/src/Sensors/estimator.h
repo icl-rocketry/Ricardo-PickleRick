@@ -35,6 +35,7 @@ class Estimator{
         void update(const SensorStructs::raw_measurements_t& raw_sensors);
 
         void setHome(const SensorStructs::raw_measurements_t& raw_sensors); //records the current position as the launch site
+        void setOrientation(); 
         bool isHomeSet(){return _homeSet;};
         
         void changeBeta(float beta);
@@ -57,7 +58,8 @@ class Estimator{
         unsigned long update_frequency;
 
         bool _homeSet;
-        
+        bool _orientationSet;
+        Eigen::Quaternionf _refOrientation; // reference orientation of the rocket at launch
         
         //ORIENTATION ESTIMATION
         Madgwick madgwick; // madgwick filter object

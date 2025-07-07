@@ -21,6 +21,7 @@ void Preflight::initialize(){
     State::initialize();
     _system.commandhandler.enableCommands({
                                            Commands::ID::Set_Home,
+                                           Commands::ID::Set_Orientation,
                                            Commands::ID::Stop_Logging,
                                            Commands::ID::Print_Flash_filesystem,
                                            Commands::ID::Print_Sd_filesystem,

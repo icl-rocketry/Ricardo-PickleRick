@@ -35,6 +35,16 @@ void Commands::SetHomeCommand(System& system, const RnpPacketSerialized& packet)
 	
 }
 
+void Commands::SetOrientationCommand(System& system, const RnpPacketSerialized& packet) 
+{
+	// if(!system.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
+	// 	return;
+	// }
+	system.estimator.setOrientation();
+	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
+	
+}
+
 void Commands::StartLoggingCommand(System& system, const RnpPacketSerialized& packet) 
 {
 	SimpleCommandPacket commandpacket(packet);
