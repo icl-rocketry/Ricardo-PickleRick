@@ -6,10 +6,7 @@
 //     createTestK_p(); 
 //     createTestK_i(); 
 //     createTestK_d(); //cpp is a sequencial language
-
 //     m_setpoint << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-
-    
 //     m_timestep = 0.01; 
 //     m_previous_error << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
 //     m_integral_error_riemman << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;

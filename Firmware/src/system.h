@@ -19,7 +19,7 @@
 
 #include "Commands/commands.h"
 
-#include "GNC/PID.h"
+#include "GNC/oli_controller.h"
 #include "GNC/GNCcontroller.h"
 
 #include "Network/Interfaces/radio.h"
@@ -60,8 +60,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         Eigen::Matrix<float, 1, 6> inputMatrix;
 
-        PID pid1;
-        PID pid2;
+        Oli_controller oli_controller;
         GNCcontroller controller;
     private:
 

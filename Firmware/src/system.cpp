@@ -49,9 +49,8 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
                    primarysd(vspi, PinMap::SdCs_1, SD_SCK_MHZ(20), false, &systemstatus),
-                   pid1("pid1", Services::ID::PID1, networkmanager),
-                   pid2("pid2", Services::ID::PID2, networkmanager),
-                   controller("controller", Services::ID::CONTROLLER, networkmanager, pid1, pid2) {};
+                   oli_controller("oli", Services::ID::PID1, networkmanager),
+                   controller("controller", Services::ID::CONTROLLER, networkmanager, oli_controller) {};
 
 void System::systemSetup()
 {

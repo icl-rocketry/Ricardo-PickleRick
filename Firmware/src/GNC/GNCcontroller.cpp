@@ -1,44 +1,44 @@
 #include "GNCcontroller.h"
 
 void GNCcontroller::setup() {
-    setpoint_first << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0; //在这里写setpoint
-    setpoint_second << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0; //在这里写setpoint
+    setpoint_first << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0, 0.0; //在这里写setpoint
+    setpoint_second << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0, 0.0; //在这里写setpoint
 
 
-    pid1.setup(setpoint_first);
+    oli_controller.setup(setpoint_first);
     // pid2.setup(setpoint_second);
 }
 
 void GNCcontroller::start() {
     sendArmingCommands();
-    pid1.reset();
+    oli_controller.reset();
     // pid2.reset();
 }
 
-void GNCcontroller::update(Eigen::Matrix<float,1, 6> currentInput){
+void GNCcontroller::update(Eigen::Matrix<float,1, 12> currentInput){
     if (millis() - m_previousSampleTime >= m_actuationDelta) {
         input_first = currentInput; 
-        pid1.update(input_first);
-        output_first = pid1.getOutputValues();
+        oli_controller.update(input_first);
+        output_first = oli_controller.getOutputValues();
 
         // pid2.update(input_second);
         
         sendActuationCommands(output_first);
     }
 }
-void GNCcontroller::update(Eigen::Matrix<float,1, 6> currentInput, float scaling_factor){
-    if (millis() - m_previousSampleTime >= m_actuationDelta) {
-        input_first = currentInput; 
-        pid1.update(input_first);
-        output_first = pid1.getOutputValues();
-        output_first(0,2) = 1;
-        output_first(0,3) = 1;
-        output_first(0,2) *= scaling_factor;
-        output_first(0,3) *= scaling_factor;
-        sendActuationCommands(output_first);
-        // pid2.update(input_second);       
-    }
-}
+// void GNCcontroller::update(Eigen::Matrix<float,1, 6> currentInput, float scaling_factor){
+//     if (millis() - m_previousSampleTime >= m_actuationDelta) {
+//         input_first = currentInput; 
+//         oli_controller.update(input_first);
+//         output_first = oli_controller.getOutputValues();
+//         output_first(0,2) = 1;
+//         output_first(0,3) = 1;
+//         output_first(0,2) *= scaling_factor;
+//         output_first(0,3) *= scaling_factor;
+//         sendActuationCommands(output_first);
+//         // pid2.update(input_second);       
+//     }
+// }
 
 void GNCcontroller::stop() {
     changeServoAngle(0,0);

@@ -185,71 +185,47 @@ void Estimator::setOrientation()
 }
 
 void Estimator::updateOrientation(const float &gx, const float &gy, const float &gz,
-                                  const float &ax, const float &ay, const float &az,
-                                  const float &mx, const float &my, const float &mz, float dt)
+   const float &ax, const float &ay, const float &az,
+   const float &mx, const float &my, const float &mz, float dt)
 {
 
-   // calculate orientation solution
-   madgwick.setDeltaT(dt); // update integration time
-   //TODO Fix this
-   //!need to convert frame from NED to NWU
-   madgwick.update(gx, gy, gz, ax, ay, az, mx, my, mz);
-   // madgwick.update(gx, gy, gz, ax, ay, az-2, mx, my, mz);
+// calculate orientation solution
+madgwick.setDeltaT(dt); // update integration time
+//TODO Fix this
+//!need to convert frame from NED to NWU
+madgwick.update(gx, gy, gz, ax, ay, az, mx, my, mz);
+// madgwick.update(gx, gy, gz, ax, ay, az-2, mx, my, mz);
 
-   if (_orientationSet)
-   {
-      // if orientation is set, we need to convert the orientation to the reference orientation
-      // this is done by multiplying the current orientation with the inverse of the reference orientation
-      state.orientation = madgwick.getOrientation() * _refOrientation.inverse();
-      if (std::abs(1.0 - state.orientation.w()) < 1e-3) {
-         // Small angle approximation
-         double roll  = 2 * state.orientation.x(); // X
-         double pitch = 2 * state.orientation.y(); // Y
-         double yaw   = 2 * state.orientation.z(); // Z
-
-         state.eulerAngles = Eigen::Vector3f(roll, pitch, yaw);
-      } else {
-         // Full conversion
-         state.eulerAngles = state.orientation.toRotationMatrix().eulerAngles(2, 1, 0);
-      }
-   } else {
-      // update orientation
-      state.orientation = madgwick.getOrientation();
-      state.eulerAngles = madgwick.getEulerAngles();
-   }
+if (_orientationSet)
+{
+state.orientation = madgwick.getOrientation() * Eigen::Quaternionf(std::sqrt(2.0f) / 2.0f, 0.0f, std::sqrt(2.0f) / 2.0f, 0.0f).inverse();
+state.eulerAngles = state.orientation.toRotationMatrix().eulerAngles(2, 1, 0);
+} else {
+// update orientation
+state.orientation = madgwick.getOrientation();
+state.eulerAngles = madgwick.getEulerAngles();
+}
 }
 
 void Estimator::updateOrientation(const float &gx, const float &gy, const float &gz,
-                                  const float &ax, const float &ay, const float &az, float dt)
+   const float &ax, const float &ay, const float &az, float dt)
 {
 
-   // calculate orientation solution
-   madgwick.setDeltaT(dt); // update integration time
-   //TODO Fix this
-   //!need to convert frame from NED to NWU
-   madgwick.updateIMU(gx, gy, gz, ax, ay, az);
-   // update orientation
-   if (_orientationSet)
-   {
-      // if orientation is set, we need to convert the orientation to the reference orientation
-      // this is done by multiplying the current orientation with the inverse of the reference orientation
-      state.orientation = madgwick.getOrientation() * _refOrientation.inverse();
-      if (std::abs(1.0 - state.orientation.w()) < 1e-3) {
-         // Small angle approximation
-         double roll  = 2 * state.orientation.x(); // X
-         double pitch = 2 * state.orientation.y(); // Y
-         double yaw   = 2 * state.orientation.z(); // Z
-
-         state.eulerAngles = Eigen::Vector3f(roll, pitch, yaw);
-      } else {
-         // Full conversion
-         state.eulerAngles = state.orientation.toRotationMatrix().eulerAngles(2, 1, 0);
-      }
-   } else {
-      // update orientation
-      state.orientation = madgwick.getOrientation();
-      state.eulerAngles = madgwick.getEulerAngles();
-   }
+// calculate orientation solution
+madgwick.setDeltaT(dt); // update integration time
+//TODO Fix this
+//!need to convert frame from NED to NWU
+madgwick.updateIMU(gx, gy, gz, ax, ay, az);
+// update orientation
+if (_orientationSet)
+{
+state.orientation = madgwick.getOrientation() * Eigen::Quaternionf(std::sqrt(2.0f) / 2.0f, 0.0f, std::sqrt(2.0f) / 2.0f, 0.0f).inverse();
+state.eulerAngles = state.orientation.toRotationMatrix().eulerAngles(2, 1, 0);
+} else {
+// update orientation
+state.orientation = madgwick.getOrientation();
+state.eulerAngles = madgwick.getEulerAngles();
+}
 }
 
 void Estimator::updateAngularRates(const float &gx, const float &gy, const float &gz)
