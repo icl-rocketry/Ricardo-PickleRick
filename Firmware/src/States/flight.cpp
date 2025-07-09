@@ -33,16 +33,16 @@ Types::CoreTypes::State_ptr_t Flight::update()
 
     // Condition A
 
-    // Also Implement a chack for low battery !!!!!!
-    if ((current_time - t ) > 150000) {
-        return std::make_unique<Landing>(_system);
-    }
+    // // Also Implement a chack for low battery !!!!!!
+    // if ((current_time - t ) > 150000) {
+    //     return std::make_unique<Landing>(_system);
+    // }
 
-    // Condition D
-    if ((abs(roll) > 3.142/2) || (abs(pitch) > 3.142/2)) // || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
-    { 
-        return std::make_unique<Hard_Abort>(_system);
-    }
+    // // Condition D
+    // if ((abs(roll) > 3.142/2) || (abs(pitch) > 3.142/2)) // || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
+    // { 
+    //     return std::make_unique<Hard_Abort>(_system);
+    // }
 
 
     // // Condition E

@@ -189,43 +189,55 @@ void Estimator::updateOrientation(const float &gx, const float &gy, const float 
    const float &mx, const float &my, const float &mz, float dt)
 {
 
-// calculate orientation solution
-madgwick.setDeltaT(dt); // update integration time
-//TODO Fix this
-//!need to convert frame from NED to NWU
-madgwick.update(gx, gy, gz, ax, ay, az, mx, my, mz);
-// madgwick.update(gx, gy, gz, ax, ay, az-2, mx, my, mz);
+   // calculate orientation solution
+   madgwick.setDeltaT(dt); // update integration time
+   //TODO Fix this
+   //!need to convert frame from NED to NWU
+   madgwick.update(gx, gy, gz, ax, ay, az, mx, my, mz);
+   // madgwick.update(gx, gy, gz, ax, ay, az-2, mx, my, mz);
 
-if (_orientationSet)
-{
-state.orientation = madgwick.getOrientation() * Eigen::Quaternionf(std::sqrt(2.0f) / 2.0f, 0.0f, std::sqrt(2.0f) / 2.0f, 0.0f).inverse();
-state.eulerAngles = state.orientation.toRotationMatrix().eulerAngles(2, 1, 0);
-} else {
-// update orientation
-state.orientation = madgwick.getOrientation();
-state.eulerAngles = madgwick.getEulerAngles();
-}
+   if (_orientationSet) {
+      state.orientation = madgwick.getOrientation() * Eigen::Quaternionf(std::sqrt(2.0f) / 2.0f, 0.0f, std::sqrt(2.0f) / 2.0f, 0.0f).inverse();
+      float q0 = state.orientation.w();
+      float q1 = state.orientation.x();
+      float q2 = state.orientation.y();
+      float q3 = state.orientation.z();
+      float roll = atan2f(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2);
+      float pitch = asinf(-2.0f * (q1*q3 - q0*q2));
+      float yaw = atan2f(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3);
+      state.eulerAngles = Eigen::Vector3f(roll, pitch, yaw);
+   } else {
+      // update orientation
+      state.orientation = madgwick.getOrientation();
+      state.eulerAngles = madgwick.getEulerAngles();
+   }
 }
 
 void Estimator::updateOrientation(const float &gx, const float &gy, const float &gz,
    const float &ax, const float &ay, const float &az, float dt)
 {
 
-// calculate orientation solution
-madgwick.setDeltaT(dt); // update integration time
-//TODO Fix this
-//!need to convert frame from NED to NWU
-madgwick.updateIMU(gx, gy, gz, ax, ay, az);
-// update orientation
-if (_orientationSet)
-{
-state.orientation = madgwick.getOrientation() * Eigen::Quaternionf(std::sqrt(2.0f) / 2.0f, 0.0f, std::sqrt(2.0f) / 2.0f, 0.0f).inverse();
-state.eulerAngles = state.orientation.toRotationMatrix().eulerAngles(2, 1, 0);
-} else {
-// update orientation
-state.orientation = madgwick.getOrientation();
-state.eulerAngles = madgwick.getEulerAngles();
-}
+   // calculate orientation solution
+   madgwick.setDeltaT(dt); // update integration time
+   //TODO Fix this
+   //!need to convert frame from NED to NWU
+   madgwick.updateIMU(gx, gy, gz, ax, ay, az);
+   // update orientation
+   if (_orientationSet) {
+      state.orientation = madgwick.getOrientation() * Eigen::Quaternionf(std::sqrt(2.0f) / 2.0f, 0.0f, std::sqrt(2.0f) / 2.0f, 0.0f).inverse();
+      float q0 = state.orientation.w();
+      float q1 = state.orientation.x();
+      float q2 = state.orientation.y();
+      float q3 = state.orientation.z();
+      float roll = atan2f(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2);
+      float pitch = asinf(-2.0f * (q1*q3 - q0*q2));
+      float yaw = atan2f(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3);
+      state.eulerAngles = Eigen::Vector3f(roll, pitch, yaw);
+   } else {
+      // update orientation
+      state.orientation = madgwick.getOrientation();
+      state.eulerAngles = madgwick.getEulerAngles();
+   }
 }
 
 void Estimator::updateAngularRates(const float &gx, const float &gy, const float &gz)

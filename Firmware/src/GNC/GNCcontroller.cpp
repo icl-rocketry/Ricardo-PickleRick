@@ -11,7 +11,6 @@ void GNCcontroller::setup() {
 
 void GNCcontroller::start() {
     sendArmingCommands();
-    oli_controller.reset();
     // pid2.reset();
 }
 
