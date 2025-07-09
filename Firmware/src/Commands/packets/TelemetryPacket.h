@@ -23,6 +23,9 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::roll,
                 &TelemetryPacket::pitch,
                 &TelemetryPacket::yaw,
+                &TelemetryPacket::roll_rate,
+                &TelemetryPacket::pitch_rate,
+                &TelemetryPacket::yaw_rate,
                 &TelemetryPacket::q0,
                 &TelemetryPacket::q1,
                 &TelemetryPacket::q2,
@@ -88,7 +91,8 @@ class TelemetryPacket : public RnpPacket{
         float vn, ve, vd; // velocity NED (m/s)
         float an, ae, ad; // acceleration NED (g's)
         //orientation
-        float roll,pitch,yaw; // orientation degrees
+        float roll,pitch,yaw; // orientation radians
+        float roll_rate,pitch_rate,yaw_rate; // angular rates (rad/s)
         float q0,q1,q2,q3; //quaternion representation
         //gps
         float lat,lng;

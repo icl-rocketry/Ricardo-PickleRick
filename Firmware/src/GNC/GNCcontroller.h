@@ -6,7 +6,7 @@
 
 #include <librrc/Helpers/nvsstore.h>
 #include "GNC/PIDCalibrationPacket.h"
-#include "GNC/PIDTelemetryPacket.h"
+#include "GNC/ControllerTelemetryPacket.h"
 #include "Config/services_config.h"
 #include <Arduino.h>
 #include "GNC/oli_controller.h"

@@ -50,8 +50,8 @@ void Oli_controller::updateOutputValues(Eigen::Matrix<float,1, 12> currentPositi
     /* ------------------------------------------------------------------ */
     Vec3  x      = currentPosition.segment<3>(0);          // [m]
     Vec3  v      = currentPosition.segment<3>(3);          // [m/s]
-    Vec3  eta    = currentPosition.segment<3>(6);          // [φ θ ψ] [rad]
-    Vec3  omegaB = currentPosition.segment<3>(9);          // [p q r] [rad/s]
+    Vec3  eta    = currentPosition.segment<3>(6);          // [φ θ ψ] [deg]
+    Vec3  omegaB = currentPosition.segment<3>(9);          // [p q r] [deg/s]
 
     Vec3  x_d  = m_setpoint.segment<3>(0);          // [m]
     Vec3  v_d  = m_setpoint.segment<3>(3);          // [m/s]

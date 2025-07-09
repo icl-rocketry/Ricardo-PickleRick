@@ -94,6 +94,10 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 	telemetry.pitch = estimator_state.eulerAngles(1);
 	telemetry.yaw =estimator_state.eulerAngles(2);
 
+	telemetry.roll_rate = estimator_state.angularRates(0);
+	telemetry.pitch_rate = estimator_state.angularRates(1);
+	telemetry.yaw_rate = estimator_state.angularRates(2);
+	
 	telemetry.q0 = estimator_state.orientation.w();
 	telemetry.q1 = estimator_state.orientation.x();
 	telemetry.q2 =estimator_state.orientation.y();

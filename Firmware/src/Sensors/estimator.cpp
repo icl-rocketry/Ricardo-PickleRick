@@ -242,7 +242,7 @@ void Estimator::updateOrientation(const float &gx, const float &gy, const float 
 
 void Estimator::updateAngularRates(const float &gx, const float &gy, const float &gz)
 {
-   madgwick.getInverseRotationMatrix() * Eigen::Vector3f{gx, gy, gz}; // this might be incorrect?
+   state.angularRates = Eigen::Vector3f{gz, gy, -gx}; 
 }
 
 Eigen::Vector3f Estimator::getLinearAcceleration(const float &ax, const float &ay, const float &az)

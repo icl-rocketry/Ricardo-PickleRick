@@ -156,7 +156,7 @@ void GNCcontroller::changePropPower(int prop, int power) {
 void GNCcontroller::telemetry_impl(packetptr_t packetptr) {
     SimpleCommandPacket packet(*packetptr);
 
-	PIDTelemetryPacket telemetry;
+	ControllerTelemetryPacket telemetry;
 
 	telemetry.header.type = 108;
 	telemetry.header.source = packet.header.destination;
@@ -164,8 +164,20 @@ void GNCcontroller::telemetry_impl(packetptr_t packetptr) {
 	telemetry.header.destination = packet.header.source;
 	telemetry.header.destination_service = packet.header.source_service;
 	telemetry.header.uid = packet.header.uid; 
-	telemetry.pitch_angle = output_first(0,0);
-	telemetry.roll_angle = output_first(0,1);
+    telemetry.x_input = input_first(0,0);
+    telemetry.y_input = input_first(0,1);
+    telemetry.z_input = input_first(0,2);
+    telemetry.u_input = input_first(0,3);
+    telemetry.v_input = input_first(0,4);
+    telemetry.w_input = input_first(0,5);
+    telemetry.roll_input = input_first(0,6);
+    telemetry.pitch_input = input_first(0,7);
+    telemetry.yaw_input = input_first(0,8);
+    telemetry.roll_rate_input = input_first(0,9);
+    telemetry.pitch_rate_input = input_first(0,10);
+    telemetry.yaw_rate_input = input_first(0,11);
+	telemetry.pitch_output = output_first(0,0);
+	telemetry.roll_output = output_first(0,1);
 	telemetry.prop_0 = output_first(0,2);
 	telemetry.prop_1 = output_first(0,3);
 
