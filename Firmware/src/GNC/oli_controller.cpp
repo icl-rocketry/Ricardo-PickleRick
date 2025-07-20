@@ -8,23 +8,54 @@ void Oli_controller::setup(Eigen::Matrix<float,1, 12> m_personal_setpoint){
     m_previousSampleTime = millis();
 
     // Outer Loop translation gains
-    m_kPos1         << 5, 5, 4;    // k₁ for x, y, z
-    m_kPos2         << 2, 2, 5;    // k₂ for x, y, z
+    m_kPos1         << 1.7, 1.7, 1.4;    // k₁ for x, y, z
+    m_kPos2         << 0.7, 0.7, 1.7;    // k₂ for x, y, z
     m_lambdaPosOuter<< 8, 8, 8;    // λ  for x, y, z
-    m_etaPosOuter    = 0.4;        // same η for all axes
+    m_etaPosOuter    = 0.12;        // same η for all axes
     m_psiPosOuter   << 5, 5, 0.1;  // ψ  per axis
     //inner Loop gains
-    m_kPos3 = 10; // Fz inner loop 1st gain
-    m_kPos4 = 10; // Fz inner loop 2nd gain 
+    m_kPos3 = 3; // Fz inner loop 1st gain
+    m_kPos4 = 3; // Fz inner loop 2nd gain 
     m_lambdaPosInner = 8; // λ for Fz inner loop
-    m_etaPosInner = 0.5; // η for Fz inner loop
+    m_etaPosInner = 0.17; // η for Fz inner loop
     m_psiPosInner = 5; // ψ for Fz inner loop
     // Attitude gains
-    m_kAtt1 = 30; // k₁ for attitude control
-    m_kAtt2 = 30; // k₂ for attitude control
+    m_kAtt1 = 9; // k₁ for attitude control
+    m_kAtt2 = 9; // k₂ for attitude control
     m_lambdaAtt = 8; // λ for attitude control
-    m_etaAtt = 1; // η for attitude control
+    m_etaAtt = 0.3; // η for attitude control
     m_psiAtt = 5; // ψ for attitude control
+
+    m_u_act << 0.0f, 0.0f, 0.0f; // actuator output [N] (Fx, Fy, Fz)
+
+
+
+
+    // m_setpoint = m_personal_setpoint;
+    
+    // m_timestep = 0.001; 
+    // m_previousSampleTime = millis();
+
+    // // Outer Loop translation gains
+    // m_kPos1         << 5, 5, 4;    // k₁ for x, y, z
+    // m_kPos2         << 2, 2, 5;    // k₂ for x, y, z
+    // m_lambdaPosOuter<< 8, 8, 8;    // λ  for x, y, z
+    // m_etaPosOuter    = 0.4;        // same η for all axes
+    // m_psiPosOuter   << 5, 5, 0.1;  // ψ  per axis
+    // //inner Loop gains
+    // m_kPos3 = 10; // Fz inner loop 1st gain
+    // m_kPos4 = 10; // Fz inner loop 2nd gain 
+    // m_lambdaPosInner = 8; // λ for Fz inner loop
+    // m_etaPosInner = 0.5; // η for Fz inner loop
+    // m_psiPosInner = 5; // ψ for Fz inner loop
+    // // Attitude gains
+    // m_kAtt1 = 30; // k₁ for attitude control
+    // m_kAtt2 = 30; // k₂ for attitude control
+    // m_lambdaAtt = 8; // λ for attitude control
+    // m_etaAtt = 1; // η for attitude control
+    // m_psiAtt = 5; // ψ for attitude control
+
+    // m_u_act << 0.0f, 0.0f, 0.0f; // actuator output [N] (Fx, Fy, Fz)
 }
 
 void Oli_controller::update(Eigen::Matrix<float,1, 12> currentPosition){
@@ -194,19 +225,18 @@ void Oli_controller::updateOutputValues(Eigen::Matrix<float,1, 12> currentPositi
     /* ------------------------------------------------------------------ */
     /* 6.  1st-ORDER ACTUATOR LAG (simple Euler step)                     */
     /* ------------------------------------------------------------------ */
-    static Vec3 u_act = Vec3::Zero();         // persistent
     Vec3 u_cmd( Fx_cmd, Fy_cmd, Fz_cmd );
 
-    Vec3 e_u       = u_act - u_cmd;
+    Vec3 e_u       = m_u_act - u_cmd;
     Vec3 u_dot_cmd = -(1.0f/m_tauAct + m_kAct) * e_u;   // tauAct, kAct ∈ P
 
-    u_act += m_dtCtrl * u_dot_cmd;
+    m_u_act += m_dtCtrl * u_dot_cmd;
 
     /* ------------------------------------------------------------------ */
     /* 7.  Publish – pack to [Fx Fy Fz dummy] just like original header   */
     /* ------------------------------------------------------------------ */
-    // m_output_values << u_act(0), u_act(1), u_act(2), 0.0f;
-
+    // m_output_values << m_u_act(0), m_u_act(1), m_u_act(2), 0.0f;
+    // return;
     /* ------------------------------------------------------------------ */
     /* 8.  Convert thrust vector → gimbal angles + total thrust           */
     /*     ─  x-z plane  (rotate about body-Y) :  φ_xz = atan2(Fx, Fz)    */
@@ -216,9 +246,9 @@ void Oli_controller::updateOutputValues(Eigen::Matrix<float,1, 12> currentPositi
     constexpr float RAD2DEG = 180.0f / 3.14159265358979323846f;
 
     // angles in radians
-    float phi_xz = std::atan2(u_act(0), u_act(2));   // X–Z plane
-    float phi_zy = std::atan2(u_act(1), u_act(2));   // Z–Y plane
-    float thrust = 0;//u_act.norm();                     // total thrust
+    float phi_xz = std::atan2(m_u_act(0), m_u_act(2));   // X–Z plane
+    float phi_zy = std::atan2(m_u_act(1), m_u_act(2));   // Z–Y plane
+    float thrust = m_u_act.norm();                     // total thrust
 
     // convert to degrees if you prefer
     phi_xz *= RAD2DEG*10;
@@ -227,7 +257,7 @@ void Oli_controller::updateOutputValues(Eigen::Matrix<float,1, 12> currentPositi
     /* ------------------------------------------------------------------ */
     /* 9.  Pack output:  [φ_xz  φ_zy  |F|  spare]                         */
     /* ------------------------------------------------------------------ */
-    m_output_values << phi_xz, phi_zy, thrust, 0.0f;
+    m_output_values << phi_xz, phi_zy, thrust, thrust;
 }
 
 

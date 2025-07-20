@@ -36,11 +36,10 @@ Types::CoreTypes::State_ptr_t Landing::update()
     auto current_Data = _system.estimator.getData(); 
     auto roll = current_Data.eulerAngles[0];
     auto pitch = current_Data.eulerAngles[1];
-    auto yaw = current_Data.eulerAngles[2];
 
-    auto x = current_Data.position[0];
-    auto y = current_Data.position[1];
-    auto z = current_Data.position[2];
+    // auto x = current_Data.position[0];
+    // auto y = current_Data.position[1];
+    // auto z = current_Data.position[2];
 
     uint32_t t = current_Data.flightTime; // tim @ start landing
     uint32_t current_time = millis(); 

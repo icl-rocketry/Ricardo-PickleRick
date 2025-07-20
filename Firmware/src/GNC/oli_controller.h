@@ -66,8 +66,9 @@ class Oli_controller : public NRCRemoteControllerBase<Oli_controller>
         float           m_rEngZ       {0.45f};      // distance nozzle ↔ CoM [m]
 
         /* ---- actuator lag parameters --------------------------------------- */
-        float m_tauAct {0.0f};   // s  (time constant)
-        float m_kAct   {0.0f};   // s⁻¹ (error gain)
+        float m_tauAct {0.1f};   // s  (time constant)
+        float m_kAct   {1.0f};   // s⁻¹ (error gain)
+        Eigen::Vector3f m_u_act; // actuator output [N] (Fx, Fy, Fz)
 
         /* ---- first-order derivative low-pass ------------------------------- */
         float m_dfilterA {0.9f};  // (≈ exp(-dt/τ))

@@ -22,30 +22,29 @@ Types::CoreTypes::State_ptr_t Flight::update()
     auto current_Data = _system.estimator.getData(); 
     float roll = current_Data.eulerAngles[0];
     float pitch = current_Data.eulerAngles[1];
-    float yaw = current_Data.eulerAngles[2];
 
-    float x = current_Data.position[0];
-    float y = current_Data.position[1];
-    float z = current_Data.position[2];
+    // float x = current_Data.position[0];
+    // float y = current_Data.position[1];
+    // float z = current_Data.position[2];
 
     uint32_t t = current_Data.flightTime;
     uint32_t current_time = millis();       
 
     // Condition A
 
-    // // Also Implement a chack for low battery !!!!!!
-    // if ((current_time - t ) > 150000) {
-    //     return std::make_unique<Landing>(_system);
-    // }
+    // Also Implement a chack for low battery !!!!!!
+    if ((current_time - t ) > 15000) {
+        return std::make_unique<Landing>(_system);
+    }
 
-    // // Condition D
-    // if ((abs(roll) > 3.142/2) || (abs(pitch) > 3.142/2)) // || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
-    // { 
-    //     return std::make_unique<Hard_Abort>(_system);
-    // }
+    // Condition D
+    if ((abs(roll) > 3.142/2) || (abs(pitch) > 3.142/2)) // || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
+    { 
+        return std::make_unique<Hard_Abort>(_system);
+    }
 
 
-    // // Condition E
+    // Condition E
     // if ((abs(x) > 3) || (abs(y) > 3) || (abs(z) > 6))
     // { 
     //     return std::make_unique<Soft_Abort>(_system);
