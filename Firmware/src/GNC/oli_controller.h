@@ -60,14 +60,16 @@ class Oli_controller : public NRCRemoteControllerBase<Oli_controller>
         float m_etaAtt; // η for attitude control
         float m_psiAtt; // ψ for attitude control
         /* ---- rocket physical parameters ------------------------------------ */  
-        float           m_mass        {1.0f};       // kg
-        Eigen::Matrix3f m_J           {Eigen::Matrix3f::Identity()*0.01f};
+        float           m_mass        {1.078f};       // kg
+        Eigen::Matrix3f m_J { {0.012f, 0, 0},
+                            {0, 0.012f, 0},
+                            {0, 0, 0.0256f} };
         float           m_dtCtrl      {0.001f};     // control period [s]
-        float           m_rEngZ       {0.45f};      // distance nozzle ↔ CoM [m]
+        float           m_rEngZ       {-0.05f};      // distance nozzle ↔ CoM [m]
 
         /* ---- actuator lag parameters --------------------------------------- */
         float m_tauAct {0.1f};   // s  (time constant)
-        float m_kAct   {1.0f};   // s⁻¹ (error gain)
+        float m_kAct   {0.0f};   // s⁻¹ (error gain)
         Eigen::Vector3f m_u_act; // actuator output [N] (Fx, Fy, Fz)
 
         /* ---- first-order derivative low-pass ------------------------------- */

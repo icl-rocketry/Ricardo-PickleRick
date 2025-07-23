@@ -10,20 +10,21 @@ void Oli_controller::setup(Eigen::Matrix<float,1, 12> m_personal_setpoint){
     // Outer Loop translation gains
     m_kPos1         << 1.7, 1.7, 1.4;    // k₁ for x, y, z
     m_kPos2         << 0.7, 0.7, 1.7;    // k₂ for x, y, z
+    //sliding mode gains 
     m_lambdaPosOuter<< 8, 8, 8;    // λ  for x, y, z
-    m_etaPosOuter    = 0.12;        // same η for all axes
+    m_etaPosOuter    = 0;        // same η for all axes
     m_psiPosOuter   << 5, 5, 0.1;  // ψ  per axis
     //inner Loop gains
     m_kPos3 = 3; // Fz inner loop 1st gain
     m_kPos4 = 3; // Fz inner loop 2nd gain 
     m_lambdaPosInner = 8; // λ for Fz inner loop
-    m_etaPosInner = 0.17; // η for Fz inner loop
+    m_etaPosInner = 0; // η for Fz inner loop
     m_psiPosInner = 5; // ψ for Fz inner loop
     // Attitude gains
     m_kAtt1 = 9; // k₁ for attitude control
     m_kAtt2 = 9; // k₂ for attitude control
     m_lambdaAtt = 8; // λ for attitude control
-    m_etaAtt = 0.3; // η for attitude control
+    m_etaAtt = 0; // η for attitude control
     m_psiAtt = 5; // ψ for attitude control
 
     m_u_act << 0.0f, 0.0f, 0.0f; // actuator output [N] (Fx, Fy, Fz)
@@ -257,7 +258,7 @@ void Oli_controller::updateOutputValues(Eigen::Matrix<float,1, 12> currentPositi
     /* ------------------------------------------------------------------ */
     /* 9.  Pack output:  [φ_xz  φ_zy  |F|  spare]                         */
     /* ------------------------------------------------------------------ */
-    m_output_values << phi_xz, phi_zy, thrust, thrust;
+    m_output_values << phi_xz, phi_zy, phi_d, theta_d;
 }
 
 
