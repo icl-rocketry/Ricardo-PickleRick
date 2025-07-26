@@ -109,6 +109,32 @@ namespace SensorStructs
         int percent;
     };
 
+    struct Spectrometer_t
+    {
+        //Spectrometer data (uW/cm^2)
+        float a; // 410nm
+        float b; // 435nm
+        float c; // 460nm
+        float d; // 485nm
+        float e; // 510nm
+        float f; // 535nm
+
+        float g; // 560nm
+        float h; // 585nm
+        float i; // 645nm
+        float j; // 705nm
+        float k; // 900nm
+        float l; // 940nm
+
+        float r; // 610nm
+        float s; // 680nm
+        float t; // 730nm
+        float u; // 760nm
+        float v; // 810nm
+        float w; // 860nm
+
+    };
+
     struct raw_measurements_t
     {
         ACCELGYRO_6AXIS_t accelgyro;
@@ -118,6 +144,7 @@ namespace SensorStructs
         GPS_t gps;
         ADC_V_RAIL_t logicrail;
         INA_V_RAIL_t deprail;
+        Spectrometer_t spectrometer;
 
         uint64_t system_time;
     };

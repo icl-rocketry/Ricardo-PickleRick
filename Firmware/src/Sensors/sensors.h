@@ -37,6 +37,7 @@
 #include "mmc5983ma.h"
 #include "adc_vrailmonitor.h"
 #include "ina_vrailmonitor.h"
+#include "SparkFun_AS7265X.h"
 
 class Sensors
 {
@@ -72,6 +73,7 @@ private:
     MMC5983MA mag;
     ADC_VRailMonitor logicrail;
     INA_VRailMonitor deprail;
+    AS7265X spectrometer;
 
 
     /**
