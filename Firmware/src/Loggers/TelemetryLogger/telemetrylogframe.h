@@ -56,6 +56,24 @@ private:
             &TelemetryLogframe::packet_rssi,
             &TelemetryLogframe::snr,
             &TelemetryLogframe::packet_snr,
+            &TelemetryLogframe::SpecA,
+            &TelemetryLogframe::SpecB,
+            &TelemetryLogframe::SpecC,
+            &TelemetryLogframe::SpecD,
+            &TelemetryLogframe::SpecE,
+            &TelemetryLogframe::SpecF,
+            &TelemetryLogframe::SpecG,
+            &TelemetryLogframe::SpecH,
+            &TelemetryLogframe::SpecI,
+            &TelemetryLogframe::SpecJ,
+            &TelemetryLogframe::SpecK,
+            &TelemetryLogframe::SpecL,
+            &TelemetryLogframe::SpecR,
+            &TelemetryLogframe::SpecS,
+            &TelemetryLogframe::SpecT,
+            &TelemetryLogframe::SpecU,
+            &TelemetryLogframe::SpecV,
+            &TelemetryLogframe::SpecW,
             &TelemetryLogframe::timestamp
             
            
@@ -95,6 +113,10 @@ public:
     //radio details
     int16_t rssi, packet_rssi;
     float snr, packet_snr;
+    //spectrometer data
+    float SpecA, SpecB, SpecC, SpecD, SpecE, SpecF;
+    float SpecG, SpecH, SpecI, SpecJ, SpecK, SpecL;
+    float SpecR, SpecS, SpecT, SpecU, SpecV, SpecW;
 
     uint64_t timestamp;
 

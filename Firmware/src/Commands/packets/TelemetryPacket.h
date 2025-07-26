@@ -55,8 +55,25 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::system_status,
                 &TelemetryPacket::system_time,
                 &TelemetryPacket::rssi,
-                &TelemetryPacket::snr
-                
+                &TelemetryPacket::snr,
+                &TelemetryPacket::SpecA,
+                &TelemetryPacket::SpecB,
+                &TelemetryPacket::SpecC,
+                &TelemetryPacket::SpecD,
+                &TelemetryPacket::SpecE,
+                &TelemetryPacket::SpecF,
+                &TelemetryPacket::SpecG,
+                &TelemetryPacket::SpecH,
+                &TelemetryPacket::SpecI,
+                &TelemetryPacket::SpecJ,
+                &TelemetryPacket::SpecK,
+                &TelemetryPacket::SpecL,
+                &TelemetryPacket::SpecR,
+                &TelemetryPacket::SpecS,
+                &TelemetryPacket::SpecT,
+                &TelemetryPacket::SpecU,
+                &TelemetryPacket::SpecV,
+                &TelemetryPacket::SpecW
 
                
             );
@@ -115,6 +132,10 @@ class TelemetryPacket : public RnpPacket{
         //radio details
         int16_t rssi; 
         float snr;
+        // Spectrometer
+        float SpecA, SpecB, SpecC, SpecD, SpecE, SpecF;
+        float SpecG, SpecH, SpecI, SpecJ, SpecK, SpecL;
+        float SpecR, SpecS, SpecT, SpecU, SpecV, SpecW;
 
 
         static constexpr size_t size(){
