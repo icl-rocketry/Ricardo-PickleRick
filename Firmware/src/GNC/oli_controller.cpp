@@ -7,6 +7,21 @@ void Oli_controller::setup(Eigen::Matrix<float,1, 12> m_personal_setpoint){
     m_timestep = 0.001; 
     m_previousSampleTime = millis();
 
+    // Rocket physical parameters
+    m_mass = 1.142f; // kg
+    m_J << 0.012f, 0, 0,
+           0, 0.012f, 0,
+           0, 0, 0.0256f; // Inertia matrix
+    m_dtCtrl = 0.001f; // control period [s]
+    m_rEngZ = -0.05f; // distance nozzle ↔ CoM [m]
+
+    // Actuator lag parameters
+    m_tauAct = 0.1f;   // s  (time constant)
+    m_kAct   = 1.0f;   // s⁻¹ (
+
+
+    m_dfilterA = 0.9f;
+
     // Outer Loop translation gains
     m_kPos1         << 1.7, 1.7, 1.4;    // k₁ for x, y, z
     m_kPos2         << 0.7, 0.7, 1.7;    // k₂ for x, y, z
@@ -29,7 +44,7 @@ void Oli_controller::setup(Eigen::Matrix<float,1, 12> m_personal_setpoint){
 
     m_u_act << 0.0f, 0.0f, 0.0f; // actuator output [N] (Fx, Fy, Fz)
 
-
+    
 
 
     // m_setpoint = m_personal_setpoint;
