@@ -193,23 +193,23 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 	telemetry.snr = radioinfo->snr;
 
 	telemetry.SpecA = raw_sensors.spectrometer.a;
-	telemetry.SpecA = raw_sensors.spectrometer.b;
-	telemetry.SpecC = raw_sensors.spectrometer.c;
-	telemetry.SpecD = raw_sensors.spectrometer.d;
-	telemetry.SpecE = raw_sensors.spectrometer.e;
-	telemetry.SpecF = raw_sensors.spectrometer.f;
-	telemetry.SpecG = raw_sensors.spectrometer.g;
-	telemetry.SpecH = raw_sensors.spectrometer.h;
-	telemetry.SpecI = raw_sensors.spectrometer.i;
-	telemetry.SpecJ = raw_sensors.spectrometer.j;
-	telemetry.SpecK = raw_sensors.spectrometer.k;
-	telemetry.SpecL = raw_sensors.spectrometer.l;
-	telemetry.SpecR = raw_sensors.spectrometer.r;
-	telemetry.SpecS = raw_sensors.spectrometer.s;
-	telemetry.SpecT = raw_sensors.spectrometer.t;
-	telemetry.SpecU = raw_sensors.spectrometer.u;
-	telemetry.SpecV = raw_sensors.spectrometer.v;
-	telemetry.SpecW = raw_sensors.spectrometer.w;
+	telemetry.SpecB = raw_sensors.spectrometer.b;
+	// telemetry.SpecC = raw_sensors.spectrometer.c;
+	// telemetry.SpecD = raw_sensors.spectrometer.d;
+	// telemetry.SpecE = raw_sensors.spectrometer.e;
+	// telemetry.SpecF = raw_sensors.spectrometer.f;
+	// telemetry.SpecG = raw_sensors.spectrometer.g;
+	// telemetry.SpecH = raw_sensors.spectrometer.h;
+	// telemetry.SpecI = raw_sensors.spectrometer.i;
+	// telemetry.SpecJ = raw_sensors.spectrometer.j;
+	// telemetry.SpecK = raw_sensors.spectrometer.k;
+	// telemetry.SpecL = raw_sensors.spectrometer.l;
+	// telemetry.SpecR = raw_sensors.spectrometer.r;
+	// telemetry.SpecS = raw_sensors.spectrometer.s;
+	// telemetry.SpecT = raw_sensors.spectrometer.t;
+	// telemetry.SpecU = raw_sensors.spectrometer.u;
+	// telemetry.SpecV = raw_sensors.spectrometer.v;
+	// telemetry.SpecW = raw_sensors.spectrometer.w;
 
 	
 

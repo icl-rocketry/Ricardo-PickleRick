@@ -32,17 +32,37 @@
 //Constructor
 AS7265X::AS7265X(TwoWire &wire, Types::CoreTypes::SystemStatus_t &systemstatus):
 _wire(wire),
-_systemstatus(systemstatus)
+_systemstatus(systemstatus),
+_i2cerror(true)
 {};
 
 
 void AS7265X::setup()
 {
-  begin();
+  if(!begin(_wire)){
+    _systemstatus.newFlag(SYSTEM_FLAG::ERROR_SPECTROMETER,"Spectrometer I2C not found");
+    _i2cerror = true;
+  }
+  else {
+    _i2cerror = false;
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("AS7265X Initialized");
+  }
 }
 
 void AS7265X::update(SensorStructs::Spectrometer_t &spectrometerData)
 {
+
+  if (!isConnected())
+    { _i2cerror = true;
+    _systemstatus.newFlag(SYSTEM_FLAG::ERROR_SPECTROMETER, "Spectrometer not connected");
+      return;
+    }
+
+  else {
+    _i2cerror = false;
+  }
+
+  takeMeasurementsWithBulb();
 
   spectrometerData.a = getCalibratedA();
   spectrometerData.b = getCalibratedB();
@@ -63,9 +83,12 @@ void AS7265X::update(SensorStructs::Spectrometer_t &spectrometerData)
   spectrometerData.v = getCalibratedV();
   spectrometerData.w = getCalibratedW();
   
- 
 
 }
+
+
+
+
 
 //Initializes the sensor with basic settings
 //Returns false if sensor is not detected
@@ -150,7 +173,7 @@ boolean AS7265X::isConnected()
 #endif
     if (_i2cPort->endTransmission() == 0)
       return (true); //Sensor ACK'd
-    delay(10);
+    // delay(10);
   }
   return (false); //Sensor did not ACK
 }
@@ -165,7 +188,7 @@ void AS7265X::takeMeasurements()
   while (dataAvailable() == false)
   {
     if(millis() - startTime > maxWaitTime) return; //Sensor failed to respond
-    delay(AS7265X_POLLING_DELAY);
+    delayMicroseconds(AS7265X_POLLING_DELAY);
   }
 
   //Readings can now be accessed via getCalibratedA(), getJ(), etc
@@ -584,7 +607,7 @@ uint8_t AS7265X::virtualReadRegister(uint8_t virtualAddr)
     status = readRegister(AS7265X_STATUS_REG);
     if ((status & AS7265X_TX_VALID) == 0)
       break; // If TX bit is clear, it is ok to write
-    delay(AS7265X_POLLING_DELAY);
+    delayMicroseconds(AS7265X_POLLING_DELAY);
   }
 
   // Send the virtual register address (bit 7 should be 0 to indicate we are reading a register).
@@ -598,7 +621,7 @@ uint8_t AS7265X::virtualReadRegister(uint8_t virtualAddr)
     status = readRegister(AS7265X_STATUS_REG);
     if ((status & AS7265X_RX_VALID) != 0)
       break; // Read data is ready.
-    delay(AS7265X_POLLING_DELAY);
+    delayMicroseconds(AS7265X_POLLING_DELAY);
   }
 
   uint8_t incoming = readRegister(AS7265X_READ_REG);
@@ -618,7 +641,7 @@ void AS7265X::virtualWriteRegister(uint8_t virtualAddr, uint8_t dataToWrite)
     status = readRegister(AS7265X_STATUS_REG);
     if ((status & AS7265X_TX_VALID) == 0)
       break; // No inbound TX pending at slave. Okay to write now.
-    delay(AS7265X_POLLING_DELAY);
+    delayMicroseconds(AS7265X_POLLING_DELAY);
   }
 
   // Send the virtual register address (setting bit 7 to indicate we are writing to a register).
@@ -632,7 +655,7 @@ void AS7265X::virtualWriteRegister(uint8_t virtualAddr, uint8_t dataToWrite)
     status = readRegister(AS7265X_STATUS_REG);
     if ((status & AS7265X_TX_VALID) == 0)
       break; // No inbound TX pending at slave. Okay to write now.
-    delay(AS7265X_POLLING_DELAY);
+    delayMicroseconds(AS7265X_POLLING_DELAY);
   }
 
   // Send the data to complete the operation.

@@ -77,8 +77,8 @@
 #define AS7265X_COEF_DATA_WRITE 0x55
 
 //Settings
-
-#define AS7265X_POLLING_DELAY 5 //Amount of ms to wait between checking for virtual register changes
+ 
+#define AS7265X_POLLING_DELAY 100 //Amount of ms to wait between checking for virtual register changes
 
 #define AS72651_NIR 0x00
 #define AS72652_VISIBLE 0x01
@@ -212,11 +212,15 @@ private:
   //Integration time is 2.8 * integration cycles.
   //We will wait for integration time + 50%
   //Since maximum number of integration cycles is 255, absolute max wait time is 2.8 * 255 * 1.5 = 1071
-  uint16_t maxWaitTime = 1071;
+  uint16_t maxWaitTime = 10;
+ 
+
 
 
   TwoWire &_wire; 
   Types::CoreTypes::SystemStatus_t &_systemstatus; 
+
+  bool _i2cerror;
 
 };
 
