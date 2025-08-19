@@ -10,6 +10,7 @@
 
 #include "sensors.h"
 #include "sensorStructs.h"
+#include "RTKPoller.h"
 
 
 
@@ -45,7 +46,10 @@ class Estimator{
         void setFlightTime(uint32_t time);
 
         const SensorStructs::state_t& getData();
-
+        
+        std::function<void(packetptr_t)> registerRTK() {
+            return rtk.getThisNetworkCallback();
+        }
         
     private:
         // stateMachine* _sm;//pointer to statemachine object
@@ -67,7 +71,7 @@ class Estimator{
         
         //POSITION ESTIMATION
         LocalizationKF localizationkf;
-
+        RTKPoller rtk;
         
         //private methods
 

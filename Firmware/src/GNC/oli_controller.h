@@ -69,7 +69,8 @@ class Oli_controller : public NRCRemoteControllerBase<Oli_controller>
         float m_tauAct;   // s  (time constant)
         float m_kAct;   // s⁻¹ (error gain)
         Eigen::Vector3f m_u_act; // actuator output [N] (Fx, Fy, Fz)
-
+        Eigen::Vector3f m_eta_prev; // previous eta for attitude control
+        Eigen::Vector3f m_etaDot_prev; // previous eta_dot for attitude control
         /* ---- first-order derivative low-pass ------------------------------- */
         float m_dfilterA;  // (≈ exp(-dt/τ))
 

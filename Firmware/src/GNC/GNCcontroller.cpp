@@ -1,7 +1,7 @@
 #include "GNCcontroller.h"
 
 void GNCcontroller::setup() {
-    setpoint_first << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0, 0.0; //在这里写setpoint
+    setpoint_first << 0.0, 0.0, 0.01, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0, 0.0; //在这里写setpoint
     setpoint_second << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0, 0.0; //在这里写setpoint
 
 
@@ -14,61 +14,61 @@ void GNCcontroller::start() {
     // pid2.reset();
 }
 
-void GNCcontroller::update(Eigen::Matrix<float,1, 12> currentInput){
+void GNCcontroller::update(Eigen::Matrix<float,1, 13> currentInput){
     if (millis() - m_previousSampleTime >= m_actuationDelta) {
-        input_first = currentInput; 
+        input_first = currentInput.block<1,12>(0,0);
+        float ramp_up_value = currentInput(0,12); // Assuming the 13th value is a ramp up value
+        if (ramp_up_value > 1.0) {
+            ramp_up_value = 1.0;
+        }
         oli_controller.update(input_first);
         output_first = oli_controller.getOutputValues();
 
         // pid2.update(input_second);
         
-        sendActuationCommands(output_first);
+        sendActuationCommands(output_first, ramp_up_value);
     }
 }
-// void GNCcontroller::update(Eigen::Matrix<float,1, 6> currentInput, float scaling_factor){
-//     if (millis() - m_previousSampleTime >= m_actuationDelta) {
-//         input_first = currentInput; 
-//         oli_controller.update(input_first);
-//         output_first = oli_controller.getOutputValues();
-//         output_first(0,2) = 1;
-//         output_first(0,3) = 1;
-//         output_first(0,2) *= scaling_factor;
-//         output_first(0,3) *= scaling_factor;
-//         sendActuationCommands(output_first);
-//         // pid2.update(input_second);       
-//     }
-// }
 
 void GNCcontroller::stop() {
     changeServoAngle(0,0);
     changeServoAngle(1,0);
+    changePropPower(0,0);
+    changePropPower(1,0);
     sendDisarmingCommands();
 }
 
 void GNCcontroller::sendArmingCommands() {
     armServos();
-    // armProps();
+    armProps();
 }
 
 void GNCcontroller::sendDisarmingCommands() {
     disarmServos();
-    // disarmProps();
+    disarmProps();
 }
 
-void GNCcontroller::sendActuationCommands(Eigen::Matrix<float,1, 4> actuation_values) {
+void GNCcontroller::sendActuationCommands(Eigen::Matrix<float,1, 4> actuation_values, float ramp_up_value) {
+    float max_prop_power = 60.0f;
+    ramp_up_value = 1.0f;
+
+    if (actuation_values(0,2) > max_prop_power) {
+
+        actuation_values(0,2) = max_prop_power * ramp_up_value; // scale propeller power
+        actuation_values(0,3) = max_prop_power * ramp_up_value * 0.965; // scale propeller power
+
+    } else {
+
+        actuation_values(0,2) = actuation_values(0,2) * ramp_up_value; // scale propeller power
+        actuation_values(0,3) = actuation_values(0,3) * ramp_up_value * 0.965; // scale propeller power
+    }
+
     changeServoAngle(0,actuation_values(0,0)); // pitch servo
     changeServoAngle(1,actuation_values(0,1)); // roll servo
-    // changePropPower(0,actuation_values(0,2)); 
-    // changePropPower(1,actuation_values(0,3)); 
+    changePropPower(0,actuation_values(0,2)); 
+    changePropPower(1,actuation_values(0,3)); 
 }
 
-void GNCcontroller::sendActuationCommands(Eigen::Matrix<float,1, 4> actuation_values, float scaling_factor) {
-    changeServoAngle(0,actuation_values(0,0)); // pitch servo
-    changeServoAngle(1,actuation_values(0,1)); // roll servo
-    changePropPower(0,actuation_values(0,2)*scaling_factor); 
-    changePropPower(1,actuation_values(0,3)*scaling_factor); 
-    
-}
 void GNCcontroller::armServos() {
     SimpleCommandPacket arm_alpha(3, 0); //3 here is the arm command
     arm_alpha.header.source_service = 1;
@@ -105,22 +105,26 @@ void GNCcontroller::disarmServos() {
     m_networkmanager.sendPacket(arm_beta);
 }
 
-void GNCcontroller::changeServoAngle(int servo, int angle) { // angle should be -10 to 10
+void GNCcontroller::changeServoAngle(int servo, float angle_f) { // angle should be -10 to 10
+    if (angle_f > 10) {
+        angle_f = 10;
+    } else if (angle_f < -10) {
+        angle_f = -10;
+    }
 
-    angle = angle * 10; // scale the angle to 0.1 degree = 1 argument degree
+    angle_f = angle_f * 10; // scale the angle to 0.1 degree = 1 argument degree
+    int angle = static_cast<int>(angle_f); // convert to int
     uint8_t des_ser; 
 
     if (servo == 0) { // alpha mapped from 0 - 400 w 140 as 0
         des_ser = 10; 
-        angle += 140;
+        angle += 120;
     }
     if (servo == 1) { // beta mapped from 0 - 400 w 225 as 0
         des_ser = 11; 
-        angle += 225;
+        angle += 190;
     }
 
-
-    angle = round(angle); //round to the nearest integer
     SimpleCommandPacket actuate_servo(2, angle); //2 is the fire command
     actuate_servo.header.source_service = 1;
     actuate_servo.header.source = 2;
@@ -130,10 +134,48 @@ void GNCcontroller::changeServoAngle(int servo, int angle) { // angle should be 
     m_networkmanager.sendPacket(actuate_servo);
 }
 
+void GNCcontroller::armProps() {
+    SimpleCommandPacket arm_prop0(3, 0); //3 here is the arm command
+    arm_prop0.header.source_service = 1;
+    arm_prop0.header.source = 2;
+    arm_prop0.header.destination_service = 10;
+    arm_prop0.header.destination = 103;
+    arm_prop0.header.uid = 0;
+    m_networkmanager.sendPacket(arm_prop0);
+    delay(100);
+    SimpleCommandPacket arm_prop1(3, 0);
+    arm_prop1.header.source_service = 1;
+    arm_prop1.header.source = 2;
+    arm_prop1.header.destination_service = 11;
+    arm_prop1.header.destination = 103;
+    arm_prop1.header.uid = 0;
+    m_networkmanager.sendPacket(arm_prop1);
+}
+
+void GNCcontroller::disarmProps() {
+    SimpleCommandPacket disarm_prop0(4, 0); //4 here is the disarm command
+    disarm_prop0.header.source_service = 1;
+    disarm_prop0.header.source = 2;
+    disarm_prop0.header.destination_service = 10;
+    disarm_prop0.header.destination = 103;
+    disarm_prop0.header.uid = 0;
+    m_networkmanager.sendPacket(disarm_prop0);
+    delay(100);
+    SimpleCommandPacket disarm_prop1(4, 0);
+    disarm_prop1.header.source_service = 1;
+    disarm_prop1.header.source = 2;
+    disarm_prop1.header.destination_service = 11;
+    disarm_prop1.header.destination = 103;
+    disarm_prop1.header.uid = 0;
+    m_networkmanager.sendPacket(disarm_prop1);
+}
+
 void GNCcontroller::changePropPower(int prop, int power) {
-
+    Serial.println("Changing prop power: " + String(power));
     uint8_t des_ser; 
-
+    if (power < 0) {
+        power = 0; // make sure the power is not negative
+    }
     if (prop == 0) {
          des_ser = 10; 
     }

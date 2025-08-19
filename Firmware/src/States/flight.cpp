@@ -33,12 +33,12 @@ Types::CoreTypes::State_ptr_t Flight::update()
     // Condition A
 
     // Also Implement a chack for low battery !!!!!!
-    if ((current_time - t ) > 15000) {
-        return std::make_unique<Landing>(_system);
+    if ((current_time - t ) > 1500) {
+        return std::make_unique<Preflight>(_system);
     }
 
     // Condition D
-    if ((abs(roll) > 3.142/2) || (abs(pitch) > 3.142/2)) // || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
+    if ((abs(roll) > 3.142/18) || (abs(pitch) > 3.142/18)) // || (abs(x) > 5) || (abs(y) > 5) || (abs(z) > 10))
     { 
         return std::make_unique<Hard_Abort>(_system);
     }
@@ -51,27 +51,36 @@ Types::CoreTypes::State_ptr_t Flight::update()
     // }
 
 
-    Eigen::Matrix<float,1,12> inputMatrix = {
-        // current_Data.position(0),
-        // current_Data.position(1),
-        // current_Data.position(2),
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        // current_Data.velocity(0),
-        // current_Data.velocity(1),
-        // current_Data.velocity(2),
+    Eigen::Matrix<float,1,13> inputMatrix = {
+        current_Data.position(0),
+        current_Data.position(1),
+        current_Data.position(2),
+        current_Data.velocity(0),
+        current_Data.velocity(1),
+        current_Data.velocity(2),
         static_cast<float>(current_Data.eulerAngles[0]),
         static_cast<float>(current_Data.eulerAngles[1]),
         static_cast<float>(current_Data.eulerAngles[2]),
         current_Data.angularRates(0),
         current_Data.angularRates(1),
-        current_Data.angularRates(2)
+        current_Data.angularRates(2),
+        (current_time - t)/1000.0f // flight time in seconds
     };
     
+    // Eigen::Matrix<float,1,12> inputMatrix = {
+    //     0.1,
+    //     0.1,
+    //     0.1,
+    //     0.1,
+    //     0.1,
+    //     0.1,        
+    //     0.1,
+    //     0.1,
+    //     0.1,        
+    //     0.1,
+    //     0.1,
+    //     0.1
+    // };
     _system.controller.update(inputMatrix);
 
     return nullptr;

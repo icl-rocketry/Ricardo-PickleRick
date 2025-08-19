@@ -4,15 +4,15 @@ void Oli_controller::setup(Eigen::Matrix<float,1, 12> m_personal_setpoint){
     
     m_setpoint = m_personal_setpoint;
     
-    m_timestep = 0.001; 
+    m_timestep = 0.005f; 
     m_previousSampleTime = millis();
 
     // Rocket physical parameters
-    m_mass = 1.142f; // kg
+    m_mass = 1.19f; // kg
     m_J << 0.012f, 0, 0,
            0, 0.012f, 0,
            0, 0, 0.0256f; // Inertia matrix
-    m_dtCtrl = 0.001f; // control period [s]
+    m_dtCtrl = 0.005f; // control period [s]
     m_rEngZ = -0.05f; // distance nozzle ↔ CoM [m]
 
     // Actuator lag parameters
@@ -20,33 +20,33 @@ void Oli_controller::setup(Eigen::Matrix<float,1, 12> m_personal_setpoint){
     m_kAct   = 1.0f;   // s⁻¹ (
 
 
-    m_dfilterA = 0.9f;
+    m_dfilterA = 0.0f;
 
     // Outer Loop translation gains
-    m_kPos1         << 1.7, 1.7, 1.4;    // k₁ for x, y, z
-    m_kPos2         << 0.7, 0.7, 1.7;    // k₂ for x, y, z
+    m_kPos1         << 0, 0, 0.01;    // k₁ for x, y, z
+    m_kPos2         << 0, 0, 0.01;    //0.7, 0.7, 1.7;    // k₂ for x, y, z
     //sliding mode gains 
     m_lambdaPosOuter<< 8, 8, 8;    // λ  for x, y, z
-    m_etaPosOuter    = 0;        // same η for all axes
-    m_psiPosOuter   << 5, 5, 0.1;  // ψ  per axis
+    m_etaPosOuter    = 0.01;        // same η for all axes
+    m_psiPosOuter   << 5, 5, 5;  // ψ  per axis
     //inner Loop gains
-    m_kPos3 = 3; // Fz inner loop 1st gain
-    m_kPos4 = 3; // Fz inner loop 2nd gain 
-    m_lambdaPosInner = 8; // λ for Fz inner loop
-    m_etaPosInner = 0; // η for Fz inner loop
+    m_kPos3 = 0.01; // Fz inner loop 1st gain
+    m_kPos4 = 0.01; // Fz inner loop 2nd gain 
+    m_lambdaPosInner = 3; // λ for Fz inner loop
+    m_etaPosInner = 0.005; // η for Fz inner loop
     m_psiPosInner = 5; // ψ for Fz inner loop
     // Attitude gains
-    m_kAtt1 = 9; // k₁ for attitude control
-    m_kAtt2 = 9; // k₂ for attitude control
-    m_lambdaAtt = 8; // λ for attitude control
-    m_etaAtt = 0; // η for attitude control
+    m_kAtt1 = 0.02; // k₁ for attitude control
+    m_kAtt2 = 0.02; // k₂ for attitude control
+    m_lambdaAtt = 3; // λ for attitude control
+    m_etaAtt = 0.002; // η for attitude control
     m_psiAtt = 5; // ψ for attitude control
 
     m_u_act << 0.0f, 0.0f, 0.0f; // actuator output [N] (Fx, Fy, Fz)
+    m_eta_prev << 0.0f, 0.0f, 0.0f; // previous eta for attitude control
+    m_etaDot_prev << 0.0f, 0.0f, 0.0f; // previous eta_dot for attitude control
 
     
-
-
     // m_setpoint = m_personal_setpoint;
     
     // m_timestep = 0.001; 
@@ -153,12 +153,14 @@ void Oli_controller::updateOutputValues(Eigen::Matrix<float,1, 12> currentPositi
     Vec3 eta_d(phi_d, theta_d, 0.0f);                  // ψ_d = 0
 
     /* --- first-order LPF on eta_d_dot (Tustin) ----------------------- */
-    static Vec3 eta_prev      = eta_d;
-    static Vec3 etaDot_prev   = Vec3::Zero();
-    Vec3 raw_dot  = (eta_d - eta_prev) / m_dtCtrl;
-    Vec3 eta_d_dot= m_dfilterA * etaDot_prev + (1.0f - m_dfilterA) * raw_dot;
-    eta_prev    = eta_d;
-    etaDot_prev = eta_d_dot;
+    Vec3 raw_dot  = (eta_d - m_eta_prev) / m_dtCtrl;
+    Vec3 eta_d_dot= m_dfilterA * m_etaDot_prev + (1.0f - m_dfilterA) * raw_dot;
+    // Clamp eta_d_dot to between -60 and +60 (radians/sec)
+    for (int i = 0; i < 3; ++i) {
+        eta_d_dot(i) = std::clamp(eta_d_dot(i), -60.0f, 60.0f);
+    }
+    m_eta_prev = eta_d;
+    m_etaDot_prev = eta_d_dot;
 
     /* ------------------------------------------------------------------ */
     /* 3.  INNER ATTITUDE LOOP – commanded moment M_cmd                   */
@@ -263,17 +265,21 @@ void Oli_controller::updateOutputValues(Eigen::Matrix<float,1, 12> currentPositi
 
     // angles in radians
     float phi_xz = std::atan2(m_u_act(0), m_u_act(2));   // X–Z plane
+    // float phi_xz = std::asin(m_u_act(0)/(0.40*23.5));   // X–Z plane
     float phi_zy = std::atan2(m_u_act(1), m_u_act(2));   // Z–Y plane
+    // float phi_zy = std::asin(m_u_act(1)/(0.40*23.5));   // Z–Y plane
     float thrust = m_u_act.norm();                     // total thrust
 
     // convert to degrees if you prefer
-    phi_xz *= RAD2DEG*10;
-    phi_zy *= RAD2DEG*10;
+    phi_xz *= RAD2DEG;
+    phi_zy *= RAD2DEG;
+    thrust = std::clamp(thrust, 0.0f, 25.0f); // clamp thrust to 0-25N
+    thrust *= 100/25.0f; // scale thrust to 0-100% (25N max thrust)
 
     /* ------------------------------------------------------------------ */
     /* 9.  Pack output:  [φ_xz  φ_zy  |F|  spare]                         */
     /* ------------------------------------------------------------------ */
-    m_output_values << phi_xz, phi_zy, phi_d, theta_d;
+    m_output_values << phi_zy, phi_xz, thrust, thrust;
 }
 
 

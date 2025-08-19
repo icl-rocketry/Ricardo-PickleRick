@@ -21,7 +21,8 @@ namespace Services{
     enum class ID:uint8_t{
         PID1 = 3,
         PID2 = 4,
-        CONTROLLER = 5
+        CONTROLLER = 5,
+        RTK = 6
     };
 
 };

@@ -69,21 +69,21 @@ Types::CoreTypes::State_ptr_t Landing::update()
         
     }
 
-    Eigen::Matrix<float,1,12> inputMatrix = {
-        current_Data.position(0),
-        current_Data.position(1),
-        current_Data.position(2),
-        current_Data.velocity(0),
-        current_Data.velocity(1),
-        current_Data.velocity(2),
-        static_cast<float>(current_Data.eulerAngles[0] * (180 / PI)),
-        static_cast<float>(current_Data.eulerAngles[1] * (180 / PI)),
-        static_cast<float>(current_Data.eulerAngles[2] * (180 / PI)),
-        current_Data.angularRates(0),
-        current_Data.angularRates(1),
-        current_Data.angularRates(2)
-    };
-    _system.controller.update(inputMatrix);
+    // Eigen::Matrix<float,1,12> inputMatrix = {
+    //     current_Data.position(0),
+    //     current_Data.position(1),
+    //     current_Data.position(2),
+    //     current_Data.velocity(0),
+    //     current_Data.velocity(1),
+    //     current_Data.velocity(2),
+    //     static_cast<float>(current_Data.eulerAngles[0] * (180 / PI)),
+    //     static_cast<float>(current_Data.eulerAngles[1] * (180 / PI)),
+    //     static_cast<float>(current_Data.eulerAngles[2] * (180 / PI)),
+    //     current_Data.angularRates(0),
+    //     current_Data.angularRates(1),
+    //     current_Data.angularRates(2)
+    // };
+    // _system.controller.update(inputMatrix);
 
 
     return nullptr;

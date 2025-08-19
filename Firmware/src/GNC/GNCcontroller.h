@@ -23,8 +23,7 @@ class GNCcontroller : public NRCRemoteControllerBase<GNCcontroller>
 
         void setup(); 
         void start();
-        void update(Eigen::Matrix<float,1, 12> currentInput); 
-        void update(Eigen::Matrix<float,1, 12> currentInput,float scaling_factor); 
+        void update(Eigen::Matrix<float,1, 13> currentInput); 
         void stop();
 
         
@@ -32,11 +31,10 @@ class GNCcontroller : public NRCRemoteControllerBase<GNCcontroller>
         
         void sendArmingCommands(); 
         void sendDisarmingCommands();
-        void sendActuationCommands(Eigen::Matrix<float,1, 4> actuation_values);
-        void sendActuationCommands(Eigen::Matrix<float,1, 4> actuation_values,float scaling_factor);
+        void sendActuationCommands(Eigen::Matrix<float,1, 4> actuation_values,float ramp_up_value);
         void armServos();
         void disarmServos();
-        void changeServoAngle(int servo, int angle);
+        void changeServoAngle(int servo, float angle);
         void armProps();
         void disarmProps();
         void changePropPower(int prop, int power);
@@ -44,7 +42,7 @@ class GNCcontroller : public NRCRemoteControllerBase<GNCcontroller>
         RnpNetworkManager &m_networkmanager;
         uint8_t m_serviceID;
         unsigned long m_previousSampleTime;
-        unsigned long m_actuationDelta = 10; // 0.01 second
+        unsigned long m_actuationDelta = 5; // 0.005 seconds (200 Hz)
 
         Eigen::Matrix<float,1, 12> input_first;
         Eigen::Matrix<float,1, 4> output_first;

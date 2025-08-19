@@ -28,9 +28,7 @@ void Hard_Abort::initialize()
 
     /*
     Kill all engines
-    
     */
-    
 };
 
 Types::CoreTypes::State_ptr_t Hard_Abort::update()

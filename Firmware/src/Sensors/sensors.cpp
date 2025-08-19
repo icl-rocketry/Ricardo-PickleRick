@@ -1,16 +1,7 @@
 #include "sensors.h"
 
 
-#include <SPI.h>
-#include <Wire.h>
-#include <memory>
-#include <functional>
-#include <ArduinoJson.h>
 
-#include <librnp/rnp_networkmanager.h>
-#include <librnp/rnp_packet.h>
-
-#include <libriccore/riccorelogging.h>
 
 
 #include <librnp/default_packets/simplecommandpacket.h>
@@ -19,7 +10,6 @@
 
 
 //config
-#include "Config/types.h"
 #include "Config/systemflags_config.h"
 #include "Config/pinmap_config.h"
 
@@ -40,6 +30,7 @@ Sensors::Sensors(SPIClass& spi,TwoWire& I2C,Types::CoreTypes::SystemStatus_t& sy
     accel(spi,systemstatus,PinMap::ImuCs_2),
     mag(spi,PinMap::MagCs,systemstatus),
     logicrail("Logic Rail",PinMap::BattVolt,8,1)
+    // rtk()
 {}
 
 void Sensors::setup(JsonObjectConst config){
@@ -84,8 +75,8 @@ void Sensors::setup(JsonObjectConst config){
     accel.setup(axesOrderH3LIS,axesFlipH3LIS);
     mag.setup(axesOrderMMC,axesFlipMMC);
     logicrail.setup(logicMaxVoltage,logicLowVoltage,logicMinVoltage);
-    
-    
+    // rtk.setup();
+
 };
 
 void Sensors::update()
@@ -103,7 +94,8 @@ void Sensors::update()
     accel.update(sensors_raw.accel);
     mag.update(sensors_raw.mag);
     logicrail.update(sensors_raw.logicrail);
-
+    // rtk.update(sensors_raw.rtk);
+    
 };
 
 const SensorStructs::raw_measurements_t& Sensors::getData()

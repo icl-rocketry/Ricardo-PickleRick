@@ -84,7 +84,8 @@ void System::systemSetup()
 
     controller.setup();
     networkmanager.registerService(static_cast<uint8_t>(Services::ID::CONTROLLER), controller.getThisNetworkCallback());
-    // networkmanager.registerService(static_cast<uint8_t>(Services::ID::PID2), pid2.getThisNetworkCallback());
+    networkmanager.registerService(static_cast<uint8_t>(Services::ID::RTK), estimator.registerRTK());
+
 };
 
 void System::systemUpdate()

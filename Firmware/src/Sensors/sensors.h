@@ -1,17 +1,4 @@
 #pragma once
-/**
- * @file sensors.h
- * @author Kiran de Silva
- * @brief Manages sensor suite on avionics.
- * TODO:
- * Threadsafe
- * @version 0.1
- * @date 2022-04-06
- * 
- * @copyright Copyright (c) 2022
- * 
- */
-
 
 #include <SPI.h>
 #include <Wire.h>
@@ -59,6 +46,10 @@ public:
     void calibrateBaro();
 
     std::function<void(std::unique_ptr<RnpPacketSerialized>)> getHitlCallback();
+
+    // std::function<void(packetptr_t)> registerRTK() {
+    //     return rtk.getThisNetworkCallback();
+    // }
 
 private:
     SensorStructs::raw_measurements_t sensors_raw;

@@ -83,6 +83,15 @@ namespace SensorStructs
         uint16_t percent;
     };
 
+    struct RTK_t{
+        float x;
+        float y;
+        float z;
+        float u;
+        float v;
+        float w;
+    };
+
     struct raw_measurements_t
     {
         ACCELGYRO_6AXIS_t accelgyro;
@@ -91,7 +100,8 @@ namespace SensorStructs
         BARO_t baro;
         GPS_t gps;
         V_RAIL_t logicrail;
-
+        RTK_t rtk;
+        
         uint64_t system_time;
     };
 

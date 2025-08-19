@@ -19,13 +19,15 @@ Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus) : _systemst
                                                    update_frequency(2000), // 500Hz update
                                                    _homeSet(false),
                                                    _orientationSet(false),
-                                                   madgwick(0.5f, 0.005f) // beta | gyroscope sample time step (s)
+                                                   madgwick(0.5f, 0.005f), // beta | gyroscope sample time step (s)
+                                                   rtk()
                                                    {};
 
 void Estimator::setup()
 {
    // update board orientation this is applied when converthing back to sensor frame where the orientaiton of sensor matters
    // upside down should be retireved from config file
+   rtk.setup();
 
    localizationkf.reset();
 };
@@ -70,9 +72,10 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             // gps only update, no fusion as filtering this data will only result in a worse solution
             if (_homeSet) // if false, this falls thru to the more important error which is no home set
             {
-               state.position = localizationkf.GPStoNED(raw_sensors.gps.lat,
-                                                        raw_sensors.gps.lng,
-                                                        raw_sensors.gps.alt);
+               // state.position = localizationkf.GPStoNED(raw_sensors.gps.lat,
+               //                                          raw_sensors.gps.lng,
+               //                                          raw_sensors.gps.alt);
+               state.position = rtk.getPosition();
                state.velocity = Eigen::Vector3f{raw_sensors.gps.v_n / 1000.0f,
                                                 raw_sensors.gps.v_e / 1000.0f,
                                                 raw_sensors.gps.v_d / 1000.0f};
@@ -168,6 +171,7 @@ void Estimator::setHome(const SensorStructs::raw_measurements_t &raw_sensors)
    state.gps_launch_lat = raw_sensors.gps.lat;
    state.gps_launch_long = raw_sensors.gps.lng;
    state.gps_launch_alt = raw_sensors.gps.alt;
+   rtk.setHome(rtk.getPositionRaw());
    // update barometer reference altitude
    state.baro_ref_alt = raw_sensors.baro.alt;
    // log the new home position
@@ -311,5 +315,6 @@ void Estimator::predictLocalizationKF(const float &dt)
    localizationkf.predict(dt);
    state.acceleration = localizationkf.getAcceleration();
    state.velocity = localizationkf.getVelocity();
-   state.position = localizationkf.getPosition();
+   state.position = rtk.getPosition();
+   // state.position = localizationkf.getPosition();
 }
