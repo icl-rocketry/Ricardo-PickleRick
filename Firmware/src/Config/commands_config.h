@@ -30,6 +30,7 @@ namespace Commands
         Play_Song = 14,
         Skip_Song = 15,
         Clear_Song_Queue = 16,
+        FTSActive = 49,
         Reset_Orientation = 50,
         Reset_Localization = 51,
         Set_Beta = 52,
@@ -92,6 +93,6 @@ namespace Commands
         {ID::Radio_SetSYNC, Radio_SetSYNC},
         {ID::Flight_Abort, FlightAbortCommand},
         {ID::Liftoff_Override, LiftoffOverrideCommand},
-        {ID::Apogee_Override, ApogeeOverrideCommand}};
-
+        {ID::Apogee_Override, ApogeeOverrideCommand},
+        {ID::FTSActive, ManualFTSActive}};
 };

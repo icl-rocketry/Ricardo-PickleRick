@@ -62,4 +62,5 @@ namespace Commands{
     void Radio_SetSYNC(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void Radio_SetPower(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void LiftoffOverrideCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void ManualFTSActive(System& system, const RnpPacketSerialized& packet);
 }
