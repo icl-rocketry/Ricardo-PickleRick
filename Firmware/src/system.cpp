@@ -113,6 +113,8 @@ void System::systemSetup()
     // initialize statemachine with preflight state
     statemachine.initalize(std::make_unique<Preflight>(*this));
 
+
+
 };
 
 void System::systemUpdate()
@@ -262,7 +264,8 @@ void System::loadConfig()
         enginehandler.setup(configDoc.as<JsonObjectConst>()["Engines"]);
         controllerhandler.setup(configDoc.as<JsonObjectConst>()["Controllers"]);
         eventhandler.setup(configDoc.as<JsonObjectConst>()["Events"]);
-
+        
+       
     }
     catch (const std::exception &e)
     {

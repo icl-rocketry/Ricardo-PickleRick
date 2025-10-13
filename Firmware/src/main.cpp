@@ -32,6 +32,7 @@ void setup_task()
 void inner_loop_task()
 {
     //must call core system update
+    
     ricSystem.coreSystemUpdate();
     // loop();
    
