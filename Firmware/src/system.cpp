@@ -113,6 +113,8 @@ void System::systemSetup()
     // initialize statemachine with preflight state
     statemachine.initalize(std::make_unique<Preflight>(*this));
 
+
+
 };
 
 void System::systemUpdate()
@@ -262,7 +264,8 @@ void System::loadConfig()
         enginehandler.setup(configDoc.as<JsonObjectConst>()["Engines"]);
         controllerhandler.setup(configDoc.as<JsonObjectConst>()["Controllers"]);
         eventhandler.setup(configDoc.as<JsonObjectConst>()["Events"]);
-
+        
+       
     }
     catch (const std::exception &e)
     {
@@ -393,23 +396,38 @@ void System::configureNetwork()
 
     #if ROCKET_TABLE
         flightRouting.setRoute((uint8_t) 5,Route{2,1,{}}); // Rocket GS Pickle
-        flightRouting.setRoute((uint8_t) 20,Route{3,1,{}}); // PDU0
-        flightRouting.setRoute((uint8_t) 21,Route{3,1,{}}); // PDU1
-        flightRouting.setRoute((uint8_t) 30,Route{3,1,{}}); // Recovery F&S
-        flightRouting.setRoute((uint8_t) 14,Route{3,1,{}}); // Solenoid F&S
-        flightRouting.setRoute((uint8_t) 13,Route{3,1,{}}); // E-reg
-        flightRouting.setRoute((uint8_t) 12,Route{3,1,{}}); // Sensor board
-        flightRouting.setRoute((uint8_t) 11,Route{3,1,{}}); // Ox vent
-        flightRouting.setRoute((uint8_t) 10,Route{3,1,{}}); // Engine controller
-        flightRouting.setRoute((uint8_t) 31,Route{3,1,{}}); // Payload deployer
-        flightRouting.setRoute((uint8_t) 40,Route{3,1,{}}); // Camera board
-        flightRouting.setRoute((uint8_t) 41,Route{3,1,{}}); // Canard board
-        flightRouting.setRoute((uint8_t) 3,Route{3,1,{}}); // GSS Chad
+
+        flightRouting.setRoute((uint8_t) 8,Route{3,1,{}}); // Engine controller
+        flightRouting.setRoute((uint8_t) 12,Route{3,1,{}}); // Ox Vent
+
+        flightRouting.setRoute((uint8_t) 7,Route{3,1,{}}); // Sensor Board
+        flightRouting.setRoute((uint8_t) 13,Route{3,1,{}}); // Solenoid F&S
+        flightRouting.setRoute((uint8_t) 9,Route{3,1,{}}); // E-reg
+
+        flightRouting.setRoute((uint8_t) 10,Route{3,1,{}}); // PDU0
+        flightRouting.setRoute((uint8_t) 11,Route{3,1,{}}); // PDU1
+
+        flightRouting.setRoute((uint8_t) 19,Route{3,1,{}}); // Recovery F&S
+
+        flightRouting.setRoute((uint8_t) 17,Route{3,1,{}}); // Line Cutter 0
+        flightRouting.setRoute((uint8_t) 18,Route{3,1,{}}); // Line Cutter 1
+
+
+        // flightRouting.setRoute((uint8_t) 30,Route{3,1,{}}); // Recovery F&S
+        // flightRouting.setRoute((uint8_t) 14,Route{3,1,{}}); // Solenoid F&S
+        // flightRouting.setRoute((uint8_t) 13,Route{3,1,{}}); // E-reg
+        // flightRouting.setRoute((uint8_t) 12,Route{3,1,{}}); // Sensor board
+        // flightRouting.setRoute((uint8_t) 11,Route{3,1,{}}); // Ox vent
+        
+        // flightRouting.setRoute((uint8_t) 31,Route{3,1,{}}); // Payload deployer
+        // flightRouting.setRoute((uint8_t) 40,Route{3,1,{}}); // Camera board
+        // flightRouting.setRoute((uint8_t) 41,Route{3,1,{}}); // Canard board
+        // flightRouting.setRoute((uint8_t) 3,Route{3,1,{}}); // GSS Chad
     #elif ROCKET_GS_TABLE
         flightRouting.setRoute((uint8_t) 2,Route{2,1,{}}); // Rocket Pickle
-        flightRouting.setRoute((uint8_t) 10,Route{2,1,{}}); // Stark
-        flightRouting.setRoute((uint8_t) 12,Route{2,1,{}}); // Sensor board
-        flightRouting.setRoute((uint8_t) 200,Route{3,1,{}}); // Payload GS Pickle
+        flightRouting.setRoute((uint8_t) 8,Route{2,1,{}}); // Stark
+        flightRouting.setRoute((uint8_t) 7,Route{2,1,{}}); // Sensor board
+        // flightRouting.setRoute((uint8_t) 200,Route{3,1,{}}); // Payload GS Pickle
     #elif PAYLOAD_TABLE
         flightRouting.setRoute((uint8_t) 6,Route{2,1,{}}); // Payload GS Pickle
     #elif PAYLOAD_GS_TABLE

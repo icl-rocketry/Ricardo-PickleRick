@@ -451,3 +451,16 @@ void Commands::Radio_SetSYNC(System& system, const RnpPacketSerialized& packet)
 
 	system.radio.setSW(SW);
 }
+
+void Commands::ManualFTSActive(System& system, const RnpPacketSerialized& packet)
+{
+	// Depending on the current state, send a different FTS packet
+	if (system.statemachine.getCurrentStateID() == SYSTEM_FLAG::STATE_LAUNCH)
+	{
+		LaunchAbortCommand(system, packet);
+	} 
+	else if (system.statemachine.getCurrentStateID() == SYSTEM_FLAG::STATE_FLIGHT)
+	{
+		FlightAbortCommand(system, packet);
+	}
+}

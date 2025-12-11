@@ -30,6 +30,7 @@ namespace Commands
         Play_Song = 14,
         Skip_Song = 15,
         Clear_Song_Queue = 16,
+        FTSActive = 49,
         Reset_Orientation = 50,
         Reset_Localization = 51,
         Set_Beta = 52,
@@ -55,7 +56,7 @@ namespace Commands
         Free_Ram = 250
     };
 
-    inline std::initializer_list<ID> defaultEnabledCommands = {ID::Free_Ram,ID::Telemetry,ID::Radio_Test};
+    inline std::initializer_list<ID> defaultEnabledCommands = {ID::Free_Ram,ID::Telemetry,ID::Radio_Test,ID::FTSActive};
 
     inline std::unordered_map<ID, std::function<void(ForwardDecl_SystemClass &, const RnpPacketSerialized &)>> command_map{
         {ID::Launch, LaunchCommand},
@@ -92,6 +93,6 @@ namespace Commands
         {ID::Radio_SetSYNC, Radio_SetSYNC},
         {ID::Flight_Abort, FlightAbortCommand},
         {ID::Liftoff_Override, LiftoffOverrideCommand},
-        {ID::Apogee_Override, ApogeeOverrideCommand}};
-
+        {ID::Apogee_Override, ApogeeOverrideCommand},
+        {ID::FTSActive, ManualFTSActive}};
 };
