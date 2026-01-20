@@ -40,7 +40,6 @@ void Debug::initialize(){
                                                Commands::ID::Apogee_Override,
                                                Commands::ID::Exit_Debug},true); 
        
-        _system.networkmanager.registerService(static_cast<uint8_t>(Services::ID::HITL),_system.sensors.getHitlCallback()); //register hitl handler callback
     }
 };
 
@@ -54,7 +53,6 @@ void Debug::exit(){
     
     if (!_system.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){ //indicates exiting out of debug mode completley
         _system.commandhandler.resetPersistentCommands();
-        _system.networkmanager.unregisterService(static_cast<uint8_t>(Services::ID::HITL)); //remove hitl service
 
     }
     _system.commandhandler.resetCommands();

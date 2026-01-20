@@ -83,6 +83,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void loadConfig();
         void initializeLoggers();
         void logTelemetry();
+        void hitlSetup();
 
         /**
          * @brief reads the json radio config from sd card and reconfigures the radio

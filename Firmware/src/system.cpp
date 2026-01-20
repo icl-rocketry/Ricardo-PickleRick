@@ -106,6 +106,8 @@ void System::systemSetup()
     //register servo serv ices
     setupLocalServos();
 
+    hitlSetup();
+
     loadConfig();
 
     estimator.setup();
@@ -114,6 +116,11 @@ void System::systemSetup()
     statemachine.initalize(std::make_unique<Preflight>(*this));
 
 };
+void System::hitlSetup(){
+	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Enabled the HITL command listener");
+    networkmanager.registerService(static_cast<uint8_t>(Services::ID::HITL),sensors.getHitlCallback());
+}
+
 
 void System::systemUpdate()
 {

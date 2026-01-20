@@ -99,13 +99,12 @@ void Sensors::setup(JsonObjectConst config){
 
 void Sensors::update()
 {
-    if (_hitlEnabled){
-        if (!_systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG))
-        {
-        _hitlEnabled = false;
-        }
-        return;
-    }
+    /* This allows us to skip regular sensor updates and ONLY use the faked values provided by the HITL commands */
+
+	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(sensors_raw.accelgyro.ax));
+
+    if(_hitlEnabled) return;
+
     gps.update(sensors_raw.gps);
     baro.update(sensors_raw.baro);
     accelgyro.update(sensors_raw.accelgyro);
@@ -146,13 +145,11 @@ std::function<void(std::unique_ptr<RnpPacketSerialized>)> Sensors::getHitlCallba
     return [this](std::unique_ptr<RnpPacketSerialized> packet_ptr){hitlHandler(std::move(packet_ptr));};
 }
 
+/* This function handles all incoming packets on service 3 (HITL SERVICE) */
 void Sensors::hitlHandler(std::unique_ptr<RnpPacketSerialized> packet_ptr)
 {
-    //final check that this has only be called in debug mode
-    if (!_systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
-        return;
-    }
-    //process hitl packet
+	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Recieved a hitl packet");
+
     switch (packet_ptr->header.type){
         case static_cast<uint8_t>(HITL_PACKET_TYPES::HITL_COMMAND):
         {
@@ -161,14 +158,21 @@ void Sensors::hitlHandler(std::unique_ptr<RnpPacketSerialized> packet_ptr)
         }
         case static_cast<uint8_t>(HITL_PACKET_TYPES::PICKLE_RICK_SENSORS):
         {
+	        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Request to inputting fake data");
+            if (!_hitlEnabled) return;
+
+	        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Inputting fake data");
 
             PickleRickSensorsPacket FakeData(*packet_ptr); // deserialize fake data
+
             sensors_raw.accelgyro.ax = FakeData.ax;
             sensors_raw.accelgyro.ay = FakeData.ay;
             sensors_raw.accelgyro.az = FakeData.az;
+
             sensors_raw.accelgyro.gx = FakeData.gx;
             sensors_raw.accelgyro.gy = FakeData.gy;
             sensors_raw.accelgyro.gz = FakeData.gz;
+            
 
             sensors_raw.accel.ax = FakeData.h_ax;
             sensors_raw.accel.ay = FakeData.h_ay;
@@ -208,6 +212,9 @@ void Sensors::hitlHandler(std::unique_ptr<RnpPacketSerialized> packet_ptr)
         }
         default:
         {
+
+            
+	        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Recieved unknown packet on service 3");
             return;
         }
     }
@@ -220,14 +227,14 @@ void Sensors::hitlCommandHandler(RnpPacketSerialized& packet)
     switch(CommandPacket::getCommand(packet)){
         case static_cast<uint8_t>(HITL_COMMANDS::HITL_ENABLE):
         {
-            _hitlEnabled = true;
             RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("HITL Enabled!");
+            _hitlEnabled = true;
             return;
         }
         case static_cast<uint8_t>(HITL_COMMANDS::HITL_DISABLE):
         {
-            _hitlEnabled = false;
             RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("HITL Disabled!");
+            _hitlEnabled = false;
             return;
         }
         default:
@@ -243,10 +250,12 @@ void Sensors::hitlUpdateSensorError(uint8_t sensor_state,SYSTEM_FLAG flag)
     {
         _systemstatus.newFlag(flag, "hitl raised error");
     }
+    /*  For now do not allow the HITL system to clear data checks for safety
     else if (!sensor_state && _systemstatus.flagSetOr(flag))
     {
         _systemstatus.deleteFlag(flag, "hitl removed flag");
     }
+    */
 }
 
 
