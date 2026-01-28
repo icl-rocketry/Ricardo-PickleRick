@@ -2,7 +2,6 @@
 
 #include <SPI.h>
 
-#include "config.h"
 #include <string.h>
 
 #include "sensorStructs.h"

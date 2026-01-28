@@ -54,7 +54,7 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    vspi(VSPI_BUS_NUM),
                    hspi(HSPI_BUS_NUM),
                    I2C(0),
-                   radio(hspi,  PinMap::LoraCs, PinMap::LoraReset, -1, systemstatus, RADIO_MODE::TURN_TIMEOUT, 2),
+                   radio(hspi,  PinMap::LoraCs, PinMap::LoraReset, PinMap::LoraInt, systemstatus, RADIO_MODE::TURN_TIMEOUT, 2),
                    canbus(systemstatus, PinMap::TxCan, PinMap::RxCan, 3),
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),

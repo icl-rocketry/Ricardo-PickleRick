@@ -4,7 +4,8 @@
 		"NetworkLogDestination": 1,
 		"AutoSethome": false,
 		"AutoLaunch": false,
-		"PrimaryStorage": "SD1"// is this even useful? as in, how will the device know to read from SD1 if this config is on SD1?
+		"PrimaryStorage": "SD1",// is this even useful? as in, how will the device know to read from SD1 if this config is on SD1?
+		"Buzzer": true
 	},
 	"Radio":
 	{

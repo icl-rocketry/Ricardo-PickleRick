@@ -1102,7 +1102,6 @@
 	(hierarchical_label "~{INT}"
 		(shape output)
 		(at 151.13 107.315 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1114,7 +1113,6 @@
 	(hierarchical_label "MOSI"
 		(shape input)
 		(at 125.73 92.075 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1126,7 +1124,6 @@
 	(hierarchical_label "MISO"
 		(shape output)
 		(at 125.73 94.615 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1138,7 +1135,6 @@
 	(hierarchical_label "RESET"
 		(shape input)
 		(at 125.73 102.235 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1150,7 +1146,6 @@
 	(hierarchical_label "~{CS}"
 		(shape input)
 		(at 125.73 97.155 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1162,7 +1157,6 @@
 	(hierarchical_label "SCLK"
 		(shape input)
 		(at 125.73 89.535 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1331,7 +1325,7 @@
 				)
 			)
 		)
-		(property "Footprint" "RF_Module:HOPERF_RFM9XW_SMD"
+		(property "Footprint" "iclr:HOPERF_RFM9XW_SMD"
 			(at 54.61 55.245 0)
 			(effects
 				(font

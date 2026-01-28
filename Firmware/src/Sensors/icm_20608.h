@@ -18,8 +18,6 @@
 #include <SPI.h>
 #include <array>
 
-#include "config.h"
-
 #include "sensorStructs.h"
 
 #include <libriccore/riccorelogging.h>

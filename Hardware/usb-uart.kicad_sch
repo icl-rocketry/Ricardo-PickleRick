@@ -1889,7 +1889,6 @@
 	)
 	(label "Data+"
 		(at 132.08 134.62 90)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1900,7 +1899,6 @@
 	)
 	(label "VBUS"
 		(at 129.54 134.62 90)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1911,7 +1909,6 @@
 	)
 	(label "Data+"
 		(at 44.45 104.14 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1922,7 +1919,6 @@
 	)
 	(label "Data-"
 		(at 44.45 99.06 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1933,7 +1929,6 @@
 	)
 	(label "Data-"
 		(at 134.62 134.62 90)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1944,7 +1939,6 @@
 	)
 	(label "Data-"
 		(at 116.84 102.87 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1955,7 +1949,6 @@
 	)
 	(label "VBUS"
 		(at 44.45 109.22 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1966,7 +1959,6 @@
 	)
 	(label "Data+"
 		(at 116.84 107.95 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1978,7 +1970,6 @@
 	(hierarchical_label "Data-"
 		(shape bidirectional)
 		(at 44.45 99.06 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1990,7 +1981,6 @@
 	(hierarchical_label "Data+"
 		(shape bidirectional)
 		(at 44.45 104.14 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2289,7 +2279,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_USB:USB_C_Receptacle_Palconn_UTC16-G"
+		(property "Footprint" "iclr:USB_C_Receptacle_Palconn_UTC16-G"
 			(at 104.14 104.14 0)
 			(effects
 				(font

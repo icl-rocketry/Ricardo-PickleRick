@@ -11,7 +11,7 @@
 
 
 
-void Engine::execute(int func){
+void Engine::execute(int32_t func){
     switch(func){
         case static_cast<uint8_t>(ENGINE_EXECUTE::IGNITE):
         {

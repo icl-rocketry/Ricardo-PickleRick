@@ -21,6 +21,7 @@ struct tune_t{
 class TunezHandler{
     public:
         TunezHandler();
+        ~TunezHandler();
         void setup();
 
         /**

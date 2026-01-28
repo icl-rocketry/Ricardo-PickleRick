@@ -77,8 +77,8 @@ private:
      */
     bool _adcInitialized;
 
-    static constexpr adc_atten_t _atten = ADC_ATTEN_DB_11;
-    static constexpr adc_bits_width_t _width = ADC_WIDTH_12Bit;
+    static constexpr adc_atten_t _atten = ADC_ATTEN_DB_12;
+    static constexpr adc_bits_width_t _width = ADC_WIDTH_BIT_12;
 
 
     /**
