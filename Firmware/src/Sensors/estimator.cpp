@@ -17,9 +17,7 @@
 Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus) : _systemstatus(systemstatus),
                                                                        update_frequency(2000), // 500Hz update
                                                                        _homeSet(false),
-                                                                       madgwick(0.5f, 0.005f), // beta | gyroscope sample time step (s)
-                                                                     //   refOrientation(1.0,0.0,0.0,0.0)
-                                                                        refOrientation(0.707,0.0,0.707,0.0)
+                                                                       refOrientation(1.0,0.0,0.0,0.0)
                                                                        {};
 
 void Estimator::setup()
@@ -39,28 +37,25 @@ void Estimator::configure(JsonObjectConst conf)
 void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 {
 
-   unsigned long dt = (unsigned long)(micros() - last_update); // explictly casting to prevent micros() overflow cuasing issues
+   unsigned long dt = (unsigned long)(micros() - last_update); 
 
    if (dt > update_frequency)
    {
 
-      last_update = micros();                   // update last_update
-      float dt_seconds = float(dt) * 0.000001F; // conversion to seconds
+      last_update = micros();
+      float dt_seconds = float(dt) * 0.000001F; 
 
       if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_IMU))
       {
 
          if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_GPS) && _systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_BARO))
          {
-            // no data so we cant calculate any nav solution
             changeEstimatorState(ESTIMATOR_STATE::NOSOLUTION, "no data, cannot compute navigation solution");
             return;
          }
 
          if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_GPS))
          {
-            // baro only update
-            // TODO - add a z velocity estimate using first order filter and disrete derivative
 
             if (_homeSet) // if no home, this falls thru to the no home
             {
@@ -95,7 +90,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             computeOrientation(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz,
                                raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az,
                                dt_seconds);
-            // check that there isnt a bigger error
+                               
             if (_homeSet)
             {
                changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_MAG, "no mag, heading unreliable");
