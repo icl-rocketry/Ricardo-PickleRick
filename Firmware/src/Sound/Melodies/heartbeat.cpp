@@ -1,7 +1,4 @@
-
-#include "melodyClass.h"
-#include "melodyLibrary.h"
-#include "pitches.h"
+#include "Sound/Melodies/melodyLibrary.h"
 
 melody_t<4> MelodyLibrary::heartbeat = { {{ 
                     {NOTE_A5,50},

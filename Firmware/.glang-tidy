@@ -1,0 +1,17 @@
+Checks: >
+  -*,
+  modernize-*,
+  readability-*,
+  performance-*,
+  bugprone-*,
+  portability-*,
+  clang-analyzer-*,
+  -modernize-use-trailing-return-type
+
+WarningsAsErrors: '*'
+
+HeaderFilterRegex: 'src/.*'
+
+CheckOptions:
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case

@@ -1,47 +1,5 @@
 #include "system.h"
 
-#include <memory>
-
-#include <ArduinoJson.h>
-
-#include <libriccore/riccoresystem.h>
-#include <libriccore/storage/wrappedfile.h>
-
-
-#include "Config/systemflags_config.h"
-#include "Config/commands_config.h"
-#include "Config/pinmap_config.h"
-#include "Config/general_config.h"
-#include "Config/services_config.h"
-
-#include "Commands/commands.h"
-
-#include "Network/Interfaces/radio.h"
-#include <libriccore/networkinterfaces/can/canbus.h>
-
-#include "Sensors/sensors.h"
-#include "Sensors/estimator.h"
-#include "Sensors/sensorStructs.h"
-
-#include "Sound/tunezHandler.h"
-
-#include "Events/eventHandler.h"
-#include "Deployment/deploymenthandler.h"
-#include "Deployment/PCA9534.h"
-#include "Deployment/PCA9534Gpio.h"
-#include "Engine/enginehandler.h"
-#include "Controller/controllerhandler.h"
-#include "Storage/sdfat_store.h"
-#include "Storage/sdfat_file.h"
-#include "Loggers/TelemetryLogger/telemetrylogframe.h"
-
-#include "States/preflight.h"
-
-
-
-
-
-
 #ifdef CONFIG_IDF_TARGET_ESP32S3
 static constexpr int VSPI_BUS_NUM = 0;
 static constexpr int HSPI_BUS_NUM = 1;

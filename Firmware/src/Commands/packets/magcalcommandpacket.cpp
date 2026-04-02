@@ -1,10 +1,4 @@
-#include "magcalcommandpacket.h"
-
-#include <librnp/rnp_packet.h>
-#include <librnp/rnp_serializer.h>
-
-
-
+#include "Commands/packets/magcalcommandpacket.h"
 
 MagCalCommandPacket::~MagCalCommandPacket()
 {};

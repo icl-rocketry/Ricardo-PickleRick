@@ -1,108 +1,67 @@
-#include "sensors.h"
+#include "Sensors/sensors.h"
 
-
-#include <SPI.h>
-#include <Wire.h>
-#include <memory>
-#include <functional>
-#include <ArduinoJson.h>
-
-#include <librnp/rnp_networkmanager.h>
-#include <librnp/rnp_packet.h>
-
-#include <libriccore/riccorelogging.h>
-
-
-#include <librnp/default_packets/simplecommandpacket.h>
-
-#include <librrc/Helpers/jsonconfighelper.h>
-
-
-//config
-#include "Config/types.h"
-#include "Config/systemflags_config.h"
-#include "Config/pinmap_config.h"
-
-#include "packets/hitlpacket.h"
-//indivudal sensor classes
-
-#include "max_m10s.h"
-#include "ms5607.h"
-#include "icm_20608.h"
-#include "h3lis331dl.h"
-#include "adc_vrailmonitor.h"
-#include "ina_vrailmonitor.h"
-
-#if HARDWARE_VERSION != 3  
-    #warning "Hardware Version is not 3, INA dep rail monitor will not be initialized!"
+#if HARDWARE_VERSION != 3
+#warning "Hardware Version is not 3, INA dep rail monitor will not be initialized!"
 #endif
 
-Sensors::Sensors(SPIClass& spi,TwoWire& I2C,Types::CoreTypes::SystemStatus_t& systemstatus) :
-    _systemstatus(systemstatus),
-    gps(I2C,systemstatus),
-    baro(spi,systemstatus,PinMap::BaroCs),
-    accelgyro(spi,systemstatus,PinMap::ImuCs_1),
-    accel(spi,systemstatus,PinMap::ImuCs_2),
-    mag(spi,PinMap::MagCs,systemstatus),
-    logicrail("Logic Rail",PinMap::LogicVolt,8,1),
-    deprail("Deployment Rail",I2C,0x45)
-{}
+Sensors::Sensors(SPIClass& spi, TwoWire& I2C, Types::CoreTypes::SystemStatus_t& systemstatus)
+    : _systemstatus(systemstatus),
+      gps(I2C, systemstatus),
+      baro(spi, systemstatus, PinMap::BaroCs),
+      accelgyro(spi, systemstatus, PinMap::ImuCs_1),
+      accel(spi, systemstatus, PinMap::ImuCs_2),
+      mag(spi, PinMap::MagCs, systemstatus),
+      logicrail("Logic Rail", PinMap::LogicVolt, 8, 1),
+      deprail("Deployment Rail", I2C, 0x45)
+{
+}
 
-void Sensors::setup(JsonObjectConst config){
+void Sensors::setup(JsonObjectConst config)
+{
     using namespace LIBRRC::JsonConfigHelper;
-    //default axes order and flip
+    // default axes order and flip
 
-    std::array<uint8_t,3> axesOrderICM{1,0,2};
-    std::array<bool,3> axesFlipICM{0,0,1};
+    std::array<uint8_t, 3> axesOrderICM{1, 0, 2};
+    std::array<bool, 3> axesFlipICM{0, 0, 1};
 
-    std::array<uint8_t,3> axesOrderH3LIS{1,0,2};
-    std::array<bool,3> axesFlipH3LIS{1,1,1};
+    std::array<uint8_t, 3> axesOrderH3LIS{1, 0, 2};
+    std::array<bool, 3> axesFlipH3LIS{1, 1, 1};
 
-    std::array<uint8_t,3> axesOrderMMC{0,1,2};
-    std::array<bool,3> axesFlipMMC{1,0,0};
-
-    // setIfContains(config,"X_AXIS",axesOrderICM[0],false);
-    // setIfContains(config,"Y_AXIS",axesOrderICM[1],false);
-    // setIfContains(config,"Z_AXIS",axesOrderICM[2],false);
-    // setIfContains(config,"X_FLIP",axesFlipICM[0],false);
-    // setIfContains(config,"Y_FLIP",axesFlipICM[1],false);
-    // setIfContains(config,"Z_FLIP",axesFlipICM[2],false);
+    std::array<uint8_t, 3> axesOrderMMC{0, 1, 2};
+    std::array<bool, 3> axesFlipMMC{1, 0, 0};
 
     int logicMaxVoltage = 4200;
     int logicLowVoltage = 3400;
     int logicMinVoltage = 3200;
 
-    setIfContains(config,"LOGIC_MAX_VOLTAGE",logicMaxVoltage,false);
-    setIfContains(config,"LOGIC_LOW_VOLTAGE",logicLowVoltage,false);
-    setIfContains(config,"LOGIC_MIN_VOLTAGE",logicMinVoltage,false);
+    setIfContains(config, "LOGIC_MAX_VOLTAGE", logicMaxVoltage, false);
+    setIfContains(config, "LOGIC_LOW_VOLTAGE", logicLowVoltage, false);
+    setIfContains(config, "LOGIC_MIN_VOLTAGE", logicMinVoltage, false);
 
     int depMaxVoltage = 28000;
     int depLowVoltage = 3400;
     int depMinVoltage = 3200;
 
-    setIfContains(config,"DEPLOYMENT_MAX_VOLTAGE",depMaxVoltage,false);
-    setIfContains(config,"DEPLOYMENT_LOW_VOLTAGE",depLowVoltage,false);
-    setIfContains(config,"DEPLOYMENT_MIN_VOLTAGE",depMinVoltage,false);
-
-
+    setIfContains(config, "DEPLOYMENT_MAX_VOLTAGE", depMaxVoltage, false);
+    setIfContains(config, "DEPLOYMENT_LOW_VOLTAGE", depLowVoltage, false);
+    setIfContains(config, "DEPLOYMENT_MIN_VOLTAGE", depMinVoltage, false);
 
     gps.setup();
     baro.setup();
-    accelgyro.setup(axesOrderICM,axesFlipICM);
-    accel.setup(axesOrderH3LIS,axesFlipH3LIS);
-    mag.setup(axesOrderMMC,axesFlipMMC);
-    logicrail.setup(logicMaxVoltage,logicLowVoltage,logicMinVoltage);
-    deprail.setup(depMaxVoltage,depLowVoltage,depMinVoltage);
-    
-    
+    accelgyro.setup(axesOrderICM, axesFlipICM);
+    accel.setup(axesOrderH3LIS, axesFlipH3LIS);
+    mag.setup(axesOrderMMC, axesFlipMMC);
+    logicrail.setup(logicMaxVoltage, logicLowVoltage, logicMinVoltage);
+    deprail.setup(depMaxVoltage, depLowVoltage, depMinVoltage);
 };
 
 void Sensors::update()
 {
-    if (_hitlEnabled){
+    if (_hitlEnabled)
+    {
         if (!_systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG))
         {
-        _hitlEnabled = false;
+            _hitlEnabled = false;
         }
         return;
     }
@@ -115,45 +74,32 @@ void Sensors::update()
     deprail.update(sensors_raw.deprail);
 };
 
-const SensorStructs::raw_measurements_t& Sensors::getData()
-{
-   
-    return sensors_raw;
-}
+const SensorStructs::raw_measurements_t& Sensors::getData() { return sensors_raw; }
 
-void Sensors::calibrateAccelGyro()
-{
-    accelgyro.startCalibrateBias();
-}
+void Sensors::calibrateAccelGyro() { accelgyro.startCalibrateBias(); }
 
-void Sensors::calibrateHighGAccel()
-{
-    accel.startCalibrateBias();
-}
+void Sensors::calibrateHighGAccel() { accel.startCalibrateBias(); }
 
-void Sensors::calibrateMag(MagCalibrationParameters magcal)
-{
-    mag.calibrate(magcal);
-}
+void Sensors::calibrateMag(MagCalibrationParameters magcal) { mag.calibrate(magcal); }
 
-void Sensors::calibrateBaro()
-{
-    baro.calibrateBaro();
-}
+void Sensors::calibrateBaro() { baro.calibrateBaro(); }
 
 std::function<void(std::unique_ptr<RnpPacketSerialized>)> Sensors::getHitlCallback()
 {
-    return [this](std::unique_ptr<RnpPacketSerialized> packet_ptr){hitlHandler(std::move(packet_ptr));};
+    return [this](std::unique_ptr<RnpPacketSerialized> packet_ptr)
+    { hitlHandler(std::move(packet_ptr)); };
 }
 
 void Sensors::hitlHandler(std::unique_ptr<RnpPacketSerialized> packet_ptr)
 {
-    //final check that this has only be called in debug mode
-    if (!_systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
+    // final check that this has only be called in debug mode
+    if (!_systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG))
+    {
         return;
     }
-    //process hitl packet
-    switch (packet_ptr->header.type){
+    // process hitl packet
+    switch (packet_ptr->header.type)
+    {
         case static_cast<uint8_t>(HITL_PACKET_TYPES::HITL_COMMAND):
         {
             hitlCommandHandler(*packet_ptr);
@@ -161,8 +107,7 @@ void Sensors::hitlHandler(std::unique_ptr<RnpPacketSerialized> packet_ptr)
         }
         case static_cast<uint8_t>(HITL_PACKET_TYPES::PICKLE_RICK_SENSORS):
         {
-
-            PickleRickSensorsPacket FakeData(*packet_ptr); // deserialize fake data
+            PickleRickSensorsPacket FakeData(*packet_ptr);  // deserialize fake data
             sensors_raw.accelgyro.ax = FakeData.ax;
             sensors_raw.accelgyro.ay = FakeData.ay;
             sensors_raw.accelgyro.az = FakeData.az;
@@ -211,13 +156,12 @@ void Sensors::hitlHandler(std::unique_ptr<RnpPacketSerialized> packet_ptr)
             return;
         }
     }
-  
-
 }
 
 void Sensors::hitlCommandHandler(RnpPacketSerialized& packet)
 {
-    switch(CommandPacket::getCommand(packet)){
+    switch (CommandPacket::getCommand(packet))
+    {
         case static_cast<uint8_t>(HITL_COMMANDS::HITL_ENABLE):
         {
             _hitlEnabled = true;
@@ -237,7 +181,7 @@ void Sensors::hitlCommandHandler(RnpPacketSerialized& packet)
     }
 }
 
-void Sensors::hitlUpdateSensorError(uint8_t sensor_state,SYSTEM_FLAG flag)
+void Sensors::hitlUpdateSensorError(uint8_t sensor_state, SYSTEM_FLAG flag)
 {
     if (sensor_state && !_systemstatus.flagSetOr(flag))
     {
@@ -248,5 +192,3 @@ void Sensors::hitlUpdateSensorError(uint8_t sensor_state,SYSTEM_FLAG flag)
         _systemstatus.deleteFlag(flag, "hitl removed flag");
     }
 }
-
-

@@ -1,6 +1,4 @@
-#include "melodyClass.h"
-#include "melodyLibrary.h"
-#include "pitches.h"
+#include "Sound/Melodies/melodyLibrary.h"
 
 melody_t<3> MelodyLibrary::confirmation = { {{ 
                     {NOTE_C4,250},

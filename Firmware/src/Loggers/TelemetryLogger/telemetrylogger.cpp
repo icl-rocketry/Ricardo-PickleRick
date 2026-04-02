@@ -1,15 +1,4 @@
-#include "telemetrylogger.h"
-
-#include <libriccore/logging/loggers/loggerbase.h>
-
-#include <memory>
-#include <string>
-
-
-#include <libriccore/storage/wrappedfile.h>
-
-#include "telemetrylogframe.h"
-
+#include "Loggers/TelemetryLogger/telemetrylogger.h"
 
 TelemetryLogger::TelemetryLogger():
 _file(nullptr),

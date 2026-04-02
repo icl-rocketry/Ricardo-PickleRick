@@ -1,10 +1,4 @@
-#include "hitlpacket.h"
-
-#include <librnp/rnp_packet.h>
-
-#include <vector>
-
-
+#include "Sensors/packets/hitlpacket.h"
 
 PickleRickSensorsPacket::~PickleRickSensorsPacket()
 {};

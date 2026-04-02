@@ -1,23 +1,4 @@
-#include "radio.h"
-
-
-#include <libriccore/riccorelogging.h>
-
-#include <SPI.h>
-
-#include <LoRa.h>
-
-
-#include <Config/types.h>
-#include <Config/systemflags_config.h>
-
-#include <memory>
-#include <vector>
-
-#include <librnp/rnp_interface.h>
-#include <librnp/rnp_packet.h>
-
-#include "Config/pinmap_config.h"
+#include "Network/Interfaces/radio.h"
 
 Radio::Radio(SPIClass& spi, int cs,int reset, int dio,Types::CoreTypes::SystemStatus_t& systemstatus, RADIO_MODE mode,uint8_t id,std::string name):
 RnpInterface(id,name),

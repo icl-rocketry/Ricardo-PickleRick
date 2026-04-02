@@ -1,7 +1,4 @@
-
-#include "melodyClass.h"
-#include "melodyLibrary.h"
-#include "pitches.h"
+#include "Sound/Melodies/melodyLibrary.h"
 
 melody_t<8> MelodyLibrary::c_scalez = { {{ 
                     {NOTE_C4,100},

@@ -1,18 +1,9 @@
-#include "engine.h"
+#include "Engine/engine.h"
 
-#include <ArduinoJson.h>
-#include <memory>
-#include <librnp/rnp_networkmanager.h>
-
-#include <librrc/Interface/rocketcomponent.h>
-
-#include <libriccore/riccorelogging.h>
-
-
-
-
-void Engine::execute(int32_t func){
-    switch(func){
+void Engine::execute(int32_t func)
+{
+    switch (func)
+    {
         case static_cast<uint8_t>(ENGINE_EXECUTE::IGNITE):
         {
             ignite();
@@ -30,16 +21,16 @@ void Engine::execute(int32_t func){
     }
 };
 
-void Engine::ignite(){
+void Engine::ignite()
+{
     log("Ignition Called!");
     getStatePtr()->ignitionTime = millis();
-
 };
 
-void Engine::shutdown(){
+void Engine::shutdown()
+{
     log("Shutdown Called!");
     getStatePtr()->shutdownTime = millis();
 };
-
 
 Engine::~Engine(){};

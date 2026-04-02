@@ -1,109 +1,106 @@
-#include "tunezHandler.h"
-#include <Arduino.h>
-#include "driver/ledc.h"
-#include "Melodies/melodyClass.h"
-#include <vector>
-#include "Config/pinmap_config.h"
-
+#include "Sound/tunezHandler.h"
 
 TunezHandler::TunezHandler()
-{ 
-    tune_queue.reserve(10); //we shoudlnt really need more than 10
+{
+    tune_queue.reserve(10);  // we shoudlnt really need more than 10
 };
 
-TunezHandler::~TunezHandler(){
-    ledcDetach(PinMap::Buzzer);
-}
+TunezHandler::~TunezHandler() { ledcDetach(PinMap::Buzzer); }
 
 void TunezHandler::setup()
 {
     // ledcSetup(0,50,10);
     // ledcAttachPin(PinMap::Buzzer,0);
-    ledcAttach(PinMap::Buzzer,50,10);
-    ledcWrite(PinMap::Buzzer,_volume); //max volume
-    ledcWriteTone(PinMap::Buzzer,0); //write 0 hz so no noise
-
+    ledcAttach(PinMap::Buzzer, 50, 10);
+    ledcWrite(PinMap::Buzzer, _volume);  // max volume
+    ledcWriteTone(PinMap::Buzzer, 0);    // write 0 hz so no noise
 };
 
-void TunezHandler::play_by_idx(int song_idx,bool loop){
-    if (song_idx >= MelodyLibrary::songLibrary.size()){
+void TunezHandler::play_by_idx(int song_idx, bool loop)
+{
+    if (song_idx >= MelodyLibrary::songLibrary.size())
+    {
         return;
     }
-    play(*MelodyLibrary::songLibrary.at(song_idx),loop);
-
+    play(*MelodyLibrary::songLibrary.at(song_idx), loop);
 }
 
+void TunezHandler::play(melody_base_t &melody, bool loop)
+{
+    tune_t new_tune{&melody, 0, loop};
 
-void TunezHandler::play(melody_base_t &melody,bool loop){
-
-     tune_t new_tune{&melody,0,loop};
-
-
-     if(melody.getPriority()){
-         //high priority tune
-         //insert high priority tune at front of vector 
-        tune_queue.insert(tune_queue.begin(),new_tune);
-        note_duration = 0; //reset note_duration to force update function to play now
-
-     }else{
-         //low priority tune
-        //check if current playing tune is low priority and is looping
-        //if this is ture then remove that tune
-        if(tune_queue.size() > 0){
-            if(!(tune_queue.front().melody->getPriority()) && tune_queue.front().loop){
-                tune_queue.erase(tune_queue.begin()); // remove the first element in the tune queue
+    if (melody.getPriority())
+    {
+        // high priority tune
+        // insert high priority tune at front of vector
+        tune_queue.insert(tune_queue.begin(), new_tune);
+        note_duration = 0;  // reset note_duration to force update function to play now
+    }
+    else
+    {
+        // low priority tune
+        // check if current playing tune is low priority and is looping
+        // if this is ture then remove that tune
+        if (tune_queue.size() > 0)
+        {
+            if (!(tune_queue.front().melody->getPriority()) && tune_queue.front().loop)
+            {
+                tune_queue.erase(tune_queue.begin());  // remove the first element in the tune queue
             }
         }
 
-         tune_queue.push_back(new_tune);//add new tune to end of queue
-
-     }
-
-     
-
-
+        tune_queue.push_back(new_tune);  // add new tune to end of queue
+    }
 };
 
+void TunezHandler::update()
+{
+    if (tune_queue.size() > 0)
+    {  // check there are tunez to play
 
-
-void TunezHandler::update(){
-
-    if(tune_queue.size() > 0){ //check there are tunez to play
-        
-        if (((millis() - prev_time) > note_duration)){
-            //time to update index to next on
-            if(tune_queue.front().index < tune_queue.front().melody->getSize()){
-                //get new freuqnecy and note duration
-                uint16_t new_frequency = tune_queue.front().melody->getNote(tune_queue.front().index).pitch;
-                note_duration = tune_queue.front().melody->getNote(tune_queue.front().index).duration;
-                //update ledc driver with new frequnecy
-                ledcWriteTone(PinMap::Buzzer,new_frequency);
-                tune_queue.front().index++; //increment index by 1
-            }else{
-                //reached the end of the melody
-                if (tune_queue.front().loop){//if we are looping
+        if (((millis() - prev_time) > note_duration))
+        {
+            // time to update index to next on
+            if (tune_queue.front().index < tune_queue.front().melody->getSize())
+            {
+                // get new freuqnecy and note duration
+                uint16_t new_frequency =
+                    tune_queue.front().melody->getNote(tune_queue.front().index).pitch;
+                note_duration =
+                    tune_queue.front().melody->getNote(tune_queue.front().index).duration;
+                // update ledc driver with new frequnecy
+                ledcWriteTone(PinMap::Buzzer, new_frequency);
+                tune_queue.front().index++;  // increment index by 1
+            }
+            else
+            {
+                // reached the end of the melody
+                if (tune_queue.front().loop)
+                {  // if we are looping
                     tune_queue.front().index = 0;
-                }else{
-                    //delete the first element in the tune queue 
+                }
+                else
+                {
+                    // delete the first element in the tune queue
                     tune_queue.erase(tune_queue.begin());
                 }
             }
-             prev_time = millis(); //update previous time
-            
+            prev_time = millis();  // update previous time
         }
-    }else{
-        ledcWriteTone(PinMap::Buzzer,0);
-       
+    }
+    else
+    {
+        ledcWriteTone(PinMap::Buzzer, 0);
     }
 };
 
-
-void TunezHandler::skip(){//note we need to ensure this is safe if there are no element in the queue
-    if (tune_queue.size() > 0){
-        tune_queue.erase(tune_queue.begin()); // remove first element in tune queue to skip current melody
+void TunezHandler::skip()
+{  // note we need to ensure this is safe if there are no element in the queue
+    if (tune_queue.size() > 0)
+    {
+        tune_queue.erase(
+            tune_queue.begin());  // remove first element in tune queue to skip current melody
     }
 }
 
-void TunezHandler::clear(){
-    tune_queue.clear();
-}
+void TunezHandler::clear() { tune_queue.clear(); }

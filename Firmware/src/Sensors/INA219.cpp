@@ -1,4 +1,4 @@
-#include "INA219.h"
+#include "Sensors/INA219.h"
 
 void INA219::update()
 {
@@ -16,19 +16,19 @@ void INA219::update()
             currentReg |= signmask16bit;
         }
 
-        //!TODO there is a constant current offset which depends on the bus voltage - compensation needs to be added for this.
+        //! TODO there is a constant current offset which depends on the bus voltage - compensation
+        //! needs to be added for this.
         _current = static_cast<float>(_currentLSB * currentReg);
 
         uint16_t busVReg = readRegister(INA219::Registers::BusV);
         _busV = static_cast<float>(busVLSB * (busVReg >> 3));
         _prevUpdate = millis();
     }
-
-    
-
 }
 
-bool INA219::setup(float resistance, float maxCurrent, INA219::PGAGain Gain, INA219::ADCSettings ShuntVADCsettings, INA219::ADCSettings BusVADCsettings, INA219::Modes DeviceMode, INA219::busVRange vRange)
+bool INA219::setup(float resistance, float maxCurrent, INA219::PGAGain Gain,
+                   INA219::ADCSettings ShuntVADCsettings, INA219::ADCSettings BusVADCsettings,
+                   INA219::Modes DeviceMode, INA219::busVRange vRange)
 {
     if (!alive())
     {
@@ -41,13 +41,14 @@ bool INA219::setup(float resistance, float maxCurrent, INA219::PGAGain Gain, INA
     setShuntVADC(ShuntVADCsettings);
     setBusVADC(BusVADCsettings);
     setMode(DeviceMode);
-    setCalibration(resistance, maxCurrent); 
+    setCalibration(resistance, maxCurrent);
 
-    m_initialized = true;   
+    m_initialized = true;
     return true;
 }
 
-bool INA219::alive(){
+bool INA219::alive()
+{
     _wire.beginTransmission(_deviceAddr);
     return !_wire.endTransmission();
 }
@@ -63,7 +64,6 @@ void INA219::writeRegister(INA219::Registers address, uint16_t value)
 
 int16_t INA219::readRegister(INA219::Registers address)
 {
-
     _wire.beginTransmission(_deviceAddr);
     _wire.write(static_cast<uint8_t>(address));
     _wire.endTransmission();
@@ -79,13 +79,12 @@ void INA219::setCalibration(float resistance, float maxCurrent)
     _currentLSB = maxCurrent * recip2pow15;
 
     _calibrationReg = static_cast<uint16_t>(std::trunc(0.04096 / (_currentLSB * resistance)));
-    
+
     writeRegister(Registers::Calibration, _calibrationReg);
 }
 
 void INA219::setBusVRange(INA219::busVRange range)
 {
-
     _configReg &= busVRangeMask;
     _configReg |= static_cast<bool>(range) << 13;
 
@@ -94,7 +93,6 @@ void INA219::setBusVRange(INA219::busVRange range)
 
 void INA219::setGain(INA219::PGAGain Gain)
 {
-
     _configReg &= gainMask;
     _configReg |= static_cast<uint16_t>(Gain) << 11;
 
@@ -125,7 +123,8 @@ void INA219::setMode(INA219::Modes Mode)
     writeRegister(Registers::Config, _configReg);
 }
 
-void INA219::reset(){
+void INA219::reset()
+{
     _configReg &= resetMask;
     _configReg |= 1 << 15;
     writeRegister(Registers::Config, _configReg);

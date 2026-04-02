@@ -1,12 +1,4 @@
-#include "PCA9534.h"
-
-#include <stdint.h>
-
-#include <Wire.h>
-
-#include <libriccore/threading/riccorethread.h>
-#include <libriccore/threading/scopedlock.h>
-
+#include "Deployment/PCA9534.h"
 
 
 void PCA9534::pinMode(uint8_t pin, PINMODE mode)
@@ -15,10 +7,11 @@ void PCA9534::pinMode(uint8_t pin, PINMODE mode)
     {
         return;
     }
-    
+
     RicCoreThread::ScopedLock sl(device_lock);
 
-    switch(mode){
+    switch (mode)
+    {
         case PINMODE::GPIO_OUTPUT:
         {
             configShadow &= ~(1 << pin);
@@ -38,15 +31,12 @@ void PCA9534::pinMode(uint8_t pin, PINMODE mode)
         }
         default:
         {
-
             break;
         }
-
     }
 
-    writeRegister(POLARITY,polarityShadow);
-    writeRegister(CONFIG,configShadow);
-
+    writeRegister(POLARITY, polarityShadow);
+    writeRegister(CONFIG, configShadow);
 };
 
 void PCA9534::digitalWrite(uint8_t pin, uint8_t level)
@@ -57,7 +47,7 @@ void PCA9534::digitalWrite(uint8_t pin, uint8_t level)
     }
 
     RicCoreThread::ScopedLock sl(device_lock);
-   
+
     switch (level)
     {
         case 0:
@@ -76,9 +66,7 @@ void PCA9534::digitalWrite(uint8_t pin, uint8_t level)
         }
     }
 
-
-    writeRegister(OUTPUT_PORT,outputShadow);
-
+    writeRegister(OUTPUT_PORT, outputShadow);
 };
 
 int PCA9534::digitalRead(uint8_t pin)
@@ -88,56 +76,50 @@ int PCA9534::digitalRead(uint8_t pin)
         return 0;
     }
 
-    return readRegister(INPUT_PORT) & ( 1 << pin);
+    return readRegister(INPUT_PORT) & (1 << pin);
 };
 
 bool PCA9534::alive()
 {
     m_wire.beginTransmission(m_address);
-    return !(m_wire.endTransmission()); // returns 0 if no error 
+    return !(m_wire.endTransmission());  // returns 0 if no error
 }
 
 bool PCA9534::setup()
 {
-
     if (!alive())
     {
         return false;
     }
 
-    //write default config
-    writeRegister(OUTPUT_PORT,outputShadow);
-    writeRegister(POLARITY,polarityShadow);
-    writeRegister(CONFIG,configShadow);
+    // write default config
+    writeRegister(OUTPUT_PORT, outputShadow);
+    writeRegister(POLARITY, polarityShadow);
+    writeRegister(CONFIG, configShadow);
     return true;
-
-
 }
 uint8_t PCA9534::readRegister(uint8_t reg)
 {
-
     m_wire.beginTransmission(m_address);
     m_wire.write(reg);
     m_wire.endTransmission(false);
 
-    m_wire.requestFrom(m_address,static_cast<uint8_t>(1));
-    if (m_wire.available()){
+    m_wire.requestFrom(m_address, static_cast<uint8_t>(1));
+    if (m_wire.available())
+    {
         return m_wire.read();
-    }else{
+    }
+    else
+    {
         return 0;
     }
-
 };
 
 size_t PCA9534::writeRegister(uint8_t reg, uint8_t data)
 {
-
     m_wire.beginTransmission(m_address);
     m_wire.write(reg);
     size_t num_bytes = m_wire.write(data);
     m_wire.endTransmission();
     return num_bytes;
-
 };
-
- 

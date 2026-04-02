@@ -1,7 +1,4 @@
-
-#include "melodyClass.h"
-#include "melodyLibrary.h"
-#include "pitches.h"
+#include "Sound/Melodies/melodyLibrary.h"
 
  //GENERATED SONG FILE 
  
