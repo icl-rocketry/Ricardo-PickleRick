@@ -34,7 +34,6 @@ namespace SensorStructs
         float temp;
     };
     struct BARO_t{
-        float alt;
         float temp;
         float press;
     };

@@ -1,20 +1,6 @@
 #pragma once
-/**
- * @file h3lis331dl.h
- * @author Kiran de Silva (you@domain.com)
- * @brief Sensor class for h3lis331dl high g accelerometer. 
- * Based on the sparkfun library https://github.com/sparkfun/SparkFun_LIS331_Arduino_Library
- * 
- * @version 0.1
- * @date 2022-04-07
- * 
- * @copyright Copyright (c) 2022
- * 
- */
-
 
 #include <SPI.h>
-#include <Preferences.h>
 
 #include <libriccore/riccorelogging.h>
 
@@ -30,18 +16,14 @@ class H3LIS331DL{
         H3LIS331DL(SPIClass& spi,Types::CoreTypes::SystemStatus_t& systemstatus,uint8_t cs);
 
         void setup(const std::array<uint8_t,3>& axesOrder,const std::array<bool,3>& axesFlip);
-
         void update(SensorStructs::ACCEL_3AXIS_t& data);
-
-        void startCalibrateBias();
 
     private:
     
-
         SPIClass& _spi;
         Types::CoreTypes::SystemStatus_t& _systemstatus;
         const uint8_t _cs;
-
+        SPISettings _settings;
         AxesHelper<> axeshelper;
 
         bool alive();
@@ -132,4 +114,7 @@ class H3LIS331DL{
         static constexpr uint8_t INT2_SOURCE = 0x35;
         static constexpr uint8_t INT2_THS = 0x36;
         static constexpr uint8_t INT2_DURATION = 0x37;
+
+        static constexpr uint8_t WRITE_MASK = 0x40;
+        static constexpr uint8_t READ_MASK  = 0xC0;
 };

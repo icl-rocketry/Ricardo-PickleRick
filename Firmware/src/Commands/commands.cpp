@@ -161,7 +161,6 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 
     telemetry.baro_temp = raw_sensors.baro.temp;
     telemetry.baro_press = raw_sensors.baro.press;
-    telemetry.baro_alt = raw_sensors.baro.alt;
 
     telemetry.logic_voltage = raw_sensors.logicrail.volt;
     telemetry.dep_voltage = raw_sensors.deprail.volt;
@@ -177,36 +176,6 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
         static_cast<const RadioInterfaceInfo*>(system.radio.getInfo());
     telemetry.rssi = radioinfo->rssi;
     telemetry.snr = radioinfo->snr;
-
-    system.networkmanager.sendPacket(telemetry);
-}
-
-//! TEMP
-void Commands::RadioTestCommand(System& system, const RnpPacketSerialized& packet)
-{
-    SimpleCommandPacket commandpacket(packet);
-
-    RadioTestPacket telemetry;
-
-    telemetry.header.type = 101;
-    telemetry.header.source = system.networkmanager.getAddress();
-    // this is not great as it assumes a single command handler with the same service ID
-    // would be better if we could pass some context through the function paramters so it has an
-    // idea who has called it or make it much clearer that only a single command handler should
-    // exist in the system
-    telemetry.header.source_service = static_cast<uint8_t>(DEFAULT_SERVICES::COMMAND);
-    telemetry.header.destination = commandpacket.header.source;
-    telemetry.header.destination_service = commandpacket.header.source_service;
-    telemetry.header.uid = commandpacket.header.uid;
-
-    telemetry.system_time = millis();
-    telemetry.system_status = system.systemstatus.getStatus();
-    const RadioInterfaceInfo* radioinfo =
-        static_cast<const RadioInterfaceInfo*>(system.radio.getInfo());
-    telemetry.rssi = radioinfo->rssi;
-    telemetry.packet_rssi = radioinfo->packet_rssi;
-    telemetry.snr = radioinfo->snr;
-    telemetry.packet_snr = radioinfo->packet_snr;
 
     system.networkmanager.sendPacket(telemetry);
 }
@@ -246,18 +215,6 @@ void Commands::SetBetaCommand(System& system, const RnpPacketSerialized& packet)
     system.estimator.changeBeta(beta);
 }
 
-void Commands::CalibrateAccelGyroBiasCommand(System& system, const RnpPacketSerialized& packet)
-{
-    system.sensors.calibrateAccelGyro();
-    system.tunezhandler.play(MelodyLibrary::confirmation);  // play sound when complete
-}
-
-void Commands::CalibrateHighGAccelBiasCommand(System& system, const RnpPacketSerialized& packet)
-{
-    system.sensors.calibrateHighGAccel();
-    system.tunezhandler.play(MelodyLibrary::confirmation);  // play sound when complete
-}
-
 void Commands::CalibrateMagFullCommand(System& system, const RnpPacketSerialized& packet)
 {
     // check mag cal (id 10) packet type received
@@ -272,12 +229,6 @@ void Commands::CalibrateMagFullCommand(System& system, const RnpPacketSerialized
     system.sensors.calibrateMag(MagCalibrationParameters{
         magcalpacket.fieldMagnitude, magcalpacket.inclination, magcalpacket.declination,
         magcalpacket.getA(), magcalpacket.getB()});
-    system.tunezhandler.play(MelodyLibrary::confirmation);  // play sound when complete
-}
-
-void Commands::CalibrateBaroCommand(System& system, const RnpPacketSerialized& packet)
-{
-    system.sensors.calibrateBaro();
     system.tunezhandler.play(MelodyLibrary::confirmation);  // play sound when complete
 }
 

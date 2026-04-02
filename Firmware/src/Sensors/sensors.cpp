@@ -76,13 +76,8 @@ void Sensors::update()
 
 const SensorStructs::raw_measurements_t& Sensors::getData() { return sensors_raw; }
 
-void Sensors::calibrateAccelGyro() { accelgyro.startCalibrateBias(); }
-
-void Sensors::calibrateHighGAccel() { accel.startCalibrateBias(); }
-
 void Sensors::calibrateMag(MagCalibrationParameters magcal) { mag.calibrate(magcal); }
 
-void Sensors::calibrateBaro() { baro.calibrateBaro(); }
 
 std::function<void(std::unique_ptr<RnpPacketSerialized>)> Sensors::getHitlCallback()
 {
@@ -123,13 +118,11 @@ void Sensors::hitlHandler(std::unique_ptr<RnpPacketSerialized> packet_ptr)
             sensors_raw.mag.my = FakeData.my;
             sensors_raw.mag.mz = FakeData.mz;
 
-            sensors_raw.baro.alt = FakeData.baro_alt;
             sensors_raw.baro.temp = FakeData.baro_temp;
             sensors_raw.baro.press = FakeData.baro_press;
 
             sensors_raw.gps.lat = FakeData.gps_lat;
             sensors_raw.gps.lng = FakeData.gps_lng;
-            sensors_raw.gps.alt = FakeData.gps_alt;
 
             sensors_raw.gps.v_n = FakeData.gps_v_n;
             sensors_raw.gps.v_e = FakeData.gps_v_e;

@@ -3,7 +3,8 @@
 H3LIS331DL::H3LIS331DL(SPIClass &spi, Types::CoreTypes::SystemStatus_t &systemstatus, uint8_t cs)
     : _spi(spi),
       _systemstatus(systemstatus),
-      _cs(cs)  // update with correct chip select
+      _cs(cs),
+      _settings(8000000, MSBFIRST, SPI_MODE0)
       {};
 
 void H3LIS331DL::setup(const std::array<uint8_t, 3> &axesOrder, const std::array<bool, 3> &axesFlip)
@@ -27,19 +28,14 @@ void H3LIS331DL::setup(const std::array<uint8_t, 3> &axesOrder, const std::array
     axeshelper.setOrder(axesOrder);
     axeshelper.setFlip(axesFlip);
 
-    loadAccelBias();
-
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("H3LIS331DL Initialized");
 }
 
 void H3LIS331DL::update(SensorStructs::ACCEL_3AXIS_t &data)
 {
+
     readAxes(data.ax, data.ay, data.az);
 
-    if (calibrating)
-    {
-        calibrateBias();
-    }
 };
 
 bool H3LIS331DL::alive() { return (readRegister(WHO_AM_I) == WHO_AM_I_RES); }
@@ -124,23 +120,12 @@ void H3LIS331DL::setFullScale(fs_range range)
 
 void H3LIS331DL::readRawAxes(int16_t &x, int16_t &y, int16_t &z)
 {
-    uint8_t data[6];  // create a buffer for our incoming data
-    readRegister(OUT_X_L, &data[0], 1);
-    readRegister(OUT_X_H, &data[1], 1);
-    readRegister(OUT_Y_L, &data[2], 1);
-    readRegister(OUT_Y_H, &data[3], 1);
-    readRegister(OUT_Z_L, &data[4], 1);
-    readRegister(OUT_Z_H, &data[5], 1);
-    // The data that comes out is 12-bit data, left justified, so the lower
-    //  four bits of the data are always zero. We need to right shift by four,
-    //  then typecase the upper data to an integer type so it does a signed
-    //  right shift.
-    x = data[0] | data[1] << 8;
-    y = data[2] | data[3] << 8;
-    z = data[4] | data[5] << 8;
-    x = x >> 4;
-    y = y >> 4;
-    z = z >> 4;
+    uint8_t data[6]; 
+
+    readRegister(OUT_X_L, data, 6);
+    x = (int16_t)(data[0] | (data[1] << 8)) >> 4;
+    y = (int16_t)(data[2] | (data[3] << 8)) >> 4;
+    z = (int16_t)(data[4] | (data[5] << 8)) >> 4;
 }
 
 void H3LIS331DL::readAxes(float &x, float &y, float &z)
@@ -150,121 +135,44 @@ void H3LIS331DL::readAxes(float &x, float &y, float &z)
     readRawAxes(xi, yi, zi);
 
     std::array<float, 3> accel = axeshelper(
-        std::array<float, 3>{raw_to_g * (float)(xi + offset_ax), raw_to_g * (float)(yi + offset_ay),
-                             raw_to_g * (float)(zi + offset_az)});
+        std::array<float, 3>{raw_to_g * (float)(xi),
+                             raw_to_g * (float)(yi),
+                             raw_to_g * (float)(zi)});
 
     x = accel[0];
     y = accel[1];
     z = accel[2];
 }
 
-void H3LIS331DL::startCalibrateBias()
-{
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("High G accel calibration started");
-
-    measurements_made = 0;
-
-    sum_ax = 0, sum_ay = 0, sum_az = 0;
-
-    calibrating = true;
-}
-
-void H3LIS331DL::calibrateBias()
-{
-    readRawAxes(ax, ay, az);
-
-    sum_ax += ax;
-    sum_ay += ay;
-    sum_az += az;
-
-    measurements_made += 1;
-
-    if (measurements_made == number_measurements)
-    {
-        offset_ax = -sum_ax / number_measurements;
-        offset_ay = -sum_ay / number_measurements;
-
-        offset_az = (1 / raw_to_g) - sum_az / number_measurements;
-        // offset_az = (- 1 / raw_to_g) - sum_az / number_measurements; //!This is wrong
-
-        writeAccelBias();
-
-        calibrating = false;
-
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
-            "High G accel calibration completed");
-    }
-}
-
-void H3LIS331DL::writeAccelBias()
-{
-    Preferences pref;
-
-    if (!pref.begin("IMU2"))
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
-            "nvs failed to start. Can't write high g calbration offsets");
-        return;
-    }
-
-    if (!pref.putShort("axBias", offset_ax))
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");
-    };
-    if (!pref.putShort("ayBias", offset_ay))
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");
-    };
-    if (!pref.putShort("azBias", offset_az))
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");
-    };
-}
-
-void H3LIS331DL::loadAccelBias()
-{
-    Preferences pref;
-
-    if (!pref.begin("IMU2", true))
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs failed to start");
-        return;
-    }
-
-    offset_ax = pref.getShort("axBias");
-    offset_ay = pref.getShort("ayBias");
-    offset_az = pref.getShort("azBias");
-}
-
 void H3LIS331DL::writeRegister(uint8_t reg_address, uint8_t *data, uint8_t len)
-
 {
-    // SPI write handling code
+    _spi.beginTransaction(_settings);
     digitalWrite(_cs, LOW);
-    _spi.transfer(reg_address | 0x40);  // 0b01000000
+    _spi.transfer(reg_address | WRITE_MASK);
     for (int i = 0; i < len; i++)
     {
         _spi.transfer(data[i]);
     }
     digitalWrite(_cs, HIGH);
+    _spi.endTransaction();
 }
 
 void H3LIS331DL::readRegister(uint8_t reg_address, uint8_t *data, uint8_t len)
-
 {
-    // SPI read handling code
+    _spi.beginTransaction(_settings);
     digitalWrite(_cs, LOW);
-    _spi.transfer(reg_address | 0xC0);  // 0b11000000
+    _spi.transfer(reg_address | READ_MASK);
     for (int i = 0; i < len; i++)
     {
         data[i] = _spi.transfer(0);
     }
     digitalWrite(_cs, HIGH);
+    _spi.endTransaction();
 }
 
 uint8_t H3LIS331DL::readRegister(uint8_t reg)
 {
-    uint8_t data;
-    readRegister(reg, &data, 1);
-    return data;
+    uint8_t val;
+    readRegister(reg, &val, 1);
+    return val;
 }

@@ -42,7 +42,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             {
                 if (_homeSet)  // if no home, this falls thru to the no home
                 {
-                    baroUpdate(raw_sensors.baro.alt);
+                    // baroUpdate(raw_sensors.baro.alt);
                     changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_IMU_NO_GPS, "no IMU and GPS");
                     predictLocalizationKF(dt_seconds);
                     return;
@@ -142,7 +142,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
         }
         else
         {
-            baroUpdate(raw_sensors.baro.alt);
+            // baroUpdate(raw_sensors.baro.alt);
         }
 
         predictLocalizationKF(dt_seconds);
@@ -164,7 +164,6 @@ void Estimator::setHome(const SensorStructs::raw_measurements_t &raw_sensors)
     state.gps_launch_long = raw_sensors.gps.lng;
     state.gps_launch_alt = raw_sensors.gps.alt;
     // update barometer reference altitude
-    state.baro_ref_alt = raw_sensors.baro.alt;
     // log the new home position
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
         "Home Position Updated to Lat: " + std::to_string(state.gps_launch_lat) + " Long: " +

@@ -1,21 +1,6 @@
-/**
- * @file icm_20608.h
- * @author Kiran de Sivla
- * @brief Sensor Class for the ICM-20608G. 
- * Original Implementation from https://github.com/hobbeshunter/ICM-20608-G
- * TODO
- * add configurabiliy thru json on setup
- * add method which reads all registers in one go
- * @version 0.1
- * @date 2022-04-06
- * 
- * @copyright Copyright (c) 2022
- * 
- */
 #pragma once
 
 #include <Arduino.h>
-#include <Preferences.h>
 #include <SPI.h>
 #include <array>
 #include <string>
@@ -33,16 +18,15 @@ class ICM_20608{
         ICM_20608(SPIClass& spi,Types::CoreTypes::SystemStatus_t& systemstatus,uint8_t cs);
 
         void setup(const std::array<uint8_t,3>& axesOrder, const std::array<bool,3> axesFlip);
-
         void update(SensorStructs::ACCELGYRO_6AXIS_t& data);
 
-        /**
-         * @brief Callibrate Bias of gyro and accel
-         * Must be performed with icm20608g facing upwards!
-         * Orientation matters, only perform when board is out of rocket!
-         * 
-         */
-        void startCalibrateBias();
+    private:
+
+        SPIClass& _spi;
+        Types::CoreTypes::SystemStatus_t& _systemstatus;
+        const uint8_t _cs;
+        SPISettings _settings;
+        AxesHelper<> axeshelper;
 
         enum GyroRange:uint8_t
         {
@@ -60,65 +44,20 @@ class ICM_20608{
             A_16_G
         };
 
-    private:
-
-        SPIClass& _spi;
-        Types::CoreTypes::SystemStatus_t& _systemstatus;
-        const uint8_t _cs;
-        SPISettings _settings;
-
-        AxesHelper<> axeshelper;
-
+        bool alive();
         void setRange(AccelRange accel_range,GyroRange gyro_range);
-
-        void writeRegister(uint8_t reg, uint8_t val);
-
-        uint8_t readRegister(uint8_t reg);
 
         void readGyro(float &x, float &y, float &z);
         void readAccel(float &x, float &y, float &z);
-
+        void readTemp(float& temp);
         void readGyroRaw(int16_t &x, int16_t &y, int16_t &z);
         void readAccelRaw(int16_t &x, int16_t &y, int16_t &z);
-
-        void calibrateBias();
-
         void readTempRaw(int16_t& temp);
-        void readTemp(float& temp);
-
-        bool alive();
-
-         /**
-         * @brief write accel gyro bias callibration to nvs storage
-         * 
-         */
-        void writeAccelGyroBias();
-        /**
-         * @brief Load accel gyro bias callibration from nvs storage
-         * 
-         */
-        void loadAccelGyroBias();
+        uint8_t readRegister(uint8_t reg);
+        void writeRegister(uint8_t reg, uint8_t val);
 
         float gyro_lsb_to_degs;
         float accel_lsb_to_g;
-
-        static constexpr uint16_t number_measurements = 500;
-        uint16_t measurements_made;
-
-        int16_t gx, gy, gz;
-        int16_t ax, ay, az;
-
-        int32_t sum_gx, sum_gy, sum_gz;
-        int32_t sum_ax, sum_ay, sum_az;
-
-        bool calibrating;
-
-        int16_t offset_gx{0};
-        int16_t offset_gy{0};
-        int16_t offset_gz{0};
-        int16_t offset_ax{0};
-        int16_t offset_ay{0};
-        int16_t offset_az{0};
 
         static constexpr float temperature_sensitivity = 326.8f;
 
@@ -128,13 +67,11 @@ class ICM_20608{
 
         static constexpr uint8_t CONFIG = 0x1A;
 
-
         static constexpr uint8_t GYRO_CONFIG = 0x1B;
         static constexpr uint8_t DPS250 = 0b00000000;
         static constexpr uint8_t DPS500 = 0b00001000;
         static constexpr uint8_t DPS1000 = 0b00010000;
         static constexpr uint8_t DPS2000 = 0b00011000;
-        // static constexpr uint8_t FCHOICE_B = 0b00000000;
 
         static constexpr uint8_t ACCEL_CONFIG = 0x1C;
         static constexpr uint8_t G2 = 0b00000000;
@@ -143,10 +80,6 @@ class ICM_20608{
         static constexpr uint8_t G16 = 0b00011000;
 
         static constexpr uint8_t ACCEL_CONFIG2 = 0x1D;
-        //using default dlpf settings for now
-        // static constexpr uint8_t ACCEL_BYPASS_DLPF = 0b00001000;
-
-
 
         static constexpr uint8_t USER_CTRL = 0x6A;
         static constexpr uint8_t I2C_IF_DIS = 0b00010000;
@@ -187,7 +120,6 @@ class ICM_20608{
         static constexpr uint8_t ZA_OFFSET_H = 0x7D;
         static constexpr uint8_t ZA_OFFSET_L = 0x7E;
 
-        //no idea what these values do
         static constexpr uint8_t UNDOC1 = 0x11;
         static constexpr uint8_t UNDOC1_VALUE = 0xc9;
 };

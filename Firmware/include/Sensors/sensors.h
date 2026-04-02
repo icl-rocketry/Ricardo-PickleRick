@@ -40,10 +40,7 @@ public:
     const SensorStructs::raw_measurements_t &getData();
 
     // Sensor Calibration Functions
-    void calibrateAccelGyro();
-    void calibrateHighGAccel();
     void calibrateMag(MagCalibrationParameters magcal);
-    void calibrateBaro();
 
     std::function<void(std::unique_ptr<RnpPacketSerialized>)> getHitlCallback();
 
