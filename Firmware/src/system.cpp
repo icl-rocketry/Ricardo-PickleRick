@@ -278,9 +278,9 @@ void System::logTelemetry()
         // const SensorStructs::state_t& estimator_state =  estimator.getData();
         TelemetryLogframe logframe;
         
-        logframe.gps_long = raw_sensors.gps.lng;
-        logframe.gps_lat = raw_sensors.gps.lat;
-        logframe.gps_alt = raw_sensors.gps.alt;
+        logframe.gps_lat = raw_sensors.gps.latitude * 1e-7;
+        logframe.gps_long = raw_sensors.gps.longitude * 1e-7;
+        logframe.gps_alt = raw_sensors.gps.altitude;
         logframe.gps_v_n = raw_sensors.gps.v_n;
         logframe.gps_v_e = raw_sensors.gps.v_e;
         logframe.gps_v_d = raw_sensors.gps.v_d;

@@ -121,15 +121,15 @@ void Sensors::hitlHandler(std::unique_ptr<RnpPacketSerialized> packet_ptr)
             sensors_raw.baro.temp = FakeData.baro_temp;
             sensors_raw.baro.press = FakeData.baro_press;
 
-            sensors_raw.gps.lat = FakeData.gps_lat;
-            sensors_raw.gps.lng = FakeData.gps_lng;
+            // sensors_raw.gps.lat = FakeData.gps_lat;
+            // sensors_raw.gps.lng = FakeData.gps_lng;
 
             sensors_raw.gps.v_n = FakeData.gps_v_n;
             sensors_raw.gps.v_e = FakeData.gps_v_e;
             sensors_raw.gps.v_d = FakeData.gps_v_d;
 
             sensors_raw.gps.sat = FakeData.gps_sat;
-            sensors_raw.gps.pdop = FakeData.gps_pdop;
+            // sensors_raw.gps.pdop = FakeData.gps_pdop;
             sensors_raw.gps.fix = FakeData.gps_fix;
             sensors_raw.gps.updated = FakeData.gps_updated;
             sensors_raw.gps.valid = FakeData.gps_valid;

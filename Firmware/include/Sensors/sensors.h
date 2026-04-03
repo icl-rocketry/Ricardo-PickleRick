@@ -48,7 +48,7 @@ private:
     SensorStructs::raw_measurements_t sensors_raw;
     Types::CoreTypes::SystemStatus_t& _systemstatus;
 
-    Max_M10S gps;
+    MAX_M10S gps;
     DPS368 baro;
     ICM_20608 accelgyro;
     H3LIS331DL accel;

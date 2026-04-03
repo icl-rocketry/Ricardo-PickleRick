@@ -56,11 +56,11 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
                 if (_homeSet)  // if false, this falls thru to the more important error which is no
                                // home set
                 {
-                    state.position = localizationkf.GPStoNED(
-                        raw_sensors.gps.lat, raw_sensors.gps.lng, raw_sensors.gps.alt);
-                    state.velocity = Eigen::Vector3f{raw_sensors.gps.v_n / 1000.0f,
-                                                     raw_sensors.gps.v_e / 1000.0f,
-                                                     raw_sensors.gps.v_d / 1000.0f};
+                    // state.position = localizationkf.GPStoNED(
+                    //     raw_sensors.gps.lat, raw_sensors.gps.lng, raw_sensors.gps.alt);
+                    // state.velocity = Eigen::Vector3f{raw_sensors.gps.v_n / 1000.0f,
+                    //                                  raw_sensors.gps.v_e / 1000.0f,
+                    //                                  raw_sensors.gps.v_d / 1000.0f};
                     changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_IMU_NO_BARO,
                                          "no IMU and BARO, raw gps navigation solution");
                     return;
@@ -130,9 +130,9 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             // if there is no error in the gps check if gps data is updated
             if (raw_sensors.gps.updated)
             {
-                localizationkf.gpsUpdate(raw_sensors.gps.lat, raw_sensors.gps.lng,
-                                         raw_sensors.gps.alt, raw_sensors.gps.v_n,
-                                         raw_sensors.gps.v_e, raw_sensors.gps.v_d);
+                // localizationkf.gpsUpdate(raw_sensors.gps.lat, raw_sensors.gps.lng,
+                //                          raw_sensors.gps.alt, raw_sensors.gps.v_n,
+                //                          raw_sensors.gps.v_e, raw_sensors.gps.v_d);
             }
         }
 
@@ -160,9 +160,9 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 void Estimator::setHome(const SensorStructs::raw_measurements_t &raw_sensors)
 {
     // record current gps coordinates as home
-    state.gps_launch_lat = raw_sensors.gps.lat;
-    state.gps_launch_long = raw_sensors.gps.lng;
-    state.gps_launch_alt = raw_sensors.gps.alt;
+    // state.gps_launch_lat = raw_sensors.gps.lat;
+    // state.gps_launch_long = raw_sensors.gps.lng;
+    // state.gps_launch_alt = raw_sensors.gps.alt;
     // update barometer reference altitude
     // log the new home position
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(

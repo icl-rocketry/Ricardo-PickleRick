@@ -26,6 +26,7 @@ namespace SensorStructs
         float ay;
         float az;
     };
+
     struct MAG_3AXIS_t{
         float mx;
         float my;
@@ -33,38 +34,31 @@ namespace SensorStructs
 
         float temp;
     };
+    
     struct BARO_t{
         float temp;
         float press;
     };
     
     struct GPS_t{
-        float lat;
-        float lng;
-        // gps position -> 10^-7 to avoid floating math - alitude in mm
-        long alt;
-        // gps velocity mm/s
-        long v_n;
-        long v_e;
-        long v_d;
 
-        uint8_t sat;                    // gps satilites
-        uint16_t pdop;              // poisitonal dillution of precision * 10^-2
-        /* 0 = no fix
-        1 = dead reckoning (requires external sensors)
-        2 = 2D (not quite enough satellites in view)
-        3 = 3D (the standard fix)
-        4 = GNSS + dead reckoning (requires external sensors)
-        5 = Time fix only*/
-        uint8_t fix;  // gps fix type
-        bool updated; // flag if gps values have been updated
+        // Keep as raw integer — float loses precision at real-world coordinates
+        int32_t latitude;       // degrees * 1e-7  (divide by 1e7f only when needed)
+        int32_t longitude;      // degrees * 1e-7
+        // Rest in SI units
+        float altitude;         // m from mean sea level
+
+        float v_n;              // m/s
+        float v_e;              // m/s
+        float v_d;              // m/s
+
+        float hAcc;             // m horizontal accuracy
+        float vAcc;             // m vertial accuracy
+        
+        uint8_t sat;            // number of satilites
+        uint8_t fix;            // gps fix type
+        bool updated;           // flag if gps values have been updated
         bool valid;
-        uint16_t year;
-        uint8_t month;
-        uint8_t day;
-        uint8_t hour;
-        uint8_t minute;
-        uint8_t second;
     };
 
     struct ADC_V_RAIL_t{

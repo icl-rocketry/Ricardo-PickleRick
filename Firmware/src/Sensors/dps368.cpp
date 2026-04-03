@@ -1,5 +1,4 @@
 #include "Sensors/dps368.h"
-#include <esp_log.h>
 
 
 DPS368::DPS368(SPIClass& spi, Types::CoreTypes::SystemStatus_t& systemstatus, uint8_t cs)
@@ -36,10 +35,6 @@ void DPS368::setup()
     }
 
     readCalibrationCoefficients();
-
-    ESP_LOGI("DPS368", "c0=%ld c1=%ld c00=%ld c10=%ld c01=%ld c11=%ld c20=%ld c21=%ld c30=%ld",
-             (long)_c0Half, (long)_c1, (long)_c00, (long)_c10,
-             (long)_c01, (long)_c11, (long)_c20, (long)_c21, (long)_c30);
 
     // Read which sensor the calibration coefficients are based on and mirror it
     // into TMP_CFG so temperature compensation is accurate (datasheet section 8.12)
@@ -134,9 +129,7 @@ void DPS368::readCalibrationCoefficients()
     getTwosComplement(&_c21, 16);
     _c30 = ((uint32_t)buffer[16] << 8) | (uint32_t)buffer[17];
     getTwosComplement(&_c30, 16);
-    ESP_LOGI("DPS3xx", "c0Half=%ld c1=%ld c00=%ld c10=%ld c01=%ld c11=%ld c20=%ld c21=%ld c30=%ld",
-             (long)_c0Half, (long)_c1, (long)_c00, (long)_c10,
-             (long)_c01, (long)_c11, (long)_c20, (long)_c21, (long)_c30);
+
 }
 
 void DPS368::readPressureRaw(int32_t& raw)
