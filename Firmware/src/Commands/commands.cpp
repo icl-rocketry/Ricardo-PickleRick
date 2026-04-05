@@ -225,10 +225,6 @@ void Commands::EstimatorCommand(System& system, const RnpPacketSerialized& packe
     estimator.q2                    = state.orientation.y();
     estimator.q3                    = state.orientation.z();
 
-    estimator.roll_rate             = state.angularRates(0);
-    estimator.pitch_rate            = state.angularRates(1);
-    estimator.yaw_rate              = state.angularRates(2);
-
     estimator.b_gx                  = state.gyroBiases(0);
     estimator.b_gy                  = state.gyroBiases(1);
     estimator.b_gz                  = state.gyroBiases(2);
@@ -238,6 +234,22 @@ void Commands::EstimatorCommand(System& system, const RnpPacketSerialized& packe
     estimator.b_az                  = state.accelBiases(2);
 
     estimator.calibration_quality   = state.calibration_quality;
+
+    estimator.h_mx                  = state.expectedMagReading(0);
+    estimator.h_my                  = state.expectedMagReading(1);
+    estimator.h_mz                  = state.expectedMagReading(2);
+
+    estimator.h_ax                  = state.expectedAccelReading(0);
+    estimator.h_ay                  = state.expectedAccelReading(1);
+    estimator.h_az                  = state.expectedAccelReading(2);
+
+    estimator.y_mx                  = state.magInnovation(0);
+    estimator.y_my                  = state.magInnovation(1);
+    estimator.y_mz                  = state.magInnovation(2);
+
+    estimator.y_ax                  = state.accelInnovation(0);
+    estimator.y_ay                  = state.accelInnovation(1);
+    estimator.y_az                  = state.accelInnovation(2);
 
     estimator.b_hax                 = state.highGBiases(0);
     estimator.b_hay                 = state.highGBiases(1);

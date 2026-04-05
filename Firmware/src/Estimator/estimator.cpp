@@ -83,22 +83,27 @@ void Estimator::updateOrientation(  const Eigen::Vector3f gyro,
 void Estimator::updateState()
 {
     // ── Orientation ───────────────────────────────────────────────────────────
-    const Eigen::Vector4f q     = m_ekf.quaternion();
-    m_state.orientation         = Eigen::Quaternionf(q(0), q(1), q(2), q(3));
+    const Eigen::Vector4f q         = m_ekf.quaternion();
+    m_state.orientation             = Eigen::Quaternionf(q(0), q(1), q(2), q(3));
 
     // ── Navigation states ─────────────────────────────────────────────────────
-    m_state.position            = m_ekf.position();
-    m_state.velocity            = m_ekf.velocity();
-    m_state.acceleration        = m_ekf.acceleration();
+    m_state.position                = m_ekf.position();
+    m_state.velocity                = m_ekf.velocity();
+    m_state.acceleration            = m_ekf.acceleration();
     
-    // Angular rates ────────────────────────────────────────────────────────────
-    m_state.angularRates        = m_ekf.angularRate();
+    // ── Expected Readings ─────────────────────────────────────────────────────
+    m_state.expectedMagReading      = m_ekf.expectedMagReading();
+    m_state.expectedAccelReading    = m_ekf.expectedAccelReading();
+
+    // ── Innovation  ───────────────────────────────────────────────────────────
+    m_state.magInnovation           = m_ekf.magInnovation();
+    m_state.accelInnovation         = m_ekf.accelInnovation();
 
     // ── Calibration ───────────────────────────────────────────────────────────
-    m_state.gyroBiases          = m_ekf.gyroBias();
-    m_state.accelBiases         = m_ekf.accelBias();
-    m_state.calibration_quality = m_calibrator.getCalibrationQuality();
+    m_state.accelBiases             = m_ekf.accelBias();
+    m_state.gyroBiases              = m_ekf.gyroBias();
+    m_state.calibration_quality     = m_calibrator.getCalibrationQuality();
 
-    m_state.highGBiases         = m_calibrator.getHighGBiases();
-    m_state.refMag              = m_calibrator.getMagRef();
+    m_state.highGBiases             = m_calibrator.getHighGBiases();
+    m_state.refMag                  = m_calibrator.getMagRef();
 }

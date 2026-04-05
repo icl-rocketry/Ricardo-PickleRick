@@ -28,10 +28,6 @@ class EstimatorPacket : public RnpPacket{
                 &EstimatorPacket::q2,
                 &EstimatorPacket::q3,
 
-                &EstimatorPacket::roll_rate,
-                &EstimatorPacket::pitch_rate,
-                &EstimatorPacket::yaw_rate,
-
                 &EstimatorPacket::b_gx,
                 &EstimatorPacket::b_gy,
                 &EstimatorPacket::b_gz,
@@ -43,6 +39,22 @@ class EstimatorPacket : public RnpPacket{
                 &EstimatorPacket::calibration_quality,
 
                 // Stuff for dev/debugging
+
+                &EstimatorPacket::h_mx,
+                &EstimatorPacket::h_my,
+                &EstimatorPacket::h_mz,
+
+                &EstimatorPacket::h_ax,
+                &EstimatorPacket::h_ay,
+                &EstimatorPacket::h_az,
+
+                &EstimatorPacket::y_mx,
+                &EstimatorPacket::y_my,
+                &EstimatorPacket::y_mz,
+
+                &EstimatorPacket::y_ax,
+                &EstimatorPacket::y_ay,
+                &EstimatorPacket::y_az,
 
                 &EstimatorPacket::b_hax,
                 &EstimatorPacket::b_hay,
@@ -87,12 +99,16 @@ class EstimatorPacket : public RnpPacket{
 
         float q0, q1, q2, q3;                   // quaternions
 
-        float roll_rate, pitch_rate, yaw_rate;  // angular rates (rad/s) (body frame)
-
         float b_gx, b_gy, b_gz;                 // gyro biases (rad/s) (body frame)
         float b_ax, b_ay, b_az;                 // low-g accel biases (m/s^2) (body frame)
         
         uint8_t calibration_quality;            // 0 if no calib, 1 if bias calib, 2 if mag vec calib
+        
+        float h_mx, h_my, h_mz;                 // expected mag readings (body frame)
+        float h_ax, h_ay, h_az;                 // expected accel readings (body frame)
+    
+        float y_mx, y_my, y_mz;                 // innovation from mag readings (body frame)
+        float y_ax, y_ay, y_az;                 // innovation from accel readings (body frame)
         
         float b_hax, b_hay, b_haz;              // high-g accel biases (m/s^2) (body frame)
         float ref_mn, ref_me, ref_md;           // ref mag vec for declination (G) (NED frame)

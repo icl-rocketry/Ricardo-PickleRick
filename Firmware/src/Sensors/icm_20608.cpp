@@ -142,13 +142,13 @@ void ICM_20608::readGyroRaw(int16_t &x, int16_t &y, int16_t &z)
     _spi.beginTransaction(_settings);
     digitalWrite(_cs, LOW);
 
-    _spi.transfer(GYRO_XOUT_H | (1 << 7));
-    x = ((int16_t)_spi.transfer(GYRO_XOUT_L | (1 << 7))) << 8;
-    x |= _spi.transfer(GYRO_YOUT_H | (1 << 7));
-    y = ((int16_t)_spi.transfer(GYRO_YOUT_L | (1 << 7))) << 8;
-    y |= _spi.transfer(GYRO_ZOUT_H | (1 << 7));
-    z = ((int16_t)_spi.transfer(GYRO_ZOUT_L | (1 << 7))) << 8;
-    z |= _spi.transfer(0);
+    _spi.transfer(GYRO_XOUT_H | (1 << 7));  // address only
+    x = ((int16_t)_spi.transfer(0x00)) << 8;
+    x |= _spi.transfer(0x00);
+    y = ((int16_t)_spi.transfer(0x00)) << 8;
+    y |= _spi.transfer(0x00);
+    z = ((int16_t)_spi.transfer(0x00)) << 8;
+    z |= _spi.transfer(0x00);
 
     digitalWrite(_cs, HIGH);
     _spi.endTransaction();
@@ -159,13 +159,13 @@ void ICM_20608::readAccelRaw(int16_t &x, int16_t &y, int16_t &z)
     _spi.beginTransaction(_settings);
     digitalWrite(_cs, LOW);
 
-    _spi.transfer(ACCEL_XOUT_H | (1 << 7));
-    x = ((int16_t)_spi.transfer(ACCEL_XOUT_L | (1 << 7))) << 8;
-    x |= _spi.transfer(ACCEL_YOUT_H | (1 << 7));
-    y = ((int16_t)_spi.transfer(ACCEL_YOUT_L | (1 << 7))) << 8;
-    y |= _spi.transfer(ACCEL_ZOUT_H | (1 << 7));
-    z = ((int16_t)_spi.transfer(ACCEL_ZOUT_L | (1 << 7))) << 8;
-    z |= _spi.transfer(0);
+    _spi.transfer(ACCEL_XOUT_H | (1 << 7));  // address only
+    x = ((int16_t)_spi.transfer(0x00)) << 8;
+    x |= _spi.transfer(0x00);
+    y = ((int16_t)_spi.transfer(0x00)) << 8;
+    y |= _spi.transfer(0x00);
+    z = ((int16_t)_spi.transfer(0x00)) << 8;
+    z |= _spi.transfer(0x00);
 
     digitalWrite(_cs, HIGH);
     _spi.endTransaction();
