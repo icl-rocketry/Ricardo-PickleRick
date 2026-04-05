@@ -96,22 +96,22 @@ void H3LIS331DL::setFullScale(fs_range range)
     {
         case fs_range::FS_100G:
         {
-            raw_to_g = 100.0f / 2047.0f;
+            raw_to_ms2 = 100.0f * g / 2047.0f;
             break;
         }
         case fs_range::FS_200G:
         {
-            raw_to_g = 200.0f / 2047.0f;
+            raw_to_ms2 = 200.0f * g / 2047.0f;
             break;
         }
         case fs_range::FS_400G:
         {
-            raw_to_g = 400.0f / 2047.0f;
+            raw_to_ms2 = 400.0f * g / 2047.0f;
             break;
         }
         default:
         {
-            raw_to_g = 0;
+            raw_to_ms2 = 0;
             // log error
             break;
         }
@@ -135,9 +135,9 @@ void H3LIS331DL::readAxes(float &x, float &y, float &z)
     readRawAxes(xi, yi, zi);
 
     std::array<float, 3> accel = axeshelper(
-        std::array<float, 3>{raw_to_g * (float)(xi),
-                             raw_to_g * (float)(yi),
-                             raw_to_g * (float)(zi)});
+        std::array<float, 3>{raw_to_ms2 * (float)(xi),
+                             raw_to_ms2 * (float)(yi),
+                             raw_to_ms2 * (float)(zi)});
 
     x = accel[0];
     y = accel[1];

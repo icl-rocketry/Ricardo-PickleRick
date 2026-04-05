@@ -41,7 +41,7 @@ Types::CoreTypes::State_ptr_t Flight::update()
         _system.systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_COAST);
         _system.systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_BOOST);
         _system.systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_APOGEE, "Apogee Detected!!");
-        _system.estimator.setApogeeTime(apogeeinfo.time);
+        // _system.estimator.setApogeeTime(apogeeinfo.time);
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
             "Apogee at " + std::to_string(apogeeinfo.altitude));
 

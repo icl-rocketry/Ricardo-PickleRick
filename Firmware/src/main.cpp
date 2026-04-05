@@ -5,7 +5,7 @@
 // #include <sprofiler.h>
 
 #include <Arduino.h>
-#define ARDUINO_LOOP_STACK_SIZE 8192
+#define ARDUINO_LOOP_STACK_SIZE 32768
 
 
 #include <exception>

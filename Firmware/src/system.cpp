@@ -66,7 +66,7 @@ void System::systemSetup()
 
     loadConfig();
 
-    // estimator.setup();
+    estimator.setup();
 
     // initialize statemachine with preflight state
     statemachine.initalize(std::make_unique<Preflight>(*this));
@@ -77,7 +77,7 @@ void System::systemUpdate()
 {
     tunezhandler.update();
     sensors.update();
-    // estimator.update(sensors.getData());
+    estimator.update(sensors.getData());
     logTelemetry();
 };
 

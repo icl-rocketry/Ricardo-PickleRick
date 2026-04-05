@@ -1,30 +1,18 @@
 #include "Sensors/mmc5983ma.h"
 
 MMC5983MA::MMC5983MA(SPIClass &spi, uint8_t cs, Types::CoreTypes::SystemStatus_t &systemstatus)
-    : _useSPI(true),
-      _spi(&spi),
+    : _spi(&spi),
       _settings(10000000, MSBFIRST, SPI_MODE0),
       _cs(cs),
-      _wire(nullptr),
-      _scl(0),
-      _sda(0),
       _systemstatus(systemstatus),
-      _magCal({1, 0, 0, Eigen::Matrix3f{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}},
-               Eigen::Vector3f{{0, 0, 0}}})  // default for mag biases
+      _magCal({                     // default for mag biases
+        Eigen::Matrix3f{{1, 0, 0}, 
+                        {0, 1, 0}, 
+                        {0, 0, 1}},
+        Eigen::Vector3f{{0, 0, 0}}
+        })  
       {};
 
-MMC5983MA::MMC5983MA(TwoWire &wire, uint8_t scl, uint8_t sda, SPIClass &spi, uint8_t cs,
-                     Types::CoreTypes::SystemStatus_t &systemstatus)
-    : _useSPI(false),
-      _spi(&spi),
-      _cs(cs),
-      _wire(&wire),
-      _scl(scl),
-      _sda(sda),
-      _systemstatus(systemstatus),
-      _magCal({1, 0, 0, Eigen::Matrix3f{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}},
-               Eigen::Vector3f{{0, 0, 0}}})  // default for mag biases
-      {};
 
 void MMC5983MA::setup(const std::array<uint8_t, 3> &axesOrder, const std::array<bool, 3> &axesFlip)
 {
@@ -42,7 +30,6 @@ void MMC5983MA::setup(const std::array<uint8_t, 3> &axesOrder, const std::array<
     delay(100);
 
     loadMagCal();  // load calibration from nvs
-    // Serial.println("load calibration");
 
     if (!alive())
     {
@@ -58,25 +45,49 @@ void MMC5983MA::setup(const std::array<uint8_t, 3> &axesOrder, const std::array<
 
 void MMC5983MA::update(SensorStructs::MAG_3AXIS_t &data)
 {
-    float raw_mx;
-    float raw_my;
-    float raw_mz;
+
+    float raw_mx, raw_my, raw_mz;
     readData(raw_mx, raw_my, raw_mz, data.temp);
 
-    std::array<float, 3> mag_transformed = axeshelper(std::array<float, 3>{raw_mx, raw_my, raw_mz});
-    // apply calibration
-    Eigen::Vector3f corrected_mag =
-        _magCal.A_1 *
-        (Eigen::Vector3f{mag_transformed[0], mag_transformed[1], mag_transformed[2]} - _magCal.b);
+    std::array<float, 3> mag_transformed = axeshelper(
+        std::array<float, 3>{raw_mx, raw_my, raw_mz});
+
+    Eigen::Vector3f mag_vec{
+            mag_transformed[0], 
+            mag_transformed[1], 
+            mag_transformed[2]};
+
+    Eigen::Vector3f corrected_mag = _magCal.A_1 * (mag_vec - _magCal.b);
+
     data.mx = corrected_mag[0];
     data.my = corrected_mag[1];
     data.mz = corrected_mag[2];
+
+};
+
+Eigen::Vector3f MMC5983MA::getRawData(SensorStructs::MAG_3AXIS_t& data)
+{
+
+    float raw_mx, raw_my, raw_mz;
+    readData(raw_mx, raw_my, raw_mz, data.temp);
+
+    std::array<float, 3> mag_transformed = axeshelper(
+        std::array<float, 3>{raw_mx, raw_my, raw_mz});
+
+    Eigen::Vector3f mag_vec{
+            mag_transformed[0], 
+            mag_transformed[1], 
+            mag_transformed[2]};
+
+    return mag_vec;
+
 };
 
 bool MMC5983MA::alive()
 {
+
     return (readRegister(WHO_AM_I) == WHO_AM_I_RES);
-    // return true;
+
 }
 
 void MMC5983MA::readData(float &x, float &y, float &z, float &t)
@@ -111,28 +122,14 @@ void MMC5983MA::readRawData(uint32_t &x, uint32_t &y, uint32_t &z, uint8_t &t)
 void MMC5983MA::writeRegister(uint8_t reg_address, uint8_t data)
 
 {
-    // SPI write handling code
-    if (_useSPI)
-    {
-        _spi->beginTransaction(_settings);
-        digitalWrite(_cs, LOW);
-        _spi->transfer(reg_address);
-        _spi->transfer(data);
-        digitalWrite(_cs, HIGH);
-        _spi->endTransaction();
-    }
-    else
-    {
-        _spi->end();
-        _wire->begin(_sda, _scl, 400000);  // start wire bus on specified pins as master
-        digitalWrite(_cs, HIGH);
-        _wire->beginTransmission(I2C_ADDRESS);
-        _wire->write(reg_address);
-        _wire->write(data);
-        _wire->endTransmission();
-        _wire->end();
-        _spi->begin();  // restart spi peripheral
-    }
+
+    _spi->beginTransaction(_settings);
+    digitalWrite(_cs, LOW);
+    _spi->transfer(reg_address);
+    _spi->transfer(data);
+    digitalWrite(_cs, HIGH);
+    _spi->endTransaction();
+    
 }
 
 void MMC5983MA::set()
@@ -148,44 +145,21 @@ void MMC5983MA::reset()
 }
 
 void MMC5983MA::readRegister(uint8_t reg_address, uint8_t *data, uint8_t len)
-
 {
-    if (_useSPI)
+
+    _spi->beginTransaction(_settings);
+    digitalWrite(_cs, LOW);
+
+    _spi->transfer(reg_address | RW);  // 0b10000000
+
+    for (int i = 0; i < len; i++)
     {
-        // SPI read handling code
-        _spi->beginTransaction(_settings);
-        digitalWrite(_cs, LOW);
-
-        _spi->transfer(reg_address | RW);  // 0b10000000
-
-        for (int i = 0; i < len; i++)
-        {
-            data[i] = _spi->transfer(0);
-        }
-
-        digitalWrite(_cs, HIGH);
-        _spi->endTransaction();
+        data[i] = _spi->transfer(0);
     }
-    else
-    {
-        _spi->end();
 
-        digitalWrite(_cs, LOW);
-        digitalWrite(_cs, HIGH);
-
-        _wire->begin(_sda, _scl, 400000);  // start wire bus on specified pins as master
-        _wire->beginTransmission(I2C_ADDRESS);
-        _wire->write(reg_address);
-        _wire->endTransmission();
-        _wire->requestFrom(I2C_ADDRESS, len);
-
-        for (int i = 0; i < len; i++)
-        {
-            data[i] = _wire->read();
-        }
-        _wire->end();
-        _spi->begin();  // restart spi peripheral
-    }
+    digitalWrite(_cs, HIGH);
+    _spi->endTransaction();
+    
 }
 
 uint8_t MMC5983MA::readRegister(uint8_t reg)
@@ -206,18 +180,6 @@ void MMC5983MA::writeMagCal()
         return;
     }
 
-    if (!pref.putFloat("F", _magCal.fieldMagnitude))
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");
-    };
-    if (!pref.putFloat("I", _magCal.inclination))
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");
-    };
-    if (!pref.putFloat("D", _magCal.declination))
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");
-    };
     if (!pref.putFloat("A11", _magCal.A_1(0, 0)))
     {
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");
@@ -264,10 +226,10 @@ void MMC5983MA::writeMagCal()
     };
     if (!pref.putFloat("b3", _magCal.b(2)))
     {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs error while writing");
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Mag - nvs error while writing");
     };
 
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Mag Calb Written to NVS");
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Mag - Calb Written to NVS");
 }
 
 void MMC5983MA::loadMagCal()
@@ -276,19 +238,37 @@ void MMC5983MA::loadMagCal()
 
     if (!pref.begin("MAG", true))
     {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("nvs failed to start");
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("MMC5983MA - NVS failed to start, using default cal");
         return;
     }
 
-    _magCal.fieldMagnitude = pref.getFloat("F", 1);
-    _magCal.inclination = pref.getFloat("I", 0);
-    _magCal.declination = pref.getFloat("D", 0);
-
-    _magCal.A_1 << pref.getFloat("A11", 1), pref.getFloat("A12", 0), pref.getFloat("A13", 0),
-        pref.getFloat("A21", 0), pref.getFloat("A22", 1), pref.getFloat("A23", 0),
-        pref.getFloat("A31", 0), pref.getFloat("A32", 0), pref.getFloat("A33", 1);
+    _magCal.A_1 <<  pref.getFloat("A11", 1), pref.getFloat("A12", 0), pref.getFloat("A13", 0),
+                    pref.getFloat("A21", 0), pref.getFloat("A22", 1), pref.getFloat("A23", 0),
+                    pref.getFloat("A31", 0), pref.getFloat("A32", 0), pref.getFloat("A33", 1);
 
     _magCal.b << pref.getFloat("b1", 0), pref.getFloat("b2", 0), pref.getFloat("b3", 0);
+
+    pref.end();
+
+    char buf[200];
+    snprintf(buf, sizeof(buf),
+        "MMC5983MA MagCal loaded "
+        "A=[%.3f,%.3f,%.3f|%.3f,%.3f,%.3f|%.3f,%.3f,%.3f] "
+        "b=[%.3f,%.3f,%.3f]",
+        _magCal.A_1(0,0), _magCal.A_1(0,1), _magCal.A_1(0,2),
+        _magCal.A_1(1,0), _magCal.A_1(1,1), _magCal.A_1(1,2),
+        _magCal.A_1(2,0), _magCal.A_1(2,1), _magCal.A_1(2,2),
+        _magCal.b(0),     _magCal.b(1),     _magCal.b(2));
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(buf);
+
+    // Sanity check — identity A_1 and zero b means no calibration was stored
+    const bool isDefaultA = (_magCal.A_1 - Eigen::Matrix3f::Identity()).norm() < 0.01f;
+    const bool isDefaultB = _magCal.b.norm() < 0.01f;
+    if (isDefaultA && isDefaultB)
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
+            "MMC5983MA - cal is default (identity/zero), magnetometer not calibrated");
+    }
 }
 
 void MMC5983MA::calibrate(MagCalibrationParameters magCal)

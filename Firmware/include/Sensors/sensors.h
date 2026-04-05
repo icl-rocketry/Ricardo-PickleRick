@@ -40,6 +40,7 @@ public:
     const SensorStructs::raw_measurements_t &getData();
 
     // Sensor Calibration Functions
+    Eigen::Vector3f getRawMagData() { return mag.getRawData(sensors_raw.mag); };
     void calibrateMag(MagCalibrationParameters magcal);
 
     std::function<void(std::unique_ptr<RnpPacketSerialized>)> getHitlCallback();

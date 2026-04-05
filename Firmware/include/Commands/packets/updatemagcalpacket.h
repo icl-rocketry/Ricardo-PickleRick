@@ -6,40 +6,37 @@
 #include <librnp/rnp_serializer.h>
 #include <librnp/default_packets/simplecommandpacket.h>
 
-class MagCalCommandPacket: public RnpPacket{
+class UpdateMagCalPacket: public RnpPacket{
     private:
         static constexpr auto getSerializer()
         {
             auto ret = RnpSerializer(
-                &MagCalCommandPacket::command,
-                &MagCalCommandPacket::fieldMagnitude,
-                &MagCalCommandPacket::declination,
-                &MagCalCommandPacket::inclination,
-                &MagCalCommandPacket::A11,
-                &MagCalCommandPacket::A12,
-                &MagCalCommandPacket::A13,
-                &MagCalCommandPacket::A21,
-                &MagCalCommandPacket::A22,
-                &MagCalCommandPacket::A23,
-                &MagCalCommandPacket::A31,
-                &MagCalCommandPacket::A32,
-                &MagCalCommandPacket::A33,
-                &MagCalCommandPacket::b1,
-                &MagCalCommandPacket::b2,
-                &MagCalCommandPacket::b3
+                &UpdateMagCalPacket::command,
+                &UpdateMagCalPacket::A11,
+                &UpdateMagCalPacket::A12,
+                &UpdateMagCalPacket::A13,
+                &UpdateMagCalPacket::A21,
+                &UpdateMagCalPacket::A22,
+                &UpdateMagCalPacket::A23,
+                &UpdateMagCalPacket::A31,
+                &UpdateMagCalPacket::A32,
+                &UpdateMagCalPacket::A33,
+                &UpdateMagCalPacket::b1,
+                &UpdateMagCalPacket::b2,
+                &UpdateMagCalPacket::b3
             );
             return ret;
         }
     public:
-        ~MagCalCommandPacket();
-        MagCalCommandPacket(uint8_t command);
+        ~UpdateMagCalPacket();
+        UpdateMagCalPacket(uint8_t command);
 
         /**
          * @brief Deserialize Command Packet from serialized data
          * 
          * @param packet 
          */
-        MagCalCommandPacket(const RnpPacketSerialized& packet);
+        UpdateMagCalPacket(const RnpPacketSerialized& packet);
 
         /**
          * @brief Serialize into provided buffer
@@ -64,9 +61,6 @@ class MagCalCommandPacket: public RnpPacket{
         //data members
         command_t command;
 
-        float fieldMagnitude;
-        float declination;
-        float inclination;
         float A11;
         float A12;
         float A13;

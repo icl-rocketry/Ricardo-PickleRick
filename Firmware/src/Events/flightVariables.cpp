@@ -51,10 +51,10 @@ flightVariable_t FlightVariables::RocketOrientation(int arg)
 
 flightVariable_t FlightVariables::BoardOrientation(int arg)
 {
-    return getComponent(_state.rocketEulerAngles, arg);
+    return getComponent(_state.eulerAngles, arg);
 }
 
-flightVariable_t FlightVariables::Tilt(int arg) { return _state.tilt; }
+flightVariable_t FlightVariables::Tilt(int arg) { return 0.00f; }
 
 flightVariableFunc_t FlightVariables::get(const std::string& funcName)
 {

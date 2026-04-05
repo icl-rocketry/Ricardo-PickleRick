@@ -70,12 +70,10 @@ class H3LIS331DL{
         void axesEnable(bool enable);
         void readAxes(float &x, float &y, float &z);
         void readRawAxes(int16_t &x, int16_t &y, int16_t &z);
-        void calibrateBias();
-        void writeAccelBias();
-        void loadAccelBias();
         void setFullScale(fs_range range);
 
-        float raw_to_g;
+        static constexpr float g = 9.80665f;
+        float raw_to_ms2;
 
         static constexpr uint16_t number_measurements = 500;
         uint16_t measurements_made;

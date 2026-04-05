@@ -11,26 +11,26 @@ namespace SensorStructs
 {
 
     struct ACCELGYRO_6AXIS_t{
-        float ax; 
-        float ay;
-        float az;
-        float gx;
-        float gy;
-        float gz;
+        float ax; // (m/s^2)
+        float ay; // (m/s^2)
+        float az; // (m/s^2)
+        float gx; // (rad/s)
+        float gy; // (rad/s)
+        float gz; // (rad/s)
 
         float temp;
     };
 
     struct ACCEL_3AXIS_t{
-        float ax;
-        float ay;
-        float az;
+        float ax; // (m/s^2)
+        float ay; // (m/s^2)
+        float az; // (m/s^2)
     };
 
     struct MAG_3AXIS_t{
-        float mx;
-        float my;
-        float mz;
+        float mx; // (normalised to 1 when calibrated)
+        float my; // (normalised to 1 when calibrated)
+        float mz; // (normalised to 1 when calibrated)
 
         float temp;
     };
@@ -116,23 +116,23 @@ namespace SensorStructs
 
     struct state_t
     {
-        //? NOTE these orientations are with respect to the board orientation where
-        //? z points from the bottom to the top of the board, x points towards the SMA connectors,
-        //? and y completes the right hand coordinate system.
-        //? Euler angles use the roll pitch yaw convetion, meaning roll is aligned with the x axis,
-        //? pitch aligned with the y axis and yaw aligned with the z axis of the board.
-        Eigen::Quaternionf orientation; //(quaternion)
-        Eigen::Vector3f eulerAngles;    //(rad) (roll pitch yaw)
+        Eigen::Quaternionf orientation;         // (quaternion)                         (NED to Body)
+        Eigen::Vector3f eulerAngles;            // (rad) (roll pitch yaw)
 
-        Eigen::Quaternionf rocketOrientation; // (quaternion)
-        Eigen::Vector3f rocketEulerAngles; // (rad)
+        Eigen::Vector3f position;               // (m) relative to callibration site    (NED)
+        Eigen::Vector3f velocity;               // (m/s)                                (NED)
+        Eigen::Vector3f acceleration;           // (m/s^2)                              (NED)
+        Eigen::Vector3f angularRates;           // (rad/s)                              (body)
 
-        float tilt; //angle of tilt (nuation?) (rad)
+        Eigen::Vector3f gyroBiases;             // (rad/s)                              (body)
+        Eigen::Vector3f accelBiases;            // (m/s^2)                              (body)
 
-        Eigen::Vector3f position;       //(m) relative to callibration site (NED)
-        Eigen::Vector3f velocity;       //(ms-1) (NED)
-        Eigen::Vector3f acceleration;   //(ms-2) (NED)
-        Eigen::Vector3f angularRates;   //(deg/s)
+        uint8_t calibration_quality;
+
+
+        Eigen::Vector3f highGBiases;            // (m/s^2)                              (body)
+        Eigen::Vector3f refMag;                 // (unit direction vector)              (NED)
+
 
         // Launch Site
         float gps_launch_lat, gps_launch_long;

@@ -50,7 +50,7 @@ Types::CoreTypes::State_ptr_t Launch::update()
         _system.estimator.getData().position(2) < -50)
     {  // launch acceleration threshold comparison of down acceleration with a threshold of 1.5 g
        // idk if this is okay lol?
-        _system.estimator.setLiftoffTime(millis());
+        // _system.estimator.setLiftoffTime(millis());
         return std::make_unique<Flight>(_system);
     }
     else

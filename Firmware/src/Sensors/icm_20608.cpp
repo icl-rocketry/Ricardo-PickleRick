@@ -60,19 +60,19 @@ void ICM_20608::setRange(AccelRange accel_range, GyroRange gyro_range)
     {
         case G_250_DEGS:
             writeRegister(GYRO_CONFIG, DPS250);
-            gyro_lsb_to_degs = 250.f / 32768.f;
+            gyro_lsb_to_rads = (250.f / 32768.f) * (M_PI / 180.0f);
             break;
         case G_500_DEGS:
             writeRegister(GYRO_CONFIG, DPS500);
-            gyro_lsb_to_degs = 500.f / 32768.f;
+            gyro_lsb_to_rads = (500.f / 32768.f) * (M_PI / 180.0f);
             break;
         case G_1000_DEGS:
             writeRegister(GYRO_CONFIG, DPS1000);
-            gyro_lsb_to_degs = 1000.f / 32768.f;
+            gyro_lsb_to_rads = (1000.f / 32768.f) * (M_PI / 180.0f);
             break;
         case G_2000_DEGS:
             writeRegister(GYRO_CONFIG, DPS2000);
-            gyro_lsb_to_degs = 2000.f / 32768.f;
+            gyro_lsb_to_rads = (2000.f / 32768.f) * (M_PI / 180.0f);
             break;
     }
 
@@ -80,19 +80,19 @@ void ICM_20608::setRange(AccelRange accel_range, GyroRange gyro_range)
     {
         case A_2_G:
             writeRegister(ACCEL_CONFIG, G2);
-            accel_lsb_to_g = 2.f / 32768.f;
+            accel_lsb_to_ms2 = 2.f * g / 32768.f;
             break;
         case A_4_G:
             writeRegister(ACCEL_CONFIG, G4);
-            accel_lsb_to_g = 4.f / 32768.f;
+            accel_lsb_to_ms2 = 4. * g / 32768.f;
             break;
         case A_8_G:
             writeRegister(ACCEL_CONFIG, G8);
-            accel_lsb_to_g = 8.f / 32768.f;
+            accel_lsb_to_ms2 = 8.f * g / 32768.f;
             break;
         case A_16_G:
             writeRegister(ACCEL_CONFIG, G16);
-            accel_lsb_to_g = 16.f / 32768.f;
+            accel_lsb_to_ms2 = 16.f * g / 32768.f;
             break;
     }
 }
@@ -103,9 +103,9 @@ void ICM_20608::readGyro(float &x, float &y, float &z)
     readGyroRaw(xi, yi, zi);
 
     std::array<float, 3> gyro = axeshelper(std::array<float, 3>{
-        (float)(xi) * gyro_lsb_to_degs, 
-        (float)(yi) * gyro_lsb_to_degs,
-        (float)(zi) * gyro_lsb_to_degs
+        (float)(xi) * gyro_lsb_to_rads, 
+        (float)(yi) * gyro_lsb_to_rads,
+        (float)(zi) * gyro_lsb_to_rads
     });
 
     x = gyro[0];
@@ -119,9 +119,9 @@ void ICM_20608::readAccel(float &x, float &y, float &z)
     readAccelRaw(xi, yi, zi);
 
     std::array<float, 3> accel = axeshelper(std::array<float, 3>{
-        (float)(xi) * accel_lsb_to_g, 
-        (float)(yi) * accel_lsb_to_g,
-        (float)(zi) * accel_lsb_to_g
+        (float)(xi) * accel_lsb_to_ms2, 
+        (float)(yi) * accel_lsb_to_ms2,
+        (float)(zi) * accel_lsb_to_ms2
     });
 
     x = accel[0];

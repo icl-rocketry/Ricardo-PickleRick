@@ -20,7 +20,6 @@ void Debug::initialize()
                                                Commands::ID::Reset_Orientation,
                                                Commands::ID::Reset_Localization,
                                                Commands::ID::Set_Beta,
-                                               Commands::ID::Calibrate_AccelGyro_Bias,
                                                Commands::ID::Calibrate_Mag_Full,
                                                Commands::ID::Calibrate_Baro,
                                                Commands::ID::Enter_Debug,

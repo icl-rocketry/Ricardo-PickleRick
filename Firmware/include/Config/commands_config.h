@@ -24,7 +24,9 @@ namespace Commands
         Start_Logging = 5,
         Stop_Logging = 6,
         Telemetry = 8,
-        Radio_Test = 9,
+        Sensors = 9,
+        Estimator = 10,
+        Calibrate = 11,
         Print_Flash_filesystem = 12,
         Print_Sd_filesystem = 13,
         Play_Song = 14,
@@ -33,9 +35,8 @@ namespace Commands
         Reset_Orientation = 50,
         Reset_Localization = 51,
         Set_Beta = 52,
-        Calibrate_AccelGyro_Bias = 60, // bias callibration requires sensor z axis aligned with up directioN!
+        Mag_Telemetry = 60, 
         Calibrate_Mag_Full = 61, //changed for compatibility
-        Calibrate_HighGAccel_Bias = 62,
         Calibrate_Baro = 63,
         Ignition = 69,
         Enter_Debug = 100,
@@ -55,7 +56,11 @@ namespace Commands
         Free_Ram = 250
     };
 
-    inline std::initializer_list<ID> defaultEnabledCommands = {ID::Free_Ram,ID::Telemetry,ID::Radio_Test};
+    inline std::initializer_list<ID> defaultEnabledCommands = { ID::Free_Ram,
+                                                                ID::Telemetry,
+                                                                ID::Sensors,
+                                                                ID::Estimator, 
+                                                            };
 
     inline std::unordered_map<ID, std::function<void(ForwardDecl_SystemClass &, const RnpPacketSerialized &)>> command_map{
         {ID::Launch, LaunchCommand},
@@ -65,9 +70,13 @@ namespace Commands
         {ID::Start_Logging, StartLoggingCommand},
         {ID::Stop_Logging, StopLoggingCommand},
         {ID::Telemetry, TelemetryCommand},
+        {ID::Sensors, SensorsCommand},
+        {ID::Estimator, EstimatorCommand},
+        {ID::Calibrate, CalibrateEstimatorCommand},
         {ID::Play_Song, PlaySongCommand},
         {ID::Skip_Song, SkipSongCommand},
         {ID::Clear_Song_Queue, ClearSongQueueCommand},
+        {ID::Mag_Telemetry, MagTelemetryCommand},
         {ID::Calibrate_Mag_Full, CalibrateMagFullCommand},
         {ID::Ignition, IgnitionCommand},
         {ID::Set_Beta, SetBetaCommand},

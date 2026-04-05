@@ -10,10 +10,12 @@
  */
 
 #include "Commands/commands.h"
-#include "Commands/packets/magcalcommandpacket.h"
+#include "Commands/packets/updatemagcalpacket.h"
+#include "Commands/packets/rawmagpacket.h"
 #include "Commands/packets/radiotestpacket.h"
-// #include "Commands/packets/telemetrypacket.h"
+#include "Commands/packets/telemetrypacket.h"
 #include "Commands/packets/sensorspacket.h"
+#include "Commands/packets/estimatorpacket.h"
 #include "Config/services_config.h"
 #include "States/debug.h"
 #include "States/flight.h"
@@ -54,7 +56,7 @@ void Commands::LaunchAbortCommand(System& system, const RnpPacketSerialized& pac
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Resetting event handler");
     system.eventhandler.reset();
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Reset Ignition Time");
-    system.estimator.setIgnitionTime(0);
+    // system.estimator.setIgnitionTime(0);
 
     system.statemachine.changeState(std::make_unique<Preflight>(system));
 }
@@ -73,7 +75,7 @@ void Commands::SetHomeCommand(System& system, const RnpPacketSerialized& packet)
     // if(!system.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
     // 	return;
     // }
-    system.estimator.setHome(system.sensors.getData());
+    // system.estimator.setHome(system.sensors.getData());
     system.tunezhandler.play(MelodyLibrary::confirmation);  // play sound when complete
 }
 
@@ -89,11 +91,12 @@ void Commands::StopLoggingCommand(System& system, const RnpPacketSerialized& pac
     // system.logcontroller.stopLogging((LOG_TYPE)commandpacket.arg);
 }
 
+
 void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packet)
 {
     SimpleCommandPacket commandpacket(packet);
 
-    SensorsPacket telemetry;
+    TelemetryPacket telemetry;
 
     auto raw_sensors = system.sensors.getData();
 
@@ -112,7 +115,6 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
     telemetry.gx        = raw_sensors.accelgyro.gx;
     telemetry.gy        = raw_sensors.accelgyro.gy;
     telemetry.gz        = raw_sensors.accelgyro.gz;
-    telemetry.temp_ag   = raw_sensors.accelgyro.temp;
     
     telemetry.h_ax      = raw_sensors.accel.ax;
     telemetry.h_ay      = raw_sensors.accel.ay;
@@ -121,7 +123,6 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
     telemetry.mx        = raw_sensors.mag.mx;
     telemetry.my        = raw_sensors.mag.my;
     telemetry.mz        = raw_sensors.mag.mz;
-    telemetry.temp_m    = raw_sensors.mag.temp;
     
     telemetry.baro_temp = raw_sensors.baro.temp;
     telemetry.baro_press = raw_sensors.baro.press;
@@ -129,19 +130,134 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
     telemetry.latitude  = raw_sensors.gps.latitude;
     telemetry.longitude = raw_sensors.gps.longitude;
     telemetry.altitude  = raw_sensors.gps.altitude;
-    telemetry.v_n       = raw_sensors.gps.v_n;
-    telemetry.v_e       = raw_sensors.gps.v_e;
-    telemetry.v_d       = raw_sensors.gps.v_d;
-    telemetry.hAcc      = raw_sensors.gps.hAcc;
-    telemetry.vAcc      = raw_sensors.gps.vAcc;
     telemetry.sat       = raw_sensors.gps.sat;
-    telemetry.fix       = raw_sensors.gps.fix;
     
     telemetry.system_status = system.systemstatus.getStatus();
     telemetry.system_time = millis();
 
 
     system.networkmanager.sendPacket(telemetry);
+}
+
+void Commands::SensorsCommand(System& system, const RnpPacketSerialized& packet)
+{
+    SimpleCommandPacket commandpacket(packet);
+
+    SensorsPacket sensors;
+
+    auto raw_sensors = system.sensors.getData();
+
+    sensors.header.type = 101;
+    sensors.header.source = system.networkmanager.getAddress();
+
+    sensors.header.source_service = static_cast<uint8_t>(DEFAULT_SERVICES::COMMAND);
+    sensors.header.destination = commandpacket.header.source;
+    sensors.header.destination_service = commandpacket.header.source_service;
+    sensors.header.uid = commandpacket.header.uid;
+
+    
+    sensors.ax        = raw_sensors.accelgyro.ax;
+    sensors.ay        = raw_sensors.accelgyro.ay;
+    sensors.az        = raw_sensors.accelgyro.az;
+    sensors.gx        = raw_sensors.accelgyro.gx;
+    sensors.gy        = raw_sensors.accelgyro.gy;
+    sensors.gz        = raw_sensors.accelgyro.gz;
+    sensors.temp_ag   = raw_sensors.accelgyro.temp;
+    
+    sensors.h_ax      = raw_sensors.accel.ax;
+    sensors.h_ay      = raw_sensors.accel.ay;
+    sensors.h_az      = raw_sensors.accel.az;
+    
+    sensors.mx        = raw_sensors.mag.mx;
+    sensors.my        = raw_sensors.mag.my;
+    sensors.mz        = raw_sensors.mag.mz;
+    sensors.temp_m    = raw_sensors.mag.temp;
+    
+    sensors.baro_temp = raw_sensors.baro.temp;
+    sensors.baro_press = raw_sensors.baro.press;
+    
+    sensors.latitude  = raw_sensors.gps.latitude;
+    sensors.longitude = raw_sensors.gps.longitude;
+    sensors.altitude  = raw_sensors.gps.altitude;
+    sensors.v_n       = raw_sensors.gps.v_n;
+    sensors.v_e       = raw_sensors.gps.v_e;
+    sensors.v_d       = raw_sensors.gps.v_d;
+    sensors.hAcc      = raw_sensors.gps.hAcc;
+    sensors.vAcc      = raw_sensors.gps.vAcc;
+    sensors.sat       = raw_sensors.gps.sat;
+    sensors.fix       = raw_sensors.gps.fix;
+    
+    sensors.system_status = system.systemstatus.getStatus();
+    sensors.system_time = millis();
+
+
+    system.networkmanager.sendPacket(sensors);
+}
+
+void Commands::EstimatorCommand(System& system, const RnpPacketSerialized& packet)
+{
+    SimpleCommandPacket commandpacket(packet);
+
+    EstimatorPacket estimator;
+
+    auto state = system.estimator.getData();
+
+    estimator.header.source =               system.networkmanager.getAddress();
+    estimator.header.source_service =       static_cast<uint8_t>(DEFAULT_SERVICES::COMMAND);
+    estimator.header.destination =          commandpacket.header.source;
+    estimator.header.destination_service =  commandpacket.header.source_service;
+    estimator.header.uid =                  commandpacket.header.uid;
+
+    estimator.pos_n                 = state.position(0);
+    estimator.pos_e                 = state.position(1);
+    estimator.pos_d                 = state.position(2);
+
+    estimator.vel_n                 = state.velocity(0);
+    estimator.vel_e                 = state.velocity(1);
+    estimator.vel_d                 = state.velocity(2);
+
+    estimator.acc_n                 = state.acceleration(0);
+    estimator.acc_e                 = state.acceleration(1);
+    estimator.acc_d                 = state.acceleration(2);
+
+    estimator.q0                    = state.orientation.w();
+    estimator.q1                    = state.orientation.x();
+    estimator.q2                    = state.orientation.y();
+    estimator.q3                    = state.orientation.z();
+
+    estimator.roll_rate             = state.angularRates(0);
+    estimator.pitch_rate            = state.angularRates(1);
+    estimator.yaw_rate              = state.angularRates(2);
+
+    estimator.b_gx                  = state.gyroBiases(0);
+    estimator.b_gy                  = state.gyroBiases(1);
+    estimator.b_gz                  = state.gyroBiases(2);
+
+    estimator.b_ax                  = state.accelBiases(0);
+    estimator.b_ay                  = state.accelBiases(1);
+    estimator.b_az                  = state.accelBiases(2);
+
+    estimator.calibration_quality   = state.calibration_quality;
+
+    estimator.b_hax                 = state.highGBiases(0);
+    estimator.b_hay                 = state.highGBiases(1);
+    estimator.b_haz                 = state.highGBiases(2);
+
+    estimator.ref_mn                = state.refMag(0);
+    estimator.ref_me                = state.refMag(1);
+    estimator.ref_md                = state.refMag(2);
+
+    estimator.system_status         = system.systemstatus.getStatus();
+    estimator.system_time           = millis();
+
+    system.networkmanager.sendPacket(estimator);
+}
+
+void Commands::CalibrateEstimatorCommand(System& system, const RnpPacketSerialized& packet)
+{
+
+    system.estimator.calibrate();
+
 }
 
 void Commands::PlaySongCommand(System& system, const RnpPacketSerialized& packet)
@@ -162,13 +278,13 @@ void Commands::ClearSongQueueCommand(System& system, const RnpPacketSerialized& 
 
 void Commands::ResetOrientationCommand(System& system, const RnpPacketSerialized& packet)
 {
-    system.estimator.resetOrientation();
+    // system.estimator.resetOrientation();
     system.tunezhandler.play(MelodyLibrary::confirmation);  // play sound when complete
 }
 
 void Commands::ResetLocalizationCommand(System& system, const RnpPacketSerialized& packet)
 {
-    system.estimator.resetLocalization();
+    // system.estimator.resetLocalization();
     system.tunezhandler.play(MelodyLibrary::confirmation);  // play sound when complete
 }
 
@@ -176,7 +292,31 @@ void Commands::SetBetaCommand(System& system, const RnpPacketSerialized& packet)
 {
     SimpleCommandPacket commandpacket(packet);
     float beta = ((float)commandpacket.arg) / 100.0;
-    system.estimator.changeBeta(beta);
+    // system.estimator.changeBeta(beta);
+}
+
+void Commands::MagTelemetryCommand(System& system, const RnpPacketSerialized& packet)
+{
+    SimpleCommandPacket commandpacket(packet);
+
+    RawMagPacket telemetry;
+
+    auto raw_data = system.sensors.getRawMagData();
+
+    telemetry.header.type = 101;
+    telemetry.header.source = system.networkmanager.getAddress();
+
+    telemetry.header.source_service = static_cast<uint8_t>(DEFAULT_SERVICES::COMMAND);
+    telemetry.header.destination = commandpacket.header.source;
+    telemetry.header.destination_service = commandpacket.header.source_service;
+    telemetry.header.uid = commandpacket.header.uid;
+
+    
+    telemetry.mx        = raw_data(0);
+    telemetry.my        = raw_data(1);
+    telemetry.mz        = raw_data(2);
+
+    system.networkmanager.sendPacket(telemetry);
 }
 
 void Commands::CalibrateMagFullCommand(System& system, const RnpPacketSerialized& packet)
@@ -189,17 +329,15 @@ void Commands::CalibrateMagFullCommand(System& system, const RnpPacketSerialized
         return;
     }
 
-    MagCalCommandPacket magcalpacket(packet);
-    system.sensors.calibrateMag(MagCalibrationParameters{
-        magcalpacket.fieldMagnitude, magcalpacket.inclination, magcalpacket.declination,
-        magcalpacket.getA(), magcalpacket.getB()});
+    UpdateMagCalPacket magcalpacket(packet);
+    system.sensors.calibrateMag(MagCalibrationParameters{magcalpacket.getA(), magcalpacket.getB()});
     system.tunezhandler.play(MelodyLibrary::confirmation);  // play sound when complete
 }
 
 void Commands::IgnitionCommand(System& system, const RnpPacketSerialized& packet)
 {
     uint32_t currentTime = millis();
-    system.estimator.setIgnitionTime(currentTime);  // set igintion time
+    // system.estimator.setIgnitionTime(currentTime);  // set igintion time
 }
 
 void Commands::EnterDebugCommand(System& system, const RnpPacketSerialized& packet)
@@ -237,7 +375,7 @@ void Commands::ExitDebugCommand(System& system, const RnpPacketSerialized& packe
 
 void Commands::LiftoffOverrideCommand(System& system, const RnpPacketSerialized& packet)
 {
-    system.estimator.setLiftoffTime(millis());
+    // system.estimator.setLiftoffTime(millis());
     system.tunezhandler.play(MelodyLibrary::confirmation);  // play sound when complete
     system.statemachine.changeState(std::make_unique<Flight>(system));
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
@@ -286,7 +424,7 @@ void Commands::ApogeeOverrideCommand(System& system, const RnpPacketSerialized& 
     SimpleCommandPacket commandpacket(packet);
 
     system.systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_APOGEE, "Apogee Triggered!");
-    system.estimator.setApogeeTime(millis());
+    // system.estimator.setApogeeTime(millis());
 
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
         "Apogee Time Overriden, transitioning to Recovery State!");

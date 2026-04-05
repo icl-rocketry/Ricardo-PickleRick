@@ -31,12 +31,16 @@ namespace Commands{
     void StartLoggingCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void StopLoggingCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void TelemetryCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void SensorsCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void EstimatorCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void CalibrateEstimatorCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void PlaySongCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void SkipSongCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void ClearSongQueueCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void ResetOrientationCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void ResetLocalizationCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void SetBetaCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void MagTelemetryCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void CalibrateMagFullCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void IgnitionCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void EnterDebugCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);

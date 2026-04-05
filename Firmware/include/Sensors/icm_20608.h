@@ -56,8 +56,9 @@ class ICM_20608{
         uint8_t readRegister(uint8_t reg);
         void writeRegister(uint8_t reg, uint8_t val);
 
-        float gyro_lsb_to_degs;
-        float accel_lsb_to_g;
+        float gyro_lsb_to_rads;
+        float accel_lsb_to_ms2;
+        static constexpr float g = 9.80665f;
 
         static constexpr float temperature_sensitivity = 326.8f;
 

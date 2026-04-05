@@ -345,10 +345,6 @@ void MAX_M10S::sendUbx(uint8_t msgClass, uint8_t msgId,
     frame[6 + len]     = ckA;
     frame[6 + len + 1] = ckB;
 
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
-        "MAX_M10S sendUbx class=0x" + std::to_string(msgClass) +
-        " id=0x" + std::to_string(msgId) +
-        " len="  + std::to_string(len));
     writeBytes(frame, frameLen);
 }
 

@@ -15,61 +15,31 @@
 #include "Sensors/sensorStructs.h"
 
 struct MagCalibrationParameters{
-    float fieldMagnitude;
-    float inclination;
-    float declination;
-    Eigen::Matrix3f A_1;
-    Eigen::Vector3f b;
+    Eigen::Matrix3f A_1;    // soft iron
+    Eigen::Vector3f b;      // hard iron
 };
 
 class MMC5983MA{
     public:
-        /**
-         * @brief Construct a new MMC5983MA object using spi bus
-         * 
-         * @param spi 
-         * @param systemstatus 
-         * @param logcontroller 
-         * @param cs 
-         */
+
         MMC5983MA(SPIClass& spi,uint8_t cs,Types::CoreTypes::SystemStatus_t& systemstatus);
-
-        /**
-         * @brief Construct a new MMC5983MA object using i2c bus 
-         * Chip select is required as it selects the communication mode of the
-         * MMC5983MA. Pulled High enables i2c.
-         * -> for some unkown reason the first pickle rick mmc5983ma doesnt respond over spi hence this class was created
-         * 
-         * @param wire 
-         * @param systemstatus 
-         * @param logcontroller 
-         * @param scl 
-         * @param sda 
-         */
-        MMC5983MA(TwoWire &wire, uint8_t scl, uint8_t sda,SPIClass &spi, uint8_t cs,Types::CoreTypes::SystemStatus_t &systemstatus);
-
 
 
         void setup(const std::array<uint8_t,3>& axesOrder,const std::array<bool,3>& axesFlip);
 
         void update(SensorStructs::MAG_3AXIS_t& data);
 
+        Eigen::Vector3f getRawData(SensorStructs::MAG_3AXIS_t& data);
+        
         void calibrate(MagCalibrationParameters magCal); // full calibration of mag
 
     private:
-
-        const bool _useSPI;
 
         SPIClass* _spi;
         SPISettings _settings;
         const uint8_t _cs;
 
-        TwoWire* _wire;
-        const uint8_t _scl;
-        const uint8_t _sda;
-
-        Types::CoreTypes::SystemStatus_t& _systemstatus;
-    
+        Types::CoreTypes::SystemStatus_t& _systemstatus;    
 
         AxesHelper<> axeshelper;
 

@@ -3,8 +3,6 @@
 #include <librnp/rnp_packet.h>
 #include <librnp/rnp_serializer.h>
 
-#include <vector>
-
 class TelemetryPacket : public RnpPacket{
     private:
     //serializer framework
@@ -27,9 +25,9 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::q1,
                 &TelemetryPacket::q2,
                 &TelemetryPacket::q3,
-                &TelemetryPacket::lat,
-                &TelemetryPacket::lng,
-                &TelemetryPacket::alt,
+                &TelemetryPacket::latitude,
+                &TelemetryPacket::longitude,
+                &TelemetryPacket::altitude,
                 &TelemetryPacket::sat,
                 &TelemetryPacket::ax,
                 &TelemetryPacket::ay,
@@ -92,8 +90,8 @@ class TelemetryPacket : public RnpPacket{
         float roll,pitch,yaw; // orientation degrees
         float q0,q1,q2,q3; //quaternion representation
         //gps
-        float lat,lng;
-        long alt;//in mm
+        float latitude,longitude;
+        long altitude;//in mm
         uint8_t sat;
         //imu
         float ax, ay, az; // acceleration (g's)
