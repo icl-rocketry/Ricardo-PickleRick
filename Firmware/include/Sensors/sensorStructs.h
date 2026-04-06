@@ -36,8 +36,8 @@ namespace SensorStructs
     };
     
     struct BARO_t{
-        float temp;
-        float press;
+        float temp;     // Kelvin
+        float press;    // Pa
     };
     
     struct GPS_t{
@@ -45,60 +45,34 @@ namespace SensorStructs
         // Keep as raw integer — float loses precision at real-world coordinates
         int32_t latitude;       // degrees * 1e-7  (divide by 1e7f only when needed)
         int32_t longitude;      // degrees * 1e-7
-        // Rest in SI units
-        float altitude;         // m from mean sea level
+        float   altitude;       // m from mean sea level
 
-        float v_n;              // m/s
-        float v_e;              // m/s
-        float v_d;              // m/s
+        float   v_n;            // m/s
+        float   v_e;            // m/s
+        float   v_d;            // m/s
 
-        float hAcc;             // m horizontal accuracy
-        float vAcc;             // m vertial accuracy
+        float   hAcc;           // m horizontal accuracy
+        float   vAcc;           // m vertial accuracy
         
         uint8_t sat;            // number of satilites
         uint8_t fix;            // gps fix type
-        bool updated;           // flag if gps values have been updated
-        bool valid;
+        bool    updated;        // flag if gps values have been updated
+        bool    valid;
     };
 
     struct ADC_V_RAIL_t{
-        /**
-         * @brief Voltage in mV
-         * 
-         */
-        int volt;
-        
-        /**
-         * @brief Percentage in reference to max voltage expeceted 
-         * 
-         */
-        int percent;
+
+        int volt;       // mV
+        int percent;    // Percentage in reference to max voltage expeceted 
     };
 
     struct INA_V_RAIL_t{
-        /**
-         * @brief Voltage in mV
-         * 
-         */
-        int volt;
 
-        /**
-         * @brief Current in mA
-         * 
-         */
-        int current;
+        int volt;       // mV
+        int current;    // mA
+        int power;      // mW
+        int percent;    // Percentage in reference to max voltage expeceted 
 
-        /**
-         * @brief Power in mW
-         * 
-         */
-        int power;
-        
-        /**
-         * @brief Percentage in reference to max voltage expeceted 
-         * 
-         */
-        int percent;
     };
 
     struct raw_measurements_t
@@ -112,6 +86,17 @@ namespace SensorStructs
         INA_V_RAIL_t deprail;
 
         uint64_t system_time;
+    };
+
+    struct home_ref_t
+    {
+        // GPS
+        int32_t launch_lat;
+        int32_t launch_lon;
+        float   launch_alt;
+        // Baro
+        float   launch_pressure;
+        float   launch_temperature;
     };
 
     struct state_t
@@ -128,11 +113,17 @@ namespace SensorStructs
 
         uint8_t calibration_quality;
 
-        Eigen::Vector3f expectedMagReading;     // (unit direction vector)              (NED)
-        Eigen::Vector3f expectedAccelReading;   // (unit direction vector)              (body)
+        Eigen::Vector3f expectedMagReading;     // (unit direction vector)              (body)
+        Eigen::Vector3f expectedAccelReading;   // (m/s^2)                              (body)
+        Eigen::Vector2f expectedBaroReading;    // (Kelvin, Pascal)                     (NED)
+        Eigen::Vector3f expectedGpsPosReading;  // (m)                                  (NED)
+        Eigen::Vector3f expectedGpsVelReading;  // (m/s)                                (NED)
         
         Eigen::Vector3f magInnovation;          // (unit direction vector)              
-        Eigen::Vector3f accelInnovation;        // (unit direction vector)              
+        Eigen::Vector3f accelInnovation;        // (m/s^2)              
+        Eigen::Vector2f baroInnovation;         // (Kelvin, Pascal)
+        Eigen::Vector3f gpsPosInnovation;       // (m)
+        Eigen::Vector3f gpsVelInnovation;       // (m/s)
 
 
         Eigen::Vector3f highGBiases;            // (m/s^2)                              (body)
@@ -140,9 +131,7 @@ namespace SensorStructs
 
 
         // Launch Site
-        float gps_launch_lat, gps_launch_long;
-        long gps_launch_alt;
-        float baro_ref_alt;
+        home_ref_t launch_ref;
 
         //times -> all must be initialized to zero
         uint32_t ignitionTime{0};
@@ -167,5 +156,6 @@ namespace SensorStructs
          */
         uint8_t estimator_state;
     };
+
 
 }

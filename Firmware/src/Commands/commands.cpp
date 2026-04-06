@@ -72,10 +72,7 @@ void Commands::FlightAbortCommand(System& system, const RnpPacketSerialized& pac
 
 void Commands::SetHomeCommand(System& system, const RnpPacketSerialized& packet)
 {
-    // if(!system.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
-    // 	return;
-    // }
-    // system.estimator.setHome(system.sensors.getData());
+    system.estimator.setHome();
     system.tunezhandler.play(MelodyLibrary::confirmation);  // play sound when complete
 }
 
@@ -243,6 +240,17 @@ void Commands::EstimatorCommand(System& system, const RnpPacketSerialized& packe
     estimator.h_ay                  = state.expectedAccelReading(1);
     estimator.h_az                  = state.expectedAccelReading(2);
 
+    estimator.h_bt                  = state.expectedBaroReading(0);
+    estimator.h_bp                  = state.expectedBaroReading(1);
+
+    estimator.h_pn                  = state.expectedGpsPosReading(0);
+    estimator.h_pe                  = state.expectedGpsPosReading(1);
+    estimator.h_pd                  = state.expectedGpsPosReading(2);
+
+    estimator.h_vn                  = state.expectedGpsVelReading(0);
+    estimator.h_ve                  = state.expectedGpsVelReading(1);
+    estimator.h_vd                  = state.expectedGpsVelReading(2);
+
     estimator.y_mx                  = state.magInnovation(0);
     estimator.y_my                  = state.magInnovation(1);
     estimator.y_mz                  = state.magInnovation(2);
@@ -250,6 +258,17 @@ void Commands::EstimatorCommand(System& system, const RnpPacketSerialized& packe
     estimator.y_ax                  = state.accelInnovation(0);
     estimator.y_ay                  = state.accelInnovation(1);
     estimator.y_az                  = state.accelInnovation(2);
+
+    estimator.y_bt                  = state.baroInnovation(0);
+    estimator.y_bp                  = state.baroInnovation(1);
+
+    estimator.y_pn                  = state.gpsPosInnovation(0);
+    estimator.y_pe                  = state.gpsPosInnovation(1);
+    estimator.y_pd                  = state.gpsPosInnovation(2);
+
+    estimator.y_vn                  = state.gpsVelInnovation(0);
+    estimator.y_ve                  = state.gpsVelInnovation(1);
+    estimator.y_vd                  = state.gpsVelInnovation(2);
 
     estimator.b_hax                 = state.highGBiases(0);
     estimator.b_hay                 = state.highGBiases(1);

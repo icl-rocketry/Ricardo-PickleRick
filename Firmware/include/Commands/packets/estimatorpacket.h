@@ -48,6 +48,17 @@ class EstimatorPacket : public RnpPacket{
                 &EstimatorPacket::h_ay,
                 &EstimatorPacket::h_az,
 
+                &EstimatorPacket::h_bt,
+                &EstimatorPacket::h_bp,
+                
+                &EstimatorPacket::h_pn,
+                &EstimatorPacket::h_pe,
+                &EstimatorPacket::h_pd,
+
+                &EstimatorPacket::h_vn,
+                &EstimatorPacket::h_ve,
+                &EstimatorPacket::h_vd,
+
                 &EstimatorPacket::y_mx,
                 &EstimatorPacket::y_my,
                 &EstimatorPacket::y_mz,
@@ -55,6 +66,17 @@ class EstimatorPacket : public RnpPacket{
                 &EstimatorPacket::y_ax,
                 &EstimatorPacket::y_ay,
                 &EstimatorPacket::y_az,
+
+                &EstimatorPacket::y_bt,
+                &EstimatorPacket::y_bp,
+
+                &EstimatorPacket::y_pn,
+                &EstimatorPacket::y_pe,
+                &EstimatorPacket::y_pd,
+
+                &EstimatorPacket::y_vn,
+                &EstimatorPacket::y_ve,
+                &EstimatorPacket::y_vd,
 
                 &EstimatorPacket::b_hax,
                 &EstimatorPacket::b_hay,
@@ -106,9 +128,15 @@ class EstimatorPacket : public RnpPacket{
         
         float h_mx, h_my, h_mz;                 // expected mag readings (body frame)
         float h_ax, h_ay, h_az;                 // expected accel readings (body frame)
+        float h_bt, h_bp;                       // expected baro readings (NED frame)
+        float h_pn, h_pe, h_pd;                 // expected gps pos readings (NED frame)
+        float h_vn, h_ve, h_vd;                 // expected gps vel readings (NED frame)
     
         float y_mx, y_my, y_mz;                 // innovation from mag readings (body frame)
         float y_ax, y_ay, y_az;                 // innovation from accel readings (body frame)
+        float y_bt, y_bp;                       // innovation from baro readings (NED frame)
+        float y_pn, y_pe, y_pd;                 // innovation from gps pos readings (NED frame)
+        float y_vn, y_ve, y_vd;                 // innovation from gps vel readings (NED frame)
         
         float b_hax, b_hay, b_haz;              // high-g accel biases (m/s^2) (body frame)
         float ref_mn, ref_me, ref_md;           // ref mag vec for declination (G) (NED frame)

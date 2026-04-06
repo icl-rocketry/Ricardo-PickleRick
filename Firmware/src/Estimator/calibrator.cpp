@@ -10,16 +10,18 @@ void Calibrator::setup()
     m_ay_accum = 0.0f;
     m_az_accum = 0.0f;
 
-    m_lat_accum = 0.0f;
-    m_lng_accum = 0.0f;
+    m_lat_accum = 0;
+    m_lng_accum = 0;
+    m_alt_accum = 0.0f;
 
-    m_number_of_measurements = 0;
+    m_number_of_calibration_measurements = 0;
+    m_number_of_setHome_measurements = 0;
     m_valid_gps_readings = 0;
 
     loadCalibration();
 }
 
-void Calibrator::update(const SensorStructs::raw_measurements_t &raw_sensors)
+void Calibrator::updateCalibration(const SensorStructs::raw_measurements_t &raw_sensors)
 {
     m_gx_accum    +=    raw_sensors.accelgyro.gx;
     m_gy_accum    +=    raw_sensors.accelgyro.gy;
@@ -33,20 +35,20 @@ void Calibrator::update(const SensorStructs::raw_measurements_t &raw_sensors)
     m_hay_accum   +=    raw_sensors.accel.ay;
     m_haz_accum   +=    raw_sensors.accel.az;
 
-    m_lat_accum   +=    static_cast<float>(raw_sensors.gps.latitude)  * 1e-7f;
-    m_lng_accum   +=    static_cast<float>(raw_sensors.gps.longitude) * 1e-7f;
+    m_lat_accum   +=    raw_sensors.gps.latitude;
+    m_lng_accum   +=    raw_sensors.gps.longitude;
     m_alt_accum   +=    raw_sensors.gps.altitude;
 
     if (raw_sensors.gps.valid) { m_valid_gps_readings++; }
-    m_number_of_measurements++;
+    m_number_of_calibration_measurements++;
 
 };
 
-void Calibrator::compute()
+void Calibrator::computeCalibration()
 {
-    if (m_number_of_measurements == 0) { return; }
+    if (m_number_of_calibration_measurements == 0) { return; }
 
-    const float n = static_cast<float>(m_number_of_measurements);
+    const float n = static_cast<float>(m_number_of_calibration_measurements);
 
     m_gx_bias  = m_gx_accum  / n;
     m_gy_bias  = m_gy_accum  / n;
@@ -60,17 +62,15 @@ void Calibrator::compute()
     m_hay_bias = m_hay_accum / n;
     m_haz_bias = m_haz_accum / n + g;
 
-    if (m_number_of_measurements == m_valid_gps_readings) { 
-        
-        // only update if gps is working
-        const float lat = m_lat_accum / n;
-        const float lng = m_lng_accum / n;
-        const float alt = m_alt_accum / n;
-        
-        computeMagRef(lat, lng, alt);
+    if (m_number_of_calibration_measurements == m_valid_gps_readings) { 
+        const double lat = (static_cast<double>(m_lat_accum) / n) * 1e-7;
+        const double lon = (static_cast<double>(m_lng_accum) / n) * 1e-7;
+        const float  alt = m_alt_accum / n;
+
+        computeMagRef(lat, lon, alt);
         m_calibration_quality = 2;
     } else {
-        computeMagRef(51.5074f, -0.1278f, 0.0f);
+        computeMagRef(51.5074, -0.1278, 0.0f);
         m_calibration_quality = 1;
     }
 
@@ -84,68 +84,100 @@ void Calibrator::compute()
     m_ay_accum = 0.0f;
     m_az_accum = 0.0f;
 
-    m_lat_accum = 0.0f;
-    m_lng_accum = 0.0f;
+    m_lat_accum = 0;
+    m_lng_accum = 0;
+    m_alt_accum = 0.0f;
 
-    m_number_of_measurements = 0.0f;
+    m_number_of_calibration_measurements = 0.0f;
     m_valid_gps_readings = 0.0f;
 
 }
 
-void Calibrator::computeMagRef(float lat_deg, float lon_deg, float alt_m)
+void Calibrator::updateSetHome(const SensorStructs::raw_measurements_t &raw_sensors)
+{
+
+    m_lat_accum   +=    raw_sensors.gps.latitude;
+    m_lng_accum   +=    raw_sensors.gps.longitude;
+    m_alt_accum   +=    raw_sensors.gps.altitude;
+
+    m_pressure_accum    += raw_sensors.baro.press;
+    m_temperature_accum += raw_sensors.baro.temp;
+
+    m_number_of_setHome_measurements++;
+
+};
+
+void Calibrator::computeSetHome()
+{
+    if (m_number_of_setHome_measurements == 0) { return; }
+
+    float n = static_cast<float>(m_number_of_setHome_measurements);
+
+    // ── GPS reference — average in int64 then round back to int32 ────────────
+    m_setHome_ref.launch_lat = static_cast<int32_t>(m_lat_accum / m_number_of_setHome_measurements);
+    m_setHome_ref.launch_lon = static_cast<int32_t>(m_lng_accum / m_number_of_setHome_measurements);
+    m_setHome_ref.launch_alt = m_alt_accum / n;
+
+    // ── Baro reference ────────────────────────────────────────────────────────
+    m_setHome_ref.launch_pressure    = m_pressure_accum    / n;
+    m_setHome_ref.launch_temperature = m_temperature_accum / n;
+
+    // ── Reset accumulators ────────────────────────────────────────────────────
+    m_lat_accum          = 0;
+    m_lng_accum          = 0;
+    m_alt_accum          = 0.0f;
+    m_pressure_accum     = 0.0f;
+    m_temperature_accum  = 0.0f;
+    m_number_of_setHome_measurements = 0;
+}
+
+void Calibrator::computeMagRef(double lat_deg, double lon_deg, float alt_m)
 {
     // ── IGRF-14 degree-1 coefficients (epoch 2025.0, units: nT) ──────────────
-    // Source: https://www.ngdc.noaa.gov/IAGA/vmod/igrf.html
-    // These are the g and h Gauss coefficients for n=1
-    static constexpr float g10 = -29351.0f;  // n=1, m=0
-    static constexpr float g11 =  -1411.0f;  // n=1, m=1
-    static constexpr float h11 =   4766.0f;  // n=1, m=1
+    static constexpr double g10 = -29351.0;
+    static constexpr double g11 =  -1411.0;
+    static constexpr double h11 =   4766.0;
 
-    // ── Mean Earth radius and reference radius ────────────────────────────────
-    static constexpr float Re   = 6371200.0f;  // m
-    static constexpr float a    = 6371200.0f;  // IGRF reference radius (m)
+    // ── Earth radius and IGRF reference radius ────────────────────────────────
+    static constexpr double Re = 6371200.0;
+    static constexpr double a  = 6371200.0;
 
-    const float r     = Re + alt_m;
-    const float ratio = (a / r);
-    const float ratio3 = ratio * ratio * ratio;  // (a/r)^3 for degree-1
+    const double r      = Re + static_cast<double>(alt_m);
+    const double ratio  = a / r;
+    const double ratio3 = ratio * ratio * ratio;
 
     // ── Convert to radians ────────────────────────────────────────────────────
-    static constexpr float DEG2RAD = M_PI / 180.0f;
-    const float lat = lat_deg * DEG2RAD;
-    const float lon = lon_deg * DEG2RAD;
+    static constexpr double DEG2RAD = M_PI / 180.0;
+    const double lat = lat_deg * DEG2RAD;
+    const double lon = lon_deg * DEG2RAD;
 
-    const float sinLat = std::sin(lat);
-    const float cosLat = std::cos(lat);
-    const float sinLon = std::sin(lon);
-    const float cosLon = std::cos(lon);
+    const double sinLat = std::sin(lat);
+    const double cosLat = std::cos(lat);
+    const double sinLon = std::sin(lon);
+    const double cosLon = std::cos(lon);
 
     // ── Spherical harmonic field components (geocentric, nT) ─────────────────
-    // Radial component (positive outward)
-    const float Br =  ratio3 * 2.0f * (g10 * sinLat
+    const double Br =  ratio3 * 2.0 * (g10 * sinLat
                                       + g11 * cosLat * cosLon
                                       + h11 * cosLat * sinLon);
 
-    // South-to-north component (positive northward along meridian)
-    const float Bt = -ratio3 * (-g10 * cosLat
-                                + g11 * sinLat * cosLon
-                                + h11 * sinLat * sinLon);
+    const double Bt = -ratio3 * (-g10 * cosLat
+                                 + g11 * sinLat * cosLon
+                                 + h11 * sinLat * sinLon);
 
-    // West-to-east component (positive eastward)
-    const float Bp = -ratio3 * (-g11 * sinLon
-                                +  h11 * cosLon);
+    const double Bp = -ratio3 * (-g11 * sinLon
+                                 + h11 * cosLon);
 
     // ── Convert geocentric spherical to NED ───────────────────────────────────
-    // Bt points south in geocentric theta convention, so North = -Bt
-    // Br points outward (up), so Down = -Br
-    const Eigen::Vector3f mag_ned(-Bt,   // North
+    const Eigen::Vector3d mag_ned(-Bt,   // North
                                    Bp,   // East
                                   -Br);  // Down
 
-    // ── Normalise and store ───────────────────────────────────────────────────
-    const Eigen::Vector3f mag_ref = mag_ned.normalized();
-    m_mag_ref_n = mag_ref(0);
-    m_mag_ref_e = mag_ref(1);
-    m_mag_ref_d = mag_ref(2);
+    // ── Normalise and store as float ──────────────────────────────────────────
+    const Eigen::Vector3d mag_ref = mag_ned.normalized();
+    m_mag_ref_n = static_cast<float>(mag_ref(0));
+    m_mag_ref_e = static_cast<float>(mag_ref(1));
+    m_mag_ref_d = static_cast<float>(mag_ref(2));
 }
 
 void Calibrator::saveCalibration()

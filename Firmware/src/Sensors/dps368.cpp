@@ -156,7 +156,7 @@ float DPS368::compensateTemperature(int32_t raw)
 {
     // Tcomp (°C) = c0 * 0.5 + c1 * Traw_sc  (datasheet section 4.9.2)
     float Traw_sc = static_cast<float>(raw) / kT;
-    return (_c0Half) + (_c1 * Traw_sc);
+    return (_c0Half) + (_c1 * Traw_sc) + 273.15f;
 }
 
 float DPS368::compensatePressure(int32_t rawP, float Traw_sc)

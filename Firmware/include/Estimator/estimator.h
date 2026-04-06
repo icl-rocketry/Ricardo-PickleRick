@@ -35,7 +35,7 @@ class Estimator{
         void update(const SensorStructs::raw_measurements_t& raw_sensors);
 
         void calibrate();
-        void setHome(const SensorStructs::raw_measurements_t& raw_sensors); //records the current position as the launch site
+        void setHome(); //records the current position as the launch site
         
         bool isHomeSet() { return m_homeSet; };
         const SensorStructs::state_t& getData() { return m_state; };
@@ -49,7 +49,7 @@ class Estimator{
         unsigned long m_update_frequency;
 
         bool m_homeSet;        
-        bool m_initialised; // has this device ever been calibrated (req for mag)
+        bool m_settingHome; 
         bool m_calibrating;
         Eigen::Quaternionf m_refOrientation;
         

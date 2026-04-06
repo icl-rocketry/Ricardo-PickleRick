@@ -1,50 +1,77 @@
 #include "Estimator/ekf.h"
 
-void EKF::setup(
-    const Eigen::Vector3f& gyro_bias, 
-    const Eigen::Vector3f& accel_bias, 
-    const Eigen::Vector3f& mag_ref
+void EKF::setup(const Eigen::Vector3f& gyro_bias, 
+                const Eigen::Vector3f& accel_bias, 
+                const Eigen::Vector3f& h_accel_bias,
+                const Eigen::Vector3f& mag_ref
 )
 {
     m_x.setZero();
 
     // Initialise quaternion to identity [1, 0, 0, 0]
-    m_x(9) = 1.0f;
+    m_x(6) = 1.0f;
 
     // Seed bias states from calibration
-    m_x.segment<3>(13) = accel_bias;
+    m_x.segment<3>(10) = accel_bias;
+    m_x.segment<3>(13) = gyro_bias;
+    m_h_accel_bias  = h_accel_bias;
+    m_mag_ref       = mag_ref;
 
     // Initial covariance — large uncertainty on everything except quaternion
     m_P.setZero();
     m_P.block<3,3>(0,0)   = 100.0f  * Eigen::Matrix3f::Identity();           // position
     m_P.block<3,3>(3,3)   = 10.0f   * Eigen::Matrix3f::Identity();           // velocity
-    m_P.block<3,3>(6,6)   = 10.0f   * Eigen::Matrix3f::Identity();           // acceleration
-    m_P.block<4,4>(9,9)   = 1.0f    * Eigen::Matrix<float,4,4>::Identity();  // quaternion
-    m_P.block<3,3>(13,13) = 0.0f    * Eigen::Matrix3f::Identity();           // accel bias (bias frozen for now)
+    m_P.block<4,4>(6,6)   = 1.0f    * Eigen::Matrix<float,4,4>::Identity();  // quaternion
+    m_P.block<3,3>(10,10) = 1e-8f   * Eigen::Matrix3f::Identity();           // accel bias (bias frozen for now)
+    m_P.block<3,3>(13,13) = 1e-8f   * Eigen::Matrix3f::Identity();           // gyro bias (bias frozen for now)
 
-    m_gyro_bias = gyro_bias;
-    m_mag_ref = mag_ref;
+    m_setHome_ref.launch_lat = 515074000;
+    m_setHome_ref.launch_lon = -1278000;
+    m_setHome_ref.launch_alt = 400.0f;
+    m_setHome_ref.launch_pressure    = 101325.0f;
+    m_setHome_ref.launch_temperature = 288.15f;
     
 }
 
-void EKF::update(const Eigen::Vector3f gyro, const Eigen::Vector3f accel, const Eigen::Vector3f mag)
+void EKF::update(   const Eigen::Vector3f gyro, 
+                    const Eigen::Vector3f accel, 
+                    const Eigen::Vector3f h_accel, 
+                    const Eigen::Vector3f mag,
+                    const float pressure,
+                    const float temperature,
+                    const SensorStructs::GPS_t& gps
+                )
 {
     const uint32_t now = micros();  // use micros not millis for better dt resolution
     const float dt = (m_lastPredictTime == 0) 
-                     ? 0.0f 
-                     : static_cast<float>(now - m_lastPredictTime) * 1e-6f;
+    ? 0.0f 
+    : static_cast<float>(now - m_lastPredictTime) * 1e-6f;
     m_lastPredictTime = now;
-
+    
     if (dt <= 0.0f || dt > 0.5f) { return; }  // sanity check — skip bad dt
-
-    predict(dt, gyro - m_gyro_bias);
+    
+    predict(dt, gyro, accel, h_accel);
 
     updateMag(mag);
 
     updateLowGAccel(accel);
+
+    updateBaro(pressure, temperature);
+
+    updateGPS(gps);
 }
 
-void EKF::predict(const float dt, const Eigen::Vector3f gyro)
+void EKF::setHome(const SensorStructs::home_ref_t& setHome_ref) 
+{ 
+    m_setHome_ref = setHome_ref; 
+    m_x.segment<6>(0).setZero();
+};
+
+void EKF::predict(  const float dt, 
+                    const Eigen::Vector3f gyro, 
+                    const Eigen::Vector3f accel, 
+                    const Eigen::Vector3f h_accel
+                )
 {
     using Mat3  = Eigen::Matrix3f;
     using Mat4  = Eigen::Matrix<float, 4, 4>;
@@ -53,22 +80,24 @@ void EKF::predict(const float dt, const Eigen::Vector3f gyro)
 
     const Mat3 I3 = Mat3::Identity();
 
-    // ── Extract state ─────────────────────────────────────────────────────────
-    Vec4 q = m_x.segment<4>(9);
+    // ── Attitude update ─────────────────────────────────────────────────────────
+    Vec4 q = m_x.segment<4>(6);
     q.normalize();
     const float q0 = q(0), q1 = q(1), q2 = q(2), q3 = q(3);
 
-    const float wx = gyro(0), wy = gyro(1), wz = gyro(2);
+    const float wx = gyro(0) - m_x(13);
+    const float wy = gyro(1) - m_x(14);
+    const float wz = gyro(2) - m_x(15);
+    const Eigen::Vector3f gyro_unbiased(wx, wy, wz);
+    const float w_norm = gyro_unbiased.norm();
 
-    // ── Attitude block ────────────────────────────────────────────────────────
     Mat4 Omega;
     Omega <<     0, -wx, -wy, -wz,
                 wx,   0,  wz, -wy,
                 wy, -wz,   0,  wx,
-                wz,  wy, -wx,  0;
+                wz,  wy, -wx,   0;
 
     Mat4 F_qq;
-    const float w_norm = gyro.norm();
     if (w_norm > 1e-9f)
     {
         // exp((dt/2)*omega) [dont need i from e^ix = cosx + isinx for weird maths reasons]
@@ -79,6 +108,11 @@ void EKF::predict(const float dt, const Eigen::Vector3f gyro)
     {
         F_qq = Mat4::Identity() + 0.5f * dt * Omega;
     }
+        
+    m_x.segment<4>(6) = F_qq * q;
+    m_x.segment<4>(6).normalize();
+
+    // ── Attitude process noise ──────────────────────────────────────────────────
 
     // jacobian of prediction wrt angular rates
     Mat43 E_q;
@@ -86,29 +120,68 @@ void EKF::predict(const float dt, const Eigen::Vector3f gyro)
             q0, -q3,  q2,
             q3,  q0, -q1,
            -q2,  q1,  q0;
-
-    // ── Attitude process noise (quaternion only) ──────────────────
+    
     const Eigen::Matrix<float, 4, 3> G_w = 0.5f * dt * E_q;
     m_Q_att = (SIGMA_ALPHA * SIGMA_ALPHA) * (G_w * G_w.transpose());
+           
 
-    // ── Accel bias process noise ──────────────────────────────────────────────
-    const Mat3 Q_ba_low = (SIGMA_BA_LOW * SIGMA_BA_LOW * dt) * I3;
+    // ── Translation update ───────────────────────────────────────────────────────
+
+    // ── Select accelerometer
+    const float accel_norm   = accel.norm();
+
+    Eigen::Vector3f accel_input;
+    if (accel_norm < LOW_G_SATURATION)          // low-g not saturated
+    {
+        accel_input = accel - m_x.segment<3>(10);
+    }
+    else
+    {
+        accel_input = h_accel - m_h_accel_bias;
+    }
+
+    Vec4 q_new = m_x.segment<4>(6);
+    const Mat3 R_body_to_ned = Eigen::Quaternionf(q_new(0), q_new(1), q_new(2), q_new(3)).toRotationMatrix();
+
+    const Eigen::Vector3f g_ned(0.0f, 0.0f, -g);
+
+    const Eigen::Vector3f a_ned = R_body_to_ned * (accel_input) - g_ned;
+    const float dt2 = dt * dt;
+
+    m_x.segment<3>(0) += m_x.segment<3>(3) * dt + 0.5f * a_ned * dt2;  
+    m_x.segment<3>(3) += a_ned * dt; 
+
+    // ── Translation process noise ────────────────────────────────────────────────
+
+    const float dt3 = dt2 * dt;
+    const float qj  = SIGMA_JERK * SIGMA_JERK;
+
+    Eigen::Matrix<float, 2, 2> Q_sub;
+    Q_sub << qj * dt3 / 3.0f,  qj * dt2 / 2.0f,
+            qj * dt2 / 2.0f,  qj * dt;
+
+    // Q_trans = kron(Q_sub, I3) — 6×6
+    m_Q_trans.setZero();
+    for (int i = 0; i < 2; i++)
+        for (int j = 0; j < 2; j++)
+            m_Q_trans.block<3,3>(i*3, j*3) = Q_sub(i,j) * I3;
+
 
     // ── Full F and Q matrices (16×16) ─────────────────────────────────────────
     m_F.setZero();
-    m_F.block<9,9>(0,0)   = m_F_trans;
-    m_F.block<4,4>(9,9)   = F_qq;
-    m_F.block<3,3>(13,13) = I3;   // accel bias — random walk
+    m_F.block<3,3>(0,0)   = I3;
+    m_F.block<3,3>(0,3)   = dt * I3;   // position depends on velocity
+    m_F.block<3,3>(3,3)   = I3;        // velocity integrates
+    m_F.block<4,4>(6,6)   = F_qq;      // attitude
+    m_F.block<3,3>(10,10) = I3;        // accel bias
+    m_F.block<3,3>(13,13) = I3;        // gyro bias
+    m_F.block<4,3>(6,13)  = -G_w;      // gyro bias cross term
 
     m_Q.setZero();
-    m_Q.block<9,9>(0,0)   = m_Q_trans;
-    m_Q.block<4,4>(9,9)   = m_Q_att;
-    m_Q.block<3,3>(13,13) = Q_ba_low;
-
-    // ── Propagate state ───────────────────────────────────────────────────────
-    m_x.segment<9>(0) = m_F_trans * m_x.segment<9>(0);
-    m_x.segment<4>(9) = F_qq * q;
-    m_x.segment<4>(9).normalize();
+    m_Q.block<6,6>(0,0)   = m_Q_trans;
+    m_Q.block<4,4>(6,6)   = m_Q_att;
+    m_Q.block<3,3>(10,10) = (SIGMA_BA_LOW * SIGMA_BA_LOW * dt) * I3;
+    m_Q.block<3,3>(13,13) = (SIGMA_BG * SIGMA_BG * dt) * I3;
 
     // ── Propagate covariance ──────────────────────────────────────────────────
     m_P_temp.noalias() = m_F * m_P;
@@ -130,7 +203,7 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
     const Vec3 m_n    = m_mag_ref.normalized();     // ref in NED
     const float mN = m_n(0), mE = m_n(1), mD = m_n(2);
 
-    Vec4 q = m_x.segment<4>(9);
+    Vec4 q = m_x.segment<4>(6);
     if (q.norm() < 1e-9f) { q = Vec4(1.0f, 0.0f, 0.0f, 0.0f); }
     else                  { q.normalize(); }
     const float q0 = q(0), q1 = q(1), q2 = q(2), q3 = q(3);
@@ -143,14 +216,14 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
             -2*mE*q1 + 2*mN*q2,   -4*mD*q1 - 2*mE*q0 + 2*mN*q3,    -4*mD*q2 + 2*mE*q3 + 2*mN*q0,    2*mE*q2 + 2*mN*q1;
 
     m_H.setZero();
-    m_H.block<3,4>(0,9) = Hq;
+    m_H.block<3,4>(0,6) = Hq;
 
     const Mat3 R = (SIGMA_MAG * SIGMA_MAG) * Mat3::Identity();
     m_y.segment<3>(0) = z_meas - m_h.segment<3>(0);
     const Mat3 S = m_H * m_P * m_H.transpose() + R;
     m_K = m_P * m_H.transpose() * S.ldlt().solve(Mat3::Identity());
 
-    // m_x += m_K * m_y.segment<3>(0);
+    m_x += m_K * m_y.segment<3>(0);
 
     m_IKH.noalias()    = Eigen::Matrix<float,16,16>::Identity() - m_K * m_H;
     m_P_temp.noalias() = m_IKH * m_P;
@@ -160,15 +233,15 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
     m_P_temp           = m_P + m_P.transpose();
     m_P                = 0.5f * m_P_temp;
 
-    Vec4 q_new = m_x.segment<4>(9);
+    Vec4 q_new = m_x.segment<4>(6);
     const float q_norm = q_new.norm();
     if (!std::isfinite(q_norm) || q_norm < 1e-9f)
-        m_x.segment<4>(9) = Vec4(1.0f, 0.0f, 0.0f, 0.0f);
+        m_x.segment<4>(6) = Vec4(1.0f, 0.0f, 0.0f, 0.0f);
     else
     {
         q_new /= q_norm;
         if (q_new(0) < 0) q_new = -q_new;  // canonical hemisphere
-        m_x.segment<4>(9) = q_new;
+        m_x.segment<4>(6) = q_new;
     }
 
 }
@@ -185,12 +258,12 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
     // Reject if not close to 1g → likely moving
     if (z_norm < 9.5f || z_norm > 10.1f) { return; }
 
-    Vec4 q = m_x.segment<4>(9);
+    Vec4 q = m_x.segment<4>(6);
     if (q.norm() < 1e-9f) { q = Vec4(1.0f, 0.0f, 0.0f, 0.0f); }
     else                  { q.normalize(); }
     const float q0 = q(0), q1 = q(1), q2 = q(2), q3 = q(3);
 
-    const Vec3 ba_low = m_x.segment<3>(13);
+    const Vec3 ba_low = m_x.segment<3>(10);
     const Vec3 g_ned(0.0f, 0.0f, -g);
     m_h.segment<3>(3) = Eigen::Quaternionf(q0, q1, q2, q3).toRotationMatrix().transpose() * g_ned + ba_low;
 
@@ -201,15 +274,15 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
     Hq *= g;
 
     m_H.setZero();
-    m_H.block<3,4>(0,9)  = Hq;
-    m_H.block<3,3>(0,13) = Mat3::Identity();
+    m_H.block<3,4>(0,6)  = Hq;
+    m_H.block<3,3>(0,10) = Mat3::Identity();
 
     const Mat3 R = (SIGMA_ACCEL_LOW * SIGMA_ACCEL_LOW) * Mat3::Identity();
     m_y.segment<3>(3) = z_accel - m_h.segment<3>(3);
     const Mat3 S = m_H * m_P * m_H.transpose() + R;
     m_K = m_P * m_H.transpose() * S.ldlt().solve(Mat3::Identity());
 
-    m_K.block<9,3>(0,0)  .setZero();   // position/vel/acc
+    m_K.block<6,3>(0,0)  .setZero();   // position/vel
 
     m_x += m_K * m_y.segment<3>(3);
 
@@ -221,14 +294,180 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
     m_P_temp           = m_P + m_P.transpose();
     m_P                = 0.5f * m_P_temp;
 
-    Vec4 q_new = m_x.segment<4>(9);
+    Vec4 q_new = m_x.segment<4>(6);
     const float q_norm = q_new.norm();
     if (!std::isfinite(q_norm) || q_norm < 1e-9f)
-        m_x.segment<4>(9) = Vec4(1.0f, 0.0f, 0.0f, 0.0f);
+        m_x.segment<4>(6) = Vec4(1.0f, 0.0f, 0.0f, 0.0f);
     else
     {
         q_new /= q_norm;
         if (q_new(0) < 0) q_new = -q_new;  // canonical hemisphere
-        m_x.segment<4>(9) = q_new;
+        m_x.segment<4>(6) = q_new;
     }
+};
+
+void EKF::updateBaro(const float pressure, const float temperature)
+{
+    using Mat2 = Eigen::Matrix<float, 2, 2>;
+    using Vec2 = Eigen::Matrix<float, 2, 1>;
+
+    // ── Use launch site as reference ──────────────────────────────────────────
+    const float P_ref = m_setHome_ref.launch_pressure;
+    const float T_ref = m_setHome_ref.launch_temperature;
+
+    // ── Predicted altitude from state ─────────────────────────────────────────
+    const float h      = -m_x(2);
+    m_h(6) = T_ref + BARO_L * h;
+    const float exp_   = (g * BARO_M_0) / (BARO_R_GAS * BARO_L);
+    m_h(7) = P_ref * std::pow(T_ref / m_h(6), exp_);
+
+    // ── Jacobians ─────────────────────────────────────────────────────────────
+    const float dT_dh = BARO_L;
+    const float dP_dh = -exp_ * BARO_L * m_h(7) / m_h(6);
+
+    Eigen::Matrix<float, 2, 16> H_baro = Eigen::Matrix<float, 2, 16>::Zero();
+    H_baro(0, 2) = -dT_dh;
+    H_baro(1, 2) = -dP_dh;
+
+    // ── Innovation ────────────────────────────────────────────────────────────
+    Vec2 y;
+    m_y(6) = temperature - m_h(6);
+    m_y(7) = pressure - m_h(7);
+
+    // ── Measurement noise ─────────────────────────────────────────────────────
+    Mat2 R_baro = Mat2::Zero();
+    R_baro(0,0) = SIGMA_T * SIGMA_T;
+    R_baro(1,1) = SIGMA_P * SIGMA_P;
+
+    // ── Kalman gain (16×2) ────────────────────────────────────────────────────
+    const Mat2 S = H_baro * m_P * H_baro.transpose() + R_baro;
+    const Eigen::Matrix<float, 16, 2> K_baro = m_P * H_baro.transpose() * S.ldlt().solve(Mat2::Identity());
+
+    // ── State update ──────────────────────────────────────────────────────────
+    m_x += K_baro * m_y.segment<2>(6);
+
+    // ── Renormalise quaternion ────────────────────────────────────────────────
+    Eigen::Vector4f q_new = m_x.segment<4>(6);
+    const float q_norm = q_new.norm();
+    if (!std::isfinite(q_norm) || q_norm < 1e-9f)
+        m_x.segment<4>(6) = Eigen::Vector4f(1.0f, 0.0f, 0.0f, 0.0f);
+    else
+    {
+        q_new /= q_norm;
+        if (q_new(0) < 0) q_new = -q_new;
+        m_x.segment<4>(6) = q_new;
+    }
+
+    // ── Joseph form covariance update ─────────────────────────────────────────
+    m_IKH.noalias()    = Eigen::Matrix<float,16,16>::Identity() - K_baro * H_baro;
+    m_P_temp.noalias() = m_IKH * m_P;
+    m_P.noalias()      = m_P_temp * m_IKH.transpose();
+    m_P_temp.noalias() = K_baro * R_baro * K_baro.transpose();
+    m_P               += m_P_temp;
+    m_P_temp           = m_P + m_P.transpose();
+    m_P                = 0.5f * m_P_temp;
+}
+
+void EKF::updateGPS(const SensorStructs::GPS_t& gps)
+{
+    using Mat3 = Eigen::Matrix3f;
+    using Mat6 = Eigen::Matrix<float, 6, 6>;
+    using Vec3 = Eigen::Vector3f;
+    using Vec6 = Eigen::Matrix<float, 6, 1>;
+
+    // ── Quality gate ──────────────────────────────────────────────────────────
+    if (!gps.valid || gps.fix < 1 || gps.sat < 4 || gps.hAcc > 3.0f) { return; }
+
+    // ── Convert to radians in double ──────────────────────────────────────────
+    const double lat0 = static_cast<double>(m_setHome_ref.launch_lat)  * 1e-7 * M_PI / 180.0;
+    const double lon0 = static_cast<double>(m_setHome_ref.launch_lon)  * 1e-7 * M_PI / 180.0;
+    const double lat  = static_cast<double>(gps.latitude)              * 1e-7 * M_PI / 180.0;
+    const double lon  = static_cast<double>(gps.longitude)             * 1e-7 * M_PI / 180.0;
+    const double h0   = static_cast<double>(m_setHome_ref.launch_alt);
+    const double h    = static_cast<double>(gps.altitude);
+
+    // ── LLA -> ECEF (measurement) ─────────────────────────────────────────────
+    const double N  = GPS_A_EARTH / std::sqrt(1.0 - GPS_E2 * std::sin(lat) * std::sin(lat));
+    const double X  = (N + h)               * std::cos(lat) * std::cos(lon);
+    const double Y  = (N + h)               * std::cos(lat) * std::sin(lon);
+    const double Z  = (N * (1.0 - GPS_E2) + h) * std::sin(lat);
+
+    // ── LLA -> ECEF (reference) ───────────────────────────────────────────────
+    const double N0 = GPS_A_EARTH / std::sqrt(1.0 - GPS_E2 * std::sin(lat0) * std::sin(lat0));
+    const double X0 = (N0 + h0)                * std::cos(lat0) * std::cos(lon0);
+    const double Y0 = (N0 + h0)                * std::cos(lat0) * std::sin(lon0);
+    const double Z0 = (N0 * (1.0 - GPS_E2) + h0) * std::sin(lat0);
+
+    // ── ECEF delta -> NED ─────────────────────────────────────────────────────
+    const double dX = X - X0;
+    const double dY = Y - Y0;
+    const double dZ = Z - Z0;
+
+    Vec3 z_pos;
+    z_pos(0) = static_cast<float>(-std::sin(lat0)*std::cos(lon0)*dX - std::sin(lat0)*std::sin(lon0)*dY + std::cos(lat0)*dZ);
+    z_pos(1) = static_cast<float>(-std::sin(lon0)*dX               + std::cos(lon0)*dY);
+    z_pos(2) = static_cast<float>(-std::cos(lat0)*std::cos(lon0)*dX - std::cos(lat0)*std::sin(lon0)*dY - std::sin(lat0)*dZ);
+
+    // ── Velocity measurement (already in NED from GPS driver) ─────────────────
+    const Vec3 z_vel(gps.v_n, gps.v_e, gps.v_d);
+
+    // ── Combined measurement vector [pos; vel] ────────────────────────────────
+    Vec6 z;
+    z.segment<3>(0) = z_pos;
+    z.segment<3>(3) = z_vel;
+
+    // ── Measurement noise ─────────────────────────────────────────────────────
+    const float sigma_ph = (gps.hAcc > 0.0f) ? gps.hAcc : 2.0f;
+    const float sigma_pv = (gps.vAcc > 0.0f) ? gps.vAcc : 2.0f;
+    static constexpr float SIGMA_VEL = 0.1f;  // m/s — tune to your GPS spec
+
+    Mat6 R_gps = Mat6::Zero();
+    R_gps(0,0) = sigma_ph * sigma_ph;
+    R_gps(1,1) = sigma_ph * sigma_ph;
+    R_gps(2,2) = sigma_pv * sigma_pv;
+    R_gps(3,3) = SIGMA_VEL * SIGMA_VEL;
+    R_gps(4,4) = SIGMA_VEL * SIGMA_VEL;
+    R_gps(5,5) = SIGMA_VEL * SIGMA_VEL;
+
+    // ── Jacobian (6×16) ───────────────────────────────────────────────────────
+    Eigen::Matrix<float, 6, 16> H_gps = Eigen::Matrix<float, 6, 16>::Zero();
+    H_gps.block<3,3>(0,0) = Mat3::Identity();   // position
+    H_gps.block<3,3>(3,3) = Mat3::Identity();   // velocity
+
+    // ── Innovation ────────────────────────────────────────────────────────────
+    m_h.segment<3>(8)  = m_x.segment<3>(0);   // predicted position
+    m_h.segment<3>(11) = m_x.segment<3>(3);   // predicted velocity
+
+    
+    m_y.segment<3>(8)  = z_pos - m_h.segment<3>(8);   // position innovation
+    m_y.segment<3>(11) = z_vel - m_h.segment<3>(11);  // velocity innovation
+
+    const Mat6 S    = H_gps * m_P * H_gps.transpose() + R_gps;
+
+    // ── Kalman gain (16×6) ────────────────────────────────────────────────────
+    const Eigen::Matrix<float, 16, 6> K_gps = m_P * H_gps.transpose() * S.ldlt().solve(Mat6::Identity());
+
+    // ── State update ──────────────────────────────────────────────────────────
+    m_x += K_gps * m_y.segment<6>(8);
+
+    // ── Renormalise quaternion ────────────────────────────────────────────────
+    Eigen::Vector4f q_new = m_x.segment<4>(6);
+    const float q_norm = q_new.norm();
+    if (!std::isfinite(q_norm) || q_norm < 1e-9f)
+        m_x.segment<4>(6) = Eigen::Vector4f(1.0f, 0.0f, 0.0f, 0.0f);
+    else
+    {
+        q_new /= q_norm;
+        if (q_new(0) < 0) q_new = -q_new;
+        m_x.segment<4>(6) = q_new;
+    }
+
+    // ── Joseph form covariance update ─────────────────────────────────────────
+    m_IKH.noalias()    = Eigen::Matrix<float,16,16>::Identity() - K_gps * H_gps;
+    m_P_temp.noalias() = m_IKH * m_P;
+    m_P.noalias()      = m_P_temp * m_IKH.transpose();
+    m_P_temp.noalias() = K_gps * R_gps * K_gps.transpose();
+    m_P               += m_P_temp;
+    m_P_temp           = m_P + m_P.transpose();
+    m_P                = 0.5f * m_P_temp;
 }
