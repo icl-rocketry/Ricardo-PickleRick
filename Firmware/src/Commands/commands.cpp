@@ -212,16 +212,16 @@ void Commands::EstimatorCommand(System& system, const RnpPacketSerialized& packe
     estimator.vel_n                 = state.velocity(0);
     estimator.vel_e                 = state.velocity(1);
     estimator.vel_d                 = state.velocity(2);
-
-    estimator.acc_n                 = state.acceleration(0);
-    estimator.acc_e                 = state.acceleration(1);
-    estimator.acc_d                 = state.acceleration(2);
-
+    
     estimator.q0                    = state.orientation.w();
     estimator.q1                    = state.orientation.x();
     estimator.q2                    = state.orientation.y();
     estimator.q3                    = state.orientation.z();
 
+    estimator.gps_pos_n             = state.gpsPosition(0);
+    estimator.gps_pos_e             = state.gpsPosition(1);
+    estimator.gps_pos_d             = state.gpsPosition(2);
+    
     estimator.b_gx                  = state.gyroBiases(0);
     estimator.b_gy                  = state.gyroBiases(1);
     estimator.b_gz                  = state.gyroBiases(2);

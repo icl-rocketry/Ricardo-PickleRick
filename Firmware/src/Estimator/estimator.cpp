@@ -89,6 +89,8 @@ void Estimator::updateState()
     m_state.position                = m_ekf.position();
     m_state.velocity                = m_ekf.velocity();
     
+    m_state.gpsPosition            = m_ekf.gpsPosition();
+
     // ── Expected Readings ─────────────────────────────────────────────────────
     m_state.expectedMagReading      = m_ekf.expectedMagReading();
     m_state.expectedAccelReading    = m_ekf.expectedAccelReading();

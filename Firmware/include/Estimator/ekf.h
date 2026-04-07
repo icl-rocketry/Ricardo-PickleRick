@@ -63,6 +63,8 @@ public:
     Eigen::Vector2f baroInnovation()    const { return m_y.segment<2>(6);  }
     Eigen::Vector3f gpsPosInnovation()  const { return m_y.segment<3>(8);  }
     Eigen::Vector3f gpsVelInnovation()  const { return m_y.segment<3>(11); }
+
+    Eigen::Vector3f gpsPosition()   const { return m_gps_position; }
 private:
     uint32_t m_lastPredictTime = 0;
 
@@ -108,6 +110,8 @@ private:
     static constexpr float SIGMA_T          = 0.5f;      // K
     static constexpr float SIGMA_P          = 100.0f;    // Pa
 
+    static constexpr float SIGMA_VEL        = 0.1f;      // m/s — tune to your GPS spec
+
     void predict(   const float dt, 
                     const Eigen::Vector3f gyro,
                     const Eigen::Vector3f accel,
@@ -126,5 +130,7 @@ private:
     // ── WGS84 constants ───────────────────────────────────────────────────────
     static constexpr double GPS_A_EARTH = 6378137.0;
     static constexpr double GPS_E2      = 0.00669437999014;
+
+    Eigen::Vector3f m_gps_position;
 
 };

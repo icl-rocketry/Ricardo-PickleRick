@@ -20,7 +20,7 @@ Types::CoreTypes::State_ptr_t Flight::update()
     _system.controllerhandler.update(_system.estimator.getData());
     _system.eventhandler.update(_system.estimator.getData());
 
-    float Ad = _system.estimator.getData().acceleration(2);
+    float Ad = _system.estimator.getData().position(2);
 
     if (Ad < 0 && !_system.systemstatus.flagSetOr(SYSTEM_FLAG::FLIGHTPHASE_BOOST))
     {

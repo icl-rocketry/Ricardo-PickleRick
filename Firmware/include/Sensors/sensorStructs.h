@@ -106,12 +106,13 @@ namespace SensorStructs
 
         Eigen::Vector3f position;               // (m) relative to callibration site    (NED)
         Eigen::Vector3f velocity;               // (m/s)                                (NED)
-        Eigen::Vector3f acceleration;           // (m/s^2)                              (NED)
-
+        
         Eigen::Vector3f gyroBiases;             // (rad/s)                              (body)
         Eigen::Vector3f accelBiases;            // (m/s^2)                              (body)
-
+        
         uint8_t calibration_quality;
+        
+        Eigen::Vector3f gpsPosition;            // (m)                                  (NED)
 
         Eigen::Vector3f expectedMagReading;     // (unit direction vector)              (body)
         Eigen::Vector3f expectedAccelReading;   // (m/s^2)                              (body)

@@ -403,23 +403,22 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
     const double dY = Y - Y0;
     const double dZ = Z - Z0;
 
-    Vec3 z_pos;
-    z_pos(0) = static_cast<float>(-std::sin(lat0)*std::cos(lon0)*dX - std::sin(lat0)*std::sin(lon0)*dY + std::cos(lat0)*dZ);
-    z_pos(1) = static_cast<float>(-std::sin(lon0)*dX               + std::cos(lon0)*dY);
-    z_pos(2) = static_cast<float>(-std::cos(lat0)*std::cos(lon0)*dX - std::cos(lat0)*std::sin(lon0)*dY - std::sin(lat0)*dZ);
+    m_gps_position.setZero();
+    m_gps_position(0) = static_cast<float>(-std::sin(lat0)*std::cos(lon0)*dX - std::sin(lat0)*std::sin(lon0)*dY + std::cos(lat0)*dZ);
+    m_gps_position(1) = static_cast<float>(-std::sin(lon0)*dX               + std::cos(lon0)*dY);
+    m_gps_position(2) = static_cast<float>(-std::cos(lat0)*std::cos(lon0)*dX - std::cos(lat0)*std::sin(lon0)*dY - std::sin(lat0)*dZ);
 
     // ── Velocity measurement (already in NED from GPS driver) ─────────────────
     const Vec3 z_vel(gps.v_n, gps.v_e, gps.v_d);
 
     // ── Combined measurement vector [pos; vel] ────────────────────────────────
     Vec6 z;
-    z.segment<3>(0) = z_pos;
+    z.segment<3>(0) = m_gps_position;
     z.segment<3>(3) = z_vel;
 
     // ── Measurement noise ─────────────────────────────────────────────────────
     const float sigma_ph = (gps.hAcc > 0.0f) ? gps.hAcc : 2.0f;
     const float sigma_pv = (gps.vAcc > 0.0f) ? gps.vAcc : 2.0f;
-    static constexpr float SIGMA_VEL = 0.1f;  // m/s — tune to your GPS spec
 
     Mat6 R_gps = Mat6::Zero();
     R_gps(0,0) = sigma_ph * sigma_ph;
@@ -439,8 +438,16 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
     m_h.segment<3>(11) = m_x.segment<3>(3);   // predicted velocity
 
     
-    m_y.segment<3>(8)  = z_pos - m_h.segment<3>(8);   // position innovation
+    m_y.segment<3>(8)  = m_gps_position - m_h.segment<3>(8);   // position innovation
     m_y.segment<3>(11) = z_vel - m_h.segment<3>(11);  // velocity innovation
+
+    const float speed = z_vel.norm();
+    if (speed < 10.0f)
+    {
+        // stationary — only update velocity, skip position correction
+        H_gps.block<3,3>(0,0).setZero();  // zero out position rows of H
+        m_y.segment<3>(8).setZero();   // ← add this
+    }
 
     const Mat6 S    = H_gps * m_P * H_gps.transpose() + R_gps;
 

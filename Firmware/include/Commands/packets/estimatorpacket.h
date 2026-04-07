@@ -18,15 +18,15 @@ class EstimatorPacket : public RnpPacket{
                 &EstimatorPacket::vel_n,
                 &EstimatorPacket::vel_e,
                 &EstimatorPacket::vel_d,
-
-                &EstimatorPacket::acc_n,
-                &EstimatorPacket::acc_e,
-                &EstimatorPacket::acc_d,
-
+                
                 &EstimatorPacket::q0,
                 &EstimatorPacket::q1,
                 &EstimatorPacket::q2,
                 &EstimatorPacket::q3,
+
+                &EstimatorPacket::gps_pos_n,
+                &EstimatorPacket::gps_pos_e,
+                &EstimatorPacket::gps_pos_d,
 
                 &EstimatorPacket::b_gx,
                 &EstimatorPacket::b_gy,
@@ -117,13 +117,14 @@ class EstimatorPacket : public RnpPacket{
         // accel gyro
         float pos_n, pos_e, pos_d;              // position (m) (NED frame)
         float vel_n, vel_e, vel_d;              // velocity (m/s) (NED frame)
-        float acc_n, acc_e, acc_d;              // acceleration (m/s^2) (NED frame)
 
         float q0, q1, q2, q3;                   // quaternions
 
         float b_gx, b_gy, b_gz;                 // gyro biases (rad/s) (body frame)
         float b_ax, b_ay, b_az;                 // low-g accel biases (m/s^2) (body frame)
         
+        float gps_pos_n, gps_pos_e, gps_pos_d;  // position (m) (NED frame)
+
         uint8_t calibration_quality;            // 0 if no calib, 1 if bias calib, 2 if mag vec calib
         
         float h_mx, h_my, h_mz;                 // expected mag readings (body frame)

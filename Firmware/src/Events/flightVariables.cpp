@@ -41,7 +41,7 @@ flightVariable_t FlightVariables::Velocity(int arg) { return getComponent(_state
 
 flightVariable_t FlightVariables::Acceleration(int arg)
 {
-    return getComponent(_state.acceleration, arg);
+    return getComponent(_state.position, arg);
 }
 
 flightVariable_t FlightVariables::RocketOrientation(int arg)
