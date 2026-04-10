@@ -1,43 +1,44 @@
 
 #include "States/preflight.h"
 
-Preflight::Preflight(System& system)
-    : State(SYSTEM_FLAG::STATE_PREFLIGHT, system.systemstatus), _system(system){};
+Preflight::Preflight(System& system):
+        State(SYSTEM_FLAG::STATE_PREFLIGHT,system.systemstatus),
+        _system(system) {};
 
-void Preflight::initialize()
-{
+void Preflight::initialize(){
     State::initialize();
-    // enable commands
-    _system.commandhandler.enableCommands({Commands::ID::Launch,
+    _system.commandhandler.enableCommands({
                                            Commands::ID::Set_Home,
                                            Commands::ID::Stop_Logging,
-                                           Commands::ID::Calibrate,
-                                           Commands::ID::Print_Flash_filesystem,
-                                           Commands::ID::Print_Sd_filesystem,
-                                           Commands::ID::Play_Song,
-                                           Commands::ID::Skip_Song,
-                                           Commands::ID::Clear_Song_Queue,
-                                           Commands::ID::Reset_Orientation,
-                                           Commands::ID::Reset_Localization,
-                                           Commands::ID::Set_Beta,
-                                           Commands::ID::Mag_Telemetry,
-                                           Commands::ID::Calibrate_Mag_Full,
-                                           Commands::ID::Calibrate_Baro,
-                                           Commands::ID::Enter_Debug,
-                                           Commands::ID::Radio_SetFreq,
-                                           Commands::ID::Radio_SetBW,
-                                           Commands::ID::Radio_SetPower,
-                                           Commands::ID::Radio_SetSF,
-                                           Commands::ID::Radio_SetSYNC});
+                                           Commands::ID::Enter_Flight
+                                          });    
 
-    _system.tunezhandler.play(MelodyLibrary::zeldatheme, true);
 };
 
-Types::CoreTypes::State_ptr_t Preflight::update() { return nullptr; };
-
-void Preflight::exit()
+Types::CoreTypes::State_ptr_t Preflight::update()
 {
+    auto current_Data = _system.estimator.getData(); 
+    auto current_Data_sensors = _system.sensors.getData();
+    
+    auto quat = current_Data.orientation; 
+
+    Eigen::Matrix<float, 1, 7> inputMatrix = {
+        quat.w(),
+        quat.x(),
+        quat.y(),
+        quat.z(),
+        current_Data_sensors.accelgyro.gx,
+        current_Data_sensors.accelgyro.gy,
+        current_Data_sensors.accelgyro.gz,
+    };
+    
+
+    _system.controller.update(inputMatrix, false);
+
+    return nullptr;
+};
+
+void Preflight::exit(){
     State::exit();
     _system.commandhandler.resetCommands();
-    _system.tunezhandler.clear();
 };

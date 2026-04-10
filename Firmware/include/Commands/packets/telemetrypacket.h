@@ -15,12 +15,6 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::vn,
                 &TelemetryPacket::ve,
                 &TelemetryPacket::vd,
-                &TelemetryPacket::an,
-                &TelemetryPacket::ae,
-                &TelemetryPacket::ad,
-                &TelemetryPacket::roll,
-                &TelemetryPacket::pitch,
-                &TelemetryPacket::yaw,
                 &TelemetryPacket::q0,
                 &TelemetryPacket::q1,
                 &TelemetryPacket::q2,
@@ -90,7 +84,7 @@ class TelemetryPacket : public RnpPacket{
         float roll,pitch,yaw; // orientation degrees
         float q0,q1,q2,q3; //quaternion representation
         //gps
-        float latitude,longitude;
+        int32_t latitude,longitude;
         long altitude;//in mm
         uint8_t sat;
         //imu

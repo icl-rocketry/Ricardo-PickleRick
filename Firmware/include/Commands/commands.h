@@ -1,13 +1,3 @@
-/**
- * @file commands.h
- * @author Kiran de Silva (kd619@ic.ac.uk)
- * @brief Contains signatures of all commands in the system. Note there is no requirement ot have all the command signatures defined in a single file, just ensure all the seperate files are included into the command_config.h
- * @version 0.1
- * @date 2023-06-17
- * 
- * @copyright Copyright (c) 2023
- * 
- */
 #pragma once
 #include <stdint.h>
 
@@ -24,9 +14,6 @@
 
 namespace Commands{
     
-    void LaunchCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void ResetCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void LaunchAbortCommand(ForwardDecl_SystemClass& system, const  RnpPacketSerialized& packet);
     void SetHomeCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void StartLoggingCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void StopLoggingCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
@@ -34,34 +21,10 @@ namespace Commands{
     void SensorsCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void EstimatorCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void CalibrateEstimatorCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void PlaySongCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void SkipSongCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void ClearSongQueueCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void ResetOrientationCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void ResetLocalizationCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void SetBetaCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void MagTelemetryCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void CalibrateMagFullCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void IgnitionCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void EnterDebugCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void EnterPreflightCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void EnterLaunchCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void EnterFlightCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void EnterRecoveryCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void ExitDebugCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void EngineInfoCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void SetThrottleCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void PyroInfoCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void FireInfoCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void FreeRamCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void FlightAbortCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void ApogeeOverrideCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
 
-    //!TEMP COMMANDS - TO BE REIMPLEMENTED PROPERLY
-    void Radio_SetFreq(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void Radio_SetBW(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void Radio_SetSF(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void Radio_SetSYNC(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void Radio_SetPower(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
-    void LiftoffOverrideCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
 }

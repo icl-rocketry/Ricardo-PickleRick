@@ -20,17 +20,7 @@ namespace Services{
      */
     enum class ID:uint8_t{
         HITL = 3,
-        DeploymentHandler = 4,
-        EngineHandler = 5,
-        EventHandler = 6,
-        Pyro0 = 10,
-        Pyro1 = 11,
-        Pyro2 = 12,
-        Pyro3 = 13,
-        Servo0 = 20,
-        Servo1 = 21,
-        Servo2 = 22,
-        Servo3 = 23
+        Controller = 30
     };
 
 };

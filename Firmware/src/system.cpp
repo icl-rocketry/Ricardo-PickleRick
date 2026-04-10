@@ -16,22 +16,8 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    canbus(systemstatus, PinMap::TxCan, PinMap::RxCan, 3),
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
-                   deploymenthandler(networkmanager, localPyroMap, localServoMap, static_cast<uint8_t>(Services::ID::DeploymentHandler)),
-                   enginehandler(networkmanager, localPyroMap, localServoMap, static_cast<uint8_t>(Services::ID::EngineHandler)),
-                   controllerhandler(enginehandler),
-                   eventhandler(enginehandler, deploymenthandler, networkmanager, localPyroMap, localServoMap),
-                   apogeedetect(20),
                    primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus),
-                   pyroPinExpander0(0x20,I2C),
-                   pyro0(PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Cont),networkmanager),
-                   pyro1(PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Cont),networkmanager),
-                   pyro2(PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Cont),networkmanager),
-                   pyro3(PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Cont),networkmanager),
-                   pwmPinExpander0(0x40,I2C,50),
-                   servo0(PCA9685PWM(PinMap::servo0pin,pwmPinExpander0),networkmanager,"srv0"),
-                   servo1(PCA9685PWM(PinMap::servo1pin,pwmPinExpander0),networkmanager,"srv1"),
-                   servo2(PCA9685PWM(PinMap::servo2pin,pwmPinExpander0),networkmanager,"srv2"),
-                   servo3(PCA9685PWM(PinMap::servo3pin,pwmPinExpander0),networkmanager,"srv3")
+                   controller("controller", Services::ID::Controller, networkmanager)
                    {};
 
 void System::systemSetup()
@@ -51,7 +37,6 @@ void System::systemSetup()
 
     initializeLoggers();    
 
-    tunezhandler.setup();
     // network interfaces
     radio.setup();
     canbus.setup();
@@ -59,14 +44,12 @@ void System::systemSetup()
     // add interfaces to netmanager
     configureNetwork();
 
-    //register pryo services
-    setupLocalPyros();
-    //register servo serv ices
-    setupLocalServos();
-
     loadConfig();
 
     estimator.setup();
+
+    controller.setup();
+    networkmanager.registerService(static_cast<uint8_t>(Services::ID::Controller),controller.getThisNetworkCallback());
 
     // initialize statemachine with preflight state
     statemachine.initalize(std::make_unique<Preflight>(*this));
@@ -75,7 +58,6 @@ void System::systemSetup()
 
 void System::systemUpdate()
 {
-    tunezhandler.update();
     sensors.update();
     estimator.update(sensors.getData());
     logTelemetry();
@@ -99,51 +81,6 @@ void System::setupI2C()
     I2C.begin(PinMap::_SDA, PinMap::_SCL, GeneralConfig::I2C_FREQUENCY);
 }
 
-void System::setupLocalPyros()
-{
-    if (pyroPinExpander0.setup())
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pyro pin expander alive");
-
-        pyro0.setup();
-        pyro1.setup();
-        pyro2.setup();
-        pyro3.setup();
-        
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro0),pyro0.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro1),pyro1.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro2),pyro2.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro3),pyro3.getThisNetworkCallback());
-    }
-    else
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pyro pin expander failed to respond");
-    }
-
-};
-
-void System::setupLocalServos()
-{
-    if (pwmPinExpander0.setup())
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pwm expander alive");
-
-        servo0.setup();
-        servo1.setup();
-        servo2.setup();
-        servo3.setup();
-        
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Servo0),servo0.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Servo1),servo1.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Servo2),servo2.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Servo3),servo3.getThisNetworkCallback());
-    }
-    else
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pwm expander failed to respond");
-    }
-
-};
 
 void System::setupPins()
 {
@@ -216,10 +153,6 @@ void System::loadConfig()
         // estimator.configure(configDoc.as<JsonObjectConst>()["Estimator"]);
 
         sensors.setup(configDoc.as<JsonObjectConst>()["Sensors"]);
-        deploymenthandler.setup(configDoc.as<JsonObjectConst>()["Deployers"]);
-        enginehandler.setup(configDoc.as<JsonObjectConst>()["Engines"]);
-        controllerhandler.setup(configDoc.as<JsonObjectConst>()["Controllers"]);
-        eventhandler.setup(configDoc.as<JsonObjectConst>()["Events"]);
 
     }
     catch (const std::exception &e)
@@ -229,9 +162,6 @@ void System::loadConfig()
          throw e; //continue throwing as we dont want to continue
     }
    
-    //   //register deployment and engine handler services
-    networkmanager.registerService(static_cast<uint8_t>(Services::ID::DeploymentHandler), deploymenthandler.getThisNetworkCallback());
-    networkmanager.registerService(static_cast<uint8_t>(Services::ID::EngineHandler), enginehandler.getThisNetworkCallback());
 }
 
 void System::initializeLoggers()
@@ -349,33 +279,18 @@ void System::configureNetwork()
     RoutingTable flightRouting;
 
     #if ROCKET_TABLE
-        flightRouting.setRoute((uint8_t) 5,Route{2,1,{}}); // Rocket GS Pickle
-        flightRouting.setRoute((uint8_t) 20,Route{3,1,{}}); // PDU0
-        flightRouting.setRoute((uint8_t) 21,Route{3,1,{}}); // PDU1
-        flightRouting.setRoute((uint8_t) 30,Route{3,1,{}}); // Recovery F&S
-        flightRouting.setRoute((uint8_t) 14,Route{3,1,{}}); // Solenoid F&S
-        flightRouting.setRoute((uint8_t) 13,Route{3,1,{}}); // E-reg
-        flightRouting.setRoute((uint8_t) 12,Route{3,1,{}}); // Sensor board
-        flightRouting.setRoute((uint8_t) 11,Route{3,1,{}}); // Ox vent
-        flightRouting.setRoute((uint8_t) 10,Route{3,1,{}}); // Engine controller
-        flightRouting.setRoute((uint8_t) 31,Route{3,1,{}}); // Payload deployer
-        flightRouting.setRoute((uint8_t) 40,Route{3,1,{}}); // Camera board
-        flightRouting.setRoute((uint8_t) 41,Route{3,1,{}}); // Canard board
-        flightRouting.setRoute((uint8_t) 3,Route{3,1,{}}); // GSS Chad
+        flightRouting.setRoute((uint8_t)   5, Route{2, 1, {}}); // Rocket GS Pickle
+        flightRouting.setRoute((uint8_t) 102, Route{3, 2, {}}); // chad srvo
+        flightRouting.setRoute((uint8_t) 103, Route{3, 2, {}}); // chad prop
     #elif ROCKET_GS_TABLE
-        flightRouting.setRoute((uint8_t) 2,Route{2,1,{}}); // Rocket Pickle
-        flightRouting.setRoute((uint8_t) 10,Route{2,1,{}}); // Stark
-        flightRouting.setRoute((uint8_t) 12,Route{2,1,{}}); // Sensor board
-        flightRouting.setRoute((uint8_t) 200,Route{3,1,{}}); // Payload GS Pickle
-    #elif PAYLOAD_TABLE
-        flightRouting.setRoute((uint8_t) 6,Route{2,1,{}}); // Payload GS Pickle
-    #elif PAYLOAD_GS_TABLE
-        flightRouting.setRoute((uint8_t) 200,Route{2,1,{}}); // Payload Pickle
+        flightRouting.setRoute((uint8_t)   2, Route{2, 1, {}}); // Rocket Pickle
+        flightRouting.setRoute((uint8_t) 102, Route{2, 2, {}}); // chad srvo
+        flightRouting.setRoute((uint8_t) 103, Route{2, 2, {}}); // chad prop
     #endif
-  
+    
     networkmanager.setRoutingTable(flightRouting);
     networkmanager.updateBaseTable(); // save the new base table
-
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(flightRouting.printTable().str());
 };
 
 void System::configureRadio(JsonObjectConst conf)

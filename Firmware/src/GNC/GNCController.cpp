@@ -1,0 +1,245 @@
+#include "GNC/GNCController.h"
+
+void GNCController::setup() {
+
+    // m_setpoint << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0, 0.0; 
+ 
+    m_pd.setup();
+
+}
+
+void GNCController::start() {
+
+    m_controller_start_time = millis();
+    sendArmingCommands();
+    m_pd.reset();
+    
+}
+
+// #include <libriccore/riccoresystem.h>
+
+void GNCController::update(Eigen::Matrix<float,1, 7> currentInput, bool actuate){
+
+    if (millis() - m_previousSampleTime >= m_actuationDelta) {
+
+        m_input = currentInput;
+        m_pd.update(m_input);
+        m_output = m_pd.getOutputValues();
+        if (actuate) {
+            // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("sendin shii");
+
+            sendActuationCommands(m_output);
+
+        }
+
+    }
+
+}
+
+void GNCController::stop() {
+
+    changeServoAngle(0,0);
+    changeServoAngle(1,0);
+    changePropPower(0,0);
+    changePropPower(1,0);
+    sendDisarmingCommands();
+
+}
+
+void GNCController::sendActuationCommands(Eigen::Vector3f actuation_values) {
+
+    float max_prop_power = 30.0f;
+    float thrust = actuation_values(2); 
+    
+    if (thrust > max_prop_power) {
+        thrust = max_prop_power; 
+    } 
+    
+    changePropPower(0, (int)thrust); 
+    changePropPower(1, (int)thrust); 
+
+    float roll_angle = actuation_values(0);
+    float pitch_angle = actuation_values(1);
+
+    changeServoAngle(0, pitch_angle);
+    changeServoAngle(1, roll_angle);
+}
+
+
+// prop 10 is +y
+// prop 11 is -z
+void GNCController::changeServoAngle(int servo, float angle_f) { // angle should be -20 to 20
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Changing Servo Angle: " + std::to_string(angle_f));
+
+    float max_commanded_angle = 15.0f;
+    float min_commanded_angle = -15.0f;
+
+    if (angle_f > max_commanded_angle) { angle_f = max_commanded_angle; } 
+    else if (angle_f < min_commanded_angle) {
+        angle_f = min_commanded_angle;
+    }
+
+    angle_f = angle_f * 10; // scale the angle to 0.1 degree = 1 argument degree
+    int angle = static_cast<int>(angle_f); // convert to int
+    uint8_t des_ser; 
+
+    if (servo == 0) { 
+        des_ser = 10; 
+        angle += 810;
+    }
+    if (servo == 1) { 
+        des_ser = 11; 
+        angle += 835;
+    }
+
+    SimpleCommandPacket actuate_servo(2, angle); //2 is the fire command
+    actuate_servo.header.source_service = 1;
+    actuate_servo.header.source = 2;
+    actuate_servo.header.destination_service = des_ser;
+    actuate_servo.header.destination = 102;
+    actuate_servo.header.uid = 0;
+    m_networkmanager.sendPacket(actuate_servo);
+}
+
+void GNCController::changePropPower(int prop, int power) {
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Changing Prop Power: " + std::to_string(power));
+
+    uint8_t des_ser; 
+    if (power < 0) {
+        power = 0; // make sure the power is not negative
+    }
+    if (prop == 0) {
+         des_ser = 10; 
+    }
+    if (prop == 1) {
+        des_ser = 11; 
+    }
+
+    //the power is already between 0 and 100 so no need to change
+
+    SimpleCommandPacket actuate_prop(2, power); //2 is the fire command
+    actuate_prop.header.source_service = 1;
+    actuate_prop.header.source = 2;
+    actuate_prop.header.destination_service = des_ser;
+    actuate_prop.header.destination = 103;
+    actuate_prop.header.uid = 0; //unknown
+    m_networkmanager.sendPacket(actuate_prop);
+
+}
+
+void GNCController::sendArmingCommands() {
+
+    armServos();
+    armProps();
+
+}
+
+void GNCController::armProps() {
+    SimpleCommandPacket arm_prop0(3, 0); //3 here is the arm command
+    arm_prop0.header.source_service = 1;
+    arm_prop0.header.source = 2;
+    arm_prop0.header.destination_service = 10;
+    arm_prop0.header.destination = 103;
+    arm_prop0.header.uid = 0;
+    m_networkmanager.sendPacket(arm_prop0);
+    delay(100);
+    SimpleCommandPacket arm_prop1(3, 0);
+    arm_prop1.header.source_service = 1;
+    arm_prop1.header.source = 2;
+    arm_prop1.header.destination_service = 11;
+    arm_prop1.header.destination = 103;
+    arm_prop1.header.uid = 0;
+    m_networkmanager.sendPacket(arm_prop1);
+}
+
+void GNCController::armServos() {
+    SimpleCommandPacket arm_alpha(3, 0); //3 here is the arm command
+    arm_alpha.header.source_service = 1;
+    arm_alpha.header.source = 2;
+    arm_alpha.header.destination_service = 10;
+    arm_alpha.header.destination = 102;
+    arm_alpha.header.uid = 0;
+    m_networkmanager.sendPacket(arm_alpha);
+    delay(100);
+    SimpleCommandPacket arm_beta(3, 0);
+    arm_beta.header.source_service = 1;
+    arm_beta.header.source = 2;
+    arm_beta.header.destination_service = 11;
+    arm_beta.header.destination = 102;
+    arm_beta.header.uid = 0;
+    m_networkmanager.sendPacket(arm_beta);
+}
+
+void GNCController::sendDisarmingCommands() {
+
+    disarmServos();
+    disarmProps();
+
+}
+
+void GNCController::disarmProps() {
+    SimpleCommandPacket disarm_prop0(4, 0); //4 here is the disarm command
+    disarm_prop0.header.source_service = 1;
+    disarm_prop0.header.source = 2;
+    disarm_prop0.header.destination_service = 10;
+    disarm_prop0.header.destination = 103;
+    disarm_prop0.header.uid = 0;
+    m_networkmanager.sendPacket(disarm_prop0);
+    delay(100);
+    SimpleCommandPacket disarm_prop1(4, 0);
+    disarm_prop1.header.source_service = 1;
+    disarm_prop1.header.source = 2;
+    disarm_prop1.header.destination_service = 11;
+    disarm_prop1.header.destination = 103;
+    disarm_prop1.header.uid = 0;
+    m_networkmanager.sendPacket(disarm_prop1);
+}
+
+void GNCController::disarmServos() {
+    SimpleCommandPacket arm_alpha(4, 0); //3 here is the arm command
+    arm_alpha.header.source_service = 1;
+    arm_alpha.header.source = 2;
+    arm_alpha.header.destination_service = 10;
+    arm_alpha.header.destination = 102;
+    arm_alpha.header.uid = 0;
+    m_networkmanager.sendPacket(arm_alpha);
+    delay(100);
+    SimpleCommandPacket arm_beta(4, 0);
+    arm_beta.header.source_service = 1;
+    arm_beta.header.source = 2;
+    arm_beta.header.destination_service = 11;
+    arm_beta.header.destination = 102;
+    arm_beta.header.uid = 0;
+    m_networkmanager.sendPacket(arm_beta);
+}
+
+// #include <libriccore/riccoresystem.h>
+
+void GNCController::telemetry_impl(packetptr_t packetptr) {
+    SimpleCommandPacket packet(*packetptr);
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Telemetry_impl called");
+
+	ControllerTelemetryPacket telemetry;
+
+	telemetry.header.type = 108;
+	telemetry.header.source = packet.header.destination;
+	telemetry.header.source_service = m_serviceID;
+	telemetry.header.destination = packet.header.source;
+	telemetry.header.destination_service = packet.header.source_service;
+	telemetry.header.uid = packet.header.uid; 
+
+    telemetry.q0 =               m_input(0,0);
+    telemetry.q1 =               m_input(0,1);
+    telemetry.q2 =               m_input(0,2);
+    telemetry.q3 =               m_input(0,3);
+    telemetry.roll_rate_input =  m_input(0,4);
+    telemetry.pitch_rate_input = m_input(0,5);
+    telemetry.yaw_rate_input =   m_input(0,6);
+
+	telemetry.pitch_output =     m_output(0);
+	telemetry.roll_output =      m_output(1);
+	telemetry.thrust =           m_output(2);
+
+	m_networkmanager.sendPacket(telemetry);
+
+}
