@@ -35,6 +35,9 @@ Types::CoreTypes::State_ptr_t Preflight::update()
 
     _system.controller.update(inputMatrix, false);
 
+    if (millis() > 15000) {
+        return std::make_unique<Flight>(_system);
+    }
     return nullptr;
 };
 

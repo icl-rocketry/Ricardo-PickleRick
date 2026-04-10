@@ -48,7 +48,7 @@ void GNCController::stop() {
 
 void GNCController::sendActuationCommands(Eigen::Vector3f actuation_values) {
 
-    float max_prop_power = 30.0f;
+    float max_prop_power = 10.0f; // <-- change this for prop power in %
     float thrust = actuation_values(2); 
     
     if (thrust > max_prop_power) {

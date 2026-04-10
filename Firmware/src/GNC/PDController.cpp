@@ -7,7 +7,7 @@ void PDController::setup(){
     m_rEng << 0.0, 0.0, -0.165;
     m_mass = 1.19;
 
-    m_K_p << 4.0, 4.0, 4.0;
+    m_K_p << 0.5, 0.5, 0.5;
     m_K_d << 0.2, 0.2, 0.2;
 
 }
@@ -54,7 +54,7 @@ void PDController::updateQuatErrors(Eigen::Quaterniond q){
     m_quat_error << q_result.x(), q_result.y(), q_result.z();
 }
 
-void PDController::updateMcmd(Eigen::Vector3f angular_rates){
+void PDController::updateMcmd(Eigen::Vector3f angular_rates){ // rates in radians
 
     m_M_cmd =
         - m_K_p.cwiseProduct(m_quat_error)
