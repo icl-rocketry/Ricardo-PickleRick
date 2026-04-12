@@ -10,7 +10,9 @@ class PDController
         void setup();
         void update(Eigen::Matrix<float,1, 7> currentValues);
         void reset();
-        Eigen::Vector3f getOutputValues() { return m_output_values; }; 
+        Eigen::Vector3f getOutputValues()   { return m_output_values; }; 
+        Eigen::Vector3f getEulerError()     { return m_euler_error; }; 
+        Eigen::Vector3f getFBody()          { return m_f_body; }; 
     
     private:
 
@@ -26,6 +28,9 @@ class PDController
         Eigen::Vector3f m_M_cmd;
         Eigen::Vector3f m_setpoint;
         Eigen::Vector3f m_rEng;
+
+        Eigen::Vector3f m_euler_error;
+        Eigen::Vector3f m_f_body;
 
         Eigen::Vector3f m_output_values;
         float m_mass;

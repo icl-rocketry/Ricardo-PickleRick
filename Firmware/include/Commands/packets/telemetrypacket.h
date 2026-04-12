@@ -19,6 +19,16 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::q1,
                 &TelemetryPacket::q2,
                 &TelemetryPacket::q3,
+                &TelemetryPacket::roll,
+                &TelemetryPacket::pitch,
+                &TelemetryPacket::yaw,
+                &TelemetryPacket::rocket_q0,
+                &TelemetryPacket::rocket_q1,
+                &TelemetryPacket::rocket_q2,
+                &TelemetryPacket::rocket_q3,
+                &TelemetryPacket::rocket_roll,
+                &TelemetryPacket::rocket_pitch,
+                &TelemetryPacket::rocket_yaw,
                 &TelemetryPacket::latitude,
                 &TelemetryPacket::longitude,
                 &TelemetryPacket::altitude,
@@ -37,13 +47,6 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::mz,
                 &TelemetryPacket::baro_temp,
                 &TelemetryPacket::baro_press,
-                &TelemetryPacket::baro_alt,
-                &TelemetryPacket::logic_voltage,
-                &TelemetryPacket::dep_voltage,
-                &TelemetryPacket::dep_current,
-                &TelemetryPacket::launch_lat,
-                &TelemetryPacket::launch_lng,
-                &TelemetryPacket::launch_alt,
                 &TelemetryPacket::system_status,
                 &TelemetryPacket::system_time,
                 &TelemetryPacket::rssi,
@@ -82,10 +85,12 @@ class TelemetryPacket : public RnpPacket{
         float an, ae, ad; // acceleration NED (g's)
         //orientation
         float roll,pitch,yaw; // orientation degrees
+        float rocket_roll,rocket_pitch,rocket_yaw; // orientation degrees
         float q0,q1,q2,q3; //quaternion representation
+        float rocket_q0,rocket_q1,rocket_q2,rocket_q3; //quaternion representation
         //gps
         int32_t latitude,longitude;
-        long altitude;//in mm
+        float altitude;
         uint8_t sat;
         //imu
         float ax, ay, az; // acceleration (g's)
@@ -93,14 +98,7 @@ class TelemetryPacket : public RnpPacket{
         float gx, gy, gz; // angular rates (deg/s)
         float mx, my, mz;// magnetometer (uT)
         //barometer
-        float baro_temp, baro_press,baro_alt;
-        //voltage rail data
-        int logic_voltage;
-        int dep_voltage;
-        int dep_current;
-        //launch site
-        float launch_lat,launch_lng;
-        long launch_alt;
+        float baro_temp, baro_press;
         //system details
         uint32_t system_status;
         uint64_t system_time;

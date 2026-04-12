@@ -88,8 +88,8 @@ void EKF::predict(  const float dt,
     const float wx = gyro(0) - m_x(13);
     const float wy = gyro(1) - m_x(14);
     const float wz = gyro(2) - m_x(15);
-    const Eigen::Vector3f gyro_unbiased(wx, wy, wz);
-    const float w_norm = gyro_unbiased.norm();
+    m_angular_rates << wx, wy, wz;
+    const float w_norm = m_angular_rates.norm();
 
     Mat4 Omega;
     Omega <<     0, -wx, -wy, -wz,
@@ -130,14 +130,13 @@ void EKF::predict(  const float dt,
     // ── Select accelerometer
     const float accel_norm   = accel.norm();
 
-    Eigen::Vector3f accel_input;
     if (accel_norm < LOW_G_SATURATION)          // low-g not saturated
     {
-        accel_input = accel - m_x.segment<3>(10);
+        m_acceleration = accel - m_x.segment<3>(10);
     }
     else
     {
-        accel_input = h_accel - m_h_accel_bias;
+        m_acceleration = h_accel - m_h_accel_bias;
     }
 
     Vec4 q_new = m_x.segment<4>(6);
@@ -145,7 +144,7 @@ void EKF::predict(  const float dt,
 
     const Eigen::Vector3f g_ned(0.0f, 0.0f, -g);
 
-    const Eigen::Vector3f a_ned = R_body_to_ned * (accel_input) - g_ned;
+    const Eigen::Vector3f a_ned = R_body_to_ned * (m_acceleration) - g_ned;
     const float dt2 = dt * dt;
 
     m_x.segment<3>(0) += m_x.segment<3>(3) * dt + 0.5f * a_ned * dt2;  

@@ -25,9 +25,10 @@ namespace Commands
         Estimator = 10,
         Calibrate = 11,
         Mag_Telemetry = 60, 
-        Calibrate_Mag_Full = 61, //changed for compatibility
+        Calibrate_Mag_Full = 61, 
         Enter_Preflight = 100,
         Enter_Flight = 101,
+        Enter_Landing = 102,
         Free_Ram = 250
     };
 
@@ -35,6 +36,7 @@ namespace Commands
                                                                 ID::Telemetry,
                                                                 ID::Sensors,
                                                                 ID::Estimator, 
+                                                                ID::Enter_Landing, 
                                                             };
 
     inline std::unordered_map<ID, std::function<void(ForwardDecl_SystemClass &, const RnpPacketSerialized &)>> command_map{
@@ -49,6 +51,7 @@ namespace Commands
         {ID::Calibrate_Mag_Full, CalibrateMagFullCommand},
         {ID::Enter_Preflight, EnterPreflightCommand},
         {ID::Enter_Flight, EnterFlightCommand},
+        {ID::Enter_Landing, EnterLandingCommand},
         {ID::Free_Ram, FreeRamCommand}};
 
 };

@@ -7,6 +7,7 @@
 #include "Config/services_config.h"
 #include "States/flight.h"
 #include "States/preflight.h"
+#include "States/landing.h"
 #include "system.h"
 
 void Commands::SetHomeCommand(System& system, const RnpPacketSerialized& packet)
@@ -52,10 +53,23 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
     telemetry.ve        = estimation.velocity(1);
     telemetry.vd        = estimation.velocity(2);
 
-    telemetry.q0                    = estimation.orientation.w();
-    telemetry.q1                    = estimation.orientation.x();
-    telemetry.q2                    = estimation.orientation.y();
-    telemetry.q3                    = estimation.orientation.z();
+    telemetry.q0        = estimation.orientation.w();
+    telemetry.q1        = estimation.orientation.x();
+    telemetry.q2        = estimation.orientation.y();
+    telemetry.q3        = estimation.orientation.z();
+
+    telemetry.roll      = estimation.eulerAngles(0) * 180.0 / M_PI;
+    telemetry.pitch     = estimation.eulerAngles(1) * 180.0 / M_PI;
+    telemetry.yaw       = estimation.eulerAngles(2) * 180.0 / M_PI;
+
+    telemetry.rocket_q0        = estimation.rocketOrientation.w();
+    telemetry.rocket_q1        = estimation.rocketOrientation.x();
+    telemetry.rocket_q2        = estimation.rocketOrientation.y();
+    telemetry.rocket_q3        = estimation.rocketOrientation.z();
+
+    telemetry.rocket_roll      = estimation.rocketEulerAngles(0) * 180.0 / M_PI;
+    telemetry.rocket_pitch     = estimation.rocketEulerAngles(1) * 180.0 / M_PI;
+    telemetry.rocket_yaw       = estimation.rocketEulerAngles(2) * 180.0 / M_PI;
 
     telemetry.ax        = raw_sensors.accelgyro.ax;
     telemetry.ay        = raw_sensors.accelgyro.ay;
@@ -288,6 +302,11 @@ void Commands::EnterPreflightCommand(System& system, const RnpPacketSerialized& 
 void Commands::EnterFlightCommand(System& system, const RnpPacketSerialized& packet)
 {
     system.statemachine.changeState(std::make_unique<Flight>(system));
+}
+
+void Commands::EnterLandingCommand(System& system, const RnpPacketSerialized& packet)
+{
+    system.statemachine.changeState(std::make_unique<Landing>(system));
 }
 
 void Commands::FreeRamCommand(System& system, const RnpPacketSerialized& packet)

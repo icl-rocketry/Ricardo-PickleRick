@@ -48,7 +48,10 @@ public:
     // ── State accessors ───────────────────────────────────────────────────────
     Eigen::Vector3f position()      const { return m_x.segment<3>(0);  }
     Eigen::Vector3f velocity()      const { return m_x.segment<3>(3);  }
+    Eigen::Vector3f acceleration()  const { return m_acceleration;  } // body frame
     Eigen::Vector4f quaternion()    const { return m_x.segment<4>(6);  }
+    Eigen::Vector3f angularRates()  const { return m_angular_rates;  } // body frame
+
     Eigen::Vector3f accelBias()     const { return m_x.segment<3>(10); }
     Eigen::Vector3f gyroBias()      const { return m_x.segment<3>(13); }
     
@@ -71,6 +74,9 @@ private:
     Eigen::Vector3f m_h_accel_bias{0,0,0};                  // (m/s^2) (body)
     Eigen::Vector3f m_mag_ref{1,0,0};                       // NED reference field (unit)
     SensorStructs::home_ref_t m_setHome_ref;
+
+    Eigen::Vector3f m_acceleration;                         // body frame (m/s^2)
+    Eigen::Vector3f m_angular_rates;                        // body frame (rad/s)
     
     static constexpr float g = 9.80665f;
     static constexpr float LOW_G_SATURATION  = 7.0f * g; 

@@ -18,26 +18,26 @@ void Preflight::initialize(){
 Types::CoreTypes::State_ptr_t Preflight::update()
 {
     auto current_Data = _system.estimator.getData(); 
-    auto current_Data_sensors = _system.sensors.getData();
     
-    auto quat = current_Data.orientation; 
+    auto quat = current_Data.rocketOrientation; 
+
+    // if (millis() > 15000) {
+    //     return std::make_unique<Flight>(_system);
+    // }
 
     Eigen::Matrix<float, 1, 7> inputMatrix = {
         quat.w(),
         quat.x(),
         quat.y(),
         quat.z(),
-        current_Data_sensors.accelgyro.gx,
-        current_Data_sensors.accelgyro.gy,
-        current_Data_sensors.accelgyro.gz,
-    };
+        current_Data.angularRates(0),
+        current_Data.angularRates(1),
+        current_Data.angularRates(2),
+    };    
     
 
     _system.controller.update(inputMatrix, false);
 
-    if (millis() > 15000) {
-        return std::make_unique<Flight>(_system);
-    }
     return nullptr;
 };
 

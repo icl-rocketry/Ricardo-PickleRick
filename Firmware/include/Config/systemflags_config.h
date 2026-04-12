@@ -7,7 +7,7 @@ enum class SYSTEM_FLAG:uint32_t{
     //state flags
     STATE_PREFLIGHT = (1 << 0),
     STATE_FLIGHT = (1 << 1),
-
+    STATE_LANDING = (1 << 2),
     //flags
     DEBUG = (1 << 7),
     //critical messages 

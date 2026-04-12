@@ -12,14 +12,13 @@
 #include "Config/types.h"
 #include "Config/commands_config.h"
 
-#include "States/landing.h"
 #include "system.h"
 
-class Flight : public Types::CoreTypes::State_t
+class Landing : public Types::CoreTypes::State_t
 {
     public:
 
-        Flight(System& system);
+        Landing(System& system);
 
         void initialize() override;
 

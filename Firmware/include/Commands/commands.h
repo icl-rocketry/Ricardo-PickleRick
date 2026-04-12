@@ -25,6 +25,7 @@ namespace Commands{
     void CalibrateMagFullCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void EnterPreflightCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void EnterFlightCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
+    void EnterLandingCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
     void FreeRamCommand(ForwardDecl_SystemClass& system, const RnpPacketSerialized& packet);
 
 }

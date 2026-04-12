@@ -9,7 +9,6 @@
 #include "Config/systemflags_config.h"
 #include "Config/types.h"
 #include "Config/commands_config.h"
-
 #include "States/flight.h"
 
 class Preflight : public Types::CoreTypes::State_t
@@ -25,5 +24,4 @@ class Preflight : public Types::CoreTypes::State_t
 
     private:
         System& _system;
-
 };

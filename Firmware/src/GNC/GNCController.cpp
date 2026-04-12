@@ -2,8 +2,6 @@
 
 void GNCController::setup() {
 
-    // m_setpoint << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0, 0.0; 
- 
     m_pd.setup();
 
 }
@@ -16,7 +14,6 @@ void GNCController::start() {
     
 }
 
-// #include <libriccore/riccoresystem.h>
 
 void GNCController::update(Eigen::Matrix<float,1, 7> currentInput, bool actuate){
 
@@ -26,7 +23,6 @@ void GNCController::update(Eigen::Matrix<float,1, 7> currentInput, bool actuate)
         m_pd.update(m_input);
         m_output = m_pd.getOutputValues();
         if (actuate) {
-            // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("sendin shii");
 
             sendActuationCommands(m_output);
 
@@ -48,21 +44,25 @@ void GNCController::stop() {
 
 void GNCController::sendActuationCommands(Eigen::Vector3f actuation_values) {
 
-    float max_prop_power = 10.0f; // <-- change this for prop power in %
+    float max_prop_power = 45.0f;
     float thrust = actuation_values(2); 
     
-    if (thrust > max_prop_power) {
-        thrust = max_prop_power; 
-    } 
+    thrust = std::min(thrust, max_prop_power);
+
+    float ramp_up = (millis() - m_controller_start_time) * 0.001f;
+    
+    ramp_up = std::min(ramp_up, 1.0f);
+    
+    thrust *= ramp_up;
     
     changePropPower(0, (int)thrust); 
     changePropPower(1, (int)thrust); 
 
-    float roll_angle = actuation_values(0);
-    float pitch_angle = actuation_values(1);
+    float pitch_angle = actuation_values(0);
+    float yaw_angle = actuation_values(1);
 
     changeServoAngle(0, pitch_angle);
-    changeServoAngle(1, roll_angle);
+    changeServoAngle(1, yaw_angle);
 }
 
 
@@ -85,11 +85,11 @@ void GNCController::changeServoAngle(int servo, float angle_f) { // angle should
 
     if (servo == 0) { 
         des_ser = 10; 
-        angle += 810;
+        angle += 815;
     }
     if (servo == 1) { 
         des_ser = 11; 
-        angle += 835;
+        angle += 890;
     }
 
     SimpleCommandPacket actuate_servo(2, angle); //2 is the fire command
@@ -129,12 +129,14 @@ void GNCController::changePropPower(int prop, int power) {
 
 void GNCController::sendArmingCommands() {
 
-    armServos();
     armProps();
+    armServos();
 
 }
+#include <libriccore/riccorelogging.h>
 
 void GNCController::armProps() {
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Arming Props");
     SimpleCommandPacket arm_prop0(3, 0); //3 here is the arm command
     arm_prop0.header.source_service = 1;
     arm_prop0.header.source = 2;
@@ -153,6 +155,7 @@ void GNCController::armProps() {
 }
 
 void GNCController::armServos() {
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Arming Serovs");
     SimpleCommandPacket arm_alpha(3, 0); //3 here is the arm command
     arm_alpha.header.source_service = 1;
     arm_alpha.header.source = 2;
@@ -217,10 +220,12 @@ void GNCController::disarmServos() {
 
 void GNCController::telemetry_impl(packetptr_t packetptr) {
     SimpleCommandPacket packet(*packetptr);
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Telemetry_impl called");
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Telemetry_impl called");
 
 	ControllerTelemetryPacket telemetry;
 
+    auto euler_angles = m_pd.getEulerError();
+    auto f_body = m_pd.getFBody();
 	telemetry.header.type = 108;
 	telemetry.header.source = packet.header.destination;
 	telemetry.header.source_service = m_serviceID;
@@ -232,9 +237,15 @@ void GNCController::telemetry_impl(packetptr_t packetptr) {
     telemetry.q1 =               m_input(0,1);
     telemetry.q2 =               m_input(0,2);
     telemetry.q3 =               m_input(0,3);
+    telemetry.roll_error =       euler_angles(0) * (180.0f / 3.14159f); // convert to degrees
+    telemetry.pitch_error =      euler_angles(1) * (180.0f / 3.14159f); // convert to degrees
+    telemetry.yaw_error =        euler_angles(2) * (180.0f / 3.14159f); // convert to degrees
     telemetry.roll_rate_input =  m_input(0,4);
     telemetry.pitch_rate_input = m_input(0,5);
     telemetry.yaw_rate_input =   m_input(0,6);
+    telemetry.fx_body =          f_body(0);
+    telemetry.fy_body =          f_body(1);
+    telemetry.fz_body =          f_body(2);
 
 	telemetry.pitch_output =     m_output(0);
 	telemetry.roll_output =      m_output(1);

@@ -55,7 +55,6 @@ class Estimator{
         
         EKF m_ekf;    
         Calibrator m_calibrator;
-        void updateOrientation(const Eigen::Vector3f gyro, const Eigen::Vector3f accel, const Eigen::Vector3f mag);
 
         void updateState();
 };

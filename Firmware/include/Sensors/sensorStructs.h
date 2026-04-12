@@ -102,10 +102,15 @@ namespace SensorStructs
     struct state_t
     {
         Eigen::Quaternionf orientation;         // (quaternion)                         (NED to Body)
+        Eigen::Vector3f angularRates;           // (rad/s)                              (Body)
         Eigen::Vector3f eulerAngles;            // (rad) (roll pitch yaw)
+        
+        Eigen::Quaternionf rocketOrientation;   // (quaternion)                         (NED to Rocket)
+        Eigen::Vector3f rocketEulerAngles;      // (rad) (roll pitch yaw)
 
         Eigen::Vector3f position;               // (m) relative to callibration site    (NED)
         Eigen::Vector3f velocity;               // (m/s)                                (NED)
+        Eigen::Vector3f acceleration;           // (m/s^2)                              (Body)
         
         Eigen::Vector3f gyroBiases;             // (rad/s)                              (body)
         Eigen::Vector3f accelBiases;            // (m/s^2)                              (body)

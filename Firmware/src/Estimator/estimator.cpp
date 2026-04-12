@@ -72,6 +72,7 @@ void Estimator::calibrate()
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Calibration started");
 
 };
+
 void Estimator::setHome()
 {
     m_settingHome = true;
@@ -84,12 +85,27 @@ void Estimator::updateState()
     // ── Orientation ───────────────────────────────────────────────────────────
     const Eigen::Vector4f q         = m_ekf.quaternion();
     m_state.orientation             = Eigen::Quaternionf(q(0), q(1), q(2), q(3));
+    m_state.angularRates            = m_ekf.angularRates();
+    float w = q(0), x = q(1), y = q(2), z = q(3);
+    float roll  = atan2(2*(w*x + y*z), 1 - 2*(x*x + y*y));
+    float pitch = asin(2*(w*y - z*x));
+    float yaw   = atan2(2*(w*z + x*y), 1 - 2*(y*y + z*z));
+    m_state.eulerAngles = Eigen::Vector3f(roll, pitch, yaw);
+
+    m_state.rocketOrientation       = Eigen::Quaternionf(0.70710678f, 0.0f, -0.70710678f, 0.0f) * m_state.orientation;
+
+    const Eigen::Quaternionf rq     = m_state.rocketOrientation;
+    float rw = rq.w(), rx = rq.x(), ry = rq.y(), rz = rq.z();
+    float rocket_roll  = atan2(2*(rw*rx + ry*rz), 1 - 2*(rx*rx + ry*ry));
+    float rocket_pitch = asin(2*(rw*ry - rz*rx));
+    float rocket_yaw   = atan2(2*(rw*rz + rx*ry), 1 - 2*(ry*ry + rz*rz));
+    m_state.rocketEulerAngles = Eigen::Vector3f(rocket_roll, rocket_pitch, rocket_yaw);
 
     // ── Navigation states ─────────────────────────────────────────────────────
     m_state.position                = m_ekf.position();
     m_state.velocity                = m_ekf.velocity();
-    
-    m_state.gpsPosition            = m_ekf.gpsPosition();
+    m_state.acceleration            = m_ekf.acceleration();
+    m_state.gpsPosition             = m_ekf.gpsPosition();
 
     // ── Expected Readings ─────────────────────────────────────────────────────
     m_state.expectedMagReading      = m_ekf.expectedMagReading();
