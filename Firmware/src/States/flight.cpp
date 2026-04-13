@@ -19,11 +19,14 @@ Types::CoreTypes::State_ptr_t Flight::update()
     auto current_Data = _system.estimator.getData(); 
     
     uint32_t t = _system.controller.getStartTime();
-    uint32_t current_time = millis();       
+    uint32_t current_time = millis();    
 
-    if ((current_time - t ) > 3000) {
-        return std::make_unique<Landing>(_system);
-    }
+    float pitch = current_Data.rocketEulerAngles(1);
+    float yaw = current_Data.rocketEulerAngles(2);
+
+    // if ((current_time - t ) > 2500 || pitch > 30.0f || yaw > 30.0f) {
+    //     return std::make_unique<Landing>(_system);
+    // }
 
     auto quat = current_Data.rocketOrientation; 
 

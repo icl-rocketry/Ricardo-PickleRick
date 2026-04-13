@@ -44,12 +44,12 @@ void GNCController::stop() {
 
 void GNCController::sendActuationCommands(Eigen::Vector3f actuation_values) {
 
-    float max_prop_power = 45.0f;
+    float max_prop_power = 30.0f;
     float thrust = actuation_values(2); 
     
     thrust = std::min(thrust, max_prop_power);
 
-    float ramp_up = (millis() - m_controller_start_time) * 0.001f;
+    float ramp_up = (millis() - m_controller_start_time) * 0.01f;
     
     ramp_up = std::min(ramp_up, 1.0f);
     
@@ -85,11 +85,11 @@ void GNCController::changeServoAngle(int servo, float angle_f) { // angle should
 
     if (servo == 0) { 
         des_ser = 10; 
-        angle += 820;
+        angle += 1090;
     }
     if (servo == 1) { 
         des_ser = 11; 
-        angle += 780;
+        angle += 930;
     }
 
     SimpleCommandPacket actuate_servo(2, angle); //2 is the fire command
@@ -243,9 +243,9 @@ void GNCController::telemetry_impl(packetptr_t packetptr) {
     telemetry.roll_rate_input =  m_input(0,4);
     telemetry.pitch_rate_input = m_input(0,5);
     telemetry.yaw_rate_input =   m_input(0,6);
-    telemetry.fx_body =          f_body(0);
-    telemetry.fy_body =          f_body(1);
-    telemetry.fz_body =          f_body(2);
+    // telemetry.fx_body =          f_body(0);
+    // telemetry.fy_body =          f_body(1);
+    // telemetry.fz_body =          f_body(2);
 
 	telemetry.pitch_output =     m_output(0);
 	telemetry.roll_output =      m_output(1);

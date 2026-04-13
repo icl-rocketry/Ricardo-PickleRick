@@ -21,9 +21,9 @@ Types::CoreTypes::State_ptr_t Preflight::update()
     
     auto quat = current_Data.rocketOrientation; 
 
-    // if (millis() > 15000) {
-    //     return std::make_unique<Flight>(_system);
-    // }
+    if (millis() > 15000) {
+        return std::make_unique<Flight>(_system);
+    }
 
     Eigen::Matrix<float, 1, 7> inputMatrix = {
         quat.w(),

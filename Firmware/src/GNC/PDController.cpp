@@ -4,11 +4,11 @@ void PDController::setup(){
 
     m_setpoint << 0,0,0;
 
-    m_rEng << -0.165, 0.0, 0.0;
+    m_rEng << -0.175, 0.0, 0.0;
     m_mass = 1.19;
 
-    m_K_p << 0.0, 0.5, 0.7;
-    m_K_d << 0.0, 0.15, 0.2;
+    m_K_p << 0.0, 0.70, 0.10;
+    m_K_d << 0.0, 0.70, 0.10;
 
 }
 
@@ -70,18 +70,20 @@ void PDController::updateMcmd(Eigen::Vector3f angular_rates){
 void PDController::updateOutputValues(Eigen::Quaterniond q)
 {
     double L = m_rEng(0);
-    double Fx_ned = 9.5;
+    // double Fx_ned = 11;
     // double Fx_ned = 9.81f * m_mass;
 
     // Thrust vector in NED frame (along x/north axis)
-    Eigen::Vector3d F_ned(Fx_ned, 0.0, 0.0);
+    // Eigen::Vector3d F_ned(Fx_ned, 0.0, 0.0);
 
     // Rotate thrust into body frame
-    Eigen::Vector3d F_body = q.inverse() * F_ned;
+    // Eigen::Vector3d F_body = q.inverse() * F_ned;
+    Eigen::Vector3d F_body;
 
     // Add moment-derived forces in body frame
-    F_body(1) += -m_M_cmd(2) / L;
-    F_body(2) +=  m_M_cmd(1) / L;
+    F_body(0) = 5;
+    F_body(1) = -m_M_cmd(2) / L;
+    F_body(2) =  m_M_cmd(1) / L;
 
     m_f_body = F_body.cast<float>();
 

@@ -92,13 +92,13 @@ void Estimator::updateState()
     float yaw   = atan2(2*(w*z + x*y), 1 - 2*(y*y + z*z));
     m_state.eulerAngles = Eigen::Vector3f(roll, pitch, yaw);
 
-    m_state.rocketOrientation       = Eigen::Quaternionf(0.70710678f, 0.0f, -0.70710678f, 0.0f) * m_state.orientation;
+    m_state.rocketOrientation = m_state.orientation * Eigen::Quaternionf(0.70710678f, 0.0f, -0.70710678f, 0.0f);
 
     const Eigen::Quaternionf rq     = m_state.rocketOrientation;
     float rw = rq.w(), rx = rq.x(), ry = rq.y(), rz = rq.z();
-    float rocket_roll  = atan2(2*(rw*rx + ry*rz), 1 - 2*(rx*rx + ry*ry));
+    float rocket_roll  = atan2(2*(rw*rz + rx*ry), 1 - 2*(ry*ry + rz*rz));
     float rocket_pitch = asin(2*(rw*ry - rz*rx));
-    float rocket_yaw   = atan2(2*(rw*rz + rx*ry), 1 - 2*(ry*ry + rz*rz));
+    float rocket_yaw   = atan2(2*(rw*rx + ry*rz), 1 - 2*(rx*rx + ry*ry));
     m_state.rocketEulerAngles = Eigen::Vector3f(rocket_roll, rocket_pitch, rocket_yaw);
 
     // ── Navigation states ─────────────────────────────────────────────────────

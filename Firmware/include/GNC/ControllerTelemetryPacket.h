@@ -21,9 +21,9 @@ class ControllerTelemetryPacket : public RnpPacket{
                 &ControllerTelemetryPacket::roll_rate_input,
                 &ControllerTelemetryPacket::pitch_rate_input,
                 &ControllerTelemetryPacket::yaw_rate_input,
-                &ControllerTelemetryPacket::fx_body,
-                &ControllerTelemetryPacket::fy_body,
-                &ControllerTelemetryPacket::fz_body,
+                &ControllerTelemetryPacket::gx,
+                &ControllerTelemetryPacket::gy,
+                &ControllerTelemetryPacket::gz,
                 &ControllerTelemetryPacket::pitch_output,
                 &ControllerTelemetryPacket::roll_output,
                 &ControllerTelemetryPacket::thrust
@@ -65,9 +65,9 @@ class ControllerTelemetryPacket : public RnpPacket{
         float roll_error;
         float pitch_error;
         float yaw_error;
-        float fx_body;
-        float fy_body;
-        float fz_body;
+        float gx;
+        float gy;
+        float gz;
         
         static constexpr size_t size(){
             return getSerializer().member_size();
