@@ -85,11 +85,11 @@ void GNCController::changeServoAngle(int servo, float angle_f) { // angle should
 
     if (servo == 0) { 
         des_ser = 10; 
-        angle += 815;
+        angle += 820;
     }
     if (servo == 1) { 
         des_ser = 11; 
-        angle += 890;
+        angle += 780;
     }
 
     SimpleCommandPacket actuate_servo(2, angle); //2 is the fire command

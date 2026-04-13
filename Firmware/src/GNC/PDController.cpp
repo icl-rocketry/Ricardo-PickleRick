@@ -71,6 +71,7 @@ void PDController::updateOutputValues(Eigen::Quaterniond q)
 {
     double L = m_rEng(0);
     double Fx_ned = 9.5;
+    // double Fx_ned = 9.81f * m_mass;
 
     // Thrust vector in NED frame (along x/north axis)
     Eigen::Vector3d F_ned(Fx_ned, 0.0, 0.0);
