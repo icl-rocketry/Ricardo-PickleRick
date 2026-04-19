@@ -1,95 +1,123 @@
 #include "GNC/PDController.h"
+#include <algorithm>
+#include <cmath>
 
-void PDController::setup(){
+void PDController::setup()
+{
+    // Desired thrust direction in WORLD frame
+    // Example: point straight up in world-x if that is your vertical axis.
+    // Change this to match your world convention.
+    m_thrust_dir_world_des << 1.0f, 0.0f, 0.0f;
 
-    m_setpoint << 0,0,0;
+    m_rEng << -0.24f, 0.0f, 0.0f;
+    m_mass = 1.19f;
 
-    m_rEng << -0.175, 0.0, 0.0;
-    m_mass = 1.19;
-
-    m_K_p << 0.0, 0.70, 0.10;
-    m_K_d << 0.0, 0.70, 0.10;
-
+    // No roll control about body x
+    m_K_p << 0.0f, 0.0f, 0.0f;
+    m_K_d << 0.0f, 1.0f, 1.0f;
 }
 
-void PDController::update(Eigen::Matrix<float,1, 7> currentValues){
-
+void PDController::update(Eigen::Matrix<float,1,7> currentValues)
+{
     int dt_i = millis() - m_previousSampleTime;
 
-    if (dt_i >= 100) {
+    if (dt_i >= 10) { // 100Hz update rate
         Eigen::Quaterniond q(
             currentValues(0),  // w
             currentValues(1),  // x
             currentValues(2),  // y
             currentValues(3)   // z
         );
+        q.normalize();
+
         Eigen::Vector3f angular_rates(
-            currentValues(4), // gx
-            currentValues(5), // gy
-            currentValues(6)  // gz
+            currentValues(4), // p
+            currentValues(5), // q
+            currentValues(6)  // r
         );
 
-        updateQuatErrors(q); 
-        updateMcmd(angular_rates); 
+        updateThrustDirectionErrors(q);
+        updateMcmd(angular_rates);
+        updateOutputValues();
 
-        updateOutputValues(q);
         m_previousSampleTime = millis();
-
     }
-
 }
 
-void PDController::reset() {
-
-    m_quat_error << 0.0, 0.0, 0.0;
-    // m_output_values << 0.0, 0.0, 0.0, 0.0;
-    m_euler_error << 0.0, 0.0, 0.0;
+void PDController::reset()
+{
+    m_dir_error_body << 0.0f, 0.0f, 0.0f;
+    m_M_cmd          << 0.0f, 0.0f, 0.0f;
+    m_output_values  << 0.0f, 0.0f, 0.0f;
 }
 
-void PDController::updateQuatErrors(Eigen::Quaterniond q){
+void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
+{
+    // Body thrust axis = +x_body
+    const Eigen::Vector3d thrust_axis_body(1.0, 0.0, 0.0);
 
-    Eigen::Quaterniond q_d(1, 0, 0, 0);
+    // Current thrust direction in WORLD frame
+    Eigen::Vector3d thrust_dir_world = q * thrust_axis_body;
+    thrust_dir_world.normalize();
 
-    Eigen::Quaterniond q_result = q_d.conjugate() * q;
-    float ew = q_result.w(), ex = q_result.x(), ey = q_result.y(), ez = q_result.z();
-    float err_roll  = atan2(2*(ew*ex + ey*ez), 1 - 2*(ex*ex + ey*ey));
-    float err_pitch = asin(2*(ew*ey - ez*ex));
-    float err_yaw   = atan2(2*(ew*ez + ex*ey), 1 - 2*(ey*ey + ez*ez));
-    m_euler_error = Eigen::Vector3f(err_roll, err_pitch, err_yaw);
-    m_quat_error << q_result.x(), q_result.y(), q_result.z();
+    // Desired thrust direction in WORLD frame
+    Eigen::Vector3d thrust_dir_world_des = m_thrust_dir_world_des.cast<double>();
+    if (thrust_dir_world_des.norm() < 1e-6) {
+        thrust_dir_world_des << 1.0, 0.0, 0.0;
+    }
+    thrust_dir_world_des.normalize();
 
+    // Error axis in WORLD frame
+    // This is zero when the vectors align, and ignores roll about thrust axis
+    Eigen::Vector3d e_world = thrust_dir_world.cross(thrust_dir_world_des);
+
+    // Convert error into BODY frame so it matches body rates and actuator axes
+    Eigen::Vector3d e_body = q.conjugate() * e_world;
+
+    m_dir_error_body = e_body.cast<float>();
+
+    // No control about thrust axis (body x)
+    m_dir_error_body(0) = 0.0f;
 }
 
-void PDController::updateMcmd(Eigen::Vector3f angular_rates){
+void PDController::updateMcmd(const Eigen::Vector3f& angular_rates)
+{
+    // Ignore roll-rate damping too, because no roll authority
+    Eigen::Vector3f rates_used = angular_rates;
+    rates_used(0) = 0.0f;
 
     m_M_cmd =
-        - m_K_p.cwiseProduct(m_quat_error)
-        - m_K_d.cwiseProduct(angular_rates);
+        -m_K_p.cwiseProduct(m_dir_error_body)
+        -m_K_d.cwiseProduct(rates_used);
+
+    // Explicitly enforce no roll moment command
+    m_M_cmd(0) = 0.0f;
 }
 
-void PDController::updateOutputValues(Eigen::Quaterniond q)
+void PDController::updateOutputValues()
 {
-    double L = m_rEng(0);
-    // double Fx_ned = 11;
-    // double Fx_ned = 9.81f * m_mass;
+    const float L = m_rEng(0);   // likely negative
+    Eigen::Vector3f F_body;
 
-    // Thrust vector in NED frame (along x/north axis)
-    // Eigen::Vector3d F_ned(Fx_ned, 0.0, 0.0);
+    // Set nominal thrust along body +x
+    F_body(0) = 7.0f;
 
-    // Rotate thrust into body frame
-    // Eigen::Vector3d F_body = q.inverse() * F_ned;
-    Eigen::Vector3d F_body;
+    // From M = r x F, with r = [L,0,0]:
+    // My = -L*Fz  => Fz = -My/L
+    // Mz =  L*Fy  => Fy =  Mz/L
+    F_body(1) =  m_M_cmd(2) / L;
+    F_body(2) = -m_M_cmd(1) / L;
 
-    // Add moment-derived forces in body frame
-    F_body(0) = 5;
-    F_body(1) = -m_M_cmd(2) / L;
-    F_body(2) =  m_M_cmd(1) / L;
-
-    m_f_body = F_body.cast<float>();
+    m_f_body = F_body;
 
     double pitch_servo = -std::atan2(-F_body(2), F_body(0)) * (180.0 / M_PI);
     double yaw_servo   =  std::atan2( F_body(1), F_body(0)) * (180.0 / M_PI);
     double thrust      = F_body.norm() * 100.0 / 22.0;
+
+    pitch_servo = std::clamp(pitch_servo, -15.0, 15.0);
+    yaw_servo   = std::clamp(yaw_servo,   -15.0, 15.0);
+    thrust      = std::clamp(thrust,       0.0, 0.0);
+    
 
     m_output_values << static_cast<float>(pitch_servo),
                        static_cast<float>(yaw_servo),

@@ -89,7 +89,7 @@ void GNCController::changeServoAngle(int servo, float angle_f) { // angle should
     }
     if (servo == 1) { 
         des_ser = 11; 
-        angle += 930;
+        angle += 1000;
     }
 
     SimpleCommandPacket actuate_servo(2, angle); //2 is the fire command
@@ -104,7 +104,7 @@ void GNCController::changeServoAngle(int servo, float angle_f) { // angle should
 void GNCController::changePropPower(int prop, int power) {
     // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Changing Prop Power: " + std::to_string(power));
 
-    uint8_t des_ser; 
+    uint8_t des_ser; //10 is +y, 11 is -z
     if (power < 0) {
         power = 0; // make sure the power is not negative
     }
