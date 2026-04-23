@@ -262,7 +262,7 @@ void Calibrator::loadCalibration()
     {
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
             "Calibrator - stored mag ref invalid, using London default");
-        computeMagRef(51.5074f, -0.1278f, 0.0f);
+        computeMagRef(51.5750f, -0.1453f, 0.0f);
         m_calibration_quality = 1;
     }
 
@@ -298,7 +298,7 @@ void Calibrator::backupCalibration()
     m_hay_bias = 0.0f;
     m_haz_bias = 0.0f;
 
-    computeMagRef(51.5074f, -0.1278f, 0.0f);
+    computeMagRef(51.5750f, -0.1453f, 0.0f);
 
     m_calibration_quality = 0;
 }

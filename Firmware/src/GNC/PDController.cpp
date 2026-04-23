@@ -13,15 +13,13 @@ void PDController::setup()
     m_mass = 1.19f;
 
     // No roll control about body x
-    m_K_p << 0.0f, 0.0f, 0.0f;
-    m_K_d << 0.0f, 1.0f, 1.0f;
+    m_K_p << 0.0f, 1.6f, 1.4f; 
+    m_K_d << 0.0f, 0.33f, 0.25f;
 }
 
 void PDController::update(Eigen::Matrix<float,1,7> currentValues)
 {
-    int dt_i = millis() - m_previousSampleTime;
-
-    if (dt_i >= 10) { // 100Hz update rate
+     // 100Hz update rate
         Eigen::Quaterniond q(
             currentValues(0),  // w
             currentValues(1),  // x
@@ -38,10 +36,7 @@ void PDController::update(Eigen::Matrix<float,1,7> currentValues)
 
         updateThrustDirectionErrors(q);
         updateMcmd(angular_rates);
-        updateOutputValues();
-
-        m_previousSampleTime = millis();
-    }
+        updateOutputValues(); 
 }
 
 void PDController::reset()
@@ -83,12 +78,12 @@ void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
 void PDController::updateMcmd(const Eigen::Vector3f& angular_rates)
 {
     // Ignore roll-rate damping too, because no roll authority
-    Eigen::Vector3f rates_used = angular_rates;
-    rates_used(0) = 0.0f;
-
+    Eigen::Vector3f rates_error = -angular_rates;
+    rates_error(0) = 0.0f; //no roll rate damping
+    m_euler_error = m_dir_error_body;//send the errors to telemetry for debugging
     m_M_cmd =
         -m_K_p.cwiseProduct(m_dir_error_body)
-        -m_K_d.cwiseProduct(rates_used);
+        -m_K_d.cwiseProduct(rates_error);
 
     // Explicitly enforce no roll moment command
     m_M_cmd(0) = 0.0f;
@@ -100,26 +95,26 @@ void PDController::updateOutputValues()
     Eigen::Vector3f F_body;
 
     // Set nominal thrust along body +x
-    F_body(0) = 7.0f;
+    F_body(0) = 5.0f;
 
     // From M = r x F, with r = [L,0,0]:
     // My = -L*Fz  => Fz = -My/L
     // Mz =  L*Fy  => Fy =  Mz/L
-    F_body(1) =  m_M_cmd(2) / L;
-    F_body(2) = -m_M_cmd(1) / L;
+    F_body(1) =  m_M_cmd(2) / L; // Mz gives Fy
+    F_body(2) = -m_M_cmd(1) / L; // My gives Fz, with a negative sign because of the direction of the moment arm
 
-    m_f_body = F_body;
+    m_f_body = F_body; //send to telemetry for debugging
 
     double pitch_servo = -std::atan2(-F_body(2), F_body(0)) * (180.0 / M_PI);
     double yaw_servo   =  std::atan2( F_body(1), F_body(0)) * (180.0 / M_PI);
     double thrust      = F_body.norm() * 100.0 / 22.0;
 
-    pitch_servo = std::clamp(pitch_servo, -15.0, 15.0);
+    pitch_servo = std::clamp(pitch_servo, -15.0, 15.0); 
     yaw_servo   = std::clamp(yaw_servo,   -15.0, 15.0);
-    thrust      = std::clamp(thrust,       0.0, 0.0);
+    thrust      = std::clamp(thrust,       0.0, 100.0);
     
-
+    
     m_output_values << static_cast<float>(pitch_servo),
-                       static_cast<float>(yaw_servo),
+                       static_cast<float>(yaw_servo), 
                        static_cast<float>(thrust);
 }

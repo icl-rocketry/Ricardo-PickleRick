@@ -9,7 +9,7 @@ void Preflight::initialize(){
     State::initialize();
     _system.commandhandler.enableCommands({
                                            Commands::ID::Set_Home,
-                                           Commands::ID::Stop_Logging,
+                                           Commands::ID::Calibrate,
                                            Commands::ID::Enter_Flight
                                           });    
 

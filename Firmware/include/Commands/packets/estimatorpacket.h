@@ -18,7 +18,7 @@ class EstimatorPacket : public RnpPacket{
                 &EstimatorPacket::vel_n,
                 &EstimatorPacket::vel_e,
                 &EstimatorPacket::vel_d,
-                
+              
                 &EstimatorPacket::q0,
                 &EstimatorPacket::q1,
                 &EstimatorPacket::q2,

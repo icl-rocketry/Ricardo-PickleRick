@@ -122,7 +122,9 @@ void EKF::predict(  const float dt,
            -q2,  q1,  q0;
     
     const Eigen::Matrix<float, 4, 3> G_w = 0.5f * dt * E_q;
-    m_Q_att = (SIGMA_ALPHA * SIGMA_ALPHA) * (G_w * G_w.transpose());
+    m_Q_att = G_w *
+              SIGMA_ALPHA.cwiseProduct(SIGMA_ALPHA).asDiagonal() *
+              G_w.transpose();
            
 
     // ── Translation update ───────────────────────────────────────────────────────
@@ -276,7 +278,7 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
     m_H.block<3,4>(0,6)  = Hq;
     m_H.block<3,3>(0,10) = Mat3::Identity();
 
-    const Mat3 R = (SIGMA_ACCEL_LOW * SIGMA_ACCEL_LOW) * Mat3::Identity();
+    const Mat3 R = SIGMA_ACCEL_LOW.cwiseProduct(SIGMA_ACCEL_LOW).asDiagonal();
     m_y.segment<3>(3) = z_accel - m_h.segment<3>(3);
     const Mat3 S = m_H * m_P * m_H.transpose() + R;
     m_K = m_P * m_H.transpose() * S.ldlt().solve(Mat3::Identity());

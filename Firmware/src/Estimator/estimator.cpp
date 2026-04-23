@@ -11,6 +11,14 @@ Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus)
 
 void Estimator::setup()
 {
+    m_accel_lpf_x.setup(IMU_RATE_HZ, ACCEL_CUTOFF_HZ); //2nd order butterworth low-pass filter for accel and gyro (tune cutoff frequencies to your needs)
+    m_accel_lpf_y.setup(IMU_RATE_HZ, ACCEL_CUTOFF_HZ);
+    m_accel_lpf_z.setup(IMU_RATE_HZ, ACCEL_CUTOFF_HZ);
+
+    m_gyro_lpf_x.setup(IMU_RATE_HZ, GYRO_CUTOFF_HZ);
+    m_gyro_lpf_y.setup(IMU_RATE_HZ, GYRO_CUTOFF_HZ);
+    m_gyro_lpf_z.setup(IMU_RATE_HZ, GYRO_CUTOFF_HZ);
+
     m_calibrating = false;
     m_settingHome = false;
     m_calibrator.setup();
@@ -20,6 +28,7 @@ void Estimator::setup()
         m_calibrator.getHighGBiases(),
         m_calibrator.getMagRef()
     );
+
 };
 
 void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
@@ -49,16 +58,59 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             m_calibrator.updateSetHome(raw_sensors);
         }
     } else {
+        // Raw low-g accel + gyro from IMU
+        const Eigen::Vector3f gyro_raw(
+            raw_sensors.accelgyro.gx,
+            raw_sensors.accelgyro.gy,
+            raw_sensors.accelgyro.gz
+        );
+
+        const Eigen::Vector3f accel_raw(
+            raw_sensors.accelgyro.ax,
+            raw_sensors.accelgyro.ay,
+            raw_sensors.accelgyro.az
+        );
+
+        // Raw high-g accel
+        const Eigen::Vector3f high_g_raw(
+            raw_sensors.accel.ax,
+            raw_sensors.accel.ay,
+            raw_sensors.accel.az
+        );
+
+        // Filter low-g accel
+        const Eigen::Vector3f accel_filt(
+            m_accel_lpf_x.update(accel_raw.x()),
+            m_accel_lpf_y.update(accel_raw.y()),
+            m_accel_lpf_z.update(accel_raw.z())
+        );
+
+        // Filter gyro
+        const Eigen::Vector3f gyro_filt(
+            m_gyro_lpf_x.update(gyro_raw.x()),
+            m_gyro_lpf_y.update(gyro_raw.y()),
+            m_gyro_lpf_z.update(gyro_raw.z())
+        );
+
+        // Feed filtered low-g accel + gyro into EKF
         m_ekf.update(
-            Eigen::Vector3f(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz),
-            Eigen::Vector3f(raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az),
-            Eigen::Vector3f(raw_sensors.accel.ax,     raw_sensors.accel.ay,     raw_sensors.accel.az),
-            Eigen::Vector3f(raw_sensors.mag.mx,       raw_sensors.mag.my,       raw_sensors.mag.mz),
+            gyro_filt,
+            accel_filt,
+            high_g_raw,
+            Eigen::Vector3f(raw_sensors.mag.mx, raw_sensors.mag.my, raw_sensors.mag.mz),
             raw_sensors.baro.press,
             raw_sensors.baro.temp,
             raw_sensors.gps
         );
-
+        // m_ekf.update(
+        //     Eigen::Vector3f(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz),
+        //     Eigen::Vector3f(raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az),
+        //     Eigen::Vector3f(raw_sensors.accel.ax,     raw_sensors.accel.ay,     raw_sensors.accel.az),
+        //     Eigen::Vector3f(raw_sensors.mag.mx,       raw_sensors.mag.my,       raw_sensors.mag.mz),
+        //     raw_sensors.baro.press,
+        //     raw_sensors.baro.temp,
+        //     raw_sensors.gps
+        // );
     }
 
     updateState();
@@ -105,7 +157,7 @@ void Estimator::updateState()
     m_state.position                = m_ekf.position();
     m_state.velocity                = m_ekf.velocity();
     m_state.acceleration            = m_ekf.acceleration();
-    m_state.gpsPosition             = m_ekf.gpsPosition();
+    m_state.gpsPosition             = m_ekf.gpsPosition(); 
 
     // ── Expected Readings ─────────────────────────────────────────────────────
     m_state.expectedMagReading      = m_ekf.expectedMagReading();

@@ -45,7 +45,7 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
 
         uint8_t m_serviceID;
         unsigned long m_previousSampleTime;
-        unsigned long m_actuationDelta = 2; // 0.002 seconds (500 Hz)
+        unsigned long m_actuationDelta = 4; // 0.004 seconds (250 Hz)
         unsigned long m_controller_start_time;
 
         Eigen::Matrix<float,1, 7> m_input;

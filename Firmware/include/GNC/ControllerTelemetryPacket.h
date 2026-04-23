@@ -26,7 +26,10 @@ class ControllerTelemetryPacket : public RnpPacket{
                 &ControllerTelemetryPacket::gz,
                 &ControllerTelemetryPacket::pitch_output,
                 &ControllerTelemetryPacket::roll_output,
-                &ControllerTelemetryPacket::thrust
+                &ControllerTelemetryPacket::thrust,
+                &ControllerTelemetryPacket::fx_body,
+                &ControllerTelemetryPacket::fy_body,
+                &ControllerTelemetryPacket::fz_body
             );
 
             return ret;
@@ -68,6 +71,9 @@ class ControllerTelemetryPacket : public RnpPacket{
         float gx;
         float gy;
         float gz;
+        float fx_body;
+        float fy_body;
+        float fz_body;
         
         static constexpr size_t size(){
             return getSerializer().member_size();

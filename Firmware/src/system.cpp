@@ -205,7 +205,7 @@ void System::logTelemetry()
         // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("sd card state: " + std::to_string(primarysd.getError()));
 
         const SensorStructs::raw_measurements_t& raw_sensors = sensors.getData();
-        // const SensorStructs::state_t& estimator_state =  estimator.getData();
+        const SensorStructs::state_t& estimator_state =  estimator.getData();
         TelemetryLogframe logframe;
         
         logframe.gps_lat = raw_sensors.gps.latitude * 1e-7;
@@ -235,22 +235,23 @@ void System::logTelemetry()
         logframe.logic_percent = raw_sensors.logicrail.percent;
         logframe.dep_voltage = raw_sensors.deprail.volt;
         logframe.dep_current = raw_sensors.deprail.current;
-        // logframe.roll = estimator_state.eulerAngles[0];
-        // logframe.pitch = estimator_state.eulerAngles[1];
-        // logframe.yaw = estimator_state.eulerAngles[2];
-        // logframe.q0 = estimator_state.orientation.w();
-        // logframe.q1 = estimator_state.orientation.x();
-        // logframe.q2 = estimator_state.orientation.y();
-        // logframe.q3 = estimator_state.orientation.z();
-        // logframe.pn = estimator_state.position[0];
-        // logframe.pe = estimator_state.position[1];
-        // logframe.pd = estimator_state.position[2];
-        // logframe.vn = estimator_state.velocity[0];
-        // logframe.ve = estimator_state.velocity[1];
-        // logframe.vd = estimator_state.velocity[2];
-        // logframe.an = estimator_state.acceleration[0];
-        // logframe.ae = estimator_state.acceleration[1];
-        // logframe.ad = estimator_state.acceleration[2];
+
+        logframe.roll = estimator_state.eulerAngles[0];
+        logframe.pitch = estimator_state.eulerAngles[1];
+        logframe.yaw = estimator_state.eulerAngles[2];
+        logframe.q0 = estimator_state.orientation.w();
+        logframe.q1 = estimator_state.orientation.x();
+        logframe.q2 = estimator_state.orientation.y();
+        logframe.q3 = estimator_state.orientation.z();
+        logframe.pn = estimator_state.position[0];
+        logframe.pe = estimator_state.position[1];
+        logframe.pd = estimator_state.position[2];
+        logframe.vn = estimator_state.velocity[0];
+        logframe.ve = estimator_state.velocity[1];
+        logframe.vd = estimator_state.velocity[2];
+        logframe.an = estimator_state.acceleration[0];
+        logframe.ae = estimator_state.acceleration[1];
+        logframe.ad = estimator_state.acceleration[2];
 
         const RadioInterfaceInfo* radio_info = reinterpret_cast<const RadioInterfaceInfo*>(radio.getInfo());
 

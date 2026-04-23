@@ -58,11 +58,11 @@ void GNCController::sendActuationCommands(Eigen::Vector3f actuation_values) {
     changePropPower(0, (int)thrust); 
     changePropPower(1, (int)thrust); 
 
-    float pitch_angle = actuation_values(0);
+    float pitch_angle = actuation_values(0); 
     float yaw_angle = actuation_values(1);
 
-    changeServoAngle(0, pitch_angle);
-    changeServoAngle(1, yaw_angle);
+    changeServoAngle(1, -pitch_angle); //top servo
+    changeServoAngle(0, yaw_angle); //bottom servo
 }
 
 
@@ -243,9 +243,9 @@ void GNCController::telemetry_impl(packetptr_t packetptr) {
     telemetry.roll_rate_input =  m_input(0,4);
     telemetry.pitch_rate_input = m_input(0,5);
     telemetry.yaw_rate_input =   m_input(0,6);
-    // telemetry.fx_body =          f_body(0);
-    // telemetry.fy_body =          f_body(1);
-    // telemetry.fz_body =          f_body(2);
+    telemetry.fx_body =          f_body(0);
+    telemetry.fy_body =          f_body(1);
+    telemetry.fz_body =          f_body(2);
 
 	telemetry.pitch_output =     m_output(0);
 	telemetry.roll_output =      m_output(1);

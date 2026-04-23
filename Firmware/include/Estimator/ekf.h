@@ -68,6 +68,8 @@ public:
     Eigen::Vector3f gpsVelInnovation()  const { return m_y.segment<3>(11); }
 
     Eigen::Vector3f gpsPosition()   const { return m_gps_position; }
+
+
 private:
     uint32_t m_lastPredictTime = 0;
 
@@ -104,14 +106,13 @@ private:
     Eigen::Matrix<float, 16, 16>  m_P_temp;
 
     // ── Process noise tuning ──────────────────────────────────────────────────
-    static constexpr float SIGMA_JERK       = 0.5f;     // m/s³
-    static constexpr float SIGMA_ALPHA      = 0.005f;   // rad/s 
+    static constexpr float SIGMA_JERK       = 1.0f;     // m/s³
+    static inline const Eigen::Vector3f SIGMA_ALPHA{0.02f, 0.02f, 0.02f};  // rad/s 
 
     static constexpr float SIGMA_BG         = 1e-6f;     // rad/s 
     static constexpr float SIGMA_BA_LOW     = 1e-6f;     // m/s²
-    
-    static constexpr float SIGMA_MAG        = 0.01f;     // 
-    static constexpr float SIGMA_ACCEL_LOW  = 0.05f;     // 
+    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.1f, 0.4f, 0.45f};
+    static constexpr float SIGMA_MAG        = 0.1f;     // was 0.01
 
     static constexpr float SIGMA_T          = 0.5f;      // K
     static constexpr float SIGMA_P          = 100.0f;    // Pa
