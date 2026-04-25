@@ -11,13 +11,13 @@ Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus)
 
 void Estimator::setup()
 {
-    m_accel_lpf_x.setup(IMU_RATE_HZ, ACCEL_CUTOFF_HZ); //2nd order butterworth low-pass filter for accel and gyro (tune cutoff frequencies to your needs)
-    m_accel_lpf_y.setup(IMU_RATE_HZ, ACCEL_CUTOFF_HZ);
-    m_accel_lpf_z.setup(IMU_RATE_HZ, ACCEL_CUTOFF_HZ);
+    m_accel_lpf_x.setup(ESTIMATOR_RATE_HZ, ACCEL_CUTOFF_HZ); 
+    m_accel_lpf_y.setup(ESTIMATOR_RATE_HZ, ACCEL_CUTOFF_HZ);
+    m_accel_lpf_z.setup(ESTIMATOR_RATE_HZ, ACCEL_CUTOFF_HZ);
 
-    m_gyro_lpf_x.setup(IMU_RATE_HZ, GYRO_CUTOFF_HZ);
-    m_gyro_lpf_y.setup(IMU_RATE_HZ, GYRO_CUTOFF_HZ);
-    m_gyro_lpf_z.setup(IMU_RATE_HZ, GYRO_CUTOFF_HZ);
+    m_gyro_lpf_x.setup(ESTIMATOR_RATE_HZ, GYRO_CUTOFF_HZ);
+    m_gyro_lpf_y.setup(ESTIMATOR_RATE_HZ, GYRO_CUTOFF_HZ);
+    m_gyro_lpf_z.setup(ESTIMATOR_RATE_HZ, GYRO_CUTOFF_HZ);
 
     m_calibrating = false;
     m_settingHome = false;
@@ -92,6 +92,13 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             m_gyro_lpf_z.update(gyro_raw.z())
         );
 
+        // Save raw + filtered data to telemetry/state, even though sensors should have this data its easier to have it all in the same timestep for debugging
+        m_state.rawAccel = accel_raw;
+        m_state.rawGyro = gyro_raw;
+        m_state.filteredAccel = accel_filt;
+        m_state.filteredGyro = gyro_filt;
+
+
         // Feed filtered low-g accel + gyro into EKF
         m_ekf.update(
             gyro_filt,
@@ -112,7 +119,6 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
         //     raw_sensors.gps
         // );
     }
-
     updateState();
 
 
@@ -152,6 +158,7 @@ void Estimator::updateState()
     float rocket_pitch = asin(2*(rw*ry - rz*rx));
     float rocket_yaw   = atan2(2*(rw*rz + rx*ry), 1 - 2*(ry*ry + rz*rz));
     m_state.rocketEulerAngles = Eigen::Vector3f(rocket_roll, rocket_pitch, rocket_yaw);
+
 
     // ── Navigation states ─────────────────────────────────────────────────────
     m_state.position                = m_ekf.position();

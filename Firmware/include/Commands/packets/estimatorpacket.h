@@ -11,13 +11,29 @@ class EstimatorPacket : public RnpPacket{
         static constexpr auto getSerializer()
         {
             auto ret = RnpSerializer(
-                &EstimatorPacket::pos_n,
-                &EstimatorPacket::pos_e,
-                &EstimatorPacket::pos_d,
+                &EstimatorPacket::raw_ax,
+                &EstimatorPacket::raw_ay,
+                &EstimatorPacket::raw_az,
 
-                &EstimatorPacket::vel_n,
-                &EstimatorPacket::vel_e,
-                &EstimatorPacket::vel_d,
+                &EstimatorPacket::raw_gx,
+                &EstimatorPacket::raw_gy,
+                &EstimatorPacket::raw_gz,
+
+                &EstimatorPacket::filt_ax,
+                &EstimatorPacket::filt_ay,
+                &EstimatorPacket::filt_az,
+
+                &EstimatorPacket::filt_gx,
+                &EstimatorPacket::filt_gy,
+                &EstimatorPacket::filt_gz,
+                
+                // &EstimatorPacket::pos_n,
+                // &EstimatorPacket::pos_e,
+                // &EstimatorPacket::pos_d,
+
+                // &EstimatorPacket::vel_n,
+                // &EstimatorPacket::vel_e,
+                // &EstimatorPacket::vel_d,
               
                 &EstimatorPacket::q0,
                 &EstimatorPacket::q1,
@@ -113,6 +129,14 @@ class EstimatorPacket : public RnpPacket{
          */
         void serialize(std::vector<uint8_t>& buf) override;
 
+        //raw sensor data
+        float raw_ax, raw_ay, raw_az; //raw accel data before the filter
+        //raw gyro data
+        float raw_gx, raw_gy, raw_gz; //raw gyro data before the filter
+        //filtered accel data
+        float filt_ax, filt_ay, filt_az; //filtered accel data
+         //filtered gyro data
+        float filt_gx, filt_gy, filt_gz; //filtered gyro data
         
         // accel gyro
         float pos_n, pos_e, pos_d;              // position (m) (NED frame)

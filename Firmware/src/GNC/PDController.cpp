@@ -9,12 +9,14 @@ void PDController::setup()
     // Change this to match your world convention.
     m_thrust_dir_world_des << 1.0f, 0.0f, 0.0f;
 
-    m_rEng << -0.24f, 0.0f, 0.0f;
+    m_rEng << -0.235f, 0.0f, 0.0f;
     m_mass = 1.19f;
 
-    // No roll control about body x
-    m_K_p << 0.0f, 1.6f, 1.4f; 
-    m_K_d << 0.0f, 0.33f, 0.25f;
+    // // No roll control about body x
+    // m_K_p << 0.0f, 1.2f, 1.3f; 
+    // m_K_d << 0.0f, 0.33f, 0.2f;
+    m_K_p << 0.0f, 2.1f, 1.5f; 
+    m_K_d << 0.0f, 0.45f, 0.5f;
 }
 
 void PDController::update(Eigen::Matrix<float,1,7> currentValues)
@@ -87,8 +89,8 @@ void PDController::updateMcmd(const Eigen::Vector3f& angular_rates)
 
     // Explicitly enforce no roll moment command
     m_M_cmd(0) = 0.0f;
+    
 }
-
 void PDController::updateOutputValues()
 {
     const float L = m_rEng(0);   // likely negative
@@ -113,8 +115,7 @@ void PDController::updateOutputValues()
     yaw_servo   = std::clamp(yaw_servo,   -15.0, 15.0);
     thrust      = std::clamp(thrust,       0.0, 100.0);
     
-    
-    m_output_values << static_cast<float>(pitch_servo),
-                       static_cast<float>(yaw_servo), 
+    m_output_values << static_cast<float>(pitch_servo), //top servo 
+                       static_cast<float>(yaw_servo),  //bottom servo
                        static_cast<float>(thrust);
 }

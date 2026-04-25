@@ -14,6 +14,7 @@
 #include "Estimator/ekf.h"
 #include "Estimator/calibrator.h"
 #include "Filters/butterworth2_lowpass.h"
+#include "Filters/first_order_lowpass.h"
 
 enum class ESTIMATOR_STATE: uint8_t{
     NOMINAL,
@@ -58,17 +59,18 @@ class Estimator{
         Calibrator m_calibrator;
         
          // Filter settings
-        static constexpr float IMU_RATE_HZ        = 1000.0f;  // <-- match your real rate as this is the sampling frequency of the filter
-        static constexpr float ACCEL_CUTOFF_HZ    = 30.0f;
-        static constexpr float GYRO_CUTOFF_HZ     = 50.0f;
+        static constexpr float ESTIMATOR_RATE_HZ  = 500.0f;  // <-- match your estimator rate as this is the sampling frequency of the filter
+        static constexpr float ACCEL_CUTOFF_HZ    = 30.0f; //
+        static constexpr float GYRO_CUTOFF_HZ     = 47.0f;
+    
 
-        Butterworth2Lowpass m_accel_lpf_x;
-        Butterworth2Lowpass m_accel_lpf_y;
-        Butterworth2Lowpass m_accel_lpf_z;
+        FirstOrderLowpass  m_accel_lpf_x;
+        FirstOrderLowpass  m_accel_lpf_y;
+        FirstOrderLowpass  m_accel_lpf_z;
 
-        Butterworth2Lowpass m_gyro_lpf_x;
-        Butterworth2Lowpass m_gyro_lpf_y;
-        Butterworth2Lowpass m_gyro_lpf_z;
+        FirstOrderLowpass  m_gyro_lpf_x;
+        FirstOrderLowpass  m_gyro_lpf_y;
+        FirstOrderLowpass  m_gyro_lpf_z;
 
         void updateState();
 };

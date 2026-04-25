@@ -237,19 +237,25 @@ void GNCController::telemetry_impl(packetptr_t packetptr) {
     telemetry.q1 =               m_input(0,1);
     telemetry.q2 =               m_input(0,2);
     telemetry.q3 =               m_input(0,3);
+    
     telemetry.roll_error =       euler_angles(0) * (180.0f / 3.14159f); // convert to degrees
     telemetry.pitch_error =      euler_angles(1) * (180.0f / 3.14159f); // convert to degrees
     telemetry.yaw_error =        euler_angles(2) * (180.0f / 3.14159f); // convert to degrees
+
     telemetry.roll_rate_input =  m_input(0,4);
     telemetry.pitch_rate_input = m_input(0,5);
     telemetry.yaw_rate_input =   m_input(0,6);
+
     telemetry.fx_body =          f_body(0);
     telemetry.fy_body =          f_body(1);
     telemetry.fz_body =          f_body(2);
 
 	telemetry.pitch_output =     m_output(0);
-	telemetry.roll_output =      m_output(1);
+	telemetry.yaw_output =       m_output(1);
 	telemetry.thrust =           m_output(2);
+
+    telemetry.m_cmd_y = m_pd.getMcmd()(1); //get the yaw moment command for telemetry
+    telemetry.m_cmd_z = m_pd.getMcmd()(2); //get the pitch moment command for telemetry
 
 	m_networkmanager.sendPacket(telemetry);
 

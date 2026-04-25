@@ -43,8 +43,6 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
     telemetry.header.destination_service = commandpacket.header.source_service;
     telemetry.header.uid = commandpacket.header.uid;
 
-
-    
     telemetry.pn        = estimation.position(0);
     telemetry.pe        = estimation.position(1);
     telemetry.pd        = estimation.position(2);
@@ -169,6 +167,22 @@ void Commands::EstimatorCommand(System& system, const RnpPacketSerialized& packe
     estimator.header.destination =          commandpacket.header.source;
     estimator.header.destination_service =  commandpacket.header.source_service;
     estimator.header.uid =                  commandpacket.header.uid;
+
+    estimator.raw_ax                  = state.rawAccel(0);
+    estimator.raw_ay                  = state.rawAccel(1);
+    estimator.raw_az                  = state.rawAccel(2);
+
+    estimator.raw_gx                  = state.rawGyro(0);
+    estimator.raw_gy                  = state.rawGyro(1);
+    estimator.raw_gz                  = state.rawGyro(2);
+
+    estimator.filt_ax             = state.filteredAccel(0);
+    estimator.filt_ay             = state.filteredAccel(1);
+    estimator.filt_az             = state.filteredAccel(2);
+
+    estimator.filt_gx             = state.filteredGyro(0);
+    estimator.filt_gy             = state.filteredGyro(1);
+    estimator.filt_gz             = state.filteredGyro(2);
 
     estimator.pos_n                 = state.position(0);
     estimator.pos_e                 = state.position(1);

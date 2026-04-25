@@ -13,6 +13,7 @@ class PDController
         Eigen::Vector3f getOutputValues()   { return m_output_values; }; 
         Eigen::Vector3f getEulerError()     { return m_euler_error; }; 
         Eigen::Vector3f getFBody()          { return m_f_body; }; 
+        Eigen::Vector3f getMcmd()           { return m_M_cmd; };
         
        
     

@@ -21,15 +21,14 @@ class ControllerTelemetryPacket : public RnpPacket{
                 &ControllerTelemetryPacket::roll_rate_input,
                 &ControllerTelemetryPacket::pitch_rate_input,
                 &ControllerTelemetryPacket::yaw_rate_input,
-                &ControllerTelemetryPacket::gx,
-                &ControllerTelemetryPacket::gy,
-                &ControllerTelemetryPacket::gz,
                 &ControllerTelemetryPacket::pitch_output,
-                &ControllerTelemetryPacket::roll_output,
+                &ControllerTelemetryPacket::yaw_output,
                 &ControllerTelemetryPacket::thrust,
                 &ControllerTelemetryPacket::fx_body,
                 &ControllerTelemetryPacket::fy_body,
-                &ControllerTelemetryPacket::fz_body
+                &ControllerTelemetryPacket::fz_body,
+                &ControllerTelemetryPacket::m_cmd_y,
+                &ControllerTelemetryPacket::m_cmd_z
             );
 
             return ret;
@@ -59,21 +58,20 @@ class ControllerTelemetryPacket : public RnpPacket{
         float q1;
         float q2;
         float q3;
-        float roll_rate_input;
-        float pitch_rate_input;
-        float yaw_rate_input;
-        float roll_output;
-        float pitch_output;
-        float thrust;
         float roll_error;
         float pitch_error;
         float yaw_error;
-        float gx;
-        float gy;
-        float gz;
+        float roll_rate_input;
+        float pitch_rate_input;
+        float yaw_rate_input;
+        float pitch_output;
+        float yaw_output;
+        float thrust;
         float fx_body;
         float fy_body;
         float fz_body;
+        float m_cmd_y;
+        float m_cmd_z;
         
         static constexpr size_t size(){
             return getSerializer().member_size();

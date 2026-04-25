@@ -82,6 +82,9 @@ private:
     
     static constexpr float g = 9.80665f;
     static constexpr float LOW_G_SATURATION  = 7.0f * g; 
+    //--Acceleration gating to prevent low-g accel updates
+    static constexpr float ACCEL_GATE = 0.8f;  // m/s² how much above and below of g should we accept
+
 
     // ── State and covariance ──────────────────────────────────────────────────
     Eigen::Matrix<float, 16, 1>   m_x;   // state vector
@@ -106,15 +109,15 @@ private:
     Eigen::Matrix<float, 16, 16>  m_P_temp;
 
     // ── Process noise tuning ──────────────────────────────────────────────────
-    static constexpr float SIGMA_JERK       = 1.0f;     // m/s³
-    static inline const Eigen::Vector3f SIGMA_ALPHA{0.02f, 0.02f, 0.02f};  // rad/s 
+    static constexpr float SIGMA_JERK       = 0.5f;     // m/s³
+    static inline const Eigen::Vector3f SIGMA_ALPHA{0.05f, 0.06f, 0.04f};  // rad/s 
 
     static constexpr float SIGMA_BG         = 1e-6f;     // rad/s 
     static constexpr float SIGMA_BA_LOW     = 1e-6f;     // m/s²
-    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.1f, 0.4f, 0.45f};
-    static constexpr float SIGMA_MAG        = 0.1f;     // was 0.01
+    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.2f, 0.70f, 0.7f};
+    static constexpr float SIGMA_MAG        = 2.0f;     // was 0.01
 
-    static constexpr float SIGMA_T          = 0.5f;      // K
+    static constexpr float SIGMA_T          = 20.0f;      // K
     static constexpr float SIGMA_P          = 100.0f;    // Pa
 
     static constexpr float SIGMA_VEL        = 0.1f;      // m/s — tune to your GPS spec
@@ -129,6 +132,7 @@ private:
     void updateBaro(const float pressure, const float temperature);
     void updateGPS(const SensorStructs::GPS_t& gps);
 
+    
     // ── Atmospheric model constants ───────────────────────────────────────────
     static constexpr float BARO_M_0   = 0.0289644f;  // kg/mol  molar mass of air
     static constexpr float BARO_R_GAS = 8.31446f;    // J/(mol·K) universal gas constant

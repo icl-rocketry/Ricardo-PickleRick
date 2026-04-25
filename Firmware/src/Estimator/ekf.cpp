@@ -254,10 +254,19 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
     using Vec4 = Eigen::Vector4f;
 
     const float z_norm = z_accel.norm();
-    if (!std::isfinite(z_norm) || z_norm < 1e-9f) { return; }
+    if (!std::isfinite(z_norm) || z_norm < 1e-6f) {
+        return;
+    }
 
-    // Reject if not close to 1g → likely moving
-    if (z_norm < 9.5f || z_norm > 10.1f) { return; }
+    const float accel_error = std::abs(z_norm - g);
+
+    // Hard reject only when accel is clearly not gravity-dominated
+    if (accel_error > ACCEL_GATE) {
+        return;
+    }
+    // Smoothly reduce accel trust as |a| moves away from 1g
+    const float scale = 1.0f + 3.0f * (accel_error / ACCEL_GATE);
+
 
     Vec4 q = m_x.segment<4>(6);
     if (q.norm() < 1e-9f) { q = Vec4(1.0f, 0.0f, 0.0f, 0.0f); }
@@ -278,7 +287,9 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
     m_H.block<3,4>(0,6)  = Hq;
     m_H.block<3,3>(0,10) = Mat3::Identity();
 
-    const Mat3 R = SIGMA_ACCEL_LOW.cwiseProduct(SIGMA_ACCEL_LOW).asDiagonal();
+    const Mat3 R_base = SIGMA_ACCEL_LOW.cwiseProduct(SIGMA_ACCEL_LOW).asDiagonal(); 
+    const Mat3 R = scale * R_base; //here is where we reduce the trust in accel as it moves away from 1g
+    
     m_y.segment<3>(3) = z_accel - m_h.segment<3>(3);
     const Mat3 S = m_H * m_P * m_H.transpose() + R;
     m_K = m_P * m_H.transpose() * S.ldlt().solve(Mat3::Identity());

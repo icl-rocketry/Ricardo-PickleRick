@@ -101,6 +101,13 @@ namespace SensorStructs
 
     struct state_t
     {
+
+        Eigen::Vector3f rawAccel;             // (m/s^2)                              (Body)
+        Eigen::Vector3f rawGyro;              // (rad/s)                              (Body)
+
+        Eigen::Vector3f filteredAccel;         // (m/s^2)                              (Body)
+        Eigen::Vector3f filteredGyro;          // (rad/s)                              (Body)
+
         Eigen::Quaternionf orientation;         // (quaternion)                         (NED to Body)
         Eigen::Vector3f angularRates;           // (rad/s)                              (Body)
         Eigen::Vector3f eulerAngles;            // (rad) (roll pitch yaw)
