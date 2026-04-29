@@ -112,9 +112,10 @@ private:
     static constexpr float SIGMA_JERK       = 0.5f;     // m/s³
     static inline const Eigen::Vector3f SIGMA_ALPHA{0.05f, 0.06f, 0.04f};  // rad/s 
 
-    static constexpr float SIGMA_BG         = 1e-6f;     // rad/s 
-    static constexpr float SIGMA_BA_LOW     = 1e-6f;     // m/s²
-    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.2f, 0.70f, 0.7f};
+    static inline const Eigen::Vector3f SIGMA_BG {5e-5f, 5e-5f, 5e-5f};     // rad/s 
+    static inline const Eigen::Vector3f SIGMA_BA_LOW{5e-4f, 5e-4f, 5e-4f};     // m/s² how much the bias can change per second (low-g accel bias)
+
+    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.4f, 0.60f, 0.7f};
     static constexpr float SIGMA_MAG        = 2.0f;     // was 0.01
 
     static constexpr float SIGMA_T          = 20.0f;      // K

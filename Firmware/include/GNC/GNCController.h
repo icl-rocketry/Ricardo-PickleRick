@@ -31,7 +31,7 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
         
         void sendArmingCommands(); 
         void sendDisarmingCommands();
-        void sendActuationCommands(Eigen::Vector3f actuation_values);
+        void sendActuationCommands(Eigen::Vector4f actuation_values);
         void armServos();
         void disarmServos();
         void changeServoAngle(int servo, float angle);
@@ -49,7 +49,7 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
         unsigned long m_controller_start_time;
 
         Eigen::Matrix<float,1, 7> m_input;
-        Eigen::Vector3f m_output;
+        Eigen::Vector4f m_output;
 
         // Eigen::Matrix<float,1, 7> m_setpoint; 
 

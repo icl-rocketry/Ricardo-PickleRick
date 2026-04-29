@@ -177,12 +177,14 @@ void EKF::predict(  const float dt,
     m_F.block<3,3>(10,10) = I3;        // accel bias
     m_F.block<3,3>(13,13) = I3;        // gyro bias
     m_F.block<4,3>(6,13)  = -G_w;      // gyro bias cross term
+    m_F.block<3,3>(3,10) = -R_body_to_ned * dt;
+    m_F.block<3,3>(0,10) = -0.5f * R_body_to_ned * dt2;
 
     m_Q.setZero();
     m_Q.block<6,6>(0,0)   = m_Q_trans;
     m_Q.block<4,4>(6,6)   = m_Q_att;
-    m_Q.block<3,3>(10,10) = (SIGMA_BA_LOW * SIGMA_BA_LOW * dt) * I3;
-    m_Q.block<3,3>(13,13) = (SIGMA_BG * SIGMA_BG * dt) * I3;
+    m_Q.block<3,3>(10,10) = (SIGMA_BA_LOW.array().square().matrix().asDiagonal()) * dt;
+    m_Q.block<3,3>(13,13) = (SIGMA_BG.array().square().matrix().asDiagonal()) * dt;
 
     // ── Propagate covariance ──────────────────────────────────────────────────
     m_P_temp.noalias() = m_F * m_P;
@@ -266,7 +268,6 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
     }
     // Smoothly reduce accel trust as |a| moves away from 1g
     const float scale = 1.0f + 3.0f * (accel_error / ACCEL_GATE);
-
 
     Vec4 q = m_x.segment<4>(6);
     if (q.norm() < 1e-9f) { q = Vec4(1.0f, 0.0f, 0.0f, 0.0f); }

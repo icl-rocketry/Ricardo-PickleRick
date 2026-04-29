@@ -23,12 +23,15 @@ class ControllerTelemetryPacket : public RnpPacket{
                 &ControllerTelemetryPacket::yaw_rate_input,
                 &ControllerTelemetryPacket::pitch_output,
                 &ControllerTelemetryPacket::yaw_output,
-                &ControllerTelemetryPacket::thrust,
+                &ControllerTelemetryPacket::thrust_top,
+                &ControllerTelemetryPacket::thrust_bottom,
                 &ControllerTelemetryPacket::fx_body,
                 &ControllerTelemetryPacket::fy_body,
                 &ControllerTelemetryPacket::fz_body,
                 &ControllerTelemetryPacket::m_cmd_y,
-                &ControllerTelemetryPacket::m_cmd_z
+                &ControllerTelemetryPacket::m_cmd_z,
+                &ControllerTelemetryPacket::m_roll_mix,
+                &ControllerTelemetryPacket::system_time
             );
 
             return ret;
@@ -66,13 +69,15 @@ class ControllerTelemetryPacket : public RnpPacket{
         float yaw_rate_input;
         float pitch_output;
         float yaw_output;
-        float thrust;
+        float thrust_top;
+        float thrust_bottom;
         float fx_body;
         float fy_body;
         float fz_body;
         float m_cmd_y;
         float m_cmd_z;
-        
+        float m_roll_mix;
+        uint32_t system_time;
         static constexpr size_t size(){
             return getSerializer().member_size();
         }

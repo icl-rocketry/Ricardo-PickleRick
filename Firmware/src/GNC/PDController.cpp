@@ -9,14 +9,14 @@ void PDController::setup()
     // Change this to match your world convention.
     m_thrust_dir_world_des << 1.0f, 0.0f, 0.0f;
 
-    m_rEng << -0.235f, 0.0f, 0.0f;
+    m_rEng << -0.23f, -0.005f, 0.003f;
     m_mass = 1.19f;
 
     // // No roll control about body x
-    // m_K_p << 0.0f, 1.2f, 1.3f; 
-    // m_K_d << 0.0f, 0.33f, 0.2f;
-    m_K_p << 0.0f, 2.1f, 1.5f; 
-    m_K_d << 0.0f, 0.45f, 0.5f;
+    m_K_p << 0.0f, 2.0f, 1.5f; 
+    // m_K_p << 0.0f, 0.0f, 0.0f; 
+    m_K_d << 7.0f, 0.45f, 0.5f;
+   // m_K_d << 0.0f, 0.00f, 0.0f;
 }
 
 void PDController::update(Eigen::Matrix<float,1,7> currentValues)
@@ -37,6 +37,7 @@ void PDController::update(Eigen::Matrix<float,1,7> currentValues)
         );
 
         updateThrustDirectionErrors(q);
+        updateDesiredForce(q);
         updateMcmd(angular_rates);
         updateOutputValues(); 
 }
@@ -45,7 +46,8 @@ void PDController::reset()
 {
     m_dir_error_body << 0.0f, 0.0f, 0.0f;
     m_M_cmd          << 0.0f, 0.0f, 0.0f;
-    m_output_values  << 0.0f, 0.0f, 0.0f;
+    m_output_values  << 0.0f, 0.0f, 0.0f, 0.0f;
+    m_Fx_cmd         = 0.0f;
 }
 
 void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
@@ -80,42 +82,57 @@ void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
 void PDController::updateMcmd(const Eigen::Vector3f& angular_rates)
 {
     // Ignore roll-rate damping too, because no roll authority
-    Eigen::Vector3f rates_error = -angular_rates;
-    rates_error(0) = 0.0f; //no roll rate damping
+    Eigen::Vector3f rates_error = -angular_rates; //desired rates are 0 so it is negative
     m_euler_error = m_dir_error_body;//send the errors to telemetry for debugging
+    m_dir_error_body(0) = 0.0f; //no roll angle error since its only a D controller
     m_M_cmd =
         -m_K_p.cwiseProduct(m_dir_error_body)
-        -m_K_d.cwiseProduct(rates_error);
+        -m_K_d.cwiseProduct(rates_error);    
+}
+void PDController::updateDesiredForce(const Eigen::Quaterniond& q)
+{
+    const float sin_tilt = std::clamp(m_dir_error_body.norm(), 0.0f, 0.95f);
+    const float cos_tilt = std::clamp(std::sqrt(1.0f - sin_tilt * sin_tilt), 0.5f, 1.0f);
 
-    // Explicitly enforce no roll moment command
-    m_M_cmd(0) = 0.0f;
-    
+    m_Fx_cmd = std::clamp(NOMINAL_FX_N / cos_tilt, 0.0f, MAX_THRUST_N);
 }
 void PDController::updateOutputValues()
 {
-    const float L = m_rEng(0);   // likely negative
-    Eigen::Vector3f F_body;
-
-    // Set nominal thrust along body +x
-    F_body(0) = 5.0f;
-
-    // From M = r x F, with r = [L,0,0]:
-    // My = -L*Fz  => Fz = -My/L
-    // Mz =  L*Fy  => Fy =  Mz/L
-    F_body(1) =  m_M_cmd(2) / L; // Mz gives Fy
-    F_body(2) = -m_M_cmd(1) / L; // My gives Fz, with a negative sign because of the direction of the moment arm
-
-    m_f_body = F_body; //send to telemetry for debugging
-
-    double pitch_servo = -std::atan2(-F_body(2), F_body(0)) * (180.0 / M_PI);
-    double yaw_servo   =  std::atan2( F_body(1), F_body(0)) * (180.0 / M_PI);
-    double thrust      = F_body.norm() * 100.0 / 22.0;
-
-    pitch_servo = std::clamp(pitch_servo, -15.0, 15.0); 
-    yaw_servo   = std::clamp(yaw_servo,   -15.0, 15.0);
-    thrust      = std::clamp(thrust,       0.0, 100.0);
+    const float rx = m_rEng(0);
+    const float ry = m_rEng(1);
+    const float rz = m_rEng(2);
     
-    m_output_values << static_cast<float>(pitch_servo), //top servo 
-                       static_cast<float>(yaw_servo),  //bottom servo
-                       static_cast<float>(thrust);
+    Eigen::Vector3f F_body;
+    F_body(0) = m_Fx_cmd;
+    F_body(1) = (m_M_cmd(2) + ry * m_Fx_cmd) / rx;
+    F_body(2) = (rz * m_Fx_cmd - m_M_cmd(1)) / rx;
+   
+
+    float pitch_servo = -std::atan2(-F_body(2), F_body(0)) * RAD_TO_DEG;
+    float yaw_servo   =  std::atan2( F_body(1), F_body(0)) * RAD_TO_DEG;
+    float base_thrust = sqrtf(F_body(0)*F_body(0) + F_body(1)*F_body(1) + F_body(2)*F_body(2)) * 100.0f / MAX_THRUST_N;
+
+    pitch_servo = std::clamp(pitch_servo, -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
+    yaw_servo   = std::clamp(yaw_servo,   -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
+    base_thrust = std::clamp(base_thrust, 0.0f, 100.0f);
+
+    //_--------ROLL CONTROL-----------------
+    // Roll-rate damping via differential prop throttle.
+    // Positive roll_mix: top CW prop up, bottom CCW prop down.
+    float roll_mix = m_M_cmd(0);
+    roll_mix = std::clamp(roll_mix, -MAX_ROLL_MIX, MAX_ROLL_MIX);
+   
+    const float thrust_top = std::clamp(base_thrust + roll_mix, 0.0f, 100.0f);
+    const float thrust_bottom = std::clamp(base_thrust - roll_mix, 0.0f, 100.0f);
+
+    //Sending values to telemetry 
+    m_roll_mix = roll_mix; //send the roll mix to telemetry for debugging
+    m_f_body = F_body; //send the body forces to telemetry for debugging
+
+    m_output_values << pitch_servo,
+                       yaw_servo,
+                       thrust_top,
+                       thrust_bottom;
 }
+
+

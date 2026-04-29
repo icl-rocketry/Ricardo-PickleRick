@@ -42,27 +42,26 @@ void GNCController::stop() {
 
 }
 
-void GNCController::sendActuationCommands(Eigen::Vector3f actuation_values) {
+void GNCController::sendActuationCommands(Eigen::Vector4f actuation_values) {
 
-    float max_prop_power = 30.0f;
-    float thrust = actuation_values(2); 
-    
-    thrust = std::min(thrust, max_prop_power);
+    float max_prop_power = 55.0f;
 
-    float ramp_up = (millis() - m_controller_start_time) * 0.01f;
-    
-    ramp_up = std::min(ramp_up, 1.0f);
-    
-    thrust *= ramp_up;
-    
-    changePropPower(0, (int)thrust); 
-    changePropPower(1, (int)thrust); 
+    float thrust_top = actuation_values(2); 
+    float thrust_bottom = actuation_values(3);
+
+    if (thrust_top > max_prop_power) { thrust_top = max_prop_power; }
+    if (thrust_bottom > max_prop_power) { thrust_bottom = max_prop_power; }
+
+    changePropPower(0, (int)thrust_top); 
+    changePropPower(1, (int)thrust_bottom); 
 
     float pitch_angle = actuation_values(0); 
     float yaw_angle = actuation_values(1);
 
     changeServoAngle(1, -pitch_angle); //top servo
     changeServoAngle(0, yaw_angle); //bottom servo
+    // changeServoAngle(0, pitch_angle); //top servo <- this config is for if the board is rotated
+    // changeServoAngle(1, yaw_angle); //bottom servo
 }
 
 
@@ -85,11 +84,11 @@ void GNCController::changeServoAngle(int servo, float angle_f) { // angle should
 
     if (servo == 0) { 
         des_ser = 10; 
-        angle += 1090;
+        angle += 1070;
     }
     if (servo == 1) { 
         des_ser = 11; 
-        angle += 1000;
+        angle += 920;
     }
 
     SimpleCommandPacket actuate_servo(2, angle); //2 is the fire command
@@ -237,7 +236,7 @@ void GNCController::telemetry_impl(packetptr_t packetptr) {
     telemetry.q1 =               m_input(0,1);
     telemetry.q2 =               m_input(0,2);
     telemetry.q3 =               m_input(0,3);
-    
+
     telemetry.roll_error =       euler_angles(0) * (180.0f / 3.14159f); // convert to degrees
     telemetry.pitch_error =      euler_angles(1) * (180.0f / 3.14159f); // convert to degrees
     telemetry.yaw_error =        euler_angles(2) * (180.0f / 3.14159f); // convert to degrees
@@ -252,11 +251,13 @@ void GNCController::telemetry_impl(packetptr_t packetptr) {
 
 	telemetry.pitch_output =     m_output(0);
 	telemetry.yaw_output =       m_output(1);
-	telemetry.thrust =           m_output(2);
+	telemetry.thrust_top =       m_output(2);
+    telemetry.thrust_bottom=     m_output(3);
 
     telemetry.m_cmd_y = m_pd.getMcmd()(1); //get the yaw moment command for telemetry
     telemetry.m_cmd_z = m_pd.getMcmd()(2); //get the pitch moment command for telemetry
-
+    telemetry.m_roll_mix = m_pd.getRollMix(); //get the roll mix for telemetry
+    telemetry.system_time = millis();
 	m_networkmanager.sendPacket(telemetry);
 
 }

@@ -51,7 +51,6 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         SdFat_Store primarysd;
 
         GNCController controller;
-
     private:
 
         void setupSPI();

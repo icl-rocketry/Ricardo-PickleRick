@@ -109,15 +109,6 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             raw_sensors.baro.temp,
             raw_sensors.gps
         );
-        // m_ekf.update(
-        //     Eigen::Vector3f(raw_sensors.accelgyro.gx, raw_sensors.accelgyro.gy, raw_sensors.accelgyro.gz),
-        //     Eigen::Vector3f(raw_sensors.accelgyro.ax, raw_sensors.accelgyro.ay, raw_sensors.accelgyro.az),
-        //     Eigen::Vector3f(raw_sensors.accel.ax,     raw_sensors.accel.ay,     raw_sensors.accel.az),
-        //     Eigen::Vector3f(raw_sensors.mag.mx,       raw_sensors.mag.my,       raw_sensors.mag.mz),
-        //     raw_sensors.baro.press,
-        //     raw_sensors.baro.temp,
-        //     raw_sensors.gps
-        // );
     }
     updateState();
 
