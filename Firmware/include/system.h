@@ -19,6 +19,7 @@
 #include "Config/general_config.h"
 #include "Config/services_config.h"
 #include "GNC/GNCController.h"
+#include "PowerMonitor/PowerMonitor.h"
 #include "Estimator/estimator.h"
 #include "Loggers/TelemetryLogger/telemetrylogframe.h"
 #include "Network/Interfaces/radio.h"
@@ -32,9 +33,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
     public:
 
         System();
-        
         void systemSetup();
-
         void systemUpdate();
 
         //board communication
@@ -51,6 +50,8 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         SdFat_Store primarysd;
 
         GNCController controller;
+
+        PowerMonitor powermonitor;
     private:
 
         void setupSPI();

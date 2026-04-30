@@ -47,6 +47,8 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::mz,
                 &TelemetryPacket::baro_temp,
                 &TelemetryPacket::baro_press,
+                &TelemetryPacket::pdb_batt_mV,
+                &TelemetryPacket::pdb_batt_fresh,
                 &TelemetryPacket::system_status,
                 &TelemetryPacket::system_time,
                 &TelemetryPacket::rssi,
@@ -99,6 +101,8 @@ class TelemetryPacket : public RnpPacket{
         float mx, my, mz;// magnetometer (uT)
         //barometer
         float baro_temp, baro_press;
+        uint16_t pdb_batt_mV;
+        uint8_t pdb_batt_fresh;
         //system details
         uint32_t system_status;
         uint64_t system_time;

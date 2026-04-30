@@ -31,6 +31,7 @@ class ControllerTelemetryPacket : public RnpPacket{
                 &ControllerTelemetryPacket::m_cmd_y,
                 &ControllerTelemetryPacket::m_cmd_z,
                 &ControllerTelemetryPacket::m_roll_mix,
+                &ControllerTelemetryPacket::m_batt,
                 &ControllerTelemetryPacket::system_time
             );
 
@@ -77,6 +78,7 @@ class ControllerTelemetryPacket : public RnpPacket{
         float m_cmd_y;
         float m_cmd_z;
         float m_roll_mix;
+        float m_batt;
         uint32_t system_time;
         static constexpr size_t size(){
             return getSerializer().member_size();

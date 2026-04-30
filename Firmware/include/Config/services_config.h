@@ -20,7 +20,8 @@ namespace Services{
      */
     enum class ID:uint8_t{
         HITL = 3,
-        Controller = 30
+        Controller = 30,
+        PowerMonitor = 31,
     };
 
 };

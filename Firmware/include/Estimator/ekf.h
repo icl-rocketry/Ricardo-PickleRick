@@ -110,12 +110,12 @@ private:
 
     // ── Process noise tuning ──────────────────────────────────────────────────
     static constexpr float SIGMA_JERK       = 0.5f;     // m/s³
-    static inline const Eigen::Vector3f SIGMA_ALPHA{0.05f, 0.06f, 0.04f};  // rad/s 
+    static inline const Eigen::Vector3f SIGMA_ALPHA{0.08f, 0.06f, 0.04f};  // rad/s 
 
     static inline const Eigen::Vector3f SIGMA_BG {5e-5f, 5e-5f, 5e-5f};     // rad/s 
     static inline const Eigen::Vector3f SIGMA_BA_LOW{5e-4f, 5e-4f, 5e-4f};     // m/s² how much the bias can change per second (low-g accel bias)
 
-    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.4f, 0.60f, 0.7f};
+    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.3f, 0.7f, 0.7f};
     static constexpr float SIGMA_MAG        = 2.0f;     // was 0.01
 
     static constexpr float SIGMA_T          = 20.0f;      // K

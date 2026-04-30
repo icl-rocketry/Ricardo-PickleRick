@@ -22,10 +22,12 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
 
         void setup(); 
         void start();
+        void setBatteryVoltage(float batt_V, bool fresh);
         unsigned long getStartTime() { return m_controller_start_time; };
         void update(Eigen::Matrix<float,1, 7> currentInput, bool actuate); 
         void stop();
-
+        
+       
         
     private: 
         
@@ -53,6 +55,8 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
 
         // Eigen::Matrix<float,1, 7> m_setpoint; 
 
+        float m_batt_V = 16.8f;
+        bool m_batt_fresh = false;
                 
         friend class NRCRemoteBase<GNCController>;
         friend class NRCRemoteControllerBase<GNCController>;

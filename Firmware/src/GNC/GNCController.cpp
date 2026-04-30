@@ -14,13 +14,19 @@ void GNCController::start() {
     
 }
 
+void GNCController::setBatteryVoltage(float batt_V, bool fresh)
+{
+    m_batt_V = batt_V;
+    m_batt_fresh = fresh;
+}
 
 void GNCController::update(Eigen::Matrix<float,1, 7> currentInput, bool actuate){
 
     if (millis() - m_previousSampleTime >= m_actuationDelta) {
 
+        m_previousSampleTime = millis();
         m_input = currentInput;
-        m_pd.update(m_input);
+        m_pd.update(m_input, m_batt_V, m_batt_fresh);
         m_output = m_pd.getOutputValues();
         if (actuate) {
 
@@ -257,6 +263,7 @@ void GNCController::telemetry_impl(packetptr_t packetptr) {
     telemetry.m_cmd_y = m_pd.getMcmd()(1); //get the yaw moment command for telemetry
     telemetry.m_cmd_z = m_pd.getMcmd()(2); //get the pitch moment command for telemetry
     telemetry.m_roll_mix = m_pd.getRollMix(); //get the roll mix for telemetry
+    telemetry.m_batt = m_pd.getBatteryVoltage(); //get the battery voltage for telemetry
     telemetry.system_time = millis();
 	m_networkmanager.sendPacket(telemetry);
 

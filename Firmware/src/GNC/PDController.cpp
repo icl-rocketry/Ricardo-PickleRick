@@ -19,27 +19,29 @@ void PDController::setup()
    // m_K_d << 0.0f, 0.00f, 0.0f;
 }
 
-void PDController::update(Eigen::Matrix<float,1,7> currentValues)
+void PDController::update(Eigen::Matrix<float,1,7> currentValues, float batt_V, bool batt_fresh)
 {
-     // 100Hz update rate
-        Eigen::Quaterniond q(
-            currentValues(0),  // w
-            currentValues(1),  // x
-            currentValues(2),  // y
-            currentValues(3)   // z
-        );
-        q.normalize();
+    m_batt_V = batt_V;
+    m_batt_fresh = batt_fresh;
 
-        Eigen::Vector3f angular_rates(
-            currentValues(4), // p
-            currentValues(5), // q
-            currentValues(6)  // r
-        );
+    Eigen::Quaterniond q(
+        currentValues(0),
+        currentValues(1),
+        currentValues(2),
+        currentValues(3)
+    );
+    q.normalize();
 
-        updateThrustDirectionErrors(q);
-        updateDesiredForce(q);
-        updateMcmd(angular_rates);
-        updateOutputValues(); 
+    Eigen::Vector3f angular_rates(
+        currentValues(4),
+        currentValues(5),
+        currentValues(6)
+    );
+
+    updateThrustDirectionErrors(q);
+    updateDesiredForce(q);
+    updateMcmd(angular_rates);
+    updateOutputValues(); 
 }
 
 void PDController::reset()
@@ -98,23 +100,36 @@ void PDController::updateDesiredForce(const Eigen::Quaterniond& q)
 }
 void PDController::updateOutputValues()
 {
+    //take in the centre of mass offsets for the engine 
     const float rx = m_rEng(0);
     const float ry = m_rEng(1);
     const float rz = m_rEng(2);
+
+    //compute desired body forces
     
     Eigen::Vector3f F_body;
     F_body(0) = m_Fx_cmd;
     F_body(1) = (m_M_cmd(2) + ry * m_Fx_cmd) / rx;
     F_body(2) = (rz * m_Fx_cmd - m_M_cmd(1)) / rx;
    
-
+    // Convert desired body forces into servo angles and thrust commands.
     float pitch_servo = -std::atan2(-F_body(2), F_body(0)) * RAD_TO_DEG;
     float yaw_servo   =  std::atan2( F_body(1), F_body(0)) * RAD_TO_DEG;
     float base_thrust = sqrtf(F_body(0)*F_body(0) + F_body(1)*F_body(1) + F_body(2)*F_body(2)) * 100.0f / MAX_THRUST_N;
+    
+    //--------VOLTAGE SCALING-----------------
+    float voltage_scale = 1.0f;
+    if (m_batt_fresh && m_batt_V > MIN_VALID_BATT_V)
+    {
+        voltage_scale = NOMINAL_BATT_V / m_batt_V;
+        voltage_scale = std::clamp(voltage_scale, 1.0f, MAX_VOLTAGE_SCALE);
+    }
+
+    base_thrust *= voltage_scale; //uncomment this line to enable voltage scaling of the thrust command
 
     pitch_servo = std::clamp(pitch_servo, -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
     yaw_servo   = std::clamp(yaw_servo,   -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
-    base_thrust = std::clamp(base_thrust, 0.0f, 100.0f);
+    base_thrust = 0.0; //std::clamp(base_thrust, 0.0f, 100.0f);
 
     //_--------ROLL CONTROL-----------------
     // Roll-rate damping via differential prop throttle.
@@ -122,8 +137,8 @@ void PDController::updateOutputValues()
     float roll_mix = m_M_cmd(0);
     roll_mix = std::clamp(roll_mix, -MAX_ROLL_MIX, MAX_ROLL_MIX);
    
-    const float thrust_top = std::clamp(base_thrust + roll_mix, 0.0f, 100.0f);
-    const float thrust_bottom = std::clamp(base_thrust - roll_mix, 0.0f, 100.0f);
+    float thrust_top = std::clamp(base_thrust + roll_mix, 0.0f, 100.0f);
+    float thrust_bottom = std::clamp(base_thrust - roll_mix, 0.0f, 100.0f);
 
     //Sending values to telemetry 
     m_roll_mix = roll_mix; //send the roll mix to telemetry for debugging

@@ -39,6 +39,7 @@ Types::CoreTypes::State_ptr_t Flight::update()
         current_Data.angularRates(1),
         current_Data.angularRates(2),
     };    
+    _system.controller.setBatteryVoltage(_system.powermonitor.getBatteryVoltage(),_system.powermonitor.fresh());
 
     _system.controller.update(inputMatrix, true);
 

@@ -36,6 +36,8 @@ private:
             &TelemetryLogframe::logic_percent,
             &TelemetryLogframe::dep_voltage,
             &TelemetryLogframe::dep_current,
+            &TelemetryLogframe::pdb_batt_mV,
+            &TelemetryLogframe::pdb_batt_fresh,
             &TelemetryLogframe::roll,
             &TelemetryLogframe::pitch,
             &TelemetryLogframe::yaw,
@@ -83,6 +85,8 @@ public:
     int logic_percent;
     int dep_voltage;
     int dep_current;
+    uint16_t pdb_batt_mV;
+    uint8_t pdb_batt_fresh;
     //orientation
     float roll, pitch, yaw;
     float q0,q1,q2,q3;

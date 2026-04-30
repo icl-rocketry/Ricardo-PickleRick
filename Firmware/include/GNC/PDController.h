@@ -8,12 +8,13 @@ class PDController
     public:
 
         void setup();
-        void update(Eigen::Matrix<float,1, 7> currentValues);
+        void update(Eigen::Matrix<float,1, 7> currentValues, float batt_V, bool batt_fresh);
         void reset();
         Eigen::Vector4f getOutputValues()   { return m_output_values; }; 
         Eigen::Vector3f getEulerError()     { return m_euler_error; }; 
         Eigen::Vector3f getFBody()          { return m_f_body; }; 
         Eigen::Vector3f getMcmd()           { return m_M_cmd; };
+        float getBatteryVoltage() const { return m_batt_V; }
         float getRollMix()   {return m_roll_mix;} ;
 
     private:
@@ -38,13 +39,20 @@ class PDController
 
         static constexpr float MAX_GIMBAL_DEG = 15.0f;
         static constexpr float MAX_THRUST_N   = 21.0f;
-        static constexpr float MAX_ROLL_MIX   = 8.0f;
+        static constexpr float MAX_ROLL_MIX   = 0.0f;
         static constexpr float NOMINAL_FX_N = 10.0f;
 
+        //battery stuff
+        float m_batt_V = 16.8f;
+        bool m_batt_fresh = false;
+
+        static constexpr float NOMINAL_BATT_V = 16.8f;
+        static constexpr float MIN_VALID_BATT_V = 12.0f;
+        static constexpr float MAX_VOLTAGE_SCALE = 1.2f;
+        
+
         float m_Fx_cmd = 0.0f;
-        float m_roll_mix;
+        float m_roll_mix = 0.0f;
         float m_mass;
-
-
 
 };

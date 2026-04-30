@@ -17,7 +17,8 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
                    primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus),
-                   controller("controller", Services::ID::Controller, networkmanager)
+                   controller("controller", Services::ID::Controller, networkmanager),
+                   powermonitor("powermonitor",static_cast<uint8_t>(Services::ID::PowerMonitor), networkmanager)
                    {};
 
 void System::systemSetup()
@@ -43,7 +44,15 @@ void System::systemSetup()
 
     // add interfaces to netmanager
     configureNetwork();
+    powermonitor.setup();
 
+    networkmanager.registerService(
+        static_cast<uint8_t>(Services::ID::PowerMonitor),
+        [this](packetptr_t packetptr) {
+            powermonitor.networkCallback(std::move(packetptr));
+        }
+    );
+   
     loadConfig();
 
     estimator.setup();
@@ -60,6 +69,7 @@ void System::systemUpdate()
 {
     sensors.update();
     estimator.update(sensors.getData());
+    powermonitor.update();
     logTelemetry();
 };
 
@@ -206,6 +216,7 @@ void System::logTelemetry()
 
         const SensorStructs::raw_measurements_t& raw_sensors = sensors.getData();
         const SensorStructs::state_t& estimator_state =  estimator.getData();
+        const PowerMonitorData& power_data = powermonitor.getData();
         TelemetryLogframe logframe;
         
         logframe.gps_lat = raw_sensors.gps.latitude * 1e-7;
@@ -235,6 +246,9 @@ void System::logTelemetry()
         logframe.logic_percent = raw_sensors.logicrail.percent;
         logframe.dep_voltage = raw_sensors.deprail.volt;
         logframe.dep_current = raw_sensors.deprail.current;
+    
+        logframe.pdb_batt_mV = power_data.batt_mV;
+        logframe.pdb_batt_fresh = power_data.fresh ? 1 : 0;
 
         logframe.roll = estimator_state.eulerAngles[0];
         logframe.pitch = estimator_state.eulerAngles[1];
@@ -281,10 +295,12 @@ void System::configureNetwork()
 
     #if ROCKET_TABLE
         flightRouting.setRoute((uint8_t)   5, Route{2, 1, {}}); // Rocket GS Pickle
+        flightRouting.setRoute((uint8_t) 20, Route{3, 1, {}}); // PDU0 / LightningMcQueen
         flightRouting.setRoute((uint8_t) 102, Route{3, 2, {}}); // chad srvo
         flightRouting.setRoute((uint8_t) 103, Route{3, 2, {}}); // chad prop
     #elif ROCKET_GS_TABLE
         flightRouting.setRoute((uint8_t)   2, Route{2, 1, {}}); // Rocket Pickle
+        flightRouting.setRoute((uint8_t) 20, Route{3, 1, {}}); // PDU0 / LightningMcQueen
         flightRouting.setRoute((uint8_t) 102, Route{2, 2, {}}); // chad srvo
         flightRouting.setRoute((uint8_t) 103, Route{2, 2, {}}); // chad prop
     #endif
