@@ -20,13 +20,18 @@ void GNCController::setBatteryVoltage(float batt_V, bool fresh)
     m_batt_fresh = fresh;
 }
 
-void GNCController::update(Eigen::Matrix<float,1, 7> currentInput, bool actuate){
+void GNCController::update(Eigen::Quaterniond q, 
+                           Eigen::Vector3f angular_rates, 
+                           Eigen::Vector3f position, 
+                           Eigen::Vector3f velocity,
+                           bool actuate)
+{
 
     if (millis() - m_previousSampleTime >= m_actuationDelta) {
 
         m_previousSampleTime = millis();
-        m_input = currentInput;
-        m_pd.update(m_input, m_batt_V, m_batt_fresh);
+        // m_input = currentInput;
+        m_pd.update(q, angular_rates, position, velocity, m_batt_V, m_batt_fresh);
         m_output = m_pd.getOutputValues();
         if (actuate) {
 

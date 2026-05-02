@@ -14,6 +14,9 @@ void Calibrator::setup()
     m_lng_accum = 0;
     m_alt_accum = 0.0f;
 
+    m_lidar_accum         = 0.0f;
+    m_valid_lidar_readings = 0;
+
     m_number_of_calibration_measurements = 0;
     m_number_of_setHome_measurements = 0;
     m_valid_gps_readings = 0;
@@ -103,6 +106,12 @@ void Calibrator::updateSetHome(const SensorStructs::raw_measurements_t &raw_sens
     m_pressure_accum    += raw_sensors.baro.press;
     m_temperature_accum += raw_sensors.baro.temp;
 
+    if (raw_sensors.lidar.valid)
+    {
+        m_lidar_accum += raw_sensors.lidar.dist * 0.01f;  // cm → m
+        m_valid_lidar_readings++;
+    }
+
     m_number_of_setHome_measurements++;
 
 };
@@ -122,12 +131,19 @@ void Calibrator::computeSetHome()
     m_setHome_ref.launch_pressure    = m_pressure_accum    / n;
     m_setHome_ref.launch_temperature = m_temperature_accum / n;
 
+    // ── LiDAR reference ───────────────────────────────────────────────────────
+    m_setHome_ref.launch_lidar_dist = (m_valid_lidar_readings > 0)
+        ? m_lidar_accum / static_cast<float>(m_valid_lidar_readings)
+        : 0.0f;
+
     // ── Reset accumulators ────────────────────────────────────────────────────
-    m_lat_accum          = 0;
-    m_lng_accum          = 0;
-    m_alt_accum          = 0.0f;
-    m_pressure_accum     = 0.0f;
-    m_temperature_accum  = 0.0f;
+    m_lat_accum            = 0;
+    m_lng_accum            = 0;
+    m_alt_accum            = 0.0f;
+    m_pressure_accum       = 0.0f;
+    m_temperature_accum    = 0.0f;
+    m_lidar_accum          = 0.0f;
+    m_valid_lidar_readings = 0;
     m_number_of_setHome_measurements = 0;
 }
 

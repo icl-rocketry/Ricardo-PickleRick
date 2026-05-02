@@ -71,8 +71,15 @@ namespace SensorStructs
         int volt;       // mV
         int current;    // mA
         int power;      // mW
-        int percent;    // Percentage in reference to max voltage expeceted 
+        int percent;    // Percentage in reference to max voltage expeceted
 
+    };
+
+    struct LIDAR_t{
+        uint16_t dist;  // cm
+        uint16_t amp;   // signal strength (unreliable if < 100 or == 65535)
+        float    temp;  // degrees Celsius
+        bool     valid; // true when amp is in reliable range
     };
 
     struct raw_measurements_t
@@ -84,6 +91,7 @@ namespace SensorStructs
         GPS_t gps;
         ADC_V_RAIL_t logicrail;
         INA_V_RAIL_t deprail;
+        LIDAR_t lidar;
 
         uint64_t system_time;
     };
@@ -97,6 +105,8 @@ namespace SensorStructs
         // Baro
         float   launch_pressure;
         float   launch_temperature;
+        // LiDAR — average ground-distance at launch site (m). Zero if no valid reading.
+        float   launch_lidar_dist{0.0f};
     };
 
     struct state_t
@@ -137,6 +147,9 @@ namespace SensorStructs
         Eigen::Vector2f baroInnovation;         // (Kelvin, Pascal)
         Eigen::Vector3f gpsPosInnovation;       // (m)
         Eigen::Vector3f gpsVelInnovation;       // (m/s)
+
+        float expectedLidarReading;            // (m)
+        float lidarInnovation;                 // (m)
 
 
         Eigen::Vector3f highGBiases;            // (m/s^2)                              (body)

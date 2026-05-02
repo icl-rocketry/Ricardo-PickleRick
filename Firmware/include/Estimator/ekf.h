@@ -35,13 +35,14 @@ public:
                 const Eigen::Vector3f& h_accel_bias, 
                 const Eigen::Vector3f& mag_ref
             );
-    void update(const Eigen::Vector3f       gyro, 
-                const Eigen::Vector3f       accel, 
-                const Eigen::Vector3f       h_accel, 
-                const Eigen::Vector3f       mag,
-                const float                 pressure,
-                const float                 temperature,
-                const SensorStructs::GPS_t& gps
+    void update(const Eigen::Vector3f         gyro,
+                const Eigen::Vector3f         accel,
+                const Eigen::Vector3f         h_accel,
+                const Eigen::Vector3f         mag,
+                const float                   pressure,
+                const float                   temperature,
+                const SensorStructs::GPS_t&   gps,
+                const SensorStructs::LIDAR_t& lidar
             );
     void setHome(const SensorStructs::home_ref_t& setHome_ref);
 
@@ -60,12 +61,14 @@ public:
     Eigen::Vector2f expectedBaroReading()    const { return m_h.segment<2>(6);  }
     Eigen::Vector3f expectedGpsPosReading()  const { return m_h.segment<3>(8);  }
     Eigen::Vector3f expectedGpsVelReading()  const { return m_h.segment<3>(11); }
+    float           expectedLidarReading()   const { return m_h(14); }
 
     Eigen::Vector3f magInnovation()     const { return m_y.segment<3>(0);  }
     Eigen::Vector3f accelInnovation()   const { return m_y.segment<3>(3);  }
     Eigen::Vector2f baroInnovation()    const { return m_y.segment<2>(6);  }
     Eigen::Vector3f gpsPosInnovation()  const { return m_y.segment<3>(8);  }
     Eigen::Vector3f gpsVelInnovation()  const { return m_y.segment<3>(11); }
+    float           lidarInnovation()   const { return m_y(14); }
 
     Eigen::Vector3f gpsPosition()   const { return m_gps_position; }
 
@@ -89,8 +92,8 @@ private:
     // ── State and covariance ──────────────────────────────────────────────────
     Eigen::Matrix<float, 16, 1>   m_x;   // state vector
     Eigen::Matrix<float, 16, 16>  m_P;   // covariance matrix
-    Eigen::Matrix<float, 14, 1>   m_h;   // expected sensor reading vector  (mag, accel, baro, gps_pos, gps_vel)
-    Eigen::Matrix<float, 14, 1>   m_y;   // innovation vector               (mag, accel, baro, gps_pos, gps_vel)
+    Eigen::Matrix<float, 15, 1>   m_h;   // expected sensor reading vector  (mag, accel, baro, gps_pos, gps_vel, lidar)
+    Eigen::Matrix<float, 15, 1>   m_y;   // innovation vector               (mag, accel, baro, gps_pos, gps_vel, lidar)
     
 
     Eigen::Matrix<float, 16, 16>  m_F;      // state transition
@@ -122,8 +125,10 @@ private:
     static constexpr float SIGMA_P          = 100.0f;    // Pa
 
     static constexpr float SIGMA_VEL        = 0.1f;      // m/s — tune to your GPS spec
+    static constexpr float SIGMA_LIDAR     = 0.1f;      // m — conservative, datasheet ±6cm @ 0-3m
+    static constexpr float LIDAR_MAX_RANGE = 8.0f;      // m — TF-Luna rated range
 
-    void predict(   const float dt, 
+    void predict(   const float dt,
                     const Eigen::Vector3f gyro,
                     const Eigen::Vector3f accel,
                     const Eigen::Vector3f h_accel
@@ -132,6 +137,7 @@ private:
     void updateLowGAccel(const Eigen::Vector3f& z_accel);
     void updateBaro(const float pressure, const float temperature);
     void updateGPS(const SensorStructs::GPS_t& gps);
+    void updateLidar(const SensorStructs::LIDAR_t& lidar);
 
     
     // ── Atmospheric model constants ───────────────────────────────────────────

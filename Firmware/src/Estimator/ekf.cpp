@@ -33,13 +33,14 @@ void EKF::setup(const Eigen::Vector3f& gyro_bias,
     
 }
 
-void EKF::update(   const Eigen::Vector3f gyro, 
-                    const Eigen::Vector3f accel, 
-                    const Eigen::Vector3f h_accel, 
-                    const Eigen::Vector3f mag,
-                    const float pressure,
-                    const float temperature,
-                    const SensorStructs::GPS_t& gps
+void EKF::update(   const Eigen::Vector3f         gyro,
+                    const Eigen::Vector3f         accel,
+                    const Eigen::Vector3f         h_accel,
+                    const Eigen::Vector3f         mag,
+                    const float                   pressure,
+                    const float                   temperature,
+                    const SensorStructs::GPS_t&   gps,
+                    const SensorStructs::LIDAR_t& lidar
                 )
 {
     const uint32_t now = micros();  // use micros not millis for better dt resolution
@@ -59,6 +60,8 @@ void EKF::update(   const Eigen::Vector3f gyro,
     updateBaro(pressure, temperature);
 
     updateGPS(gps);
+
+    updateLidar(lidar);
 }
 
 void EKF::setHome(const SensorStructs::home_ref_t& setHome_ref) 
@@ -491,3 +494,128 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
     m_P_temp           = m_P + m_P.transpose();
     m_P                = 0.5f * m_P_temp;
 }
+
+void EKF::updateLidar(const SensorStructs::LIDAR_t& lidar)
+{
+    // Skip if no home reference set, measurement invalid, or out of rated range
+    const float h0 = m_setHome_ref.launch_lidar_dist;
+    if (h0 <= 0.0f || !lidar.valid) { return; }
+
+    const float z_m = lidar.dist * 0.01f;   // cm → m
+    if (z_m > LIDAR_MAX_RANGE) { return; }
+
+    // ── Measurement model ─────────────────────────────────────────────────────
+    // At home: pd=0, lidar reads h0. As rocket climbs, pd goes negative, lidar
+    // distance grows: predicted = h0 - pd = h0 - m_x(2)
+    m_h(14) = h0 - m_x(2);
+
+    // ── Innovation ────────────────────────────────────────────────────────────
+    m_y(14) = z_m - m_h(14);
+
+    // ── Jacobian (1×16) — only the pd component is non-zero ──────────────────
+    Eigen::Matrix<float, 1, 16> H_lidar = Eigen::Matrix<float, 1, 16>::Zero();
+    H_lidar(0, 2) = -1.0f;
+
+    // ── Measurement noise ─────────────────────────────────────────────────────
+    const float R_lidar = SIGMA_LIDAR * SIGMA_LIDAR;
+
+    // ── Kalman gain (16×1) ────────────────────────────────────────────────────
+    const float S = (H_lidar * m_P * H_lidar.transpose())(0, 0) + R_lidar;
+    const Eigen::Matrix<float, 16, 1> K_lidar = (m_P * H_lidar.transpose()) / S;
+
+    // ── State update ──────────────────────────────────────────────────────────
+    m_x += K_lidar * m_y(14);
+
+    // ── Renormalise quaternion ────────────────────────────────────────────────
+    Eigen::Vector4f q_new = m_x.segment<4>(6);
+    const float q_norm = q_new.norm();
+    if (!std::isfinite(q_norm) || q_norm < 1e-9f)
+        m_x.segment<4>(6) = Eigen::Vector4f(1.0f, 0.0f, 0.0f, 0.0f);
+    else
+    {
+        q_new /= q_norm;
+        if (q_new(0) < 0) q_new = -q_new;
+        m_x.segment<4>(6) = q_new;
+    }
+
+    // ── Joseph form covariance update ─────────────────────────────────────────
+    m_IKH.noalias()    = Eigen::Matrix<float,16,16>::Identity() - K_lidar * H_lidar;
+    m_P_temp.noalias() = m_IKH * m_P;
+    m_P.noalias()      = m_P_temp * m_IKH.transpose();
+    m_P_temp.noalias() = K_lidar * R_lidar * K_lidar.transpose();
+    m_P               += m_P_temp;
+    m_P_temp           = m_P + m_P.transpose();
+    m_P                = 0.5f * m_P_temp;
+}
+// this understands the orientation affects the value the lidar gives but its worse so maybe small angle approximations would work when its flying??
+// void EKF::updateLidar(const SensorStructs::LIDAR_t& lidar)
+// {
+//     const float h0 = m_setHome_ref.launch_lidar_dist;
+//     if (h0 <= 0.0f || !lidar.valid) { return; }
+
+//     const float z_m = lidar.dist * 0.01f;   // cm → m
+//     if (z_m > LIDAR_MAX_RANGE) { return; }
+
+//     // ── Body z-axis in NED (lidar beam direction) ─────────────────────────────
+//     // Third column of R_body_to_ned: d_ned = R(q) * (0,0,1)
+//     // d_ned[2] = 1 - 2*(q1² + q2²)  — the NED-down component of the beam
+//     Eigen::Vector4f q = m_x.segment<4>(6);
+//     q.normalize();
+//     const float q0 = q(0), q1 = q(1), q2 = q(2), q3 = q(3);
+
+//     const float cos_theta = 1.0f - 2.0f * (q1*q1 + q2*q2);
+
+//     // Gate: skip update if tilted more than ~60° from vertical (cos < 0.5)
+//     if (cos_theta < 0.5f) { return; }
+
+//     // ── Measurement model ─────────────────────────────────────────────────────
+//     // Ground is flat. The beam travels (h0 - pd) / cos_theta to reach it,
+//     // where h0 - pd is the vertical height above the launch-site ground plane.
+//     const float h_above = h0 - m_x(2);   // vertical height above ground (m)
+//     m_h(14) = h_above / cos_theta;
+
+//     // ── Innovation ────────────────────────────────────────────────────────────
+//     m_y(14) = z_m - m_h(14);
+
+//     // ── Jacobian (1×16) ───────────────────────────────────────────────────────
+//     // d(h_pred)/d(pd) = -1/cos_theta
+//     // d(h_pred)/d(q1) = h_above * 4*q1 / cos_theta²   [q1 at state index 7]
+//     // d(h_pred)/d(q2) = h_above * 4*q2 / cos_theta²   [q2 at state index 8]
+//     // q0 and q3 do not appear in cos_theta → zero
+//     Eigen::Matrix<float, 1, 16> H_lidar = Eigen::Matrix<float, 1, 16>::Zero();
+//     H_lidar(0, 2) = -1.0f / cos_theta;
+//     const float cos_theta2 = cos_theta * cos_theta;
+//     H_lidar(0, 7) = 4.0f * q1 * h_above / cos_theta2;
+//     H_lidar(0, 8) = 4.0f * q2 * h_above / cos_theta2;
+
+//     // ── Measurement noise ─────────────────────────────────────────────────────
+//     const float R_lidar = SIGMA_LIDAR * SIGMA_LIDAR;
+
+//     // ── Kalman gain (16×1) ────────────────────────────────────────────────────
+//     const float S = (H_lidar * m_P * H_lidar.transpose())(0, 0) + R_lidar;
+//     const Eigen::Matrix<float, 16, 1> K_lidar = (m_P * H_lidar.transpose()) / S;
+
+//     // ── State update ──────────────────────────────────────────────────────────
+//     m_x += K_lidar * m_y(14);
+
+//     // ── Renormalise quaternion ────────────────────────────────────────────────
+//     Eigen::Vector4f q_new = m_x.segment<4>(6);
+//     const float q_norm = q_new.norm();
+//     if (!std::isfinite(q_norm) || q_norm < 1e-9f)
+//         m_x.segment<4>(6) = Eigen::Vector4f(1.0f, 0.0f, 0.0f, 0.0f);
+//     else
+//     {
+//         q_new /= q_norm;
+//         if (q_new(0) < 0) q_new = -q_new;
+//         m_x.segment<4>(6) = q_new;
+//     }
+
+//     // ── Joseph form covariance update ─────────────────────────────────────────
+//     m_IKH.noalias()    = Eigen::Matrix<float,16,16>::Identity() - K_lidar * H_lidar;
+//     m_P_temp.noalias() = m_IKH * m_P;
+//     m_P.noalias()      = m_P_temp * m_IKH.transpose();
+//     m_P_temp.noalias() = K_lidar * R_lidar * K_lidar.transpose();
+//     m_P               += m_P_temp;
+//     m_P_temp           = m_P + m_P.transpose();
+//     m_P                = 0.5f * m_P_temp;
+// }

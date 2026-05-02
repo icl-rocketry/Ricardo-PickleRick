@@ -107,7 +107,8 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             Eigen::Vector3f(raw_sensors.mag.mx, raw_sensors.mag.my, raw_sensors.mag.mz),
             raw_sensors.baro.press,
             raw_sensors.baro.temp,
-            raw_sensors.gps
+            raw_sensors.gps,
+            raw_sensors.lidar
         );
     }
     updateState();
@@ -170,6 +171,8 @@ void Estimator::updateState()
     m_state.baroInnovation          = m_ekf.baroInnovation();
     m_state.gpsPosInnovation        = m_ekf.gpsPosInnovation();
     m_state.gpsVelInnovation        = m_ekf.gpsVelInnovation();
+    m_state.expectedLidarReading    = m_ekf.expectedLidarReading();
+    m_state.lidarInnovation         = m_ekf.lidarInnovation();
 
     // ── Calibration ───────────────────────────────────────────────────────────
     m_state.accelBiases             = m_ekf.accelBias();

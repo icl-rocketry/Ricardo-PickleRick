@@ -8,16 +8,21 @@ class PDController
     public:
 
         void setup();
-        void update(Eigen::Matrix<float,1, 7> currentValues, float batt_V, bool batt_fresh);
+        void update(Eigen::Quaterniond q, 
+                    Eigen::Vector3f angular_rates, 
+                    Eigen::Vector3f position, 
+                    Eigen::Vector3f velocity,
+                    float batt_V, bool batt_fresh);
         void reset();
         Eigen::Vector4f getOutputValues()   { return m_output_values; }; 
         Eigen::Vector3f getEulerError()     { return m_euler_error; }; 
         Eigen::Vector3f getFBody()          { return m_f_body; }; 
         Eigen::Vector3f getMcmd()           { return m_M_cmd; };
-        float getBatteryVoltage() const { return m_batt_V; }
-        float getRollMix()   {return m_roll_mix;} ;
+        float getBatteryVoltage()     const { return m_batt_V; }
+        float getRollMix()                  { return m_roll_mix; } ;
 
     private:
+        void updatePositionControl(const Eigen::Vector3f& position, const Eigen::Vector3f& velocity);
         void updateThrustDirectionErrors(const Eigen::Quaterniond& q);
         void updateMcmd(const Eigen::Vector3f& angular_rates);
         void updateOutputValues();
@@ -54,5 +59,27 @@ class PDController
         float m_Fx_cmd = 0.0f;
         float m_roll_mix = 0.0f;
         float m_mass;
+
+        // Outer loop gains
+        Eigen::Vector3f m_K_p_pos;   // position → velocity setpoint
+        Eigen::Vector3f m_K_p_vel;   // velocity error → accel
+        Eigen::Vector3f m_K_i_vel;   // integral on velocity error
+        Eigen::Vector3f m_vel_int;   // integrator state
+
+        // Limits / setpoint
+        Eigen::Vector3f m_pos_des;
+        float m_max_vel;
+        float m_max_tilt_rad;
+        float m_dt;
+        uint32_t m_last_update_us;
+
+        // Outer-loop thrust magnitude (overrides NOMINAL_FX_N when active)
+        float m_Fx_cmd_outer;
+        bool  m_position_control_enabled;
+        static constexpr float GRAVITY = 9.81f;
+
+        // Debug telemetry
+        Eigen::Vector3f m_pos_err_dbg;
+        Eigen::Vector3f m_vel_err_dbg;
 
 };

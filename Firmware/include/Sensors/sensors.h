@@ -22,6 +22,7 @@
 #include "Sensors/mmc5983ma.h"
 #include "Sensors/adc_vrailmonitor.h"
 #include "Sensors/ina_vrailmonitor.h"
+#include "Sensors/tfluna.h"
 #include "Sensors/sensorStructs.h"
 
 class Sensors
@@ -56,6 +57,7 @@ private:
     MMC5983MA mag;
     ADC_VRailMonitor logicrail;
     INA_VRailMonitor deprail;
+    TFLuna lidar;
 
 
     /**

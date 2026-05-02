@@ -52,10 +52,10 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::system_status,
                 &TelemetryPacket::system_time,
                 &TelemetryPacket::rssi,
-                &TelemetryPacket::snr
-                
-
-               
+                &TelemetryPacket::snr,
+                &TelemetryPacket::lidar_dist,
+                &TelemetryPacket::lidar_amp,
+                &TelemetryPacket::lidar_temp
             );
             return ret;
         }
@@ -107,8 +107,12 @@ class TelemetryPacket : public RnpPacket{
         uint32_t system_status;
         uint64_t system_time;
         //radio details
-        int16_t rssi; 
+        int16_t rssi;
         float snr;
+        //lidar
+        uint16_t lidar_dist;  // cm
+        uint16_t lidar_amp;   // signal strength
+        float    lidar_temp;  // degrees Celsius
 
 
         static constexpr size_t size(){

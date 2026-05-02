@@ -12,32 +12,35 @@ void PDController::setup()
     m_rEng << -0.23f, -0.005f, 0.003f;
     m_mass = 1.19f;
 
-    // // No roll control about body x
     m_K_p << 0.0f, 2.0f, 1.5f; 
-    // m_K_p << 0.0f, 0.0f, 0.0f; 
     m_K_d << 7.0f, 0.45f, 0.5f;
-   // m_K_d << 0.0f, 0.00f, 0.0f;
+
+    m_K_p_pos << 0.0f, 1.0f, 1.0f;   // x is "up"; start with vertical off
+    m_K_p_vel << 2.0f, 1.5f, 1.5f;
+    m_K_i_vel << 0.5f, 0.3f, 0.3f;
+
+    m_vel_int.setZero();
+    m_pos_des << 0.0f, 0.0f, 0.0f;
+    m_max_vel       = 2.0f;                  // m/s — conservative
+    m_max_tilt_rad  = 20.0f * M_PI / 180.0f; // 20° max tilt command
+    m_last_update_us = 0;
+
+    m_position_control_enabled = false;      // arm explicitly
+    m_Fx_cmd_outer  = NOMINAL_FX_N;
 }
 
-void PDController::update(Eigen::Matrix<float,1,7> currentValues, float batt_V, bool batt_fresh)
+void PDController::update(Eigen::Quaterniond q, 
+                          Eigen::Vector3f angular_rates, 
+                          Eigen::Vector3f position, 
+                          Eigen::Vector3f velocity,
+                          float batt_V, bool batt_fresh)
 {
     m_batt_V = batt_V;
     m_batt_fresh = batt_fresh;
 
-    Eigen::Quaterniond q(
-        currentValues(0),
-        currentValues(1),
-        currentValues(2),
-        currentValues(3)
-    );
     q.normalize();
 
-    Eigen::Vector3f angular_rates(
-        currentValues(4),
-        currentValues(5),
-        currentValues(6)
-    );
-
+    updatePositionControl(position, velocity);
     updateThrustDirectionErrors(q);
     updateDesiredForce(q);
     updateMcmd(angular_rates);
@@ -50,6 +53,100 @@ void PDController::reset()
     m_M_cmd          << 0.0f, 0.0f, 0.0f;
     m_output_values  << 0.0f, 0.0f, 0.0f, 0.0f;
     m_Fx_cmd         = 0.0f;
+}
+
+void PDController::updatePositionControl(const Eigen::Vector3f& position,
+                                          const Eigen::Vector3f& velocity)
+{
+    // ── dt ───────────────────────────────────────────────────────────────
+    const uint32_t now = micros();
+    if (m_last_update_us == 0) { m_last_update_us = now; m_dt = 0.0f; return; }
+    m_dt = (now - m_last_update_us) * 1e-6f;
+    m_last_update_us = now;
+    if (m_dt <= 0.0f || m_dt > 0.1f) { return; }   // sanity gate
+
+    if (!m_position_control_enabled) {
+        // Hold: keep integrator from winding up while disarmed
+        m_vel_int.setZero();
+        m_thrust_dir_world_des << 1.0f, 0.0f, 0.0f;
+        m_Fx_cmd_outer = NOMINAL_FX_N;
+        return;
+    }
+
+    // ── Outer P: position → velocity setpoint ────────────────────────────
+    Eigen::Vector3f pos_err = m_pos_des - position;
+    Eigen::Vector3f vel_des = m_K_p_pos.cwiseProduct(pos_err);
+
+    // Saturate velocity setpoint (per-axis, then magnitude)
+    const float v_norm = vel_des.norm();
+    if (v_norm > m_max_vel) { vel_des *= (m_max_vel / v_norm); }
+
+    // ── Inner PI: velocity error → acceleration command ──────────────────
+    Eigen::Vector3f vel_err = vel_des - velocity;
+
+    // Tentative accel before integrator update (used for anti-windup check)
+    Eigen::Vector3f a_des = m_K_p_vel.cwiseProduct(vel_err)
+                          + m_K_i_vel.cwiseProduct(m_vel_int);
+
+    // Add gravity comp (world-x is "up" in your convention)
+    a_des += Eigen::Vector3f(GRAVITY, 0.0f, 0.0f);
+
+    // ── Convert accel command to thrust direction + magnitude ────────────
+    Eigen::Vector3f F_des_world = m_mass * a_des;
+    float F_mag = F_des_world.norm();
+
+    bool saturated = false;
+    if (F_mag < 1e-3f) {
+        m_thrust_dir_world_des << 1.0f, 0.0f, 0.0f;
+        m_Fx_cmd_outer = 0.0f;
+        saturated = true;
+    } else {
+        Eigen::Vector3f dir = F_des_world / F_mag;
+
+        // Tilt limit: clamp angle between desired thrust dir and world-up (+x)
+        const float cos_tilt = dir(0);
+        const float cos_max  = std::cos(m_max_tilt_rad);
+        if (cos_tilt < cos_max) {
+            // Project onto cone: keep azimuth, clamp tilt
+            Eigen::Vector3f horiz(0.0f, dir(1), dir(2));
+            const float h_norm = horiz.norm();
+            if (h_norm > 1e-6f) {
+                horiz *= (std::sin(m_max_tilt_rad) / h_norm);
+            }
+            dir << std::cos(m_max_tilt_rad), horiz(1), horiz(2);
+            dir.normalize();
+            saturated = true;
+        }
+
+        // Thrust magnitude limit
+        float F_clamped = std::clamp(F_mag, 0.0f, MAX_THRUST_N);
+        if (F_clamped < F_mag) saturated = true;
+
+        m_thrust_dir_world_des = dir;
+        m_Fx_cmd_outer = F_clamped;
+    }
+
+    // ── Integrator update with conditional anti-windup ───────────────────
+    // Only integrate if we're not saturated, OR if the error pushes us
+    // back into the linear region.
+    if (!saturated) {
+        m_vel_int += vel_err * m_dt;
+    } else {
+        // Leak slightly + only integrate components that reduce |error|
+        for (int i = 0; i < 3; ++i) {
+            if (vel_err(i) * m_vel_int(i) < 0.0f) {
+                m_vel_int(i) += vel_err(i) * m_dt;
+            }
+        }
+    }
+
+    // Hard clamp on integrator to prevent runaway
+    const float I_MAX = 5.0f;
+    m_vel_int = m_vel_int.cwiseMax(-I_MAX).cwiseMin(I_MAX);
+
+    // Telemetry
+    m_pos_err_dbg = pos_err;
+    m_vel_err_dbg = vel_err;
 }
 
 void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
@@ -83,7 +180,6 @@ void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
 
 void PDController::updateMcmd(const Eigen::Vector3f& angular_rates)
 {
-    // Ignore roll-rate damping too, because no roll authority
     Eigen::Vector3f rates_error = -angular_rates; //desired rates are 0 so it is negative
     m_euler_error = m_dir_error_body;//send the errors to telemetry for debugging
     m_dir_error_body(0) = 0.0f; //no roll angle error since its only a D controller
@@ -96,7 +192,8 @@ void PDController::updateDesiredForce(const Eigen::Quaterniond& q)
     const float sin_tilt = std::clamp(m_dir_error_body.norm(), 0.0f, 0.95f);
     const float cos_tilt = std::clamp(std::sqrt(1.0f - sin_tilt * sin_tilt), 0.5f, 1.0f);
 
-    m_Fx_cmd = std::clamp(NOMINAL_FX_N / cos_tilt, 0.0f, MAX_THRUST_N);
+    const float Fx_target = m_position_control_enabled ? m_Fx_cmd_outer : NOMINAL_FX_N;
+    m_Fx_cmd = std::clamp(Fx_target / cos_tilt, 0.0f, MAX_THRUST_N);
 }
 void PDController::updateOutputValues()
 {

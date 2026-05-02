@@ -53,8 +53,10 @@ private:
     
     // GPS (deg, deg, m)
     int64_t    m_lat_accum,    m_lng_accum;
-    float      m_alt_accum;    
-    float      m_pressure_accum,   m_temperature_accum;    // barometer 
+    float      m_alt_accum;
+    float      m_pressure_accum,   m_temperature_accum;    // barometer
+    float      m_lidar_accum;                              // lidar ground dist (m)
+    uint32_t   m_valid_lidar_readings;
     
     SensorStructs::home_ref_t m_setHome_ref;
 };

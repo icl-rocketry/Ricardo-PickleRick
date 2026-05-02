@@ -1,4 +1,4 @@
-#include "Commands/packets/LMQTelemPacket.h"
+#include "Commands/packets/LMQTelempacket.h"
 
 #include <librnp/rnp_networkmanager.h>
 #include <librnp/rnp_packet.h>

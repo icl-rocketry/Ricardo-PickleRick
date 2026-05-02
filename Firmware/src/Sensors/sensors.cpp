@@ -12,7 +12,8 @@ Sensors::Sensors(SPIClass& spi, TwoWire& I2C, Types::CoreTypes::SystemStatus_t& 
       accel(spi, systemstatus, PinMap::ImuCs_2),
       mag(spi, PinMap::MagCs, systemstatus),
       logicrail("Logic Rail", PinMap::LogicVolt, 8, 1),
-      deprail("Deployment Rail", I2C, 0x45)
+      deprail("Deployment Rail", I2C, 0x45),
+      lidar(I2C, systemstatus)
 {
 }
 
@@ -53,6 +54,7 @@ void Sensors::setup(JsonObjectConst config)
     mag.setup(axesOrderMMC, axesFlipMMC);
     logicrail.setup(logicMaxVoltage, logicLowVoltage, logicMinVoltage);
     deprail.setup(depMaxVoltage, depLowVoltage, depMinVoltage);
+    lidar.setup();
 };
 
 void Sensors::update()
@@ -72,6 +74,7 @@ void Sensors::update()
     mag.update(sensors_raw.mag);
     logicrail.update(sensors_raw.logicrail);
     deprail.update(sensors_raw.deprail);
+    lidar.update(sensors_raw.lidar);
 };
 
 const SensorStructs::raw_measurements_t& Sensors::getData() { return sensors_raw; }

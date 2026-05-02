@@ -1,7 +1,7 @@
 #include "PowerMonitor/PowerMonitor.h"
 
-#include "Commands/Packets/LMQTelempacket.h"
-#include "components/librnp/src/librnp/default_packets/simplecommandpacket.h"
+#include "Commands/packets/LMQTelempacket.h"
+#include <librnp/default_packets/simplecommandpacket.h>
 #include "Config/loggerhandler_config.h"
 #include "libriccore/riccorelogging.h"
 

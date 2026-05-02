@@ -28,20 +28,14 @@ Types::CoreTypes::State_ptr_t Flight::update()
     //     return std::make_unique<Landing>(_system);
     // }
 
-    auto quat = current_Data.rocketOrientation; 
-
-    Eigen::Matrix<float, 1, 7> inputMatrix = {
-        quat.w(),
-        quat.x(),
-        quat.y(),
-        quat.z(),
-        current_Data.angularRates(0),
-        current_Data.angularRates(1),
-        current_Data.angularRates(2),
-    };    
+    auto quaternion = current_Data.rocketOrientation.cast<double>();
+    auto angular_rates = current_Data.angularRates;
+    auto position = current_Data.position;
+    auto velocity = current_Data.velocity;
+    
     _system.controller.setBatteryVoltage(_system.powermonitor.getBatteryVoltage(),_system.powermonitor.fresh());
 
-    _system.controller.update(inputMatrix, true);
+    _system.controller.update(quaternion, angular_rates, position, velocity, true);
 
     return nullptr;
 };

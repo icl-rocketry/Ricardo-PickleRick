@@ -95,6 +95,9 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
     telemetry.system_status = system.systemstatus.getStatus();
     telemetry.system_time = millis();
 
+    telemetry.lidar_dist = raw_sensors.lidar.dist;
+    telemetry.lidar_amp  = raw_sensors.lidar.amp;
+    telemetry.lidar_temp = raw_sensors.lidar.temp;
 
     system.networkmanager.sendPacket(telemetry);
 }
@@ -168,22 +171,6 @@ void Commands::EstimatorCommand(System& system, const RnpPacketSerialized& packe
     estimator.header.destination_service =  commandpacket.header.source_service;
     estimator.header.uid =                  commandpacket.header.uid;
 
-    estimator.raw_ax                  = state.rawAccel(0);
-    estimator.raw_ay                  = state.rawAccel(1);
-    estimator.raw_az                  = state.rawAccel(2);
-
-    estimator.raw_gx                  = state.rawGyro(0);
-    estimator.raw_gy                  = state.rawGyro(1);
-    estimator.raw_gz                  = state.rawGyro(2);
-
-    estimator.filt_ax             = state.filteredAccel(0);
-    estimator.filt_ay             = state.filteredAccel(1);
-    estimator.filt_az             = state.filteredAccel(2);
-
-    estimator.filt_gx             = state.filteredGyro(0);
-    estimator.filt_gy             = state.filteredGyro(1);
-    estimator.filt_gz             = state.filteredGyro(2);
-
     estimator.pos_n                 = state.position(0);
     estimator.pos_e                 = state.position(1);
     estimator.pos_d                 = state.position(2);
@@ -248,6 +235,10 @@ void Commands::EstimatorCommand(System& system, const RnpPacketSerialized& packe
     estimator.y_vn                  = state.gpsVelInnovation(0);
     estimator.y_ve                  = state.gpsVelInnovation(1);
     estimator.y_vd                  = state.gpsVelInnovation(2);
+
+    estimator.h_lidar               = state.expectedLidarReading;
+    estimator.y_lidar               = state.lidarInnovation;
+
 
     estimator.b_hax                 = state.highGBiases(0);
     estimator.b_hay                 = state.highGBiases(1);

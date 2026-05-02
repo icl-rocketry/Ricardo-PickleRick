@@ -11,30 +11,7 @@ class EstimatorPacket : public RnpPacket{
         static constexpr auto getSerializer()
         {
             auto ret = RnpSerializer(
-                &EstimatorPacket::raw_ax,
-                &EstimatorPacket::raw_ay,
-                &EstimatorPacket::raw_az,
 
-                &EstimatorPacket::raw_gx,
-                &EstimatorPacket::raw_gy,
-                &EstimatorPacket::raw_gz,
-
-                &EstimatorPacket::filt_ax,
-                &EstimatorPacket::filt_ay,
-                &EstimatorPacket::filt_az,
-
-                &EstimatorPacket::filt_gx,
-                &EstimatorPacket::filt_gy,
-                &EstimatorPacket::filt_gz,
-                
-                // &EstimatorPacket::pos_n,
-                // &EstimatorPacket::pos_e,
-                // &EstimatorPacket::pos_d,
-
-                // &EstimatorPacket::vel_n,
-                // &EstimatorPacket::vel_e,
-                // &EstimatorPacket::vel_d,
-              
                 &EstimatorPacket::q0,
                 &EstimatorPacket::q1,
                 &EstimatorPacket::q2,
@@ -94,6 +71,9 @@ class EstimatorPacket : public RnpPacket{
                 &EstimatorPacket::y_ve,
                 &EstimatorPacket::y_vd,
 
+                &EstimatorPacket::h_lidar,
+                &EstimatorPacket::y_lidar,
+
                 &EstimatorPacket::b_hax,
                 &EstimatorPacket::b_hay,
                 &EstimatorPacket::b_haz,
@@ -129,15 +109,6 @@ class EstimatorPacket : public RnpPacket{
          */
         void serialize(std::vector<uint8_t>& buf) override;
 
-        //raw sensor data
-        float raw_ax, raw_ay, raw_az; //raw accel data before the filter
-        //raw gyro data
-        float raw_gx, raw_gy, raw_gz; //raw gyro data before the filter
-        //filtered accel data
-        float filt_ax, filt_ay, filt_az; //filtered accel data
-         //filtered gyro data
-        float filt_gx, filt_gy, filt_gz; //filtered gyro data
-        
         // accel gyro
         float pos_n, pos_e, pos_d;              // position (m) (NED frame)
         float vel_n, vel_e, vel_d;              // velocity (m/s) (NED frame)
@@ -162,7 +133,10 @@ class EstimatorPacket : public RnpPacket{
         float y_bt, y_bp;                       // innovation from baro readings (NED frame)
         float y_pn, y_pe, y_pd;                 // innovation from gps pos readings (NED frame)
         float y_vn, y_ve, y_vd;                 // innovation from gps vel readings (NED frame)
-        
+
+        float h_lidar;                           // expected lidar reading (m)
+        float y_lidar;                           // innovation from lidar reading (m)
+
         float b_hax, b_hay, b_haz;              // high-g accel biases (m/s^2) (body frame)
         float ref_mn, ref_me, ref_md;           // ref mag vec for declination (G) (NED frame)
         
