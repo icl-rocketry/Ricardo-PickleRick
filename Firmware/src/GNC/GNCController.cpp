@@ -30,7 +30,6 @@ void GNCController::update(Eigen::Quaterniond q,
     if (millis() - m_previousSampleTime >= m_actuationDelta) {
 
         m_previousSampleTime = millis();
-        // m_input = currentInput;
         m_pd.update(q, angular_rates, position, velocity, m_batt_V, m_batt_fresh);
         m_output = m_pd.getOutputValues();
         if (actuate) {

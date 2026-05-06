@@ -42,11 +42,11 @@ void PowerMonitor::networkCallback(packetptr_t packetptr)
     m_data.last_update_ms = millis();
     m_data.fresh = true;
 
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
+    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
 
-        "RECEIVED LMQ batt mV: " + std::to_string(m_data.batt_mV)
+    //     "RECEIVED LMQ batt mV: " + std::to_string(m_data.batt_mV)
 
-    );
+    // );
 }
 
 const PowerMonitorData& PowerMonitor::getData() const
@@ -87,11 +87,11 @@ void PowerMonitor::requestPdbTelem()
 
     {
 
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
+        // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
 
-            "Requested LMQ telemetry"
+        //     "Requested LMQ telemetry"
 
-        );
+        // );
 
         last_log_ms = millis();
 

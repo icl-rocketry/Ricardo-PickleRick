@@ -70,7 +70,8 @@ void System::systemUpdate()
     sensors.update();
     estimator.update(sensors.getData());
     powermonitor.update();
-    logTelemetry();
+    logEstimator();
+    // logTelemetry();
 };
 
 void System::setupSPI()
@@ -193,6 +194,7 @@ void System::initializeLoggers()
 
     std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END));
     std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50); 
+    std::unique_ptr<WrappedFile> estimatorlogfile = primarysd.open(log_directory_path + "/estimatorlog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),10);
     
     // intialize sys logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(std::move(syslogfile),networkmanager);
@@ -200,7 +202,39 @@ void System::initializeLoggers()
     //initialize telemetry logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::TELEMETRY>().initialize(std::move(telemetrylogfile));
 
+    //initialize estimator logger
+    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::ESTIMATOR>().initialize(std::move(estimatorlogfile));
+
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("SD Init Complete");
+}
+
+void System::logEstimator()
+{
+    const uint32_t current_time = micros();
+    if (current_time - prev_estimator_log_time >= estimator_log_delta)
+    {
+        const SensorStructs::state_t& state = estimator.getData();
+        EstimatorLogframe logframe;
+
+        logframe.timestamp_us          = esp_timer_get_time();
+
+        logframe.raw_ax                = state.rawAccel(0);
+        logframe.raw_ay                = state.rawAccel(1);
+        logframe.raw_az                = state.rawAccel(2);
+        logframe.raw_gx                = state.rawGyro(0);
+        logframe.raw_gy                = state.rawGyro(1);
+        logframe.raw_gz                = state.rawGyro(2);
+        logframe.filtered_ax           = state.filteredAccel(0);
+        logframe.filtered_ay           = state.filteredAccel(1);
+        logframe.filtered_az           = state.filteredAccel(2);
+        logframe.filtered_gx           = state.filteredGyro(0);
+        logframe.filtered_gy           = state.filteredGyro(1);
+        logframe.filtered_gz           = state.filteredGyro(2);
+
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::ESTIMATOR>(logframe);
+
+        prev_estimator_log_time = current_time;
+    }
 }
 
 void System::logTelemetry()

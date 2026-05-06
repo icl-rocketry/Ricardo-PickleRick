@@ -51,9 +51,10 @@ class PDController
         float m_batt_V = 16.8f;
         bool m_batt_fresh = false;
 
-        static constexpr float NOMINAL_BATT_V = 16.8f;
+        static constexpr float NOMINAL_BATT_V = 15.7f; //measured voltage of a fully loaded pack under load
         static constexpr float MIN_VALID_BATT_V = 12.0f;
-        static constexpr float MAX_VOLTAGE_SCALE = 1.2f;
+        static constexpr float MIN_VOLTAGE_SCALE = 0.83f; 
+        static constexpr float MAX_VOLTAGE_SCALE = 1.07f;
         
 
         float m_Fx_cmd = 0.0f;
@@ -62,9 +63,9 @@ class PDController
 
         // Outer loop gains
         Eigen::Vector3f m_K_p_pos;   // position → velocity setpoint
-        Eigen::Vector3f m_K_p_vel;   // velocity error → accel
-        Eigen::Vector3f m_K_i_vel;   // integral on velocity error
-        Eigen::Vector3f m_vel_int;   // integrator state
+        Eigen::Vector3f m_K_d_pos;   // 
+        Eigen::Vector3f m_K_i_pos;   // 
+        Eigen::Vector3f m_pos_int;   // integral term
 
         // Limits / setpoint
         Eigen::Vector3f m_pos_des;

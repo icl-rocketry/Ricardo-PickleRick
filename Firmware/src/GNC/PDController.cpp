@@ -16,13 +16,13 @@ void PDController::setup()
     m_K_d << 7.0f, 0.45f, 0.5f;
 
     m_K_p_pos << 0.0f, 1.0f, 1.0f;   // x is "up"; start with vertical off
-    m_K_p_vel << 2.0f, 1.5f, 1.5f;
-    m_K_i_vel << 0.5f, 0.3f, 0.3f;
+    m_K_d_pos << 2.0f, 1.5f, 1.5f;
+    m_K_i_pos << 0.5f, 0.3f, 0.3f;
 
-    m_vel_int.setZero();
-    m_pos_des << 0.0f, 0.0f, 0.0f;
+    m_pos_int.setZero();
+    m_pos_des << 0.0f, 0.0f, 0.0f;  // need new function to set this externally if you want to move around
     m_max_vel       = 2.0f;                  // m/s — conservative
-    m_max_tilt_rad  = 20.0f * M_PI / 180.0f; // 20° max tilt command
+    m_max_tilt_rad  = 15.0f * M_PI / 180.0f; // 20° max tilt command
     m_last_update_us = 0;
 
     m_position_control_enabled = false;      // arm explicitly
@@ -56,97 +56,86 @@ void PDController::reset()
 }
 
 void PDController::updatePositionControl(const Eigen::Vector3f& position,
-                                          const Eigen::Vector3f& velocity)
+    const Eigen::Vector3f& velocity)
 {
     // ── dt ───────────────────────────────────────────────────────────────
     const uint32_t now = micros();
-    if (m_last_update_us == 0) { m_last_update_us = now; m_dt = 0.0f; return; }
-    m_dt = (now - m_last_update_us) * 1e-6f;
-    m_last_update_us = now;
-    if (m_dt <= 0.0f || m_dt > 0.1f) { return; }   // sanity gate
 
-    if (!m_position_control_enabled) {
-        // Hold: keep integrator from winding up while disarmed
-        m_vel_int.setZero();
-        m_thrust_dir_world_des << 1.0f, 0.0f, 0.0f;
-        m_Fx_cmd_outer = NOMINAL_FX_N;
+    if (m_last_update_us == 0) {
+
+        m_last_update_us = now;
+        m_dt = 0.0f;
         return;
+
     }
 
-    // ── Outer P: position → velocity setpoint ────────────────────────────
+    m_dt = (now - m_last_update_us) * 1e-6f;
+    m_last_update_us = now;
+
+    if (m_dt <= 0.0f || m_dt > 0.1f) {return;}
+
+    if (!m_position_control_enabled) {
+
+        m_pos_int.setZero();
+        m_thrust_dir_world_des << 1.0f, 0.0f, 0.0f;   // +X up
+        m_Fx_cmd_outer = NOMINAL_FX_N;
+        return;
+
+    }
+
+    // ── Simple PID: position error → acceleration command ────────────────
     Eigen::Vector3f pos_err = m_pos_des - position;
-    Eigen::Vector3f vel_des = m_K_p_pos.cwiseProduct(pos_err);
 
-    // Saturate velocity setpoint (per-axis, then magnitude)
-    const float v_norm = vel_des.norm();
-    if (v_norm > m_max_vel) { vel_des *= (m_max_vel / v_norm); }
+    // Since derivative of position error is approximately -velocity
+    Eigen::Vector3f pos_err_dot = -velocity;
 
-    // ── Inner PI: velocity error → acceleration command ──────────────────
-    Eigen::Vector3f vel_err = vel_des - velocity;
+    // Integrator
+    m_pos_int += pos_err * m_dt;
 
-    // Tentative accel before integrator update (used for anti-windup check)
-    Eigen::Vector3f a_des = m_K_p_vel.cwiseProduct(vel_err)
-                          + m_K_i_vel.cwiseProduct(m_vel_int);
+    const float I_MAX = 5.0f;
+    m_pos_int = m_pos_int.cwiseMax(-I_MAX).cwiseMin(I_MAX);
 
-    // Add gravity comp (world-x is "up" in your convention)
+    Eigen::Vector3f a_des =
+    m_K_p_pos.cwiseProduct(pos_err)
+    + m_K_i_pos.cwiseProduct(m_pos_int)
+    + m_K_d_pos.cwiseProduct(pos_err_dot);
+
+    // Gravity compensation: +X is up
     a_des += Eigen::Vector3f(GRAVITY, 0.0f, 0.0f);
 
-    // ── Convert accel command to thrust direction + magnitude ────────────
+    // ── Convert acceleration command to thrust vector ────────────────────
     Eigen::Vector3f F_des_world = m_mass * a_des;
     float F_mag = F_des_world.norm();
 
-    bool saturated = false;
     if (F_mag < 1e-3f) {
         m_thrust_dir_world_des << 1.0f, 0.0f, 0.0f;
         m_Fx_cmd_outer = 0.0f;
-        saturated = true;
     } else {
         Eigen::Vector3f dir = F_des_world / F_mag;
 
-        // Tilt limit: clamp angle between desired thrust dir and world-up (+x)
+        // Tilt limit relative to +X up
         const float cos_tilt = dir(0);
         const float cos_max  = std::cos(m_max_tilt_rad);
+
         if (cos_tilt < cos_max) {
-            // Project onto cone: keep azimuth, clamp tilt
-            Eigen::Vector3f horiz(0.0f, dir(1), dir(2));
-            const float h_norm = horiz.norm();
-            if (h_norm > 1e-6f) {
-                horiz *= (std::sin(m_max_tilt_rad) / h_norm);
-            }
-            dir << std::cos(m_max_tilt_rad), horiz(1), horiz(2);
-            dir.normalize();
-            saturated = true;
+        Eigen::Vector3f horiz(0.0f, dir(1), dir(2));
+        const float h_norm = horiz.norm();
+
+        if (h_norm > 1e-6f) {
+        horiz *= std::sin(m_max_tilt_rad) / h_norm;
         }
 
-        // Thrust magnitude limit
-        float F_clamped = std::clamp(F_mag, 0.0f, MAX_THRUST_N);
-        if (F_clamped < F_mag) saturated = true;
+        dir << std::cos(m_max_tilt_rad), horiz(1), horiz(2);
+        dir.normalize();
+        }
 
         m_thrust_dir_world_des = dir;
-        m_Fx_cmd_outer = F_clamped;
+        m_Fx_cmd_outer = std::clamp(F_mag, 0.0f, MAX_THRUST_N);
     }
-
-    // ── Integrator update with conditional anti-windup ───────────────────
-    // Only integrate if we're not saturated, OR if the error pushes us
-    // back into the linear region.
-    if (!saturated) {
-        m_vel_int += vel_err * m_dt;
-    } else {
-        // Leak slightly + only integrate components that reduce |error|
-        for (int i = 0; i < 3; ++i) {
-            if (vel_err(i) * m_vel_int(i) < 0.0f) {
-                m_vel_int(i) += vel_err(i) * m_dt;
-            }
-        }
-    }
-
-    // Hard clamp on integrator to prevent runaway
-    const float I_MAX = 5.0f;
-    m_vel_int = m_vel_int.cwiseMax(-I_MAX).cwiseMin(I_MAX);
 
     // Telemetry
     m_pos_err_dbg = pos_err;
-    m_vel_err_dbg = vel_err;
+    m_vel_err_dbg = -velocity;
 }
 
 void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
@@ -219,19 +208,20 @@ void PDController::updateOutputValues()
     if (m_batt_fresh && m_batt_V > MIN_VALID_BATT_V)
     {
         voltage_scale = NOMINAL_BATT_V / m_batt_V;
-        voltage_scale = std::clamp(voltage_scale, 1.0f, MAX_VOLTAGE_SCALE);
+        voltage_scale = std::clamp(voltage_scale, MIN_VOLTAGE_SCALE, MAX_VOLTAGE_SCALE);
     }
 
-    base_thrust *= voltage_scale; //uncomment this line to enable voltage scaling of the thrust command
+    base_thrust *= voltage_scale; //scale thrust based on voltage read 
 
-    pitch_servo = std::clamp(pitch_servo, -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
-    yaw_servo   = std::clamp(yaw_servo,   -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
-    base_thrust = 0.0; //std::clamp(base_thrust, 0.0f, 100.0f);
+    pitch_servo = 0.0;//std::clamp(pitch_servo, -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
+    yaw_servo   = 0.0;//std::clamp(yaw_servo,   -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
+    base_thrust = 10.0;//std::clamp(base_thrust, 0.0f, 100.0f);
 
     //_--------ROLL CONTROL-----------------
     // Roll-rate damping via differential prop throttle.
     // Positive roll_mix: top CW prop up, bottom CCW prop down.
     float roll_mix = m_M_cmd(0);
+    roll_mix *= voltage_scale; //voltage scaling for roll mix 
     roll_mix = std::clamp(roll_mix, -MAX_ROLL_MIX, MAX_ROLL_MIX);
    
     float thrust_top = std::clamp(base_thrust + roll_mix, 0.0f, 100.0f);

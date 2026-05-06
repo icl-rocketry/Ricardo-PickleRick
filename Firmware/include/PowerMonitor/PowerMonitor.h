@@ -40,6 +40,6 @@ private:
     static constexpr uint8_t LMQ_COMMAND_SERVICE = 2;
     static constexpr uint8_t LMQ_TELEM_COMMAND = 4;
 
-    static constexpr uint32_t REQUEST_PERIOD_MS = 1000;
+    static constexpr uint32_t REQUEST_PERIOD_MS = 500;
     static constexpr uint32_t FRESH_TIMEOUT_MS = 1000;
 };

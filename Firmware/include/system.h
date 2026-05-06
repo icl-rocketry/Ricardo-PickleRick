@@ -21,6 +21,7 @@
 #include "GNC/GNCController.h"
 #include "PowerMonitor/PowerMonitor.h"
 #include "Estimator/estimator.h"
+#include "Loggers/EstimatorLogger/estimatorlogframe.h"
 #include "Loggers/TelemetryLogger/telemetrylogframe.h"
 #include "Network/Interfaces/radio.h"
 #include "Sensors/sensors.h"
@@ -60,6 +61,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void configureNetwork();
         void loadConfig();
         void initializeLoggers();
+        void logEstimator();
         void logTelemetry();
         void configureRadio(JsonObjectConst conf);
 
@@ -67,6 +69,8 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         static constexpr std::string_view config_path = "/Config/rml.jsonc";
         
         uint32_t telemetry_log_delta = 10000; // 100Hz
-        uint32_t prev_telemetry_log_time;
+        uint32_t prev_telemetry_log_time = 0;
+        uint32_t estimator_log_delta = 5000; // 200Hz
+        uint32_t prev_estimator_log_time = 0;
 
 };
