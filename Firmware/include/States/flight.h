@@ -13,6 +13,7 @@
 #include "Config/commands_config.h"
 
 #include "States/landing.h"
+#include "Trajectory/TrapezoidalTrajectory.h"
 #include "system.h"
 
 class Flight : public Types::CoreTypes::State_t
@@ -29,4 +30,7 @@ class Flight : public Types::CoreTypes::State_t
 
     private:
         System& _system;
+        Trajectory::TrapezoidalTrajectory m_position_trajectory;
+        uint32_t m_trajectory_start_ms = 0;
+        bool m_trajectory_active = false;
 };

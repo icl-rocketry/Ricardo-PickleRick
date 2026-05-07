@@ -24,6 +24,10 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
         void setup(); 
         void start();
         void setBatteryVoltage(float batt_V, bool fresh);
+        void setPositionTarget(const Eigen::Vector3f& position,
+                               const Eigen::Vector3f& velocity = Eigen::Vector3f::Zero(),
+                               const Eigen::Vector3f& acceleration = Eigen::Vector3f::Zero());
+        void setPositionControlEnabled(bool enabled);
         unsigned long getStartTime() { return m_controller_start_time; };
         void update(Eigen::Quaterniond q, 
                     Eigen::Vector3f angular_rates, 

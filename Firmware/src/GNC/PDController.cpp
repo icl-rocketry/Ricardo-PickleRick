@@ -21,12 +21,32 @@ void PDController::setup()
 
     m_pos_int.setZero();
     m_pos_des << 0.0f, 0.0f, 0.0f;  // need new function to set this externally if you want to move around
+    m_vel_des.setZero();
+    m_acc_des.setZero();
     m_max_vel       = 1.0f;                  // m/s — conservative
     m_max_tilt_rad  = 15.0f * M_PI / 180.0f; // 15° max tilt command
     m_last_update_us = 0;
 
     m_position_control_enabled = false;      // arm explicitly
     m_Fx_cmd_outer  = NOMINAL_FX_N;
+}
+
+void PDController::setPositionTarget(const Eigen::Vector3f& position,
+                                     const Eigen::Vector3f& velocity,
+                                     const Eigen::Vector3f& acceleration)
+{
+    m_pos_des = position;
+    m_vel_des = velocity;
+    m_acc_des = acceleration;
+}
+
+void PDController::setPositionControlEnabled(bool enabled)
+{
+    if (!enabled) {
+        m_pos_int.setZero();
+    }
+
+    m_position_control_enabled = enabled;
 }
 
 void PDController::update(Eigen::Quaterniond q, 
@@ -86,8 +106,7 @@ void PDController::updatePositionControl(const Eigen::Vector3f& position,
     // ── Simple PID: position error → acceleration command ────────────────
     Eigen::Vector3f pos_err = m_pos_des - position;
 
-    // Since derivative of position error is approximately -velocity
-    Eigen::Vector3f pos_err_dot = -velocity;
+    Eigen::Vector3f vel_err = m_vel_des - velocity;
 
     // Integrator
     m_pos_int += pos_err * m_dt;
@@ -96,9 +115,10 @@ void PDController::updatePositionControl(const Eigen::Vector3f& position,
     m_pos_int = m_pos_int.cwiseMax(-I_MAX).cwiseMin(I_MAX);
 
     Eigen::Vector3f a_des =
-    m_K_p_pos.cwiseProduct(pos_err)
+    m_acc_des
+    + m_K_p_pos.cwiseProduct(pos_err)
     + m_K_i_pos.cwiseProduct(m_pos_int)
-    + m_K_d_pos.cwiseProduct(pos_err_dot);
+    + m_K_d_pos.cwiseProduct(vel_err);
 
     // Gravity compensation: +X is up
     a_des += Eigen::Vector3f(GRAVITY, 0.0f, 0.0f);
@@ -135,7 +155,7 @@ void PDController::updatePositionControl(const Eigen::Vector3f& position,
 
     // Telemetry
     m_pos_err_dbg = pos_err;
-    m_vel_err_dbg = -velocity;
+    m_vel_err_dbg = vel_err;
 }
 
 void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
@@ -236,5 +256,3 @@ void PDController::updateOutputValues()
                        thrust_top,
                        thrust_bottom;
 }
-
-

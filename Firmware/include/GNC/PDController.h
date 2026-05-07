@@ -14,6 +14,10 @@ class PDController
                     Eigen::Vector3f velocity,
                     float batt_V, bool batt_fresh);
         void reset();
+        void setPositionTarget(const Eigen::Vector3f& position,
+                               const Eigen::Vector3f& velocity = Eigen::Vector3f::Zero(),
+                               const Eigen::Vector3f& acceleration = Eigen::Vector3f::Zero());
+        void setPositionControlEnabled(bool enabled);
         Eigen::Vector4f getOutputValues()   { return m_output_values; }; 
         Eigen::Vector3f getEulerError()     { return m_euler_error; }; 
         Eigen::Vector3f getFBody()          { return m_f_body; }; 
@@ -69,6 +73,8 @@ class PDController
 
         // Limits / setpoint
         Eigen::Vector3f m_pos_des;
+        Eigen::Vector3f m_vel_des;
+        Eigen::Vector3f m_acc_des;
         float m_max_vel;
         float m_max_tilt_rad;
         float m_dt;

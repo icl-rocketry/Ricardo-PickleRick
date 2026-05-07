@@ -20,6 +20,18 @@ void GNCController::setBatteryVoltage(float batt_V, bool fresh)
     m_batt_fresh = fresh;
 }
 
+void GNCController::setPositionTarget(const Eigen::Vector3f& position,
+                                      const Eigen::Vector3f& velocity,
+                                      const Eigen::Vector3f& acceleration)
+{
+    m_pd.setPositionTarget(position, velocity, acceleration);
+}
+
+void GNCController::setPositionControlEnabled(bool enabled)
+{
+    m_pd.setPositionControlEnabled(enabled);
+}
+
 void GNCController::update(Eigen::Quaterniond q, 
                            Eigen::Vector3f angular_rates, 
                            Eigen::Vector3f position, 
