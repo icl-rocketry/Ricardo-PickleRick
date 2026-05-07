@@ -59,22 +59,95 @@ void Sensors::setup(JsonObjectConst config)
 
 void Sensors::update()
 {
-    if (_hitlEnabled)
-    {
-        if (!_systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG))
-        {
-            _hitlEnabled = false;
-        }
-        return;
-    }
-    gps.update(sensors_raw.gps);
-    baro.update(sensors_raw.baro);
+    if (hitlEnabled()) { return; }
+
     accelgyro.update(sensors_raw.accelgyro);
     accel.update(sensors_raw.accel);
+    gps.update(sensors_raw.gps);
+    baro.update(sensors_raw.baro);
     mag.update(sensors_raw.mag);
     logicrail.update(sensors_raw.logicrail);
     deprail.update(sensors_raw.deprail);
     lidar.update(sensors_raw.lidar);
+    sensors_raw.system_time = millis();
+};
+
+void Sensors::updateFast()
+{
+    if (hitlEnabled()) { return; }
+
+    accelgyro.update(sensors_raw.accelgyro);
+    accel.update(sensors_raw.accel);
+    sensors_raw.system_time = millis();
+};
+
+void Sensors::updateSlow()
+{
+    if (hitlEnabled()) { return; }
+
+    switch (_slowSensorIndex)
+    {
+        case 0:
+            updateGps();
+            break;
+        case 1:
+            updateBaro();
+            break;
+        case 2:
+            updateMag();
+            break;
+        case 3:
+            updateRails();
+            break;
+        case 4:
+            updateLidar();
+            break;
+        default:
+            break;
+    }
+
+    _slowSensorIndex = (_slowSensorIndex + 1) % 5;
+};
+
+void Sensors::updateGps()
+{
+    if (hitlEnabled()) { return; }
+
+    gps.update(sensors_raw.gps);
+    sensors_raw.system_time = millis();
+};
+
+void Sensors::updateBaro()
+{
+    if (hitlEnabled()) { return; }
+
+    baro.update(sensors_raw.baro);
+    sensors_raw.system_time = millis();
+};
+
+void Sensors::updateMag()
+{
+    if (hitlEnabled()) { return; }
+
+    mag.update(sensors_raw.mag);
+    sensors_raw.system_time = millis();
+};
+
+void Sensors::updateRails()
+{
+    if (hitlEnabled()) { return; }
+
+    logicrail.update(sensors_raw.logicrail);
+    deprail.update(sensors_raw.deprail);
+    sensors_raw.system_time = millis();
+};
+
+void Sensors::updateLidar()
+{
+    if (hitlEnabled()) { return; }
+
+    lidar.update(sensors_raw.lidar);
+    sensors_raw.system_time = millis();
 };
 
 const SensorStructs::raw_measurements_t& Sensors::getData() { return sensors_raw; }
@@ -137,6 +210,14 @@ void Sensors::hitlHandler(std::unique_ptr<RnpPacketSerialized> packet_ptr)
             sensors_raw.gps.updated = FakeData.gps_updated;
             sensors_raw.gps.valid = FakeData.gps_valid;
 
+            const uint32_t now_us = micros();
+            sensors_raw.mag.timestamp_us = now_us;
+            sensors_raw.baro.timestamp_us = now_us;
+            if (sensors_raw.gps.updated)
+            {
+                sensors_raw.gps.timestamp_us = now_us;
+            }
+
             hitlUpdateSensorError(FakeData.imu_error, SYSTEM_FLAG::ERROR_IMU);
             hitlUpdateSensorError(FakeData.haccel_error, SYSTEM_FLAG::ERROR_HACCEL);
             hitlUpdateSensorError(FakeData.mag_error, SYSTEM_FLAG::ERROR_MAG);
@@ -175,6 +256,16 @@ void Sensors::hitlCommandHandler(RnpPacketSerialized& packet)
             return;
         }
     }
+}
+
+bool Sensors::hitlEnabled()
+{
+    if (_hitlEnabled && !_systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG))
+    {
+        _hitlEnabled = false;
+    }
+
+    return _hitlEnabled;
 }
 
 void Sensors::hitlUpdateSensorError(uint8_t sensor_state, SYSTEM_FLAG flag)

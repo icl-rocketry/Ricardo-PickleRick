@@ -15,6 +15,7 @@
 
 
 static constexpr bool exceptionsEnabled = true; //for debugging -> will integrate this into the sd configuration options later
+static constexpr bool highRateLoopMode = false;
 
 
 TaskHandle_t loopTaskHandle = NULL;
@@ -42,9 +43,22 @@ void loopTask(void *pvParameters)
     // esp_log_level_set("*", ESP_LOG_INFO); 
     // sprofiler_initialize(100);
     setup_task();
+    uint32_t last_yield_time = millis();
     for(;;) {
         inner_loop_task();
-        vTaskDelay(1); // this is important to allow the watchdog to be reset, and to let any other threads on the core work
+        if (highRateLoopMode)
+        {
+            const uint32_t now = millis();
+            if (now - last_yield_time >= 100)
+            {
+                vTaskDelay(1);
+                last_yield_time = now;
+            }
+        }
+        else
+        {
+            vTaskDelay(1); // this is important to allow the watchdog to be reset, and to let any other threads on the core work
+        }
     }
 }
 

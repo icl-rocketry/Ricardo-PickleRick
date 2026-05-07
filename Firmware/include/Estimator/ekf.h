@@ -38,9 +38,8 @@ public:
     void update(const Eigen::Vector3f         gyro,
                 const Eigen::Vector3f         accel,
                 const Eigen::Vector3f         h_accel,
-                const Eigen::Vector3f         mag,
-                const float                   pressure,
-                const float                   temperature,
+                const SensorStructs::MAG_3AXIS_t& mag,
+                const SensorStructs::BARO_t&  baro,
                 const SensorStructs::GPS_t&   gps,
                 const SensorStructs::LIDAR_t& lidar
             );
@@ -75,6 +74,18 @@ public:
 
 private:
     uint32_t m_lastPredictTime = 0;
+    uint32_t m_lastCovarianceUpdateTime = 0;
+    uint32_t m_lastAccelCorrectionTime = 0;
+    uint32_t m_lastMagCorrectionTime = 0;
+    uint32_t m_lastBaroCorrectionTime = 0;
+    uint32_t m_lastGpsCorrectionTime = 0;
+    uint32_t m_lastLidarCorrectionTime = 0;
+    uint32_t m_lastMagMeasurementTime = 0;
+    uint32_t m_lastBaroMeasurementTime = 0;
+    uint32_t m_lastGpsMeasurementTime = 0;
+    uint32_t m_lastLidarMeasurementTime = 0;
+    float m_covariancePredictDt = 0.0f;
+    uint8_t m_nextCorrectionIndex = 0;
 
     Eigen::Vector3f m_h_accel_bias{0,0,0};                  // (m/s^2) (body)
     Eigen::Vector3f m_mag_ref{1,0,0};                       // NED reference field (unit)
@@ -87,7 +98,6 @@ private:
     static constexpr float LOW_G_SATURATION  = 7.0f * g; 
     //--Acceleration gating to prevent low-g accel updates
     static constexpr float ACCEL_GATE = 0.8f;  // m/s² how much above and below of g should we accept
-
 
     // ── State and covariance ──────────────────────────────────────────────────
     Eigen::Matrix<float, 16, 1>   m_x;   // state vector
@@ -113,12 +123,12 @@ private:
 
     // ── Process noise tuning ──────────────────────────────────────────────────
     static constexpr float SIGMA_JERK       = 0.5f;     // m/s³
-    static inline const Eigen::Vector3f SIGMA_ALPHA{0.08f, 0.06f, 0.04f};  // rad/s 
+    static inline const Eigen::Vector3f SIGMA_ALPHA{0.05f, 0.03f, 0.03f};  // rad/s 
 
     static inline const Eigen::Vector3f SIGMA_BG {5e-5f, 5e-5f, 5e-5f};     // rad/s 
     static inline const Eigen::Vector3f SIGMA_BA_LOW{5e-4f, 5e-4f, 5e-4f};     // m/s² how much the bias can change per second (low-g accel bias)
 
-    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.3f, 0.7f, 0.7f};
+    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.25f, 1.0f, 0.8f};
     static constexpr float SIGMA_MAG        = 2.0f;     // was 0.01
 
     static constexpr float SIGMA_T          = 20.0f;      // K
@@ -128,11 +138,19 @@ private:
     static constexpr float SIGMA_LIDAR     = 0.1f;      // m — conservative, datasheet ±6cm @ 0-3m
     static constexpr float LIDAR_MAX_RANGE = 8.0f;      // m — TF-Luna rated range
 
-    void predict(   const float dt,
+    void predict(   const float nominal_dt,
+                    const float covariance_dt,
+                    const bool propagate_covariance,
                     const Eigen::Vector3f gyro,
                     const Eigen::Vector3f accel,
                     const Eigen::Vector3f h_accel
                 );
+    void runScheduledCorrection(const uint32_t now,
+                                const Eigen::Vector3f& accel,
+                                const SensorStructs::MAG_3AXIS_t& mag,
+                                const SensorStructs::BARO_t& baro,
+                                const SensorStructs::GPS_t& gps,
+                                const SensorStructs::LIDAR_t& lidar);
     void updateMag(const Eigen::Vector3f& z_meas_raw);
     void updateLowGAccel(const Eigen::Vector3f& z_accel);
     void updateBaro(const float pressure, const float temperature);

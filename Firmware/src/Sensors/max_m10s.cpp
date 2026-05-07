@@ -100,6 +100,8 @@ void MAX_M10S::setup()
 
 void MAX_M10S::update(SensorStructs::GPS_t& data)
 {
+    data.updated = false;
+
     // Ask the module how many bytes it has queued, then pull them all and
     // feed each one through the parser.  parseByte() triggers unpackPvt()
     // internally the moment a valid NAV-PVT frame completes.
@@ -131,6 +133,8 @@ void MAX_M10S::update(SensorStructs::GPS_t& data)
     data.vAcc     = static_cast<float>(_pvt.vAcc)    * 1e-3f;
     data.fix      = static_cast<uint8_t>(_pvt.fixType);
     data.valid    = _pvt.gnssFixOk;
+    data.updated  = true;
+    data.timestamp_us = micros();
 }
 
 // ── Private ───────────────────────────────────────────────────────────────────

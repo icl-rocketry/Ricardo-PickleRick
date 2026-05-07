@@ -62,6 +62,7 @@ void MMC5983MA::update(SensorStructs::MAG_3AXIS_t &data)
     data.mx = corrected_mag[0];
     data.my = corrected_mag[1];
     data.mz = corrected_mag[2];
+    data.timestamp_us = micros();
 
 };
 

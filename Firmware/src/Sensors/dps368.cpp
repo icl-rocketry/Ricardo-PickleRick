@@ -83,6 +83,7 @@ void DPS368::update(SensorStructs::BARO_t& data)
 
     data.temp  = compensateTemperature(rawT);
     data.press = compensatePressure(rawP, _lastTraw_sc);
+    data.timestamp_us = micros();
     
 }
 

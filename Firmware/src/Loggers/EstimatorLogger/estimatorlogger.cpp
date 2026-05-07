@@ -60,7 +60,7 @@ void EstimatorLogger::flushBuffer()
     try
     {
         _file->append(_buffer);
-        _buffer.reserve(EstimatorLogframe::size() * BUFFERED_FRAMES);
+        _buffer.clear();
         _framesBuffered = 0;
     }
     catch (std::exception& e)

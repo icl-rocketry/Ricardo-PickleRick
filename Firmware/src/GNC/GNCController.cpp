@@ -268,6 +268,7 @@ void GNCController::telemetry_impl(packetptr_t packetptr) {
     telemetry.m_cmd_z = m_pd.getMcmd()(2); //get the pitch moment command for telemetry
     telemetry.m_roll_mix = m_pd.getRollMix(); //get the roll mix for telemetry
     telemetry.m_batt = m_pd.getBatteryVoltage(); //get the battery voltage for telemetry
+    
     telemetry.system_time = millis();
 	m_networkmanager.sendPacket(telemetry);
 

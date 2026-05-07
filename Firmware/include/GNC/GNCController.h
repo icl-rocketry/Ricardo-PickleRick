@@ -8,6 +8,7 @@
 #include <librrc/Helpers/nvsstore.h>
 
 #include "Config/services_config.h"
+#include "Config/timing_config.h"
 #include "GNC/ControllerTelemetryPacket.h"
 #include "GNC/PDController.h"
 
@@ -50,8 +51,8 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
         RnpNetworkManager &m_networkmanager;
 
         uint8_t m_serviceID;
-        unsigned long m_previousSampleTime;
-        unsigned long m_actuationDelta = 4; // 0.004 seconds (250 Hz)
+        unsigned long m_previousSampleTime = 0;
+        unsigned long m_actuationDelta = TimingConfig::Controller::ACTUATION_DELTA_MS;
         unsigned long m_controller_start_time;
 
         Eigen::Matrix<float,1, 7> m_input;

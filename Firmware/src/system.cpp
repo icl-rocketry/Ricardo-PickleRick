@@ -21,6 +21,172 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    powermonitor("powermonitor",static_cast<uint8_t>(Services::ID::PowerMonitor), networkmanager)
                    {};
 
+bool System::timerDue(const uint32_t current_time, uint32_t& prev_time, const uint32_t delta)
+{
+    if (prev_time == 0)
+    {
+        prev_time = current_time;
+        return false;
+    }
+
+    if (current_time - prev_time < delta)
+    {
+        return false;
+    }
+
+    prev_time += delta;
+    if (current_time - prev_time >= delta)
+    {
+        prev_time = current_time;
+    }
+
+    return true;
+}
+
+void System::updateSlowSensors(const uint32_t current_time)
+{
+    const auto recordSensorTiming = [](const uint32_t dt,
+                                       uint32_t& count,
+                                       uint64_t& total_time,
+                                       uint32_t& max_time)
+    {
+        count++;
+        total_time += dt;
+        if (dt > max_time)
+        {
+            max_time = dt;
+        }
+    };
+
+    if (timerDue(current_time, prev_gps_update_time, gps_update_delta))
+    {
+        const uint32_t start = micros();
+        sensors.updateGps();
+        recordSensorTiming(micros() - start, gps_update_count, gps_update_time_us, max_gps_update_time_us);
+    }
+    if (timerDue(current_time, prev_baro_update_time, baro_update_delta))
+    {
+        const uint32_t start = micros();
+        sensors.updateBaro();
+        recordSensorTiming(micros() - start, baro_update_count, baro_update_time_us, max_baro_update_time_us);
+    }
+    if (timerDue(current_time, prev_mag_update_time, mag_update_delta))
+    {
+        const uint32_t start = micros();
+        sensors.updateMag();
+        recordSensorTiming(micros() - start, mag_update_count, mag_update_time_us, max_mag_update_time_us);
+    }
+    if (timerDue(current_time, prev_rail_update_time, rail_update_delta))
+    {
+        const uint32_t start = micros();
+        sensors.updateRails();
+        recordSensorTiming(micros() - start, rail_update_count, rail_update_time_us, max_rail_update_time_us);
+    }
+    if (timerDue(current_time, prev_lidar_update_time, lidar_update_delta))
+    {
+        const uint32_t start = micros();
+        sensors.updateLidar();
+        recordSensorTiming(micros() - start, lidar_update_count, lidar_update_time_us, max_lidar_update_time_us);
+    }
+}
+
+void System::reportPerformance()
+{
+    const uint32_t now_ms = millis();
+    if (perf_report_time == 0)
+    {
+        perf_report_time = now_ms;
+        return;
+    }
+
+    if (now_ms - perf_report_time < 1000)
+    {
+        return;
+    }
+
+    const uint32_t avg_fast = fast_path_count ? fast_path_time_us / fast_path_count : 0;
+    const uint32_t avg_sensor_fast = fast_path_count ? sensor_fast_time_us / fast_path_count : 0;
+    const uint32_t avg_estimator = fast_path_count ? estimator_time_us / fast_path_count : 0;
+    const uint32_t avg_slow_sensor = slow_sensor_count ? slow_sensor_time_us / slow_sensor_count : 0;
+    const uint32_t avg_power = power_monitor_count ? power_monitor_time_us / power_monitor_count : 0;
+    const uint32_t avg_log = log_path_count ? log_path_time_us / log_path_count : 0;
+
+    const uint32_t avg_gps = gps_update_count ? gps_update_time_us / gps_update_count : 0;
+    const uint32_t avg_baro = baro_update_count ? baro_update_time_us / baro_update_count : 0;
+    const uint32_t avg_mag = mag_update_count ? mag_update_time_us / mag_update_count : 0;
+    const uint32_t avg_rail = rail_update_count ? rail_update_time_us / rail_update_count : 0;
+    const uint32_t avg_lidar = lidar_update_count ? lidar_update_time_us / lidar_update_count : 0;
+
+    Serial.printf(
+        "PERF hz=%lu fast_avg/max=%lu/%luus imu_avg/max=%lu/%luus ekf_avg/max=%lu/%luus slow_avg/max=%lu/%luus power_avg/max=%lu/%luus log_avg/max=%lu/%luus\n",
+        static_cast<unsigned long>(fast_path_count),
+        static_cast<unsigned long>(avg_fast),
+        static_cast<unsigned long>(max_fast_path_time_us),
+        static_cast<unsigned long>(avg_sensor_fast),
+        static_cast<unsigned long>(max_sensor_fast_time_us),
+        static_cast<unsigned long>(avg_estimator),
+        static_cast<unsigned long>(max_estimator_time_us),
+        static_cast<unsigned long>(avg_slow_sensor),
+        static_cast<unsigned long>(max_slow_sensor_time_us),
+        static_cast<unsigned long>(avg_power),
+        static_cast<unsigned long>(max_power_monitor_time_us),
+        static_cast<unsigned long>(avg_log),
+        static_cast<unsigned long>(max_log_path_time_us)
+    );
+    Serial.printf(
+        "PERF slow gps=%lu avg/max=%lu/%luus baro=%lu avg/max=%lu/%luus mag=%lu avg/max=%lu/%luus rails=%lu avg/max=%lu/%luus lidar=%lu avg/max=%lu/%luus\n",
+        static_cast<unsigned long>(gps_update_count),
+        static_cast<unsigned long>(avg_gps),
+        static_cast<unsigned long>(max_gps_update_time_us),
+        static_cast<unsigned long>(baro_update_count),
+        static_cast<unsigned long>(avg_baro),
+        static_cast<unsigned long>(max_baro_update_time_us),
+        static_cast<unsigned long>(mag_update_count),
+        static_cast<unsigned long>(avg_mag),
+        static_cast<unsigned long>(max_mag_update_time_us),
+        static_cast<unsigned long>(rail_update_count),
+        static_cast<unsigned long>(avg_rail),
+        static_cast<unsigned long>(max_rail_update_time_us),
+        static_cast<unsigned long>(lidar_update_count),
+        static_cast<unsigned long>(avg_lidar),
+        static_cast<unsigned long>(max_lidar_update_time_us)
+    );
+
+    perf_report_time = now_ms;
+    fast_path_count = 0;
+    slow_sensor_count = 0;
+    power_monitor_count = 0;
+    log_path_count = 0;
+    fast_path_time_us = 0;
+    sensor_fast_time_us = 0;
+    estimator_time_us = 0;
+    slow_sensor_time_us = 0;
+    power_monitor_time_us = 0;
+    log_path_time_us = 0;
+    max_fast_path_time_us = 0;
+    max_sensor_fast_time_us = 0;
+    max_estimator_time_us = 0;
+    max_slow_sensor_time_us = 0;
+    max_power_monitor_time_us = 0;
+    max_log_path_time_us = 0;
+
+    gps_update_count = 0;
+    baro_update_count = 0;
+    mag_update_count = 0;
+    rail_update_count = 0;
+    lidar_update_count = 0;
+    gps_update_time_us = 0;
+    baro_update_time_us = 0;
+    mag_update_time_us = 0;
+    rail_update_time_us = 0;
+    lidar_update_time_us = 0;
+    max_gps_update_time_us = 0;
+    max_baro_update_time_us = 0;
+    max_mag_update_time_us = 0;
+    max_rail_update_time_us = 0;
+    max_lidar_update_time_us = 0;
+}
+
 void System::systemSetup()
 {
 
@@ -67,11 +233,94 @@ void System::systemSetup()
 
 void System::systemUpdate()
 {
-    sensors.update();
-    estimator.update(sensors.getData());
-    powermonitor.update();
-    logEstimator();
-    // logTelemetry();
+    const uint32_t current_time = micros();
+
+    if (prev_estimator_update_time == 0)
+    {
+        prev_estimator_update_time = current_time;
+    }
+
+    if (current_time - prev_estimator_update_time >= estimator_update_delta)
+    {
+        const uint32_t fast_start = micros();
+        sensors.updateFast();
+        const uint32_t estimator_start = micros();
+        estimator.update(sensors.getData());
+        const uint32_t fast_end = micros();
+
+        const uint32_t sensor_dt = estimator_start - fast_start;
+        const uint32_t estimator_dt = fast_end - estimator_start;
+        const uint32_t fast_dt = fast_end - fast_start;
+
+        sensor_fast_time_us += sensor_dt;
+        estimator_time_us += estimator_dt;
+        fast_path_time_us += fast_dt;
+        fast_path_count++;
+        if (sensor_dt > max_sensor_fast_time_us)
+        {
+            max_sensor_fast_time_us = sensor_dt;
+        }
+        if (estimator_dt > max_estimator_time_us)
+        {
+            max_estimator_time_us = estimator_dt;
+        }
+        if (fast_dt > max_fast_path_time_us)
+        {
+            max_fast_path_time_us = fast_dt;
+        }
+
+        prev_estimator_update_time += estimator_update_delta;
+        if (current_time - prev_estimator_update_time >= estimator_update_delta)
+        {
+            prev_estimator_update_time = current_time;
+        }
+    }
+
+    const uint32_t slow_start = micros();
+    updateSlowSensors(current_time);
+    const uint32_t slow_dt = micros() - slow_start;
+    slow_sensor_time_us += slow_dt;
+    slow_sensor_count++;
+    if (slow_dt > max_slow_sensor_time_us)
+    {
+        max_slow_sensor_time_us = slow_dt;
+    }
+
+    // Keep power-monitor CAN requests disabled until CAN is explicitly re-enabled
+    // in configureNetwork(); otherwise networkmanager logs invalid-interface errors.
+    if (current_time - prev_power_monitor_update_time >= power_monitor_update_delta)
+    {
+        const uint32_t power_start = micros();
+        powermonitor.update();
+        const uint32_t power_dt = micros() - power_start;
+        power_monitor_time_us += power_dt;
+        power_monitor_count++;
+        if (power_dt > max_power_monitor_time_us)
+        {
+            max_power_monitor_time_us = power_dt;
+        }
+
+        prev_power_monitor_update_time += power_monitor_update_delta;
+        if (current_time - prev_power_monitor_update_time >= power_monitor_update_delta)
+        {
+            prev_power_monitor_update_time = current_time;
+        }
+    }
+
+    {
+        const uint32_t log_start = micros();
+        logEstimator();
+        const uint32_t log_dt = micros() - log_start;
+        log_path_time_us += log_dt;
+        log_path_count++;
+        if (log_dt > max_log_path_time_us)
+        {
+            max_log_path_time_us = log_dt;
+        }
+    }
+    //logTelemetry();
+
+    reportPerformance();
 };
 
 void System::setupSPI()
@@ -211,6 +460,12 @@ void System::initializeLoggers()
 void System::logEstimator()
 {
     const uint32_t current_time = micros();
+
+    if (prev_estimator_log_time == 0)
+    {
+        prev_estimator_log_time = current_time;
+    }
+
     if (current_time - prev_estimator_log_time >= estimator_log_delta)
     {
         const SensorStructs::state_t& state = estimator.getData();
@@ -233,7 +488,11 @@ void System::logEstimator()
 
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::ESTIMATOR>(logframe);
 
-        prev_estimator_log_time = current_time;
+        prev_estimator_log_time += estimator_log_delta;
+        if (current_time - prev_estimator_log_time >= estimator_log_delta)
+        {
+            prev_estimator_log_time = current_time;
+        }
     }
 }
 

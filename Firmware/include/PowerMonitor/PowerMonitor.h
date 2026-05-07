@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include "Config/timing_config.h"
 #include "librrc/Remote/nrcremotebase.h"
 
 struct PowerMonitorData
@@ -40,6 +41,6 @@ private:
     static constexpr uint8_t LMQ_COMMAND_SERVICE = 2;
     static constexpr uint8_t LMQ_TELEM_COMMAND = 4;
 
-    static constexpr uint32_t REQUEST_PERIOD_MS = 500;
-    static constexpr uint32_t FRESH_TIMEOUT_MS = 1000;
+    static constexpr uint32_t REQUEST_PERIOD_MS = TimingConfig::PowerMonitor::REQUEST_PERIOD_MS; 
+    static constexpr uint32_t FRESH_TIMEOUT_MS = TimingConfig::PowerMonitor::FRESH_TIMEOUT_MS; 
 };

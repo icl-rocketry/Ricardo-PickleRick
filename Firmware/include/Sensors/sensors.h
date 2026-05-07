@@ -32,6 +32,13 @@ public:
 
     void setup(JsonObjectConst config);
     void update();
+    void updateFast();
+    void updateSlow();
+    void updateGps();
+    void updateBaro();
+    void updateMag();
+    void updateRails();
+    void updateLidar();
 
     /**
      * @brief Get the Raw Sensor Data
@@ -68,7 +75,8 @@ private:
     void hitlHandler(std::unique_ptr<RnpPacketSerialized> packet_ptr);
     void hitlCommandHandler(RnpPacketSerialized& packet);
     bool _hitlEnabled;
-
+    uint8_t _slowSensorIndex = 0;
+    bool hitlEnabled(); //helper function for the hitl
     void hitlUpdateSensorError(uint8_t sensor_state,SYSTEM_FLAG flag);
 
 };

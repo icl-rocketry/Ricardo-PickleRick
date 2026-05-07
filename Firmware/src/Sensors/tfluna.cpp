@@ -37,6 +37,7 @@ void TFLuna::update(SensorStructs::LIDAR_t& data)
     data.temp  = static_cast<float>(rawTemp) * 0.01f;
 
     data.valid = (data.amp >= AMP_MIN) && (data.amp != AMP_OVEREXPOSURE);
+    data.timestamp_us = micros();
 }
 
 bool TFLuna::readRegisters(uint8_t reg, uint8_t* buf, uint8_t len)

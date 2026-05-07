@@ -3,6 +3,8 @@
 definition of structs used within sensor classes
 */
 
+#include <cstdint>
+
 #include <Eigen/Core>
 #include <Eigen/Eigen>
 #include <Eigen/Geometry>
@@ -33,11 +35,13 @@ namespace SensorStructs
         float mz; // (normalised to 1 when calibrated)
 
         float temp;
+        uint32_t timestamp_us{0};
     };
     
     struct BARO_t{
         float temp;     // Kelvin
         float press;    // Pa
+        uint32_t timestamp_us{0};
     };
     
     struct GPS_t{
@@ -58,6 +62,7 @@ namespace SensorStructs
         uint8_t fix;            // gps fix type
         bool    updated;        // flag if gps values have been updated
         bool    valid;
+        uint32_t timestamp_us{0};
     };
 
     struct ADC_V_RAIL_t{
@@ -80,6 +85,7 @@ namespace SensorStructs
         uint16_t amp;   // signal strength (unreliable if < 100 or == 65535)
         float    temp;  // degrees Celsius
         bool     valid; // true when amp is in reliable range
+        uint32_t timestamp_us{0};
     };
 
     struct raw_measurements_t

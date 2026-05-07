@@ -10,19 +10,19 @@ void PDController::setup()
     m_thrust_dir_world_des << 1.0f, 0.0f, 0.0f;
 
     m_rEng << -0.23f, -0.005f, 0.003f;
-    m_mass = 1.19f;
+    m_mass = 1.35f;
 
     m_K_p << 0.0f, 2.0f, 1.5f; 
     m_K_d << 7.0f, 0.45f, 0.5f;
 
-    m_K_p_pos << 0.0f, 1.0f, 1.0f;   // x is "up"; start with vertical off
-    m_K_d_pos << 2.0f, 1.5f, 1.5f;
-    m_K_i_pos << 0.5f, 0.3f, 0.3f;
+    m_K_p_pos << 0.0f, 0.0f, 0.0f;   // x is "up"; start with vertical off
+    m_K_d_pos << 0.0f, 0.0f, 0.0f;
+    m_K_i_pos << 0.0f, 0.0f, 0.0f;
 
     m_pos_int.setZero();
     m_pos_des << 0.0f, 0.0f, 0.0f;  // need new function to set this externally if you want to move around
-    m_max_vel       = 2.0f;                  // m/s — conservative
-    m_max_tilt_rad  = 15.0f * M_PI / 180.0f; // 20° max tilt command
+    m_max_vel       = 1.0f;                  // m/s — conservative
+    m_max_tilt_rad  = 15.0f * M_PI / 180.0f; // 15° max tilt command
     m_last_update_us = 0;
 
     m_position_control_enabled = false;      // arm explicitly
@@ -215,7 +215,7 @@ void PDController::updateOutputValues()
 
     pitch_servo = 0.0;//std::clamp(pitch_servo, -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
     yaw_servo   = 0.0;//std::clamp(yaw_servo,   -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
-    base_thrust = 10.0;//std::clamp(base_thrust, 0.0f, 100.0f);
+    base_thrust = 0.0;//std::clamp(base_thrust, 0.0f, 100.0f);
 
     //_--------ROLL CONTROL-----------------
     // Roll-rate damping via differential prop throttle.

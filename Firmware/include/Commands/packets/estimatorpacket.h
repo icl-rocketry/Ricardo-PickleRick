@@ -12,6 +12,14 @@ class EstimatorPacket : public RnpPacket{
         {
             auto ret = RnpSerializer(
 
+                &EstimatorPacket::pos_n,
+                &EstimatorPacket::pos_e,
+                &EstimatorPacket::pos_d,
+        
+                &EstimatorPacket::vel_n,
+                &EstimatorPacket::vel_e,
+                &EstimatorPacket::vel_d,
+
                 &EstimatorPacket::q0,
                 &EstimatorPacket::q1,
                 &EstimatorPacket::q2,
@@ -85,7 +93,6 @@ class EstimatorPacket : public RnpPacket{
                 &EstimatorPacket::system_status,
                 &EstimatorPacket::system_time
                 
-
                
             );
             return ret;

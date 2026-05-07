@@ -2,7 +2,6 @@
 
 Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus)
     : m_systemstatus(systemstatus),
-      m_update_frequency(2000),  // 500Hz update
       m_homeSet(false),
       m_refOrientation(1.0, 0.0, 0.0, 0.0),
       m_ekf(),
@@ -11,13 +10,13 @@ Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus)
 
 void Estimator::setup()
 {
-    m_accel_lpf_x.setup(ESTIMATOR_RATE_HZ, ACCEL_CUTOFF_HZ); 
-    m_accel_lpf_y.setup(ESTIMATOR_RATE_HZ, ACCEL_CUTOFF_HZ);
-    m_accel_lpf_z.setup(ESTIMATOR_RATE_HZ, ACCEL_CUTOFF_HZ);
+    m_accel_lpf_x.setup(TimingConfig::Estimator::FILTER_SAMPLE_RATE_HZ, TimingConfig::Estimator::ACCEL_CUTOFF_HZ); 
+    m_accel_lpf_y.setup(TimingConfig::Estimator::FILTER_SAMPLE_RATE_HZ, TimingConfig::Estimator::ACCEL_CUTOFF_HZ);
+    m_accel_lpf_z.setup(TimingConfig::Estimator::FILTER_SAMPLE_RATE_HZ, TimingConfig::Estimator::ACCEL_CUTOFF_HZ);
 
-    m_gyro_lpf_x.setup(ESTIMATOR_RATE_HZ, GYRO_CUTOFF_HZ);
-    m_gyro_lpf_y.setup(ESTIMATOR_RATE_HZ, GYRO_CUTOFF_HZ);
-    m_gyro_lpf_z.setup(ESTIMATOR_RATE_HZ, GYRO_CUTOFF_HZ);
+    m_gyro_lpf_x.setup(TimingConfig::Estimator::FILTER_SAMPLE_RATE_HZ, TimingConfig::Estimator::GYRO_CUTOFF_HZ);
+    m_gyro_lpf_y.setup(TimingConfig::Estimator::FILTER_SAMPLE_RATE_HZ, TimingConfig::Estimator::GYRO_CUTOFF_HZ);
+    m_gyro_lpf_z.setup(TimingConfig::Estimator::FILTER_SAMPLE_RATE_HZ, TimingConfig::Estimator::GYRO_CUTOFF_HZ);
 
     m_calibrating = false;
     m_settingHome = false;
@@ -34,7 +33,7 @@ void Estimator::setup()
 void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 {
     if (m_calibrating) {
-        if (m_calibrator.getNumberOfCalibrationMeasurements() >= 10 * 500) {
+        if (m_calibrator.getNumberOfCalibrationMeasurements() >= TimingConfig::Estimator::CALIBRATION_SAMPLE_COUNT) {
             m_calibrator.computeCalibration();
             m_ekf.setup(
                 m_calibrator.getGyroBiases(),
@@ -47,7 +46,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             m_calibrator.updateCalibration(raw_sensors);
         }
     } else if (m_settingHome) {
-        if (m_calibrator.getNumberOfSetHomeMeasurements() >= 3 * 500) {
+        if (m_calibrator.getNumberOfSetHomeMeasurements() >= TimingConfig::Estimator::SET_HOME_SAMPLE_COUNT) {
             m_calibrator.computeSetHome();
             m_ekf.setHome(
                 m_calibrator.getSetHomeRef()
@@ -104,16 +103,13 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             gyro_filt,
             accel_filt,
             high_g_raw,
-            Eigen::Vector3f(raw_sensors.mag.mx, raw_sensors.mag.my, raw_sensors.mag.mz),
-            raw_sensors.baro.press,
-            raw_sensors.baro.temp,
+            raw_sensors.mag,
+            raw_sensors.baro,
             raw_sensors.gps,
             raw_sensors.lidar
         );
     }
     updateState();
-
-
 };
 
 void Estimator::calibrate()

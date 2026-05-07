@@ -8,12 +8,12 @@
 
 #include "Config/types.h"
 #include "Config/systemflags_config.h"
+#include "Config/timing_config.h"
 #include "Sensors/sensors.h"
 #include "Sensors/sensorStructs.h"
 
 #include "Estimator/ekf.h"
 #include "Estimator/calibrator.h"
-#include "Filters/butterworth2_lowpass.h"
 #include "Filters/first_order_lowpass.h"
 
 enum class ESTIMATOR_STATE: uint8_t{
@@ -47,9 +47,6 @@ class Estimator{
         Types::CoreTypes::SystemStatus_t& m_systemstatus;
         SensorStructs::state_t m_state;
 
-        unsigned long m_last_update;
-        unsigned long m_update_frequency;
-
         bool m_homeSet;        
         bool m_settingHome; 
         bool m_calibrating;
@@ -58,12 +55,6 @@ class Estimator{
         EKF m_ekf;    
         Calibrator m_calibrator;
         
-         // Filter settings
-        static constexpr float ESTIMATOR_RATE_HZ  = 500.0f;  // <-- match your estimator rate as this is the sampling frequency of the filter
-        static constexpr float ACCEL_CUTOFF_HZ    = 30.0f; //
-        static constexpr float GYRO_CUTOFF_HZ     = 47.0f;
-    
-
         FirstOrderLowpass  m_accel_lpf_x;
         FirstOrderLowpass  m_accel_lpf_y;
         FirstOrderLowpass  m_accel_lpf_z;
@@ -74,5 +65,4 @@ class Estimator{
 
         void updateState();
 };
-
 

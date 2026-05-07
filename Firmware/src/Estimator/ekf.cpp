@@ -1,4 +1,30 @@
 #include "Estimator/ekf.h"
+#include "Config/timing_config.h"
+
+namespace
+{
+    bool timerDue(const uint32_t now, uint32_t& previous, const uint32_t period) //decides whether an update should be made
+    {
+        if (previous == 0)
+        {
+            previous = now;
+            return false;
+        }
+
+        if (now - previous < period)
+        {
+            return false;
+        }
+
+        previous += period;
+        if (now - previous >= period)
+        {
+            previous = now;
+        }
+
+        return true;
+    }
+}
 
 void EKF::setup(const Eigen::Vector3f& gyro_bias, 
                 const Eigen::Vector3f& accel_bias, 
@@ -16,6 +42,19 @@ void EKF::setup(const Eigen::Vector3f& gyro_bias,
     m_x.segment<3>(13) = gyro_bias;
     m_h_accel_bias  = h_accel_bias;
     m_mag_ref       = mag_ref;
+    m_lastPredictTime = 0;
+    m_lastCovarianceUpdateTime = 0;
+    m_lastAccelCorrectionTime = 0;
+    m_lastMagCorrectionTime = 0;
+    m_lastBaroCorrectionTime = 0;
+    m_lastGpsCorrectionTime = 0;
+    m_lastLidarCorrectionTime = 0;
+    m_lastMagMeasurementTime = 0;
+    m_lastBaroMeasurementTime = 0;
+    m_lastGpsMeasurementTime = 0;
+    m_lastLidarMeasurementTime = 0;
+    m_covariancePredictDt = 0.0f;
+    m_nextCorrectionIndex = 0;
 
     // Initial covariance — large uncertainty on everything except quaternion
     m_P.setZero();
@@ -36,9 +75,8 @@ void EKF::setup(const Eigen::Vector3f& gyro_bias,
 void EKF::update(   const Eigen::Vector3f         gyro,
                     const Eigen::Vector3f         accel,
                     const Eigen::Vector3f         h_accel,
-                    const Eigen::Vector3f         mag,
-                    const float                   pressure,
-                    const float                   temperature,
+                    const SensorStructs::MAG_3AXIS_t& mag,
+                    const SensorStructs::BARO_t&  baro,
                     const SensorStructs::GPS_t&   gps,
                     const SensorStructs::LIDAR_t& lidar
                 )
@@ -50,18 +88,23 @@ void EKF::update(   const Eigen::Vector3f         gyro,
     m_lastPredictTime = now;
     
     if (dt <= 0.0f || dt > 0.5f) { return; }  // sanity check — skip bad dt
-    
-    predict(dt, gyro, accel, h_accel);
 
-    updateMag(mag);
+    m_covariancePredictDt += dt;
+    const bool propagate_covariance = timerDue(now, m_lastCovarianceUpdateTime, TimingConfig::EKF::COVARIANCE_UPDATE_DELTA_US);
+    const float covariance_dt = propagate_covariance ? m_covariancePredictDt : dt;
+    if (propagate_covariance)
+    {
+        m_covariancePredictDt = 0.0f;
+    }
 
-    updateLowGAccel(accel);
+    predict(dt, covariance_dt, propagate_covariance, gyro, accel, h_accel);
 
-    updateBaro(pressure, temperature);
+    if (propagate_covariance)
+    {
+        return;
+    }
 
-    updateGPS(gps);
-
-    updateLidar(lidar);
+    runScheduledCorrection(now, accel, mag, baro, gps, lidar);
 }
 
 void EKF::setHome(const SensorStructs::home_ref_t& setHome_ref) 
@@ -70,7 +113,9 @@ void EKF::setHome(const SensorStructs::home_ref_t& setHome_ref)
     m_x.segment<6>(0).setZero();
 };
 
-void EKF::predict(  const float dt, 
+void EKF::predict(  const float nominal_dt,
+                    const float covariance_dt,
+                    const bool propagate_covariance,
                     const Eigen::Vector3f gyro, 
                     const Eigen::Vector3f accel, 
                     const Eigen::Vector3f h_accel
@@ -104,31 +149,16 @@ void EKF::predict(  const float dt,
     if (w_norm > 1e-9f)
     {
         // exp((dt/2)*omega) [dont need i from e^ix = cosx + isinx for weird maths reasons]
-        F_qq =  std::cos(0.5f * w_norm * dt) * Mat4::Identity()
-              + std::sin(0.5f * w_norm * dt) * (Omega / w_norm);
+        F_qq =  std::cos(0.5f * w_norm * nominal_dt) * Mat4::Identity()
+              + std::sin(0.5f * w_norm * nominal_dt) * (Omega / w_norm);
     }
     else // to avoid the /0
     {
-        F_qq = Mat4::Identity() + 0.5f * dt * Omega;
+        F_qq = Mat4::Identity() + 0.5f * nominal_dt * Omega;
     }
         
     m_x.segment<4>(6) = F_qq * q;
     m_x.segment<4>(6).normalize();
-
-    // ── Attitude process noise ──────────────────────────────────────────────────
-
-    // jacobian of prediction wrt angular rates
-    Mat43 E_q;
-    E_q << -q1, -q2, -q3,
-            q0, -q3,  q2,
-            q3,  q0, -q1,
-           -q2,  q1,  q0;
-    
-    const Eigen::Matrix<float, 4, 3> G_w = 0.5f * dt * E_q;
-    m_Q_att = G_w *
-              SIGMA_ALPHA.cwiseProduct(SIGMA_ALPHA).asDiagonal() *
-              G_w.transpose();
-           
 
     // ── Translation update ───────────────────────────────────────────────────────
 
@@ -150,10 +180,44 @@ void EKF::predict(  const float dt,
     const Eigen::Vector3f g_ned(0.0f, 0.0f, -g);
 
     const Eigen::Vector3f a_ned = R_body_to_ned * (m_acceleration) - g_ned;
+    const float nominal_dt2 = nominal_dt * nominal_dt;
+
+    m_x.segment<3>(0) += m_x.segment<3>(3) * nominal_dt + 0.5f * a_ned * nominal_dt2;  
+    m_x.segment<3>(3) += a_ned * nominal_dt; 
+
+    if (!propagate_covariance)
+    {
+        return;
+    }
+
+    const float dt = covariance_dt;
     const float dt2 = dt * dt;
 
-    m_x.segment<3>(0) += m_x.segment<3>(3) * dt + 0.5f * a_ned * dt2;  
-    m_x.segment<3>(3) += a_ned * dt; 
+    Mat4 F_qq_cov;
+    if (w_norm > 1e-9f)
+    {
+        F_qq_cov =  std::cos(0.5f * w_norm * dt) * Mat4::Identity()
+                 + std::sin(0.5f * w_norm * dt) * (Omega / w_norm);
+    }
+    else
+    {
+        F_qq_cov = Mat4::Identity() + 0.5f * dt * Omega;
+    }
+
+    // ── Attitude process noise ──────────────────────────────────────────────────
+
+    // jacobian of prediction wrt angular rates
+    Mat43 E_q;
+    E_q << -q1, -q2, -q3,
+            q0, -q3,  q2,
+            q3,  q0, -q1,
+           -q2,  q1,  q0;
+    
+    const Eigen::Matrix<float, 4, 3> G_w = 0.5f * dt * E_q;
+    m_Q_att = G_w *
+              SIGMA_ALPHA.cwiseProduct(SIGMA_ALPHA).asDiagonal() *
+              G_w.transpose();
+           
 
     // ── Translation process noise ────────────────────────────────────────────────
 
@@ -174,14 +238,14 @@ void EKF::predict(  const float dt,
     // ── Full F and Q matrices (16×16) ─────────────────────────────────────────
     m_F.setZero();
     m_F.block<3,3>(0,0)   = I3;
-    m_F.block<3,3>(0,3)   = dt * I3;   // position depends on velocity
-    m_F.block<3,3>(3,3)   = I3;        // velocity integrates
-    m_F.block<4,4>(6,6)   = F_qq;      // attitude
-    m_F.block<3,3>(10,10) = I3;        // accel bias
-    m_F.block<3,3>(13,13) = I3;        // gyro bias
-    m_F.block<4,3>(6,13)  = -G_w;      // gyro bias cross term
-    m_F.block<3,3>(3,10) = -R_body_to_ned * dt;
-    m_F.block<3,3>(0,10) = -0.5f * R_body_to_ned * dt2;
+    m_F.block<3,3>(0,3)   = dt * I3;       // position depends on velocity
+    m_F.block<3,3>(3,3)   = I3;            // velocity integrates
+    m_F.block<4,4>(6,6)   = F_qq_cov;      // attitude
+    m_F.block<3,3>(10,10) = I3;            // accel bias
+    m_F.block<3,3>(13,13) = I3;            // gyro bias
+    m_F.block<4,3>(6,13)  = -G_w;          // gyro bias cross term
+    m_F.block<3,3>(3,10)  = -R_body_to_ned * dt;
+    m_F.block<3,3>(0,10)  = -0.5f * R_body_to_ned * dt2;
 
     m_Q.setZero();
     m_Q.block<6,6>(0,0)   = m_Q_trans;
@@ -250,6 +314,74 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
         m_x.segment<4>(6) = q_new;
     }
 
+}
+
+void EKF::runScheduledCorrection(const uint32_t now,
+                                 const Eigen::Vector3f& accel,
+                                 const SensorStructs::MAG_3AXIS_t& mag,
+                                 const SensorStructs::BARO_t& baro,
+                                 const SensorStructs::GPS_t& gps,
+                                 const SensorStructs::LIDAR_t& lidar)
+{
+    for (uint8_t i = 0; i < 5; i++)
+    {
+        const uint8_t correction = m_nextCorrectionIndex;
+        m_nextCorrectionIndex = (m_nextCorrectionIndex + 1) % 5;
+
+        switch (correction)
+        {
+            case 0:
+                if (timerDue(now, m_lastAccelCorrectionTime, TimingConfig::EKF::ACCEL_CORRECTION_DELTA_US))
+                {
+                    updateLowGAccel(accel);
+                    return;
+                }
+                break;
+            case 1:
+                if (mag.timestamp_us != 0 &&
+                    mag.timestamp_us != m_lastMagMeasurementTime &&
+                    timerDue(now, m_lastMagCorrectionTime, TimingConfig::EKF::MAG_CORRECTION_DELTA_US))
+                {
+                    updateMag(Eigen::Vector3f(mag.mx, mag.my, mag.mz));
+                    m_lastMagMeasurementTime = mag.timestamp_us;
+                    return;
+                }
+                break;
+            case 2:
+                if (baro.timestamp_us != 0 &&
+                    baro.timestamp_us != m_lastBaroMeasurementTime &&
+                    timerDue(now, m_lastBaroCorrectionTime, TimingConfig::EKF::BARO_CORRECTION_DELTA_US))
+                {
+                    updateBaro(baro.press, baro.temp);
+                    m_lastBaroMeasurementTime = baro.timestamp_us;
+                    return;
+                }
+                break;
+            case 3:
+                if (gps.updated &&
+                    gps.timestamp_us != 0 &&
+                    gps.timestamp_us != m_lastGpsMeasurementTime &&
+                    timerDue(now, m_lastGpsCorrectionTime, TimingConfig::EKF::GPS_CORRECTION_DELTA_US))
+                {
+                    updateGPS(gps);
+                    m_lastGpsMeasurementTime = gps.timestamp_us;
+                    return;
+                }
+                break;
+            case 4:
+                if (lidar.timestamp_us != 0 &&
+                    lidar.timestamp_us != m_lastLidarMeasurementTime &&
+                    timerDue(now, m_lastLidarCorrectionTime, TimingConfig::EKF::LIDAR_CORRECTION_DELTA_US))
+                {
+                    updateLidar(lidar);
+                    m_lastLidarMeasurementTime = lidar.timestamp_us;
+                    return;
+                }
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
