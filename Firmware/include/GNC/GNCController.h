@@ -29,6 +29,15 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
                                const Eigen::Vector3f& acceleration = Eigen::Vector3f::Zero());
         void setPositionControlEnabled(bool enabled);
         unsigned long getStartTime() { return m_controller_start_time; };
+        float getBatteryVoltage() const { return m_pd.getBatteryVoltage(); }
+        float getVoltageScale() const { return m_pd.getVoltageScale(); }
+        float getCommandedThrustTop() const { return m_output(2); }
+        float getCommandedThrustBottom() const { return m_output(3); }
+        float getFxCmd() const { return m_pd.getFxCmd(); }
+        float getFxCmdOuter() const { return m_pd.getFxCmdOuter(); }
+        bool getPositionControlEnabled() const { return m_pd.getPositionControlEnabled(); }
+        Eigen::Vector3f getPositionError() { return m_pd.getPositionError(); }
+        Eigen::Vector3f getVelocityError() { return m_pd.getVelocityError(); }
         void update(Eigen::Quaterniond q, 
                     Eigen::Vector3f angular_rates, 
                     Eigen::Vector3f position, 

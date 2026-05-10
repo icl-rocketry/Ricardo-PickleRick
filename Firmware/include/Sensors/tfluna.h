@@ -26,6 +26,10 @@ private:
     TwoWire&                          _wire;
     Types::CoreTypes::SystemStatus_t& _systemstatus;
     uint8_t                           _address;
+    bool                              _setup_ok{false};
+    uint32_t                          _read_fail_count{0};
+    uint32_t                          _last_read_fail_log_ms{0};
+    uint32_t                          _last_read_ok_log_ms{0};
 
     static constexpr uint8_t  TF_LUNA_I2C_ADDR = 0x10;
 

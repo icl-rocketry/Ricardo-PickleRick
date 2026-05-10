@@ -128,7 +128,7 @@ namespace SensorStructs
         Eigen::Vector3f angularRates;           // (rad/s)                              (Body)
         Eigen::Vector3f eulerAngles;            // (rad) (roll pitch yaw)
         
-        Eigen::Quaternionf rocketOrientation;   // (quaternion)                         (NED to Rocket)
+        Eigen::Quaternionf rocketOrientation;   // (quaternion)                         
         Eigen::Vector3f rocketEulerAngles;      // (rad) (roll pitch yaw)
 
         Eigen::Vector3f position;               // (m) relative to callibration site    (NED)

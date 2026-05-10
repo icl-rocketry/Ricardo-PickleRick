@@ -318,9 +318,9 @@ void System::systemUpdate()
             max_log_path_time_us = log_dt;
         }
     }
-    //logTelemetry();
+    logTelemetry();
 
-    reportPerformance();
+    //reportPerformance();
 };
 
 void System::setupSPI()
@@ -444,6 +444,7 @@ void System::initializeLoggers()
     std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END));
     std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50); 
     std::unique_ptr<WrappedFile> estimatorlogfile = primarysd.open(log_directory_path + "/estimatorlog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),10);
+    std::unique_ptr<WrappedFile> controllerlogfile = primarysd.open(log_directory_path + "/controller.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),10);
     
     // intialize sys logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(std::move(syslogfile),networkmanager);
@@ -453,6 +454,9 @@ void System::initializeLoggers()
 
     //initialize estimator logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::ESTIMATOR>().initialize(std::move(estimatorlogfile));
+
+    //initialize controller logger
+    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::CONTROLLER>().initialize(std::move(controllerlogfile));
 
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("SD Init Complete");
 }
@@ -485,6 +489,21 @@ void System::logEstimator()
         logframe.filtered_gx           = state.filteredGyro(0);
         logframe.filtered_gy           = state.filteredGyro(1);
         logframe.filtered_gz           = state.filteredGyro(2);
+        logframe.controller_batt_V     = controller.getBatteryVoltage();
+        logframe.controller_voltage_scale = controller.getVoltageScale();
+        logframe.controller_thrust_top_cmd = controller.getCommandedThrustTop();
+        logframe.controller_thrust_bottom_cmd = controller.getCommandedThrustBottom();
+        logframe.controller_fx_cmd = controller.getFxCmd();
+        logframe.controller_fx_cmd_outer = controller.getFxCmdOuter();
+        logframe.controller_position_control_enabled = controller.getPositionControlEnabled() ? 1 : 0;
+        const Eigen::Vector3f controller_pos_err = controller.getPositionError();
+        const Eigen::Vector3f controller_vel_err = controller.getVelocityError();
+        logframe.controller_pos_err_x = controller_pos_err(0);
+        logframe.controller_pos_err_y = controller_pos_err(1);
+        logframe.controller_pos_err_z = controller_pos_err(2);
+        logframe.controller_vel_err_x = controller_vel_err(0);
+        logframe.controller_vel_err_y = controller_vel_err(1);
+        logframe.controller_vel_err_z = controller_vel_err(2);
 
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::ESTIMATOR>(logframe);
 

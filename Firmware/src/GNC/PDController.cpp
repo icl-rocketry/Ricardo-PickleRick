@@ -5,29 +5,33 @@
 void PDController::setup()
 {
     // Desired thrust direction in WORLD frame
-    // Example: point straight up in world-x if that is your vertical axis.
     // Change this to match your world convention.
-    m_thrust_dir_world_des << 1.0f, 0.0f, 0.0f;
+    m_thrust_dir_world_des << 0.0f, 0.0f, -1.0f;
 
-    m_rEng << -0.23f, -0.005f, 0.003f;
+    // m_rEng is COM -> thrust centre in body frame (m). Tune ry/rz for attitude-only lateral drift:
+    // with rx < 0, negative body-y drift -> make ry more negative; positive body-y drift -> make ry more positive.
+    // negative body-z drift -> make rz more negative; positive body-z drift -> make rz more positive.
+    m_rEng << -0.235f, 0.0005f, 0.0063f; //centre of mass to center of thrust in body frame
     m_mass = 1.35f;
 
-    m_K_p << 0.0f, 2.0f, 1.5f; 
+    m_K_p << 0.0f, 2.0f, 1.5f; // attitude body control gains (roll, pitch, yaw)
     m_K_d << 7.0f, 0.45f, 0.5f;
 
-    m_K_p_pos << 0.0f, 0.0f, 0.0f;   // x is "up"; start with vertical off
-    m_K_d_pos << 0.0f, 0.0f, 0.0f;
-    m_K_i_pos << 0.0f, 0.0f, 0.0f;
+    m_K_p_pos << 0.5f, 0.5f, 0.5f;   // NED position control gains
+    m_K_d_pos << 1.5f, 1.5f, 1.1f;
+    m_K_i_pos << 0.0f, 0.0f, 0.05f;
 
     m_pos_int.setZero();
     m_pos_des << 0.0f, 0.0f, 0.0f;  // need new function to set this externally if you want to move around
     m_vel_des.setZero();
     m_acc_des.setZero();
+    m_pos_err_dbg.setZero();
+    m_vel_err_dbg.setZero();
     m_max_vel       = 1.0f;                  // m/s — conservative
     m_max_tilt_rad  = 15.0f * M_PI / 180.0f; // 15° max tilt command
     m_last_update_us = 0;
 
-    m_position_control_enabled = false;      // arm explicitly
+    m_position_control_enabled = true;      // arm explicitly
     m_Fx_cmd_outer  = NOMINAL_FX_N;
 }
 
@@ -51,8 +55,8 @@ void PDController::setPositionControlEnabled(bool enabled)
 
 void PDController::update(Eigen::Quaterniond q, 
                           Eigen::Vector3f angular_rates, 
-                          Eigen::Vector3f position, 
-                          Eigen::Vector3f velocity,
+                          Eigen::Vector3f position, //NED
+                          Eigen::Vector3f velocity, //NED
                           float batt_V, bool batt_fresh)
 {
     m_batt_V = batt_V;
@@ -73,6 +77,9 @@ void PDController::reset()
     m_M_cmd          << 0.0f, 0.0f, 0.0f;
     m_output_values  << 0.0f, 0.0f, 0.0f, 0.0f;
     m_Fx_cmd         = 0.0f;
+    m_voltage_scale  = 1.0f;
+    m_pos_err_dbg.setZero();
+    m_vel_err_dbg.setZero();
 }
 
 void PDController::updatePositionControl(const Eigen::Vector3f& position,
@@ -97,7 +104,7 @@ void PDController::updatePositionControl(const Eigen::Vector3f& position,
     if (!m_position_control_enabled) {
 
         m_pos_int.setZero();
-        m_thrust_dir_world_des << 1.0f, 0.0f, 0.0f;   // +X up
+        m_thrust_dir_world_des << 0.0f, 0.0f, -1.0f;   // -Z is up in World Frame 
         m_Fx_cmd_outer = NOMINAL_FX_N;
         return;
 
@@ -120,32 +127,35 @@ void PDController::updatePositionControl(const Eigen::Vector3f& position,
     + m_K_i_pos.cwiseProduct(m_pos_int)
     + m_K_d_pos.cwiseProduct(vel_err);
 
-    // Gravity compensation: +X is up
-    a_des += Eigen::Vector3f(GRAVITY, 0.0f, 0.0f);
+    // Gravity compensation: -Z is up
+    a_des += Eigen::Vector3f(0.0f, 0.0f, -GRAVITY);
 
     // ── Convert acceleration command to thrust vector ────────────────────
     Eigen::Vector3f F_des_world = m_mass * a_des;
     float F_mag = F_des_world.norm();
 
     if (F_mag < 1e-3f) {
-        m_thrust_dir_world_des << 1.0f, 0.0f, 0.0f;
+        m_thrust_dir_world_des << 0.0f, 0.0f, -1.0f;
         m_Fx_cmd_outer = 0.0f;
     } else {
         Eigen::Vector3f dir = F_des_world / F_mag;
 
-        // Tilt limit relative to +X up
-        const float cos_tilt = dir(0);
+        const float cos_tilt = -dir(2);
         const float cos_max  = std::cos(m_max_tilt_rad);
 
         if (cos_tilt < cos_max) {
-        Eigen::Vector3f horiz(0.0f, dir(1), dir(2));
+        Eigen::Vector3f horiz(dir(0), dir(1), 0.0f);
         const float h_norm = horiz.norm();
 
         if (h_norm > 1e-6f) {
         horiz *= std::sin(m_max_tilt_rad) / h_norm;
         }
+        else
+        {
+            horiz.setZero();
+        }
 
-        dir << std::cos(m_max_tilt_rad), horiz(1), horiz(2);
+        dir << horiz(0), horiz(1), -std::cos(m_max_tilt_rad);
         dir.normalize();
         }
 
@@ -170,7 +180,7 @@ void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
     // Desired thrust direction in WORLD frame
     Eigen::Vector3d thrust_dir_world_des = m_thrust_dir_world_des.cast<double>();
     if (thrust_dir_world_des.norm() < 1e-6) {
-        thrust_dir_world_des << 1.0, 0.0, 0.0;
+        thrust_dir_world_des << 0.0, 0.0, -1.0;
     }
     thrust_dir_world_des.normalize();
 
@@ -202,7 +212,8 @@ void PDController::updateDesiredForce(const Eigen::Quaterniond& q)
     const float cos_tilt = std::clamp(std::sqrt(1.0f - sin_tilt * sin_tilt), 0.5f, 1.0f);
 
     const float Fx_target = m_position_control_enabled ? m_Fx_cmd_outer : NOMINAL_FX_N;
-    m_Fx_cmd = std::clamp(Fx_target / cos_tilt, 0.0f, MAX_THRUST_N);
+   // m_Fx_cmd = std::clamp(Fx_target / cos_tilt, 0.0f, MAX_THRUST_N); //tilt compensation enabled i.e. Fx body increases when tilted to maintain the same vertical thrust
+    m_Fx_cmd = std::clamp(Fx_target, 0.0f, MAX_THRUST_N); //tilt compensation disabled
 }
 void PDController::updateOutputValues()
 {
@@ -227,21 +238,24 @@ void PDController::updateOutputValues()
     float voltage_scale = 1.0f;
     if (m_batt_fresh && m_batt_V > MIN_VALID_BATT_V)
     {
-        voltage_scale = NOMINAL_BATT_V / m_batt_V;
+        const float raw_voltage_scale = NOMINAL_BATT_V / m_batt_V;
+        voltage_scale = 1.0f + VOLTAGE_COMP_GAIN * (raw_voltage_scale - 1.0f);
         voltage_scale = std::clamp(voltage_scale, MIN_VOLTAGE_SCALE, MAX_VOLTAGE_SCALE);
     }
+    m_voltage_scale = voltage_scale;
 
     base_thrust *= voltage_scale; //scale thrust based on voltage read 
 
-    pitch_servo = 0.0;//std::clamp(pitch_servo, -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
-    yaw_servo   = 0.0;//std::clamp(yaw_servo,   -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
-    base_thrust = 0.0;//std::clamp(base_thrust, 0.0f, 100.0f);
+    pitch_servo = std::clamp(pitch_servo, -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
+    yaw_servo   = std::clamp(yaw_servo,   -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
+    base_thrust = std::clamp(base_thrust, 0.0f, 100.0f);
 
     //_--------ROLL CONTROL-----------------
     // Roll-rate damping via differential prop throttle.
     // Positive roll_mix: top CW prop up, bottom CCW prop down.
-    float roll_mix = m_M_cmd(0);
+    float roll_mix = -m_M_cmd(0);
     roll_mix *= voltage_scale; //voltage scaling for roll mix 
+    roll_mix += ROLL_MIX_OFFSET; //constant trim to counter negative roll bias
     roll_mix = std::clamp(roll_mix, -MAX_ROLL_MIX, MAX_ROLL_MIX);
    
     float thrust_top = std::clamp(base_thrust + roll_mix, 0.0f, 100.0f);

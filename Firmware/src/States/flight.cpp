@@ -13,10 +13,9 @@ void Flight::initialize()
                                           });
     _system.controller.start();
 
-    const Eigen::Vector3f start_pos(0.0f, 0.0f, 0.0f);
-    const Eigen::Vector3f end_pos(1.0f, 0.0f, 0.0f);
-    const float duration_s = 5.0f;
-
+    const Eigen::Vector3f start_pos(0.0f, 0.0f, 0.0f); //NED frame
+    const Eigen::Vector3f end_pos(0.0f, 0.0f, -0.5f); //NED frame
+    const float duration_s = 2.0f;
     m_trajectory_active = m_position_trajectory.configure(start_pos, end_pos, duration_s);
     m_trajectory_start_ms = millis();
     _system.controller.setPositionControlEnabled(m_trajectory_active);
@@ -28,16 +27,14 @@ Types::CoreTypes::State_ptr_t Flight::update()
 
     const uint32_t current_time_ms = millis();
 
-    // if ((current_time_ms - _system.controller.getStartTime()) > 2500
-    //     || current_Data.rocketEulerAngles(1) > 30.0f
-    //     || current_Data.rocketEulerAngles(2) > 30.0f) {
-    //     return std::make_unique<Landing>(_system);
-    // }
+    if ( current_Data.rocketEulerAngles(1) > 30.0f || current_Data.rocketEulerAngles(2) > 30.0f) {
+        return std::make_unique<Landing>(_system);
+    }
 
-    auto quaternion = current_Data.rocketOrientation.cast<double>();
+    auto quaternion = current_Data.orientation.cast<double>();
     auto angular_rates = current_Data.angularRates;
-    auto position = current_Data.position;
-    auto velocity = current_Data.velocity;
+    auto position = current_Data.position; //NED
+    auto velocity = current_Data.velocity; //NED
     
     _system.controller.setBatteryVoltage(_system.powermonitor.getBatteryVoltage(),_system.powermonitor.fresh());
 
@@ -50,7 +47,6 @@ Types::CoreTypes::State_ptr_t Flight::update()
                                              target.acceleration);
         m_trajectory_active = !target.finished;
     }
-
     _system.controller.update(quaternion, angular_rates, position, velocity, true);
 
     return nullptr;

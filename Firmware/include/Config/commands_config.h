@@ -37,7 +37,7 @@ namespace Commands
                                                                 ID::Sensors,
                                                                 ID::Estimator, 
                                                                 ID::Enter_Landing, 
-                                                                
+                                                                ID::Enter_Flight,
                                                             };
 
     inline std::unordered_map<ID, std::function<void(ForwardDecl_SystemClass &, const RnpPacketSerialized &)>> command_map{

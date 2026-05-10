@@ -32,5 +32,5 @@ class Flight : public Types::CoreTypes::State_t
         System& _system;
         Trajectory::TrapezoidalTrajectory m_position_trajectory;
         uint32_t m_trajectory_start_ms = 0;
-        bool m_trajectory_active = false;
+        bool m_trajectory_active = true;
 };

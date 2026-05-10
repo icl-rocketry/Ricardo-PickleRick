@@ -1,4 +1,7 @@
 #include "GNC/GNCController.h"
+#include "Config/loggerhandler_config.h"
+
+#include <libriccore/riccorelogging.h>
 
 void GNCController::setup() {
 
@@ -42,7 +45,20 @@ void GNCController::update(Eigen::Quaterniond q,
     if (millis() - m_previousSampleTime >= m_actuationDelta) {
 
         m_previousSampleTime = millis();
-        m_pd.update(q, angular_rates, position, velocity, m_batt_V, m_batt_fresh);
+
+        q.normalize();
+        const Eigen::Vector3f controller_position = position;
+        const Eigen::Vector3f controller_velocity = velocity;
+
+        m_input << static_cast<float>(q.w()),
+                   static_cast<float>(q.x()),
+                   static_cast<float>(q.y()),
+                   static_cast<float>(q.z()),
+                   angular_rates(0),
+                   angular_rates(1),
+                   angular_rates(2);
+
+        m_pd.update(q, angular_rates, controller_position, controller_velocity, m_batt_V, m_batt_fresh);
         m_output = m_pd.getOutputValues();
         if (actuate) {
 
@@ -66,7 +82,7 @@ void GNCController::stop() {
 
 void GNCController::sendActuationCommands(Eigen::Vector4f actuation_values) {
 
-    float max_prop_power = 55.0f;
+    float max_prop_power = 100.0f;
 
     float thrust_top = actuation_values(2); 
     float thrust_bottom = actuation_values(3);
@@ -154,7 +170,6 @@ void GNCController::sendArmingCommands() {
     armServos();
 
 }
-#include <libriccore/riccorelogging.h>
 
 void GNCController::armProps() {
     // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Arming Props");
@@ -247,6 +262,12 @@ void GNCController::telemetry_impl(packetptr_t packetptr) {
 
     auto euler_angles = m_pd.getEulerError();
     auto f_body = m_pd.getFBody();
+    auto pos_err = m_pd.getPositionError();
+    auto vel_err = m_pd.getVelocityError();
+    auto pos_des = m_pd.getDesiredPosition();
+    auto vel_des = m_pd.getDesiredVelocity();
+    auto acc_des = m_pd.getDesiredAcceleration();
+    auto thrust_world_des = m_pd.getDesiredThrustWorld();
 	telemetry.header.type = 108;
 	telemetry.header.source = packet.header.destination;
 	telemetry.header.source_service = m_serviceID;
@@ -280,8 +301,28 @@ void GNCController::telemetry_impl(packetptr_t packetptr) {
     telemetry.m_cmd_z = m_pd.getMcmd()(2); //get the pitch moment command for telemetry
     telemetry.m_roll_mix = m_pd.getRollMix(); //get the roll mix for telemetry
     telemetry.m_batt = m_pd.getBatteryVoltage(); //get the battery voltage for telemetry
+
+    telemetry.m_pos_err_dbg_x = pos_err(0);
+    telemetry.m_pos_err_dbg_y = pos_err(1);
+    telemetry.m_pos_err_dbg_z = pos_err(2);
+    telemetry.m_vel_err_dbg_x = vel_err(0);
+    telemetry.m_vel_err_dbg_y = vel_err(1);
+    telemetry.m_vel_err_dbg_z = vel_err(2);
+    telemetry.m_pos_des_x = pos_des(0);
+    telemetry.m_pos_des_y = pos_des(1);
+    telemetry.m_pos_des_z = pos_des(2);
+    telemetry.m_vel_des_x = vel_des(0);
+    telemetry.m_vel_des_y = vel_des(1);
+    telemetry.m_vel_des_z = vel_des(2);
+    telemetry.m_acc_des_x = acc_des(0);
+    telemetry.m_acc_des_y = acc_des(1);
+    telemetry.m_acc_des_z = acc_des(2);
+    telemetry.m_thrust_world_des_x = thrust_world_des(0);
+    telemetry.m_thrust_world_des_y = thrust_world_des(1);
+    telemetry.m_thrust_world_des_z = thrust_world_des(2);
     
     telemetry.system_time = millis();
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::CONTROLLER>(telemetry);
 	m_networkmanager.sendPacket(telemetry);
 
 }

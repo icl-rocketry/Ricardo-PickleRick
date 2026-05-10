@@ -3,6 +3,7 @@
 #include <librnp/rnp_packet.h>
 #include <librnp/rnp_serializer.h>
 
+#include <string>
 #include <vector>
 
 class ControllerTelemetryPacket : public RnpPacket{
@@ -32,6 +33,24 @@ class ControllerTelemetryPacket : public RnpPacket{
                 &ControllerTelemetryPacket::m_cmd_z,
                 &ControllerTelemetryPacket::m_roll_mix,
                 &ControllerTelemetryPacket::m_batt,
+                &ControllerTelemetryPacket::m_pos_err_dbg_x,
+                &ControllerTelemetryPacket::m_pos_err_dbg_y,
+                &ControllerTelemetryPacket::m_pos_err_dbg_z,
+                &ControllerTelemetryPacket::m_vel_err_dbg_x,
+                &ControllerTelemetryPacket::m_vel_err_dbg_y,
+                &ControllerTelemetryPacket::m_vel_err_dbg_z,
+                &ControllerTelemetryPacket::m_pos_des_x,
+                &ControllerTelemetryPacket::m_pos_des_y,
+                &ControllerTelemetryPacket::m_pos_des_z,
+                &ControllerTelemetryPacket::m_vel_des_x,
+                &ControllerTelemetryPacket::m_vel_des_y,
+                &ControllerTelemetryPacket::m_vel_des_z,
+                &ControllerTelemetryPacket::m_acc_des_x,
+                &ControllerTelemetryPacket::m_acc_des_y,
+                &ControllerTelemetryPacket::m_acc_des_z,
+                &ControllerTelemetryPacket::m_thrust_world_des_x,
+                &ControllerTelemetryPacket::m_thrust_world_des_y,
+                &ControllerTelemetryPacket::m_thrust_world_des_z,
                 &ControllerTelemetryPacket::system_time
             );
 
@@ -48,6 +67,8 @@ class ControllerTelemetryPacket : public RnpPacket{
         void serialize(std::vector<uint8_t>& buf);// override;
 
         void deserializeBody(std::vector<uint8_t>& buf);
+
+        std::string stringify() const;
 
         // float x_input;
         // float y_input;
@@ -79,6 +100,24 @@ class ControllerTelemetryPacket : public RnpPacket{
         float m_cmd_z;
         float m_roll_mix;
         float m_batt;
+        float m_pos_err_dbg_x;
+        float m_pos_err_dbg_y;
+        float m_pos_err_dbg_z;
+        float m_vel_err_dbg_x;
+        float m_vel_err_dbg_y;
+        float m_vel_err_dbg_z;
+        float m_pos_des_x;
+        float m_pos_des_y;
+        float m_pos_des_z;
+        float m_vel_des_x;
+        float m_vel_des_y;
+        float m_vel_des_z;
+        float m_acc_des_x;
+        float m_acc_des_y;
+        float m_acc_des_z;
+        float m_thrust_world_des_x;
+        float m_thrust_world_des_y;
+        float m_thrust_world_des_z;
         uint32_t system_time;
         static constexpr size_t size(){
             return getSerializer().member_size();

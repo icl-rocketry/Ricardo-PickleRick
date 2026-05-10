@@ -35,8 +35,8 @@ namespace TimingConfig
         //filter settings
         constexpr uint32_t UPDATE_RATE_HZ = Scheduler::ESTIMATOR_UPDATE_RATE_HZ;
         constexpr float FILTER_SAMPLE_RATE_HZ = static_cast<float>(UPDATE_RATE_HZ);
-        constexpr float ACCEL_CUTOFF_HZ = 30.0f;
-        constexpr float GYRO_CUTOFF_HZ = 47.0f;
+        constexpr float ACCEL_CUTOFF_HZ = 20.0f;
+        constexpr float GYRO_CUTOFF_HZ = 30.0f;
 
         constexpr uint32_t CALIBRATION_DURATION_S = 10;
         constexpr uint32_t SET_HOME_DURATION_S = 3;
@@ -66,7 +66,7 @@ namespace TimingConfig
         constexpr uint32_t GPS_READ_RATE_HZ = EKF::GPS_CORRECTION_RATE_HZ * 2;// read it faster than the EKF correction to stop the buffer building up and slowing the ekf
         constexpr uint32_t BARO_READ_RATE_HZ = EKF::BARO_CORRECTION_RATE_HZ;
         constexpr uint32_t MAG_READ_RATE_HZ = EKF::MAG_CORRECTION_RATE_HZ;
-        constexpr uint32_t RAIL_READ_RATE_HZ = 10;
+        constexpr uint32_t RAIL_READ_RATE_HZ = 10; //how often the battery voltage is read
         constexpr uint32_t LIDAR_READ_RATE_HZ = EKF::LIDAR_CORRECTION_RATE_HZ;
 
         constexpr uint32_t GPS_READ_DELTA_US = periodUsFromHz(GPS_READ_RATE_HZ);

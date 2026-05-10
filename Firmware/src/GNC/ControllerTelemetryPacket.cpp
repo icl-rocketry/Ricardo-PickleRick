@@ -19,6 +19,11 @@ void ControllerTelemetryPacket::deserializeBody(std::vector<uint8_t>& buf){
     getSerializer().deserialize(*this, buf);
 }
 
+std::string ControllerTelemetryPacket::stringify() const
+{
+    return getSerializer().stringify(*this) + "\n";
+}
+
 void ControllerTelemetryPacket::serialize(std::vector<uint8_t>& buf){
     RnpPacket::serialize(buf);
 	size_t bufsize = buf.size();

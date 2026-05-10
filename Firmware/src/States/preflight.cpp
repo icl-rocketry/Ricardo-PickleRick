@@ -19,11 +19,11 @@ Types::CoreTypes::State_ptr_t Preflight::update()
 {
     auto current_Data = _system.estimator.getData(); 
 
-    // if (millis() > 15000) {
+    // if (millis() > 15000) { //COMMENT OUT TO DISABLE AUTOSTART
     //     return std::make_unique<Flight>(_system);
     // }
 
-    auto quaternion = current_Data.rocketOrientation.cast<double>();
+    auto quaternion = current_Data.orientation.cast<double>();
     auto angular_rates = current_Data.angularRates;
     auto position = current_Data.position;
     auto velocity = current_Data.velocity;
