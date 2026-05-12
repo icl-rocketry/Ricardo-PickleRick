@@ -20,6 +20,7 @@ class PDController
         void setPositionControlEnabled(bool enabled);
         Eigen::Vector4f getOutputValues()   { return m_output_values; }; 
         Eigen::Vector3f getEulerError()     { return m_euler_error; }; 
+        Eigen::Vector3f getThrustVectorErrorDeg() const { return m_thrust_vector_error_deg; };
         Eigen::Vector3f getFBody()          { return m_f_body; }; 
         Eigen::Vector3f getMcmd()           { return m_M_cmd; };
         Eigen::Vector3f getPositionError()  { return m_pos_err_dbg; };
@@ -51,6 +52,7 @@ class PDController
         Eigen::Vector3f m_rEng;
 
         Eigen::Vector3f m_euler_error;
+        Eigen::Vector3f m_thrust_vector_error_deg;
         Eigen::Vector3f m_f_body;
         Eigen::Vector3f m_thrust_dir_world_des;
         Eigen::Vector3f m_dir_error_body;
@@ -58,7 +60,7 @@ class PDController
 
         static constexpr float MAX_GIMBAL_DEG = 15.0f;
         static constexpr float MAX_THRUST_N   = 25.5f;
-        static constexpr float MAX_ROLL_MIX   = 8.0f;
+        static constexpr float MAX_ROLL_MIX   = 0.0f; //was 8
         static constexpr float ROLL_MIX_OFFSET = 2.0f;
         static constexpr float NOMINAL_FX_N = 13.24;
 

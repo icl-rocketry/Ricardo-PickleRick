@@ -122,11 +122,11 @@ void GNCController::changeServoAngle(int servo, float angle_f) { // angle should
 
     if (servo == 0) { 
         des_ser = 10; 
-        angle += 1070;
+        angle += 1040;
     }
     if (servo == 1) { 
         des_ser = 11; 
-        angle += 920;
+        angle += 930;
     }
 
     SimpleCommandPacket actuate_servo(2, angle); //2 is the fire command
@@ -255,12 +255,12 @@ void GNCController::disarmServos() {
 // #include <libriccore/riccoresystem.h>
 
 void GNCController::telemetry_impl(packetptr_t packetptr) {
-    SimpleCommandPacket packet(*packetptr);
-    // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Telemetry_impl called");
 
+    SimpleCommandPacket packet(*packetptr);
+    //RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Telemetry_impl called");
 	ControllerTelemetryPacket telemetry;
 
-    auto euler_angles = m_pd.getEulerError();
+    auto thrust_vector_error_deg = m_pd.getThrustVectorErrorDeg();
     auto f_body = m_pd.getFBody();
     auto pos_err = m_pd.getPositionError();
     auto vel_err = m_pd.getVelocityError();
@@ -280,9 +280,9 @@ void GNCController::telemetry_impl(packetptr_t packetptr) {
     telemetry.q2 =               m_input(0,2);
     telemetry.q3 =               m_input(0,3);
 
-    telemetry.roll_error =       euler_angles(0) * (180.0f / 3.14159f); // convert to degrees
-    telemetry.pitch_error =      euler_angles(1) * (180.0f / 3.14159f); // convert to degrees
-    telemetry.yaw_error =        euler_angles(2) * (180.0f / 3.14159f); // convert to degrees
+    telemetry.total_error =       thrust_vector_error_deg(0); // total thrust-axis error, not roll-observable
+    telemetry.pitch_error =      thrust_vector_error_deg(1);
+    telemetry.yaw_error =        thrust_vector_error_deg(2);
 
     telemetry.roll_rate_input =  m_input(0,4);
     telemetry.pitch_rate_input = m_input(0,5);

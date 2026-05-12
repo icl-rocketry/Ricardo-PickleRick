@@ -27,8 +27,8 @@ Types::CoreTypes::State_ptr_t Preflight::update()
     auto angular_rates = current_Data.angularRates;
     auto position = current_Data.position;
     auto velocity = current_Data.velocity;
-
-   _system.controller.update(quaternion, angular_rates, position, velocity, false);
+    _system.controller.setPositionControlEnabled(false);
+    _system.controller.update(quaternion, angular_rates, position, velocity, false);
 
     return nullptr;
 };

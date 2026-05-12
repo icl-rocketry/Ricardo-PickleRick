@@ -16,7 +16,7 @@ class ControllerTelemetryPacket : public RnpPacket{
                 &ControllerTelemetryPacket::q1,
                 &ControllerTelemetryPacket::q2,
                 &ControllerTelemetryPacket::q3,
-                &ControllerTelemetryPacket::roll_error,
+                &ControllerTelemetryPacket::total_error,
                 &ControllerTelemetryPacket::pitch_error,
                 &ControllerTelemetryPacket::yaw_error,
                 &ControllerTelemetryPacket::roll_rate_input,
@@ -83,9 +83,9 @@ class ControllerTelemetryPacket : public RnpPacket{
         float q1;
         float q2;
         float q3;
-        float roll_error;
-        float pitch_error;
-        float yaw_error;
+        float total_error;   // total thrust-axis error (deg); roll about thrust axis is not observed
+        float pitch_error;  // signed thrust-vector pitch channel error (deg)
+        float yaw_error;    // signed thrust-vector yaw channel error (deg)
         float roll_rate_input;
         float pitch_rate_input;
         float yaw_rate_input;

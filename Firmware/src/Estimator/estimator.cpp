@@ -3,6 +3,11 @@
 Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus)
     : m_systemstatus(systemstatus),
       m_homeSet(false),
+      m_settingHome(false),
+      m_calibrating(false),
+      m_autoHomePending(false),
+      m_autoHomeTriggered(false),
+      m_gpsLockStartTimeUs(0),
       m_refOrientation(1.0, 0.0, 0.0, 0.0),
       m_ekf(),
       m_calibrator()
@@ -20,6 +25,9 @@ void Estimator::setup()
 
     m_calibrating = false;
     m_settingHome = false;
+    m_autoHomePending = false;
+    m_autoHomeTriggered = false;
+    m_gpsLockStartTimeUs = 0;
     m_calibrator.setup();
     m_ekf.setup(
         m_calibrator.getGyroBiases(),
@@ -32,6 +40,8 @@ void Estimator::setup()
 
 void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 {
+    updateAutoHome(raw_sensors.gps);
+
     if (m_calibrating) {
         if (m_calibrator.getNumberOfCalibrationMeasurements() >= TimingConfig::Estimator::CALIBRATION_SAMPLE_COUNT) {
             m_calibrator.computeCalibration();
@@ -125,6 +135,41 @@ void Estimator::setHome()
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Set Home started");
 
 };
+
+void Estimator::updateAutoHome(const SensorStructs::GPS_t& gps)
+{
+    if (m_homeSet || m_settingHome || m_autoHomeTriggered) {
+        return;
+    }
+
+    if (!hasGpsLock(gps)) {
+        m_autoHomePending = false;
+        m_gpsLockStartTimeUs = 0;
+        return;
+    }
+
+    if (!m_autoHomePending) {
+        m_autoHomePending = true;
+        m_gpsLockStartTimeUs = gps.timestamp_us;
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("GPS lock detected; auto set-home pending");
+        return;
+    }
+
+    if (!m_calibrating && gps.timestamp_us - m_gpsLockStartTimeUs >= TimingConfig::Estimator::AUTO_SET_HOME_DELAY_US) {
+        m_autoHomeTriggered = true;
+        setHome();
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Auto set-home triggered after GPS lock");
+    }
+}
+
+bool Estimator::hasGpsLock(const SensorStructs::GPS_t& gps) const
+{
+    return gps.valid &&
+           gps.timestamp_us != 0 &&
+           gps.fix >= 1 &&
+           gps.sat >= 4 &&
+           gps.hAcc <= 3.0f;
+}
 
 void Estimator::updateState()
 {

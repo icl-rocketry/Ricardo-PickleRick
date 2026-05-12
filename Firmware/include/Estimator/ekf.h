@@ -18,7 +18,7 @@
 //  -----  ----  -----------
 //   0- 2    3   position NED (m)
 //   3- 5    3   velocity NED (m/s)
-//   6- 9    4   attitude quaternion [q0 q1 q2 q3] (scalar first NED -> Body)
+//   6- 9    4   attitude quaternion [q0 q1 q2 q3] (scalar first body -> NED)
 //  10-12    3   low-g accel bias (m/s²)
 //  13-15    3   gyro bias (rad/s)
 //

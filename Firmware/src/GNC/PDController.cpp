@@ -18,7 +18,7 @@ void PDController::setup()
     m_K_d << 7.0f, 0.45f, 0.5f;
 
     m_K_p_pos << 0.5f, 0.5f, 0.5f;   // NED position control gains
-    m_K_d_pos << 1.5f, 1.5f, 1.1f;
+    m_K_d_pos << 1.0f, 1.0f, 1.1f;
     m_K_i_pos << 0.0f, 0.0f, 0.05f;
 
     m_pos_int.setZero();
@@ -27,6 +27,8 @@ void PDController::setup()
     m_acc_des.setZero();
     m_pos_err_dbg.setZero();
     m_vel_err_dbg.setZero();
+    m_euler_error.setZero();
+    m_thrust_vector_error_deg.setZero();
     m_max_vel       = 1.0f;                  // m/s — conservative
     m_max_tilt_rad  = 15.0f * M_PI / 180.0f; // 15° max tilt command
     m_last_update_us = 0;
@@ -78,6 +80,8 @@ void PDController::reset()
     m_output_values  << 0.0f, 0.0f, 0.0f, 0.0f;
     m_Fx_cmd         = 0.0f;
     m_voltage_scale  = 1.0f;
+    m_euler_error.setZero();
+    m_thrust_vector_error_deg.setZero();
     m_pos_err_dbg.setZero();
     m_vel_err_dbg.setZero();
 }
@@ -193,6 +197,16 @@ void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
 
     m_dir_error_body = e_body.cast<float>();
 
+    const Eigen::Vector3d desired_body = q.conjugate() * thrust_dir_world_des;
+    //send to telemetry
+    const double total_error_rad = std::asin(std::clamp(e_world.norm(), 0.0, 1.0));
+    const double pitch_error_rad = std::atan2(desired_body.z(), desired_body.x());
+    const double yaw_error_rad   = std::atan2(desired_body.y(), desired_body.x());
+
+    m_thrust_vector_error_deg << static_cast<float>(total_error_rad * RAD_TO_DEG),
+                                 static_cast<float>(pitch_error_rad * RAD_TO_DEG),
+                                 static_cast<float>(yaw_error_rad * RAD_TO_DEG);
+
     // No control about thrust axis (body x)
     m_dir_error_body(0) = 0.0f;
 }
@@ -248,7 +262,7 @@ void PDController::updateOutputValues()
 
     pitch_servo = std::clamp(pitch_servo, -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
     yaw_servo   = std::clamp(yaw_servo,   -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
-    base_thrust = std::clamp(base_thrust, 0.0f, 100.0f);
+    base_thrust = 10.0; //std::clamp(base_thrust, 0.0f, 100.0f);
 
     //_--------ROLL CONTROL-----------------
     // Roll-rate damping via differential prop throttle.

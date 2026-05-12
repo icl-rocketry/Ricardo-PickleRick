@@ -1,5 +1,7 @@
 #include "States/flight.h"
 
+#include <cmath>
+
 Flight::Flight(System &system) : 
         State(SYSTEM_FLAG::STATE_FLIGHT, system.systemstatus),
         _system(system) {};
@@ -18,7 +20,9 @@ void Flight::initialize()
     const float duration_s = 2.0f;
     m_trajectory_active = m_position_trajectory.configure(start_pos, end_pos, duration_s);
     m_trajectory_start_ms = millis();
-    _system.controller.setPositionControlEnabled(m_trajectory_active);
+
+    _system.controller.setPositionTarget(start_pos, Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero());
+    _system.controller.setPositionControlEnabled(true);
 };
 
 Types::CoreTypes::State_ptr_t Flight::update()
@@ -27,7 +31,12 @@ Types::CoreTypes::State_ptr_t Flight::update()
 
     const uint32_t current_time_ms = millis();
 
-    if ( current_Data.rocketEulerAngles(1) > 30.0f || current_Data.rocketEulerAngles(2) > 30.0f) {
+    constexpr float kMaxTiltRad = 25.0f * DEG_TO_RAD;
+    const Eigen::Vector3f thrust_axis_world =
+        current_Data.orientation.normalized() * Eigen::Vector3f::UnitX();
+    const Eigen::Vector3f upright_thrust_world(0.0f, 0.0f, -1.0f);
+
+    if (thrust_axis_world.dot(upright_thrust_world) < std::cos(kMaxTiltRad)) {
         return std::make_unique<Landing>(_system);
     }
 

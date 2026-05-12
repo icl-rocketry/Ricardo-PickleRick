@@ -50,6 +50,9 @@ class Estimator{
         bool m_homeSet;        
         bool m_settingHome; 
         bool m_calibrating;
+        bool m_autoHomePending;
+        bool m_autoHomeTriggered;
+        uint32_t m_gpsLockStartTimeUs;
         Eigen::Quaternionf m_refOrientation;
         
         EKF m_ekf;    
@@ -64,5 +67,6 @@ class Estimator{
         FirstOrderLowpass  m_gyro_lpf_z;
 
         void updateState();
+        void updateAutoHome(const SensorStructs::GPS_t& gps);
+        bool hasGpsLock(const SensorStructs::GPS_t& gps) const;
 };
-

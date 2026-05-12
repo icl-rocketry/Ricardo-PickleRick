@@ -22,7 +22,7 @@ namespace TimingConfig
         constexpr uint32_t TELEMETRY_LOG_RATE_HZ = 100;
         constexpr uint32_t ESTIMATOR_UPDATE_RATE_HZ = 120;
         constexpr uint32_t POWER_MONITOR_UPDATE_RATE_HZ = 50;
-        constexpr uint32_t ESTIMATOR_LOG_RATE_HZ = 100;
+        constexpr uint32_t ESTIMATOR_LOG_RATE_HZ = 50;
 
         constexpr uint32_t TELEMETRY_LOG_DELTA_US = periodUsFromHz(TELEMETRY_LOG_RATE_HZ);
         constexpr uint32_t ESTIMATOR_UPDATE_DELTA_US = periodUsFromHz(ESTIMATOR_UPDATE_RATE_HZ);
@@ -38,16 +38,18 @@ namespace TimingConfig
         constexpr float ACCEL_CUTOFF_HZ = 20.0f;
         constexpr float GYRO_CUTOFF_HZ = 30.0f;
 
-        constexpr uint32_t CALIBRATION_DURATION_S = 10;
+        constexpr uint32_t CALIBRATION_DURATION_S = 30;
         constexpr uint32_t SET_HOME_DURATION_S = 3;
+        constexpr uint32_t AUTO_SET_HOME_DELAY_S = 15;
         constexpr uint32_t CALIBRATION_SAMPLE_COUNT = CALIBRATION_DURATION_S * UPDATE_RATE_HZ;
         constexpr uint32_t SET_HOME_SAMPLE_COUNT = SET_HOME_DURATION_S * UPDATE_RATE_HZ;
+        constexpr uint32_t AUTO_SET_HOME_DELAY_US = AUTO_SET_HOME_DELAY_S * MICROS_PER_SECOND;
     }
 
     namespace EKF
     {
         constexpr uint32_t COVARIANCE_UPDATE_RATE_HZ = 100;
-        constexpr uint32_t ACCEL_CORRECTION_RATE_HZ = 20;
+        constexpr uint32_t ACCEL_CORRECTION_RATE_HZ = 50;
         constexpr uint32_t MAG_CORRECTION_RATE_HZ = 10;
         constexpr uint32_t BARO_CORRECTION_RATE_HZ = 10;
         constexpr uint32_t GPS_CORRECTION_RATE_HZ = 5;

@@ -67,17 +67,17 @@ void TFLuna::update(SensorStructs::LIDAR_t& data)
     if (now_ms - _last_read_ok_log_ms >= 1000)
     {
         _last_read_ok_log_ms = now_ms;
-        Serial.printf("TF-Luna read ok: dist=%u amp=%u temp=%.2f valid=%u raw=%02X %02X %02X %02X %02X %02X\n",
-                      data.dist,
-                      data.amp,
-                      data.temp,
-                      data.valid ? 1 : 0,
-                      buf[0],
-                      buf[1],
-                      buf[2],
-                      buf[3],
-                      buf[4],
-                      buf[5]);
+        // Serial.printf("TF-Luna read ok: dist=%u amp=%u temp=%.2f valid=%u raw=%02X %02X %02X %02X %02X %02X\n",
+        //               data.dist,
+        //               data.amp,
+        //               data.temp,
+        //               data.valid ? 1 : 0,
+        //               buf[0],
+        //               buf[1],
+        //               buf[2],
+        //               buf[3],
+        //               buf[4],
+        //               buf[5]);
     }
 }
 
