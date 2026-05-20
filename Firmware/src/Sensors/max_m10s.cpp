@@ -109,17 +109,23 @@ void MAX_M10S::update(SensorStructs::GPS_t& data)
     if (avail == 0) { return; }
 
     uint8_t buf[I2C_CHUNK];
+
+    bool newPvt = false;
     while (avail > 0)
     {
         uint16_t chunk = (avail > I2C_CHUNK) ? I2C_CHUNK : avail;
         uint16_t got   = readStream(buf, chunk);
-        for (uint16_t i = 0; i < got; ++i) { parseByte(buf[i]); }
+        if (got == 0) { break; } // also prevents an infinite loop
+        for (uint16_t i = 0; i < got; ++i) 
+        { 
+            parseByte(buf[i]); { newPvt = true; }
+        }
         avail -= got;
     }
 
     data.sat      = _pvt.numSV;
     
-    if (!_pvt.valid) { return; }
+    if (!_pvt.valid || !_pvt.valid) { return; }
 
     data.latitude      = _pvt.lat;
     data.longitude      = _pvt.lon;

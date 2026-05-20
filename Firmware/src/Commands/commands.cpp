@@ -9,6 +9,7 @@
 #include "States/preflight.h"
 #include "States/landing.h"
 #include "system.h"
+#include <libriccore/riccorelogging.h>
 
 void Commands::SetHomeCommand(System& system, const RnpPacketSerialized& packet)
 {
@@ -163,6 +164,7 @@ void Commands::EstimatorCommand(System& system, const RnpPacketSerialized& packe
 
     EstimatorPacket estimator;
 
+    auto raw_sensors = system.sensors.getData();
     auto state = system.estimator.getData();
 
     estimator.header.source =               system.networkmanager.getAddress();
@@ -187,6 +189,10 @@ void Commands::EstimatorCommand(System& system, const RnpPacketSerialized& packe
     estimator.gps_pos_n             = state.gpsPosition(0);
     estimator.gps_pos_e             = state.gpsPosition(1);
     estimator.gps_pos_d             = state.gpsPosition(2);
+
+    estimator.gps_vel_n             = raw_sensors.gps.v_n;
+    estimator.gps_vel_e             = raw_sensors.gps.v_e;
+    estimator.gps_vel_d             = raw_sensors.gps.v_d;
     
     estimator.b_gx                  = state.gyroBiases(0);
     estimator.b_gy                  = state.gyroBiases(1);
@@ -291,7 +297,7 @@ void Commands::CalibrateMagFullCommand(System& system, const RnpPacketSerialized
     if (packet.header.type != 10)
     {
         // incorrect packet type received do not deserialize
-        // TODO log
+        //RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Incorrect packet type received for mag calibration");
         return;
     }
 

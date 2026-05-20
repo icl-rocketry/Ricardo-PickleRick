@@ -12,7 +12,7 @@
 #include "Sensors/sensors.h"
 #include "Sensors/sensorStructs.h"
 
-// ── State vector layout (22 states) ──────────────────────────────────────────
+// ── State vector layout (16 states) ──────────────────────────────────────────
 //
 //  Index  Size  Description
 //  -----  ----  -----------
@@ -126,9 +126,9 @@ private:
     static inline const Eigen::Vector3f SIGMA_BG {5e-5f, 5e-5f, 5e-5f};     // rad/s 
     static inline const Eigen::Vector3f SIGMA_BA_LOW{5e-4f, 5e-4f, 5e-4f};     // m/s² how much the bias can change per second (low-g accel bias)
 
-    static inline const Eigen::Vector3f SIGMA_ALPHA{0.15f, 0.03f, 0.03f};  // rad/s 
-    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.25f, 1.2f, 1.2f};
-    static constexpr float SIGMA_MAG        = 2.0f;     // was 0.01
+    static inline const Eigen::Vector3f SIGMA_ALPHA{0.8f, 0.03f, 0.02f};  // rad/s 
+    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.18f, 0.6f, 1.2f};
+    static constexpr float SIGMA_MAG        = 0.2f;     // was 0.01
 
     static constexpr float SIGMA_T          = 20.0f;      // K
     static constexpr float SIGMA_P          = 100.0f;    // Pa
@@ -136,6 +136,10 @@ private:
     static constexpr float SIGMA_VEL        = 0.1f;      // m/s — tune to your GPS spec
     static constexpr float SIGMA_LIDAR     = 0.1f;      // m — conservative, datasheet ±6cm @ 0-3m
     static constexpr float LIDAR_MAX_RANGE = 8.0f;      // m — TF-Luna rated range
+    //------Measurement flags--------------------------------------------
+    static constexpr bool USE_GPS_POSITION = false;
+    static constexpr bool USE_GPS_VELOCITY_DIRECT = true;
+    static constexpr bool USE_ACCEL_FOR_VELOCITY = false;
 
     void predict(   const float nominal_dt,
                     const float covariance_dt,

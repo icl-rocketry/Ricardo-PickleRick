@@ -16,13 +16,13 @@ void Flight::initialize()
     _system.controller.start();
 
     const Eigen::Vector3f start_pos(0.0f, 0.0f, 0.0f); //NED frame
-    const Eigen::Vector3f end_pos(0.0f, 0.0f, -0.5f); //NED frame
+    const Eigen::Vector3f end_pos(0.0f, 0.0f, -0.8f); //NED frame
     const float duration_s = 2.0f;
     m_trajectory_active = m_position_trajectory.configure(start_pos, end_pos, duration_s);
     m_trajectory_start_ms = millis();
 
     _system.controller.setPositionTarget(start_pos, Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero());
-    _system.controller.setPositionControlEnabled(true);
+    _system.controller.setPositionControlEnabled(true);//set to true to enable position control
 };
 
 Types::CoreTypes::State_ptr_t Flight::update()

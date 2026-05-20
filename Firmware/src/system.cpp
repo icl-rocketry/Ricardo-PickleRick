@@ -234,6 +234,10 @@ void System::systemSetup()
 void System::systemUpdate()
 {
     const uint32_t current_time = micros();
+    static uint32_t ekf_debug_last_us = 0;
+    static uint32_t ekf_debug_count = 0;
+    static uint32_t ekf_debug_total_time_us = 0;
+    static uint32_t ekf_debug_max_time_us = 0;
 
     if (prev_estimator_update_time == 0)
     {

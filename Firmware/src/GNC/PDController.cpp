@@ -11,14 +11,14 @@ void PDController::setup()
     // m_rEng is COM -> thrust centre in body frame (m). Tune ry/rz for attitude-only lateral drift:
     // with rx < 0, negative body-y drift -> make ry more negative; positive body-y drift -> make ry more positive.
     // negative body-z drift -> make rz more negative; positive body-z drift -> make rz more positive.
-    m_rEng << -0.235f, 0.0005f, 0.0063f; //centre of mass to center of thrust in body frame
-    m_mass = 1.35f;
+    m_rEng << -0.235f, -0.0007f, 0.015f; //centre of mass to center of thrust in body frame
+    m_mass = 1.32f;
 
     m_K_p << 0.0f, 2.0f, 1.5f; // attitude body control gains (roll, pitch, yaw)
     m_K_d << 7.0f, 0.45f, 0.5f;
 
-    m_K_p_pos << 0.5f, 0.5f, 0.5f;   // NED position control gains
-    m_K_d_pos << 1.0f, 1.0f, 1.1f;
+    m_K_p_pos << 0.0f, 0.0f, 0.8f;   // NED position control gains
+    m_K_d_pos << 1.0f, 1.0f, 1.1f; //based on gps velocity 
     m_K_i_pos << 0.0f, 0.0f, 0.05f;
 
     m_pos_int.setZero();
@@ -262,7 +262,7 @@ void PDController::updateOutputValues()
 
     pitch_servo = std::clamp(pitch_servo, -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
     yaw_servo   = std::clamp(yaw_servo,   -MAX_GIMBAL_DEG, MAX_GIMBAL_DEG);
-    base_thrust = 10.0; //std::clamp(base_thrust, 0.0f, 100.0f);
+    base_thrust = std::clamp(base_thrust, 0.0f, 100.0f);
 
     //_--------ROLL CONTROL-----------------
     // Roll-rate damping via differential prop throttle.

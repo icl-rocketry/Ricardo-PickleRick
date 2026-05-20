@@ -182,8 +182,12 @@ void EKF::predict(  const float nominal_dt,
     const Eigen::Vector3f a_ned = R_body_to_ned * (m_acceleration) - g_ned;
     const float nominal_dt2 = nominal_dt * nominal_dt;
 
-    m_x.segment<3>(0) += m_x.segment<3>(3) * nominal_dt + 0.5f * a_ned * nominal_dt2;  
-    m_x.segment<3>(3) += a_ned * nominal_dt; 
+    if (USE_ACCEL_FOR_VELOCITY) {
+        m_x.segment<3>(0) += m_x.segment<3>(3) * nominal_dt + 0.5f * a_ned * nominal_dt2;
+        m_x.segment<3>(3) += a_ned * nominal_dt;
+    } else {
+        m_x.segment<3>(0) += m_x.segment<3>(3) * nominal_dt;
+    }
 
     if (!propagate_covariance)
     {
@@ -358,8 +362,7 @@ void EKF::runScheduledCorrection(const uint32_t now,
                 }
                 break;
             case 3:
-                if (gps.updated &&
-                    gps.timestamp_us != 0 &&
+                if (gps.timestamp_us != 0 &&
                     gps.timestamp_us != m_lastGpsMeasurementTime &&
                     timerDue(now, m_lastGpsCorrectionTime, TimingConfig::EKF::GPS_CORRECTION_DELTA_US))
                 {
@@ -524,40 +527,59 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
     using Vec6 = Eigen::Matrix<float, 6, 1>;
 
     // ── Quality gate ──────────────────────────────────────────────────────────
-    if (!gps.valid || gps.fix < 1 || gps.sat < 4 || gps.hAcc > 3.0f) { return; }
+    if (!gps.valid || gps.fix < 1 || gps.sat < 4) { return; }
 
-    // ── Convert to radians in double ──────────────────────────────────────────
-    const double lat0 = static_cast<double>(m_setHome_ref.launch_lat)  * 1e-7 * M_PI / 180.0;
-    const double lon0 = static_cast<double>(m_setHome_ref.launch_lon)  * 1e-7 * M_PI / 180.0;
-    const double lat  = static_cast<double>(gps.latitude)              * 1e-7 * M_PI / 180.0;
-    const double lon  = static_cast<double>(gps.longitude)             * 1e-7 * M_PI / 180.0;
-    const double h0   = static_cast<double>(m_setHome_ref.launch_alt);
-    const double h    = static_cast<double>(gps.altitude);
+    const bool pos_valid = USE_GPS_POSITION &&
+                           std::isfinite(gps.hAcc) &&
+                           gps.hAcc > 0.0f &&
+                           gps.hAcc <= 3.0f;
+    const bool vel_valid = std::isfinite(gps.v_n) &&
+                           std::isfinite(gps.v_e) &&
+                           std::isfinite(gps.v_d);
 
-    // ── LLA -> ECEF (measurement) ─────────────────────────────────────────────
-    const double N  = GPS_A_EARTH / std::sqrt(1.0 - GPS_E2 * std::sin(lat) * std::sin(lat));
-    const double X  = (N + h)               * std::cos(lat) * std::cos(lon);
-    const double Y  = (N + h)               * std::cos(lat) * std::sin(lon);
-    const double Z  = (N * (1.0 - GPS_E2) + h) * std::sin(lat);
+    if (!pos_valid && !vel_valid) { return; }
 
-    // ── LLA -> ECEF (reference) ───────────────────────────────────────────────
-    const double N0 = GPS_A_EARTH / std::sqrt(1.0 - GPS_E2 * std::sin(lat0) * std::sin(lat0));
-    const double X0 = (N0 + h0)                * std::cos(lat0) * std::cos(lon0);
-    const double Y0 = (N0 + h0)                * std::cos(lat0) * std::sin(lon0);
-    const double Z0 = (N0 * (1.0 - GPS_E2) + h0) * std::sin(lat0);
+    if (pos_valid) {
+        // ── Convert to radians in double ──────────────────────────────────────
+        const double lat0 = static_cast<double>(m_setHome_ref.launch_lat) * 1e-7 * M_PI / 180.0;
+        const double lon0 = static_cast<double>(m_setHome_ref.launch_lon) * 1e-7 * M_PI / 180.0;
+        const double lat  = static_cast<double>(gps.latitude)             * 1e-7 * M_PI / 180.0;
+        const double lon  = static_cast<double>(gps.longitude)            * 1e-7 * M_PI / 180.0;
+        const double h0   = static_cast<double>(m_setHome_ref.launch_alt);
+        const double h    = static_cast<double>(gps.altitude);
 
-    // ── ECEF delta -> NED ─────────────────────────────────────────────────────
-    const double dX = X - X0;
-    const double dY = Y - Y0;
-    const double dZ = Z - Z0;
+        // ── LLA -> ECEF (measurement) ─────────────────────────────────────────
+        const double N  = GPS_A_EARTH / std::sqrt(1.0 - GPS_E2 * std::sin(lat) * std::sin(lat));
+        const double X  = (N + h)                   * std::cos(lat) * std::cos(lon);
+        const double Y  = (N + h)                   * std::cos(lat) * std::sin(lon);
+        const double Z  = (N * (1.0 - GPS_E2) + h)  * std::sin(lat);
 
-    m_gps_position.setZero();
-    m_gps_position(0) = static_cast<float>(-std::sin(lat0)*std::cos(lon0)*dX - std::sin(lat0)*std::sin(lon0)*dY + std::cos(lat0)*dZ);
-    m_gps_position(1) = static_cast<float>(-std::sin(lon0)*dX               + std::cos(lon0)*dY);
-    m_gps_position(2) = static_cast<float>(-std::cos(lat0)*std::cos(lon0)*dX - std::cos(lat0)*std::sin(lon0)*dY - std::sin(lat0)*dZ);
+        // ── LLA -> ECEF (reference) ───────────────────────────────────────────
+        const double N0 = GPS_A_EARTH / std::sqrt(1.0 - GPS_E2 * std::sin(lat0) * std::sin(lat0));
+        const double X0 = (N0 + h0)                   * std::cos(lat0) * std::cos(lon0);
+        const double Y0 = (N0 + h0)                   * std::cos(lat0) * std::sin(lon0);
+        const double Z0 = (N0 * (1.0 - GPS_E2) + h0)  * std::sin(lat0);
+
+        // ── ECEF delta -> NED ─────────────────────────────────────────────────
+        const double dX = X - X0;
+        const double dY = Y - Y0;
+        const double dZ = Z - Z0;
+
+        m_gps_position(0) = static_cast<float>(-std::sin(lat0)*std::cos(lon0)*dX - std::sin(lat0)*std::sin(lon0)*dY + std::cos(lat0)*dZ);
+        m_gps_position(1) = static_cast<float>(-std::sin(lon0)*dX               + std::cos(lon0)*dY);
+        m_gps_position(2) = static_cast<float>(-std::cos(lat0)*std::cos(lon0)*dX - std::cos(lat0)*std::sin(lon0)*dY - std::sin(lat0)*dZ);
+    }
 
     // ── Velocity measurement (already in NED from GPS driver) ─────────────────
     const Vec3 z_vel(gps.v_n, gps.v_e, gps.v_d);
+
+    if (!USE_GPS_POSITION && USE_GPS_VELOCITY_DIRECT) {
+        m_h.segment<3>(11) = m_x.segment<3>(3);
+        m_y.segment<3>(8).setZero();
+        m_y.segment<3>(11) = z_vel - m_h.segment<3>(11);
+        m_x.segment<3>(3) = z_vel;
+        return;
+    }
 
     // ── Combined measurement vector [pos; vel] ────────────────────────────────
     Vec6 z;
@@ -589,12 +611,19 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
     m_y.segment<3>(8)  = m_gps_position - m_h.segment<3>(8);   // position innovation
     m_y.segment<3>(11) = z_vel - m_h.segment<3>(11);  // velocity innovation
 
-    const float speed = z_vel.norm();
-    if (speed < 10.0f)
-    {
-        // stationary — only update velocity, skip position correction
+    const float gps_speed = z_vel.norm();
+    const bool use_pos = pos_valid &&
+                         gps_speed > 1.0f &&
+                         m_y.segment<3>(8).norm() < 5.0f;
+
+    if (!use_pos) {
         H_gps.block<3,3>(0,0).setZero();  // zero out position rows of H
-        m_y.segment<3>(8).setZero();   // ← add this
+        m_y.segment<3>(8).setZero();
+    }
+
+    if (!vel_valid) {
+        H_gps.block<3,3>(3,3).setZero();  // zero out velocity rows of H
+        m_y.segment<3>(11).setZero();
     }
 
     const Mat6 S    = H_gps * m_P * H_gps.transpose() + R_gps;

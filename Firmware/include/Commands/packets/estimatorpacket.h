@@ -29,6 +29,10 @@ class EstimatorPacket : public RnpPacket{
                 &EstimatorPacket::gps_pos_e,
                 &EstimatorPacket::gps_pos_d,
 
+                &EstimatorPacket::gps_vel_n,
+                &EstimatorPacket::gps_vel_e,
+                &EstimatorPacket::gps_vel_d,
+
                 &EstimatorPacket::b_gx,
                 &EstimatorPacket::b_gy,
                 &EstimatorPacket::b_gz,
@@ -126,6 +130,7 @@ class EstimatorPacket : public RnpPacket{
         float b_ax, b_ay, b_az;                 // low-g accel biases (m/s^2) (body frame)
         
         float gps_pos_n, gps_pos_e, gps_pos_d;  // position (m) (NED frame)
+        float gps_vel_n, gps_vel_e, gps_vel_d;  // raw GPS velocity (m/s) (NED frame)
 
         uint8_t calibration_quality;            // 0 if no calib, 1 if bias calib, 2 if mag vec calib
         
@@ -156,5 +161,4 @@ class EstimatorPacket : public RnpPacket{
         }
 
 };
-
 
