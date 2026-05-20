@@ -29,7 +29,7 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
                                const Eigen::Vector3f& acceleration = Eigen::Vector3f::Zero());
         void setPositionControlEnabled(bool enabled);
         unsigned long getStartTime() { return m_controller_start_time; };
-        float getBatteryVoltage() const { return m_pd.getBatteryVoltage(); }
+        float getBatteryVoltage() const { return m_batt_V; }
         float getVoltageScale() const { return m_pd.getVoltageScale(); }
         float getCommandedThrustTop() const { return m_output(2); }
         float getCommandedThrustBottom() const { return m_output(3); }
@@ -43,6 +43,7 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
                     Eigen::Vector3f position, 
                     Eigen::Vector3f velocity,
                     bool actuate);
+        void updateThrottleProfileTest(bool actuate);
         void stop();
         
        
@@ -67,6 +68,8 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
         unsigned long m_previousSampleTime = 0;
         unsigned long m_actuationDelta = TimingConfig::Controller::ACTUATION_DELTA_MS;
         unsigned long m_controller_start_time;
+        unsigned long m_throttle_profile_step_start_time = 0;
+        uint8_t m_throttle_profile_step = 0;
 
         Eigen::Matrix<float,1, 7> m_input;
         Eigen::Vector4f m_output;

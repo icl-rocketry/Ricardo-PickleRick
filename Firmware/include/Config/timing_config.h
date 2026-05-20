@@ -68,7 +68,7 @@ namespace TimingConfig
         constexpr uint32_t GPS_READ_RATE_HZ = EKF::GPS_CORRECTION_RATE_HZ * 2;// read it faster than the EKF correction to stop the buffer building up and slowing the ekf
         constexpr uint32_t BARO_READ_RATE_HZ = EKF::BARO_CORRECTION_RATE_HZ;
         constexpr uint32_t MAG_READ_RATE_HZ = EKF::MAG_CORRECTION_RATE_HZ;
-        constexpr uint32_t RAIL_READ_RATE_HZ = 10; //how often the battery voltage is read
+        constexpr uint32_t RAIL_READ_RATE_HZ = 10; 
         constexpr uint32_t LIDAR_READ_RATE_HZ = EKF::LIDAR_CORRECTION_RATE_HZ;
 
         constexpr uint32_t GPS_READ_DELTA_US = periodUsFromHz(GPS_READ_RATE_HZ);
@@ -86,7 +86,7 @@ namespace TimingConfig
 
     namespace PowerMonitor
     {
-        constexpr uint32_t REQUEST_PERIOD_MS = 500;
+        constexpr uint32_t REQUEST_PERIOD_MS = 100; 
         constexpr uint32_t FRESH_TIMEOUT_MS = 1000;
     }
 }

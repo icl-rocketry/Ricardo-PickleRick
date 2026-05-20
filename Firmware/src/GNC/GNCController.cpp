@@ -3,6 +3,28 @@
 
 #include <libriccore/riccorelogging.h>
 
+namespace {
+struct ThrottleProfileStep {
+    float demanded_power_percent;
+    unsigned long duration_ms;
+};
+
+constexpr ThrottleProfileStep kThrottleProfile[] = {
+    {0.0f, 10000},   {20.0f, 5000},   {0.0f, 15000},
+    {35.0f, 8000},   {0.0f, 3000},    {55.0f, 8000},   {0.0f, 3000},    {75.0f, 8000},   {0.0f, 300000},
+    {45.0f, 8000},   {0.0f, 3000},    {65.0f, 8000},   {0.0f, 3000},    {85.0f, 8000},   {0.0f, 300000},
+    {30.0f, 8000},   {0.0f, 3000},    {50.0f, 8000},   {0.0f, 3000},    {70.0f, 8000},   {0.0f, 300000},
+    {40.0f, 8000},   {0.0f, 3000},    {60.0f, 8000},   {0.0f, 3000},    {90.0f, 8000},   {0.0f, 300000},
+    {25.0f, 8000},   {0.0f, 3000},    {80.0f, 8000},   {0.0f, 3000},    {100.0f, 8000},  {0.0f, 300000},
+    {35.0f, 8000},   {0.0f, 3000},    {50.0f, 8000},   {0.0f, 3000},    {65.0f, 8000},   {0.0f, 300000},
+    {45.0f, 8000},   {0.0f, 3000},    {75.0f, 8000},   {0.0f, 3000},    {95.0f, 8000},   {0.0f, 300000},
+    {0.0f, 20000},
+};
+
+constexpr uint8_t kThrottleProfileStepCount =
+    static_cast<uint8_t>(sizeof(kThrottleProfile) / sizeof(kThrottleProfile[0]));
+}
+
 void GNCController::setup() {
 
     m_pd.setup();
@@ -12,6 +34,9 @@ void GNCController::setup() {
 void GNCController::start() {
 
     m_controller_start_time = millis();
+    m_throttle_profile_step_start_time = m_controller_start_time;
+    m_throttle_profile_step = 0;
+    m_output << 0.0f, 0.0f, 0.0f, 0.0f;
     sendArmingCommands();
     m_pd.reset();
     
@@ -70,12 +95,45 @@ void GNCController::update(Eigen::Quaterniond q,
 
 }
 
+void GNCController::updateThrottleProfileTest(bool actuate)
+{
+    const unsigned long now = millis();
+
+    if (now - m_previousSampleTime < m_actuationDelta)
+    {
+        return;
+    }
+
+    m_previousSampleTime = now;
+
+    while (m_throttle_profile_step < kThrottleProfileStepCount &&
+           now - m_throttle_profile_step_start_time >= kThrottleProfile[m_throttle_profile_step].duration_ms)
+    {
+        m_throttle_profile_step_start_time += kThrottleProfile[m_throttle_profile_step].duration_ms;
+        m_throttle_profile_step++;
+    }
+
+    float command = 0.0f;
+    if (m_throttle_profile_step < kThrottleProfileStepCount)
+    {
+        command = kThrottleProfile[m_throttle_profile_step].demanded_power_percent;
+    }
+
+    m_output << 0.0f, 0.0f, command, command;
+
+    if (actuate)
+    {
+        sendActuationCommands(m_output);
+    }
+}
+
 void GNCController::stop() {
 
     changeServoAngle(0,0);
     changeServoAngle(1,0);
     changePropPower(0,0);
     changePropPower(1,0);
+    m_output << 0.0f, 0.0f, 0.0f, 0.0f;
     sendDisarmingCommands();
 
 }
@@ -300,7 +358,7 @@ void GNCController::telemetry_impl(packetptr_t packetptr) {
     telemetry.m_cmd_y = m_pd.getMcmd()(1); //get the yaw moment command for telemetry
     telemetry.m_cmd_z = m_pd.getMcmd()(2); //get the pitch moment command for telemetry
     telemetry.m_roll_mix = m_pd.getRollMix(); //get the roll mix for telemetry
-    telemetry.m_batt = m_pd.getBatteryVoltage(); //get the battery voltage for telemetry
+    telemetry.m_batt = m_batt_V; //get the battery voltage for telemetry
 
     telemetry.m_pos_err_dbg_x = pos_err(0);
     telemetry.m_pos_err_dbg_y = pos_err(1);

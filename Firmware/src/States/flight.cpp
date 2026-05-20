@@ -2,6 +2,9 @@
 
 #include <cmath>
 
+#include "Config/general_config.h"
+#include "Config/loggerhandler_config.h"
+
 Flight::Flight(System &system) : 
         State(SYSTEM_FLAG::STATE_FLIGHT, system.systemstatus),
         _system(system) {};
@@ -14,6 +17,13 @@ void Flight::initialize()
                                             Commands::ID::Enter_Landing,
                                           });
     _system.controller.start();
+
+    if (GeneralConfig::ThrottleRampTestEnabled) {
+        m_trajectory_active = false;
+        _system.controller.setPositionControlEnabled(false);
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Throttle profile test enabled: running full voltage/thrust calibration profile");
+        return;
+    }
 
     const Eigen::Vector3f start_pos(0.0f, 0.0f, 0.0f); //NED frame
     const Eigen::Vector3f end_pos(0.0f, 0.0f, -0.8f); //NED frame
@@ -31,6 +41,13 @@ Types::CoreTypes::State_ptr_t Flight::update()
 
     const uint32_t current_time_ms = millis();
 
+    _system.controller.setBatteryVoltage(_system.powermonitor.getBatteryVoltage(),_system.powermonitor.fresh());
+
+    if (GeneralConfig::ThrottleRampTestEnabled) {
+        _system.controller.updateThrottleProfileTest(true);
+        return nullptr;
+    }
+
     constexpr float kMaxTiltRad = 25.0f * DEG_TO_RAD;
     const Eigen::Vector3f thrust_axis_world =
         current_Data.orientation.normalized() * Eigen::Vector3f::UnitX();
@@ -45,8 +62,6 @@ Types::CoreTypes::State_ptr_t Flight::update()
     auto position = current_Data.position; //NED
     auto velocity = current_Data.velocity; //NED
     
-    _system.controller.setBatteryVoltage(_system.powermonitor.getBatteryVoltage(),_system.powermonitor.fresh());
-
     if (m_trajectory_active) {
         const float elapsed_s = (current_time_ms - m_trajectory_start_ms) * 1e-3f;
         const Trajectory::TrajectoryPoint target = m_position_trajectory.sample(elapsed_s);

@@ -13,35 +13,35 @@ private:
         auto ret = RnpSerializer(
             &EstimatorLogframe::timestamp_us,
 
-            &EstimatorLogframe::raw_ax,
-            &EstimatorLogframe::raw_ay,
-            &EstimatorLogframe::raw_az,
+            // &EstimatorLogframe::raw_ax,
+            // &EstimatorLogframe::raw_ay,
+            // &EstimatorLogframe::raw_az,
 
-            &EstimatorLogframe::raw_gx,
-            &EstimatorLogframe::raw_gy,
-            &EstimatorLogframe::raw_gz,
+            // &EstimatorLogframe::raw_gx,
+            // &EstimatorLogframe::raw_gy,
+            // &EstimatorLogframe::raw_gz,
 
-            &EstimatorLogframe::filtered_ax,
-            &EstimatorLogframe::filtered_ay,
-            &EstimatorLogframe::filtered_az,
+            // &EstimatorLogframe::filtered_ax,
+            // &EstimatorLogframe::filtered_ay,
+            // &EstimatorLogframe::filtered_az,
 
-            &EstimatorLogframe::filtered_gx,
-            &EstimatorLogframe::filtered_gy,
-            &EstimatorLogframe::filtered_gz,
+            // &EstimatorLogframe::filtered_gx,
+            // &EstimatorLogframe::filtered_gy,
+            // &EstimatorLogframe::filtered_gz,
 
             &EstimatorLogframe::controller_batt_V,
-            &EstimatorLogframe::controller_voltage_scale,
+            // &EstimatorLogframe::controller_voltage_scale,
             &EstimatorLogframe::controller_thrust_top_cmd,
-            &EstimatorLogframe::controller_thrust_bottom_cmd,
-            &EstimatorLogframe::controller_fx_cmd,
-            &EstimatorLogframe::controller_fx_cmd_outer,
-            &EstimatorLogframe::controller_position_control_enabled,
-            &EstimatorLogframe::controller_pos_err_x,
-            &EstimatorLogframe::controller_pos_err_y,
-            &EstimatorLogframe::controller_pos_err_z,
-            &EstimatorLogframe::controller_vel_err_x,
-            &EstimatorLogframe::controller_vel_err_y,
-            &EstimatorLogframe::controller_vel_err_z
+            &EstimatorLogframe::controller_thrust_bottom_cmd
+            // &EstimatorLogframe::controller_fx_cmd,
+            // &EstimatorLogframe::controller_fx_cmd_outer,
+            // &EstimatorLogframe::controller_position_control_enabled,
+            // &EstimatorLogframe::controller_pos_err_x,
+            // &EstimatorLogframe::controller_pos_err_y,
+            // &EstimatorLogframe::controller_pos_err_z,
+            // &EstimatorLogframe::controller_vel_err_x,
+            // &EstimatorLogframe::controller_vel_err_y,
+            // &EstimatorLogframe::controller_vel_err_z
         );
         return ret;
     }

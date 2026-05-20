@@ -9,10 +9,11 @@ namespace GeneralConfig{
 
     //I2C frequrency - 4Khz
     static constexpr int I2C_FREQUENCY = 400000;
+
+    // Bench throttle test: entering Flight arms the props and runs the
+    // voltage/thrust calibration profile on both motors.
+    static constexpr bool ThrottleRampTestEnabled = true;
 };
-
-
-
 
 
 
