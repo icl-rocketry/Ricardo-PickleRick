@@ -18,7 +18,7 @@ void Flight::initialize()
                                           });
     _system.controller.start();
 
-    if (GeneralConfig::ThrottleRampTestEnabled) {
+    if (GeneralConfig::ThrottleRampTestEnabled) { //code for the throttle load cell testing
         m_trajectory_active = false;
         _system.controller.setPositionControlEnabled(false);
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Throttle profile test enabled: running full voltage/thrust calibration profile");
@@ -47,7 +47,7 @@ Types::CoreTypes::State_ptr_t Flight::update()
         _system.controller.updateThrottleProfileTest(true);
         return nullptr;
     }
-
+   // If the drone is tilted more than 25 degrees from upright, transition to landing state to prevent flyaway
     constexpr float kMaxTiltRad = 25.0f * DEG_TO_RAD;
     const Eigen::Vector3f thrust_axis_world =
         current_Data.orientation.normalized() * Eigen::Vector3f::UnitX();

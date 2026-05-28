@@ -30,7 +30,7 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
         void setPositionControlEnabled(bool enabled);
         unsigned long getStartTime() { return m_controller_start_time; };
         float getBatteryVoltage() const { return m_batt_V; }
-        float getVoltageScale() const { return m_pd.getVoltageScale(); }
+        float getVoltageScale() const { return m_voltage_scale; }
         float getCommandedThrustTop() const { return m_output(2); }
         float getCommandedThrustBottom() const { return m_output(3); }
         float getFxCmd() const { return m_pd.getFxCmd(); }
@@ -78,6 +78,7 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
 
         float m_batt_V = 16.8f;
         bool m_batt_fresh = false;
+        float m_voltage_scale = 1.0f;
                 
         friend class NRCRemoteBase<GNCController>;
         friend class NRCRemoteControllerBase<GNCController>;

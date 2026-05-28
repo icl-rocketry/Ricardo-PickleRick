@@ -12,9 +12,11 @@ namespace GeneralConfig{
 
     // Bench throttle test: entering Flight arms the props and runs the
     // voltage/thrust calibration profile on both motors.
-    static constexpr bool ThrottleRampTestEnabled = true;
+    static constexpr bool ThrottleRampTestEnabled = false;
+
+    // When false, throttle profile values are desired thrust percent.
+    // When true, throttle profile values are demanded thrust in Newtons.
+    static constexpr bool ThrottleRampProfileCommandsThrustNewtons = true;
 };
-
-
 
 

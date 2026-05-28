@@ -1,28 +1,78 @@
 #include "GNC/GNCController.h"
+#include "Config/general_config.h"
 #include "Config/loggerhandler_config.h"
+
+#include <cmath>
 
 #include <libriccore/riccorelogging.h>
 
 namespace {
 struct ThrottleProfileStep {
-    float demanded_power_percent;
+    float demand;
     unsigned long duration_ms;
 };
 
 constexpr ThrottleProfileStep kThrottleProfile[] = {
-    {0.0f, 10000},   {20.0f, 5000},   {0.0f, 15000},
-    {35.0f, 8000},   {0.0f, 3000},    {55.0f, 8000},   {0.0f, 3000},    {75.0f, 8000},   {0.0f, 300000},
-    {45.0f, 8000},   {0.0f, 3000},    {65.0f, 8000},   {0.0f, 3000},    {85.0f, 8000},   {0.0f, 300000},
-    {30.0f, 8000},   {0.0f, 3000},    {50.0f, 8000},   {0.0f, 3000},    {70.0f, 8000},   {0.0f, 300000},
-    {40.0f, 8000},   {0.0f, 3000},    {60.0f, 8000},   {0.0f, 3000},    {90.0f, 8000},   {0.0f, 300000},
-    {25.0f, 8000},   {0.0f, 3000},    {80.0f, 8000},   {0.0f, 3000},    {100.0f, 8000},  {0.0f, 300000},
-    {35.0f, 8000},   {0.0f, 3000},    {50.0f, 8000},   {0.0f, 3000},    {65.0f, 8000},   {0.0f, 300000},
-    {45.0f, 8000},   {0.0f, 3000},    {75.0f, 8000},   {0.0f, 3000},    {95.0f, 8000},   {0.0f, 300000},
-    {0.0f, 20000},
+    //check in general config whether the demand is in Newtons or in power percent and convert accordingly in the code below
+    {12.7f, 8000},  {0.0f, 40000},
+    {12.8f, 8000},  {0.0f, 40000},
+    {12.9f, 8000},  {0.0f, 40000},
+    {13.0f, 8000},  {0.0f, 40000},
+    {13.1f, 8000},  {0.0f, 40000},
+    {13.2f, 8000},  {0.0f, 40000},
+    {1.0f, 8000},   {0.0f, 40000},
 };
 
 constexpr uint8_t kThrottleProfileStepCount =
     static_cast<uint8_t>(sizeof(kThrottleProfile) / sizeof(kThrottleProfile[0]));
+
+constexpr float kThrottleProfileNominalBattV = 15.600f;
+constexpr float kThrottleProfileVoltageExponent = 0.95f;
+constexpr float kThrottleProfileMinValidBattV = 12.0f;
+constexpr float kThrottleProfileMaxThrustN = 31.1f;
+constexpr float kThrottleProfileThrustLinearisationExponent = 0.7f;
+
+float calculateThrottleProfileVoltageScale(float filtered_battery_voltage, bool fresh)
+{
+    if (!fresh || filtered_battery_voltage <= kThrottleProfileMinValidBattV)
+    {
+        return 1.0f;
+    }
+
+    return powf(kThrottleProfileNominalBattV / filtered_battery_voltage,
+                kThrottleProfileVoltageExponent);
+}
+
+float clampThrottlePercent(float command)
+{
+    if (command < 0.0f)
+    {
+        return 0.0f;
+    }
+    if (command > 100.0f)
+    {
+        return 100.0f;
+    }
+    return command;
+}
+
+float throttleProfileDemandToDesiredThrustPercent(float demand)
+{
+    if constexpr (GeneralConfig::ThrottleRampProfileCommandsThrustNewtons)
+    {
+        return demand * 100.0f / kThrottleProfileMaxThrustN;
+    }
+
+    return demand;
+}
+
+float desiredThrustPercentToPwmPercent(float desired_thrust_percent)
+{
+    desired_thrust_percent = clampThrottlePercent(desired_thrust_percent);
+
+    return 100.0f * powf(desired_thrust_percent / 100.0f,
+                         kThrottleProfileThrustLinearisationExponent);
+}
 }
 
 void GNCController::setup() {
@@ -36,6 +86,7 @@ void GNCController::start() {
     m_controller_start_time = millis();
     m_throttle_profile_step_start_time = m_controller_start_time;
     m_throttle_profile_step = 0;
+    m_voltage_scale = 1.0f;
     m_output << 0.0f, 0.0f, 0.0f, 0.0f;
     sendArmingCommands();
     m_pd.reset();
@@ -85,6 +136,7 @@ void GNCController::update(Eigen::Quaterniond q,
 
         m_pd.update(q, angular_rates, controller_position, controller_velocity, m_batt_V, m_batt_fresh);
         m_output = m_pd.getOutputValues();
+        m_voltage_scale = m_pd.getVoltageScale();
         if (actuate) {
 
             sendActuationCommands(m_output);
@@ -113,11 +165,16 @@ void GNCController::updateThrottleProfileTest(bool actuate)
         m_throttle_profile_step++;
     }
 
-    float command = 0.0f;
+    float desired_thrust_percent = 0.0f;
     if (m_throttle_profile_step < kThrottleProfileStepCount)
     {
-        command = kThrottleProfile[m_throttle_profile_step].demanded_power_percent;
+        desired_thrust_percent =
+            throttleProfileDemandToDesiredThrustPercent(kThrottleProfile[m_throttle_profile_step].demand);
     }
+
+    m_voltage_scale = calculateThrottleProfileVoltageScale(m_batt_V, m_batt_fresh);
+    const float linearised_pwm_percent = desiredThrustPercentToPwmPercent(desired_thrust_percent);
+    const float command = clampThrottlePercent(linearised_pwm_percent * m_voltage_scale);
 
     m_output << 0.0f, 0.0f, command, command;
 

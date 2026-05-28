@@ -22,7 +22,7 @@ namespace TimingConfig
         constexpr uint32_t TELEMETRY_LOG_RATE_HZ = 100;
         constexpr uint32_t ESTIMATOR_UPDATE_RATE_HZ = 120;
         constexpr uint32_t POWER_MONITOR_UPDATE_RATE_HZ = 50;
-        constexpr uint32_t ESTIMATOR_LOG_RATE_HZ = 50;
+        constexpr uint32_t ESTIMATOR_LOG_RATE_HZ = 100;
 
         constexpr uint32_t TELEMETRY_LOG_DELTA_US = periodUsFromHz(TELEMETRY_LOG_RATE_HZ);
         constexpr uint32_t ESTIMATOR_UPDATE_DELTA_US = periodUsFromHz(ESTIMATOR_UPDATE_RATE_HZ);
@@ -87,6 +87,6 @@ namespace TimingConfig
     namespace PowerMonitor
     {
         constexpr uint32_t REQUEST_PERIOD_MS = 100; 
-        constexpr uint32_t FRESH_TIMEOUT_MS = 1000;
+        constexpr uint32_t FRESH_TIMEOUT_MS = 500;
     }
 }
