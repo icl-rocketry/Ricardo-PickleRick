@@ -1,13 +1,15 @@
 (kicad_sch
-	(version 20231120)
+	(version 20250114)
 	(generator "eeschema")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(uuid "e9284afa-e324-4762-b662-a428eebcb5c2")
 	(paper "A4")
 	(lib_symbols
 		(symbol "Connector:Conn_01x02_Male"
 			(pin_names
-				(offset 1.016) hide)
+				(offset 1.016)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -73,16 +75,26 @@
 				)
 			)
 			(symbol "Conn_01x02_Male_1_1"
-				(polyline
-					(pts
-						(xy 1.27 -2.54) (xy 0.8636 -2.54)
-					)
+				(rectangle
+					(start 0.8636 0.127)
+					(end 0 -0.127)
 					(stroke
 						(width 0.1524)
 						(type default)
 					)
 					(fill
-						(type none)
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
 					)
 				)
 				(polyline
@@ -97,26 +109,16 @@
 						(type none)
 					)
 				)
-				(rectangle
-					(start 0.8636 -2.413)
-					(end 0 -2.667)
+				(polyline
+					(pts
+						(xy 1.27 -2.54) (xy 0.8636 -2.54)
+					)
 					(stroke
 						(width 0.1524)
 						(type default)
 					)
 					(fill
-						(type outline)
-					)
-				)
-				(rectangle
-					(start 0.8636 0.127)
-					(end 0 -0.127)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type outline)
+						(type none)
 					)
 				)
 				(pin passive line
@@ -156,11 +158,16 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Connector:TestPoint"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0.762) hide)
+				(offset 0.762)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -258,11 +265,16 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Device:C_Polarized_Small_US"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0.254) hide)
+				(offset 0.254)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -367,9 +379,9 @@
 					)
 				)
 				(arc
-					(start 1.524 -0.762)
+					(start -1.524 -0.762)
 					(mid 0 -0.3734)
-					(end -1.524 -0.762)
+					(end 1.524 -0.762)
 					(stroke
 						(width 0.3048)
 						(type default)
@@ -417,11 +429,16 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Device:C_Small"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0.254) hide)
+				(offset 0.254)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -491,10 +508,10 @@
 			(symbol "C_Small_0_1"
 				(polyline
 					(pts
-						(xy -1.524 -0.508) (xy 1.524 -0.508)
+						(xy -1.524 0.508) (xy 1.524 0.508)
 					)
 					(stroke
-						(width 0.3302)
+						(width 0.3048)
 						(type default)
 					)
 					(fill
@@ -503,10 +520,10 @@
 				)
 				(polyline
 					(pts
-						(xy -1.524 0.508) (xy 1.524 0.508)
+						(xy -1.524 -0.508) (xy 1.524 -0.508)
 					)
 					(stroke
-						(width 0.3048)
+						(width 0.3302)
 						(type default)
 					)
 					(fill
@@ -552,11 +569,16 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Device:LED_Small"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0.254) hide)
+				(offset 0.254)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -638,7 +660,19 @@
 				)
 				(polyline
 					(pts
-						(xy 1.016 0) (xy -0.762 0)
+						(xy 0 0.762) (xy -0.508 1.27) (xy -0.254 1.27) (xy -0.508 1.27) (xy -0.508 1.016)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.508 1.27) (xy 0 1.778) (xy 0.254 1.778) (xy 0 1.778) (xy 0 1.524)
 					)
 					(stroke
 						(width 0)
@@ -662,19 +696,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 0.762) (xy -0.508 1.27) (xy -0.254 1.27) (xy -0.508 1.27) (xy -0.508 1.016)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.508 1.27) (xy 0 1.778) (xy 0.254 1.778) (xy 0 1.778) (xy 0 1.524)
+						(xy 1.016 0) (xy -0.762 0)
 					)
 					(stroke
 						(width 0)
@@ -723,10 +745,13 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Device:Q_PMOS_GSD"
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -787,6 +812,18 @@
 			(symbol "Q_PMOS_GSD_0_1"
 				(polyline
 					(pts
+						(xy 0.254 1.905) (xy 0.254 -1.905)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
 						(xy 0.254 0) (xy -2.54 0)
 					)
 					(stroke
@@ -799,7 +836,31 @@
 				)
 				(polyline
 					(pts
-						(xy 0.254 1.905) (xy 0.254 -1.905)
+						(xy 0.762 2.286) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 1.778) (xy 3.302 1.778) (xy 3.302 -1.778) (xy 0.762 -1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 0.508) (xy 0.762 -0.508)
 					)
 					(stroke
 						(width 0.254)
@@ -821,60 +882,11 @@
 						(type none)
 					)
 				)
-				(polyline
-					(pts
-						(xy 0.762 0.508) (xy 0.762 -0.508)
-					)
+				(circle
+					(center 1.651 0)
+					(radius 2.794)
 					(stroke
 						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 2.286) (xy 0.762 1.27)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 2.54) (xy 2.54 1.778)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 -2.54) (xy 2.54 0) (xy 0.762 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 1.778) (xy 3.302 1.778) (xy 3.302 -1.778) (xy 0.762 -1.778)
-					)
-					(stroke
-						(width 0)
 						(type default)
 					)
 					(fill
@@ -891,6 +903,52 @@
 					)
 					(fill
 						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 2.54) (xy 2.54 1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.54 1.778)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(circle
+					(center 2.54 -1.778)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 -2.54) (xy 2.54 0) (xy 0.762 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
 					)
 				)
 				(polyline
@@ -917,39 +975,6 @@
 						(type none)
 					)
 				)
-				(circle
-					(center 1.651 0)
-					(radius 2.794)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.54 -1.778)
-					(radius 0.254)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(circle
-					(center 2.54 1.778)
-					(radius 0.254)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
 			)
 			(symbol "Q_PMOS_GSD_1_1"
 				(pin input line
@@ -963,24 +988,6 @@
 						)
 					)
 					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 2.54 -5.08 90)
-					(length 2.54)
-					(name "S"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1006,10 +1013,31 @@
 						)
 					)
 				)
+				(pin passive line
+					(at 2.54 -5.08 90)
+					(length 2.54)
+					(name "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Device:R"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(offset 0)
 			)
@@ -1128,11 +1156,16 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Device:R_Small"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0.254) hide)
+				(offset 0.254)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1250,6 +1283,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_1"
 			(power)
@@ -1329,7 +1363,8 @@
 			(symbol "GND_1_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -1346,6 +1381,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_10"
 			(power)
@@ -1425,7 +1461,8 @@
 			(symbol "GND_10_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -1442,6 +1479,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_11"
 			(power)
@@ -1521,7 +1559,8 @@
 			(symbol "GND_11_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -1538,6 +1577,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_12"
 			(power)
@@ -1617,7 +1657,8 @@
 			(symbol "GND_12_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -1634,12 +1675,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_13"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1730,12 +1776,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_14"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1826,12 +1877,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_15"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1922,6 +1978,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_2"
 			(power)
@@ -2001,7 +2058,8 @@
 			(symbol "GND_2_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -2018,6 +2076,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_3"
 			(power)
@@ -2097,7 +2156,8 @@
 			(symbol "GND_3_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -2114,6 +2174,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_4"
 			(power)
@@ -2193,7 +2254,8 @@
 			(symbol "GND_4_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -2210,6 +2272,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_5"
 			(power)
@@ -2289,7 +2352,8 @@
 			(symbol "GND_5_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -2306,6 +2370,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_6"
 			(power)
@@ -2385,7 +2450,8 @@
 			(symbol "GND_6_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -2402,6 +2468,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_7"
 			(power)
@@ -2481,7 +2548,8 @@
 			(symbol "GND_7_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -2498,6 +2566,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_8"
 			(power)
@@ -2577,7 +2646,8 @@
 			(symbol "GND_8_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -2594,6 +2664,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "GND_9"
 			(power)
@@ -2673,7 +2744,8 @@
 			(symbol "GND_9_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -2690,10 +2762,13 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Jumper:SolderJumper_2_Open"
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -2759,30 +2834,6 @@
 				)
 			)
 			(symbol "SolderJumper_2_Open_0_1"
-				(arc
-					(start -0.254 1.016)
-					(mid -1.2656 0)
-					(end -0.254 -1.016)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(arc
-					(start -0.254 1.016)
-					(mid -1.2656 0)
-					(end -0.254 -1.016)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
 				(polyline
 					(pts
 						(xy -0.254 1.016) (xy -0.254 -1.016)
@@ -2795,6 +2846,54 @@
 						(type none)
 					)
 				)
+				(arc
+					(start -0.254 -1.016)
+					(mid -1.2656 0)
+					(end -0.254 1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -0.254 -1.016)
+					(mid -1.2656 0)
+					(end -0.254 1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(arc
+					(start 0.254 1.016)
+					(mid 1.2656 0)
+					(end 0.254 -1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 0.254 1.016)
+					(mid 1.2656 0)
+					(end 0.254 -1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
 				(polyline
 					(pts
 						(xy 0.254 1.016) (xy 0.254 -1.016)
@@ -2805,30 +2904,6 @@
 					)
 					(fill
 						(type none)
-					)
-				)
-				(arc
-					(start 0.254 -1.016)
-					(mid 1.2656 0)
-					(end 0.254 1.016)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(arc
-					(start 0.254 -1.016)
-					(mid 1.2656 0)
-					(end 0.254 1.016)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
 					)
 				)
 			)
@@ -2870,11 +2945,16 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Mechanical:MountingHole_Pad"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 1.016) hide)
+				(offset 1.016)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -2972,6 +3052,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Power_Management:LTC4412xS6"
 			(exclude_from_sim no)
@@ -3070,24 +3151,6 @@
 						)
 					)
 				)
-				(pin power_in line
-					(at 0 -10.16 90)
-					(length 2.54)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
 				(pin input line
 					(at -10.16 -2.54 0)
 					(length 2.54)
@@ -3099,24 +3162,6 @@
 						)
 					)
 					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin open_collector line
-					(at 10.16 -2.54 180)
-					(length 2.54)
-					(name "STAT"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3142,6 +3187,24 @@
 						)
 					)
 				)
+				(pin power_in line
+					(at 0 -10.16 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
 				(pin input line
 					(at 10.16 2.54 180)
 					(length 2.54)
@@ -3160,7 +3223,26 @@
 						)
 					)
 				)
+				(pin open_collector line
+					(at 10.16 -2.54 180)
+					(length 2.54)
+					(name "STAT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Sensor_Energy:INA219AxDCN"
 			(exclude_from_sim no)
@@ -3278,24 +3360,6 @@
 					)
 				)
 				(pin power_in line
-					(at 0 -10.16 90)
-					(length 2.54)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
 					(at 0 10.16 270)
 					(length 2.54)
 					(name "VS"
@@ -3313,17 +3377,17 @@
 						)
 					)
 				)
-				(pin input line
-					(at 10.16 2.54 180)
+				(pin power_in line
+					(at 0 -10.16 90)
 					(length 2.54)
-					(name "SCL"
+					(name "GND"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "5"
+					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3350,16 +3414,16 @@
 					)
 				)
 				(pin input line
-					(at 10.16 -5.08 180)
+					(at 10.16 2.54 180)
 					(length 2.54)
-					(name "A0"
+					(name "SCL"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "7"
+					(number "5"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3385,7 +3449,26 @@
 						)
 					)
 				)
+				(pin input line
+					(at 10.16 -5.08 180)
+					(length 2.54)
+					(name "A0"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "iclr-hw:BSZ025N04LS"
 			(exclude_from_sim no)
@@ -3511,18 +3594,6 @@
 			(symbol "BSZ025N04LS_0_1"
 				(polyline
 					(pts
-						(xy -1.016 0) (xy -3.81 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
 						(xy -1.016 1.905) (xy -1.016 -1.905)
 					)
 					(stroke
@@ -3535,7 +3606,19 @@
 				)
 				(polyline
 					(pts
-						(xy -0.508 -1.27) (xy -0.508 -2.286)
+						(xy -1.016 0) (xy -3.81 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -0.508 2.286) (xy -0.508 1.27)
 					)
 					(stroke
 						(width 0.254)
@@ -3559,34 +3642,10 @@
 				)
 				(polyline
 					(pts
-						(xy -0.508 2.286) (xy -0.508 1.27)
+						(xy -0.508 -1.27) (xy -0.508 -2.286)
 					)
 					(stroke
 						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 2.54) (xy 1.27 1.778)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 -2.54) (xy 1.27 0) (xy -0.508 0)
-					)
-					(stroke
-						(width 0)
 						(type default)
 					)
 					(fill
@@ -3617,6 +3676,63 @@
 						(type outline)
 					)
 				)
+				(circle
+					(center 0.381 0)
+					(radius 2.794)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 2.54) (xy 1.27 1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 1.27 1.778)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(circle
+					(center 1.27 -1.778)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -2.54) (xy 1.27 0) (xy -0.508 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
 				(polyline
 					(pts
 						(xy 1.524 0.508) (xy 1.651 0.381) (xy 2.413 0.381) (xy 2.54 0.254)
@@ -3641,95 +3757,8 @@
 						(type none)
 					)
 				)
-				(circle
-					(center 0.381 0)
-					(radius 2.794)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 1.27 -1.778)
-					(radius 0.254)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(circle
-					(center 1.27 1.778)
-					(radius 0.254)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
 			)
 			(symbol "BSZ025N04LS_1_1"
-				(pin passive line
-					(at 1.27 -5.08 90)
-					(length 2.54)
-					(name "S"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 1.27 -5.08 90)
-					(length 2.54) hide
-					(name "S"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 1.27 -5.08 90)
-					(length 2.54) hide
-					(name "S"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
 				(pin input line
 					(at -6.35 0 0)
 					(length 2.54)
@@ -3768,7 +3797,8 @@
 				)
 				(pin passive line
 					(at 1.27 5.08 270)
-					(length 2.54) hide
+					(length 2.54)
+					(hide yes)
 					(name "D"
 						(effects
 							(font
@@ -3786,7 +3816,8 @@
 				)
 				(pin passive line
 					(at 1.27 5.08 270)
-					(length 2.54) hide
+					(length 2.54)
+					(hide yes)
 					(name "D"
 						(effects
 							(font
@@ -3804,7 +3835,8 @@
 				)
 				(pin passive line
 					(at 1.27 5.08 270)
-					(length 2.54) hide
+					(length 2.54)
+					(hide yes)
 					(name "D"
 						(effects
 							(font
@@ -3821,26 +3853,9 @@
 					)
 				)
 				(pin passive line
-					(at 1.27 -5.08 90)
-					(length 2.54) hide
-					(name "S"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "A1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
 					(at 1.27 5.08 270)
-					(length 2.54) hide
+					(length 2.54)
+					(hide yes)
 					(name "D"
 						(effects
 							(font
@@ -3856,7 +3871,83 @@
 						)
 					)
 				)
+				(pin passive line
+					(at 1.27 -5.08 90)
+					(length 2.54)
+					(name "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 1.27 -5.08 90)
+					(length 2.54)
+					(hide yes)
+					(name "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 1.27 -5.08 90)
+					(length 2.54)
+					(hide yes)
+					(name "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 1.27 -5.08 90)
+					(length 2.54)
+					(hide yes)
+					(name "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "A1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "iclr-hw:MIC5060YML-TR"
 			(exclude_from_sim no)
@@ -4064,52 +4155,16 @@
 					)
 				)
 				(pin passive line
-					(at 30.48 -7.62 180)
+					(at 15.24 -20.32 90)
 					(length 5.08)
-					(name "GATE"
+					(name "EP"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 30.48 -5.08 180)
-					(length 5.08)
-					(name "NC_1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 30.48 -2.54 180)
-					(length 5.08)
-					(name "NC_2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "7"
+					(number "9"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4136,16 +4191,52 @@
 					)
 				)
 				(pin passive line
-					(at 15.24 -20.32 90)
+					(at 30.48 -2.54 180)
 					(length 5.08)
-					(name "EP"
+					(name "NC_2"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "9"
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 30.48 -5.08 180)
+					(length 5.08)
+					(name "NC_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 30.48 -7.62 180)
+					(length 5.08)
+					(name "GATE"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4154,6 +4245,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "iclr-hw:SQS141ELNW-T1_GE3"
 			(exclude_from_sim no)
@@ -4307,42 +4399,6 @@
 					)
 				)
 				(pin passive line
-					(at 25.4 -7.62 180)
-					(length 5.08)
-					(name "D_6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "10"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 25.4 -10.16 180)
-					(length 5.08)
-					(name "D_7"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "11"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
 					(at 0 -2.54 0)
 					(length 5.08)
 					(name "S_2"
@@ -4486,7 +4542,44 @@
 						)
 					)
 				)
+				(pin passive line
+					(at 25.4 -7.62 180)
+					(length 5.08)
+					(name "D_6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "10"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 25.4 -10.16 180)
+					(length 5.08)
+					(name "D_7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "11"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "iclr:MP28167GQ-A-Z"
 			(pin_names
@@ -4557,18 +4650,6 @@
 			(symbol "MP28167GQ-A-Z_1_1"
 				(polyline
 					(pts
-						(xy 7.62 -22.86) (xy 33.02 -22.86)
-					)
-					(stroke
-						(width 0.127)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
 						(xy 7.62 5.08) (xy 7.62 -22.86)
 					)
 					(stroke
@@ -4581,7 +4662,7 @@
 				)
 				(polyline
 					(pts
-						(xy 33.02 -22.86) (xy 33.02 5.08)
+						(xy 7.62 -22.86) (xy 33.02 -22.86)
 					)
 					(stroke
 						(width 0.127)
@@ -4603,6 +4684,18 @@
 						(type none)
 					)
 				)
+				(polyline
+					(pts
+						(xy 33.02 -22.86) (xy 33.02 5.08)
+					)
+					(stroke
+						(width 0.127)
+						(type solid)
+					)
+					(fill
+						(type none)
+					)
+				)
 				(pin power_in line
 					(at 0 0 0)
 					(length 7.62)
@@ -4614,132 +4707,6 @@
 						)
 					)
 					(number "1"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 40.64 -15.24 180)
-					(length 7.62)
-					(name "AGND"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-					(number "10"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 40.64 -12.7 180)
-					(length 7.62)
-					(name "GND"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-					(number "11"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 40.64 -10.16 180)
-					(length 7.62)
-					(name "OUT"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-					(number "12"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 40.64 -7.62 180)
-					(length 7.62)
-					(name "BST2"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-					(number "13"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-				)
-				(pin unspecified line
-					(at 40.64 -5.08 180)
-					(length 7.62)
-					(name "SW2"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-					(number "14"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-				)
-				(pin unspecified line
-					(at 40.64 -2.54 180)
-					(length 7.62)
-					(name "SW1"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-					(number "15"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 40.64 0 180)
-					(length 7.62)
-					(name "BST1"
-						(effects
-							(font
-								(size 1.4986 1.4986)
-							)
-						)
-					)
-					(number "16"
 						(effects
 							(font
 								(size 1.4986 1.4986)
@@ -4874,6 +4841,132 @@
 					)
 				)
 				(pin power_in line
+					(at 40.64 0 180)
+					(length 7.62)
+					(name "BST1"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+					(number "16"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 40.64 -2.54 180)
+					(length 7.62)
+					(name "SW1"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+					(number "15"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 40.64 -5.08 180)
+					(length 7.62)
+					(name "SW2"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+					(number "14"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 40.64 -7.62 180)
+					(length 7.62)
+					(name "BST2"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+					(number "13"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 40.64 -10.16 180)
+					(length 7.62)
+					(name "OUT"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+					(number "12"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 40.64 -12.7 180)
+					(length 7.62)
+					(name "GND"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+					(number "11"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 40.64 -15.24 180)
+					(length 7.62)
+					(name "AGND"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+					(number "10"
+						(effects
+							(font
+								(size 1.4986 1.4986)
+							)
+						)
+					)
+				)
+				(pin power_in line
 					(at 40.64 -17.78 180)
 					(length 7.62)
 					(name "VCC"
@@ -4892,9 +4985,12 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "iclr:MPL-AL6050-4R7"
-			(pin_names hide)
+			(pin_names
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -5017,20 +5113,8 @@
 			)
 			(symbol "MPL-AL6050-4R7_1_1"
 				(arc
-					(start 7.62 0)
+					(start 5.08 0)
 					(mid 6.35 1.219)
-					(end 5.08 0)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(arc
-					(start 10.16 0)
-					(mid 8.89 1.219)
 					(end 7.62 0)
 					(stroke
 						(width 0.254)
@@ -5041,8 +5125,8 @@
 					)
 				)
 				(arc
-					(start 12.7 0)
-					(mid 11.43 1.219)
+					(start 7.62 0)
+					(mid 8.89 1.219)
 					(end 10.16 0)
 					(stroke
 						(width 0.254)
@@ -5053,9 +5137,21 @@
 					)
 				)
 				(arc
-					(start 15.24 0)
-					(mid 13.97 1.219)
+					(start 10.16 0)
+					(mid 11.43 1.219)
 					(end 12.7 0)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 12.7 0)
+					(mid 13.97 1.219)
+					(end 15.24 0)
 					(stroke
 						(width 0.254)
 						(type default)
@@ -5101,6 +5197,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "iclr:RT9025-25GSP"
 			(exclude_from_sim no)
@@ -5161,17 +5258,17 @@
 						(type background)
 					)
 				)
-				(pin output line
-					(at 10.16 -13.97 180)
+				(pin input line
+					(at -10.16 -1.27 0)
 					(length 2.54)
-					(name "PGOOD"
+					(name "VIN"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "1"
+					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -5198,24 +5295,6 @@
 					)
 				)
 				(pin input line
-					(at -10.16 -1.27 0)
-					(length 2.54)
-					(name "VIN"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
 					(at -10.16 -13.97 0)
 					(length 2.54)
 					(name "VDD"
@@ -5226,42 +5305,6 @@
 						)
 					)
 					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 10.16 -1.27 180)
-					(length 2.54)
-					(name "VOUT"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 10.16 -10.16 180)
-					(length 2.54)
-					(name "ADJ"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "7"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -5305,13 +5348,72 @@
 						)
 					)
 				)
+				(pin output line
+					(at 10.16 -1.27 180)
+					(length 2.54)
+					(name "VOUT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at 10.16 -10.16 180)
+					(length 2.54)
+					(name "ADJ"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 10.16 -13.97 180)
+					(length 2.54)
+					(name "PGOOD"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:+24V"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -5383,7 +5485,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 0) (xy 0 2.54)
+						(xy 0 2.54) (xy 0.762 1.27)
 					)
 					(stroke
 						(width 0)
@@ -5395,7 +5497,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
+						(xy 0 0) (xy 0 2.54)
 					)
 					(stroke
 						(width 0)
@@ -5426,6 +5528,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:+3.3V"
 			(power)
@@ -5503,7 +5606,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 0) (xy 0 2.54)
+						(xy 0 2.54) (xy 0.762 1.27)
 					)
 					(stroke
 						(width 0)
@@ -5515,7 +5618,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
+						(xy 0 0) (xy 0 2.54)
 					)
 					(stroke
 						(width 0)
@@ -5529,7 +5632,8 @@
 			(symbol "+3.3V_1_1"
 				(pin power_in line
 					(at 0 0 90)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "+3V3"
 						(effects
 							(font
@@ -5546,12 +5650,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:+3V3"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -5623,7 +5732,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 0) (xy 0 2.54)
+						(xy 0 2.54) (xy 0.762 1.27)
 					)
 					(stroke
 						(width 0)
@@ -5635,7 +5744,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
+						(xy 0 0) (xy 0 2.54)
 					)
 					(stroke
 						(width 0)
@@ -5666,6 +5775,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:GND"
 			(power)
@@ -5745,7 +5855,8 @@
 			(symbol "GND_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -5762,6 +5873,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:VBUS"
 			(power)
@@ -5839,7 +5951,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 0) (xy 0 2.54)
+						(xy 0 2.54) (xy 0.762 1.27)
 					)
 					(stroke
 						(width 0)
@@ -5851,7 +5963,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
+						(xy 0 0) (xy 0 2.54)
 					)
 					(stroke
 						(width 0)
@@ -5865,7 +5977,8 @@
 			(symbol "VBUS_1_1"
 				(pin power_in line
 					(at 0 0 90)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "VBUS"
 						(effects
 							(font
@@ -5882,7 +5995,51 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
+	)
+	(text "0x45\n"
+		(exclude_from_sim no)
+		(at 137.414 116.332 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "7d913105-63a2-4f89-b723-4b7d4d56c16a")
+	)
+	(text "Allows a voltage range of up to 30v -> 80k and 10k scaled to 3.333v"
+		(exclude_from_sim no)
+		(at 59.69 16.51 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "8a9715ef-8c53-4b33-9426-ca0543a0081c")
+	)
+	(text "Vref = 1v\nR1 = (Vout - Vref)/Vref * R2\nAim for 4v due to max 600mv drop out on sc4215 \nR1 = 430k\nR2 = 143K"
+		(exclude_from_sim no)
+		(at 167.64 105.41 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "a99e3dcf-4121-4803-9ab2-0287d6c043d3")
+	)
+	(text "Current Limit set as 2.04A"
+		(exclude_from_sim no)
+		(at 92.71 92.71 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c20733ff-84df-4ca8-88fe-6996acda14dc")
 	)
 	(junction
 		(at 270.51 110.49)
@@ -8542,49 +8699,6 @@
 		)
 		(uuid "feef8caf-a0d9-4c08-a60b-fe0280d08be0")
 	)
-	(text "0x45\n"
-		(exclude_from_sim no)
-		(at 137.414 116.332 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "7d913105-63a2-4f89-b723-4b7d4d56c16a")
-	)
-	(text "Allows a voltage range of up to 30v -> 80k and 10k scaled to 3.333v"
-		(exclude_from_sim no)
-		(at 59.69 16.51 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "8a9715ef-8c53-4b33-9426-ca0543a0081c")
-	)
-	(text "Vref = 1v\nR1 = (Vout - Vref)/Vref * R2\nAim for 4v due to max 600mv drop out on sc4215 \nR1 = 430k\nR2 = 143K"
-		(exclude_from_sim no)
-		(at 167.64 105.41 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "a99e3dcf-4121-4803-9ab2-0287d6c043d3")
-	)
-	(text "Current Limit set as 2.04A"
-		(exclude_from_sim no)
-		(at 92.71 92.71 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "c20733ff-84df-4ca8-88fe-6996acda14dc")
-	)
 	(label "RBUS_24V_GATE"
 		(at 264.16 129.54 0)
 		(effects
@@ -9084,7 +9198,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "0283c89b-2ef2-4242-b0df-dbaea319b38b")
-		(property "Reference" "R19"
+		(property "Reference" "R505"
 			(at 88.9 123.19 0)
 			(effects
 				(font
@@ -9146,7 +9260,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R19")
+					(reference "R505")
 					(unit 1)
 				)
 			)
@@ -9162,7 +9276,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "043b1127-588f-458a-817e-d69821dd03d4")
-		(property "Reference" "C30"
+		(property "Reference" "C509"
 			(at 115.57 67.9513 0)
 			(effects
 				(font
@@ -9216,7 +9330,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C30")
+					(reference "C509")
 					(unit 1)
 				)
 			)
@@ -9232,7 +9346,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "04de5745-5770-48db-ac33-11332d027af5")
-		(property "Reference" "R44"
+		(property "Reference" "R504"
 			(at 85.09 78.74 90)
 			(effects
 				(font
@@ -9284,7 +9398,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R44")
+					(reference "R504")
 					(unit 1)
 				)
 			)
@@ -9299,7 +9413,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "0870865b-0b96-41ff-bd58-be45e025f47e")
-		(property "Reference" "TP13"
+		(property "Reference" "TP504"
 			(at 193.04 17.78 0)
 			(effects
 				(font
@@ -9350,7 +9464,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "TP13")
+					(reference "TP504")
 					(unit 1)
 				)
 			)
@@ -9366,7 +9480,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "08809d70-5552-4456-adbf-fe7f3fb5ee05")
-		(property "Reference" "Q8"
+		(property "Reference" "Q502"
 			(at 55.88 109.22 90)
 			(effects
 				(font
@@ -9421,7 +9535,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "Q8")
+					(reference "Q502")
 					(unit 1)
 				)
 			)
@@ -9437,7 +9551,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0ff8bd1e-cfe9-413d-9b24-8eff9ffeafd3")
-		(property "Reference" "#PWR0135"
+		(property "Reference" "#PWR0503"
 			(at 31.75 165.1 0)
 			(effects
 				(font
@@ -9487,7 +9601,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0135")
+					(reference "#PWR0503")
 					(unit 1)
 				)
 			)
@@ -9502,7 +9616,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1056b828-2aea-4271-b8c6-627303237fb2")
-		(property "Reference" "C46"
+		(property "Reference" "C524"
 			(at 268.3883 24.7054 0)
 			(effects
 				(font
@@ -9558,7 +9672,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C46")
+					(reference "C524")
 					(unit 1)
 				)
 			)
@@ -9574,7 +9688,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "107f0f85-e356-46ad-85bc-9c13545badc9")
-		(property "Reference" "R37"
+		(property "Reference" "R511"
 			(at 120.65 86.995 0)
 			(effects
 				(font
@@ -9628,7 +9742,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R37")
+					(reference "R511")
 					(unit 1)
 				)
 			)
@@ -9644,7 +9758,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "11665647-fc5e-4138-be6f-401ece222d91")
-		(property "Reference" "C36"
+		(property "Reference" "C506"
 			(at 102.87 61.6013 0)
 			(effects
 				(font
@@ -9698,7 +9812,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C36")
+					(reference "C506")
 					(unit 1)
 				)
 			)
@@ -9714,7 +9828,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "11f7174b-634c-4892-91bd-3759b4e95a3c")
-		(property "Reference" "R27"
+		(property "Reference" "R508"
 			(at 115.57 61.595 0)
 			(effects
 				(font
@@ -9768,7 +9882,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R27")
+					(reference "R508")
 					(unit 1)
 				)
 			)
@@ -9784,7 +9898,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "154f66c8-32bc-48e3-96d9-6d4ff6389db9")
-		(property "Reference" "C57"
+		(property "Reference" "C522"
 			(at 219.71 73.0313 0)
 			(effects
 				(font
@@ -9838,7 +9952,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C57")
+					(reference "C522")
 					(unit 1)
 				)
 			)
@@ -9854,7 +9968,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1bb8725c-93f6-4363-a009-b65709a5db6f")
-		(property "Reference" "#PWR0109"
+		(property "Reference" "#PWR0539"
 			(at 264.16 162.56 0)
 			(effects
 				(font
@@ -9904,7 +10018,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0109")
+					(reference "#PWR0539")
 					(unit 1)
 				)
 			)
@@ -9920,7 +10034,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2115a293-1db3-440d-a3c5-521952932d1b")
-		(property "Reference" "R45"
+		(property "Reference" "R509"
 			(at 118.11 29.2099 0)
 			(effects
 				(font
@@ -9974,7 +10088,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R45")
+					(reference "R509")
 					(unit 1)
 				)
 			)
@@ -9990,7 +10104,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "24ecd48c-56aa-4eb8-b136-86cc73caaff9")
-		(property "Reference" "C48"
+		(property "Reference" "C521"
 			(at 214.63 73.0313 0)
 			(effects
 				(font
@@ -10044,7 +10158,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C48")
+					(reference "C521")
 					(unit 1)
 				)
 			)
@@ -10059,7 +10173,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "268b5def-07ff-4842-bca3-d3886d833ee9")
-		(property "Reference" "TP10"
+		(property "Reference" "TP501"
 			(at 92.71 52.07 0)
 			(effects
 				(font
@@ -10110,7 +10224,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "TP10")
+					(reference "TP501")
 					(unit 1)
 				)
 			)
@@ -10126,7 +10240,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "26e8e454-f312-4026-a5f8-65264966d1a3")
-		(property "Reference" "Q9"
+		(property "Reference" "Q501"
 			(at 55.88 60.96 90)
 			(effects
 				(font
@@ -10181,7 +10295,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "Q9")
+					(reference "Q501")
 					(unit 1)
 				)
 			)
@@ -10198,7 +10312,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2730be97-0271-426c-939c-3bfd01cfe302")
-		(property "Reference" "#PWR097"
+		(property "Reference" "#PWR0528"
 			(at 156.21 110.49 0)
 			(effects
 				(font
@@ -10248,7 +10362,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR097")
+					(reference "#PWR0528")
 					(unit 1)
 				)
 			)
@@ -10263,7 +10377,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "28e1f9c2-2a3d-4c7c-bc73-f83b8d1538c8")
-		(property "Reference" "R29"
+		(property "Reference" "R518"
 			(at 253.474 34.8097 0)
 			(effects
 				(font
@@ -10317,7 +10431,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R29")
+					(reference "R518")
 					(unit 1)
 				)
 			)
@@ -10332,7 +10446,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "2df3c0fb-158b-4efc-a055-650ce442a7b9")
-		(property "Reference" "H2"
+		(property "Reference" "H502"
 			(at 33.02 49.5554 0)
 			(effects
 				(font
@@ -10383,7 +10497,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "H2")
+					(reference "H502")
 					(unit 1)
 				)
 			)
@@ -10399,7 +10513,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2f592fe6-8089-4c28-ab6c-2b479d6da5cd")
-		(property "Reference" "C35"
+		(property "Reference" "C502"
 			(at 39.37 116.8462 0)
 			(effects
 				(font
@@ -10453,7 +10567,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C35")
+					(reference "C502")
 					(unit 1)
 				)
 			)
@@ -10469,7 +10583,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "33271c44-fcc3-42c5-b4df-4a48fd5277b9")
-		(property "Reference" "TP16"
+		(property "Reference" "TP502"
 			(at 102.87 78.105 90)
 			(effects
 				(font
@@ -10520,7 +10634,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "TP16")
+					(reference "TP502")
 					(unit 1)
 				)
 			)
@@ -10537,7 +10651,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "36f5f963-9377-463a-ad32-1578020fcdbe")
-		(property "Reference" "#PWR095"
+		(property "Reference" "#PWR0531"
 			(at 180.34 88.9 0)
 			(effects
 				(font
@@ -10587,7 +10701,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR095")
+					(reference "#PWR0531")
 					(unit 1)
 				)
 			)
@@ -10604,7 +10718,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3b006c40-a33a-4fd9-a286-474448bd9c6e")
-		(property "Reference" "#PWR082"
+		(property "Reference" "#PWR0526"
 			(at 133.35 101.6 0)
 			(effects
 				(font
@@ -10654,7 +10768,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR082")
+					(reference "#PWR0526")
 					(unit 1)
 				)
 			)
@@ -10671,7 +10785,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3b0d22a9-f876-4b6e-8583-d6dd91e64283")
-		(property "Reference" "#PWR086"
+		(property "Reference" "#PWR0507"
 			(at 43.18 96.52 0)
 			(effects
 				(font
@@ -10721,7 +10835,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR086")
+					(reference "#PWR0507")
 					(unit 1)
 				)
 			)
@@ -10737,7 +10851,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3bb9e2f8-dd63-4295-8690-b7524eb60ac3")
-		(property "Reference" "C59"
+		(property "Reference" "C512"
 			(at 128.27 108.5913 0)
 			(effects
 				(font
@@ -10791,7 +10905,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C59")
+					(reference "C512")
 					(unit 1)
 				)
 			)
@@ -10808,7 +10922,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3e87cbd1-7a5a-4e98-8e7e-a8e7012ae219")
-		(property "Reference" "#PWR089"
+		(property "Reference" "#PWR0532"
 			(at 185.42 92.71 0)
 			(effects
 				(font
@@ -10858,7 +10972,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR089")
+					(reference "#PWR0532")
 					(unit 1)
 				)
 			)
@@ -10874,7 +10988,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3f7020f2-8ee8-41af-855e-afdf8c63c3ce")
-		(property "Reference" "U22"
+		(property "Reference" "U503"
 			(at 59.1694 166.37 0)
 			(effects
 				(font
@@ -10940,7 +11054,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "U22")
+					(reference "U503")
 					(unit 1)
 				)
 			)
@@ -10956,7 +11070,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "40ef19fb-2706-490b-8ce1-ed5b8aa82318")
-		(property "Reference" "TP11"
+		(property "Reference" "TP505"
 			(at 275.59 22.225 90)
 			(effects
 				(font
@@ -11007,7 +11121,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "TP11")
+					(reference "TP505")
 					(unit 1)
 				)
 			)
@@ -11022,7 +11136,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "43ee0e64-2009-426d-bee8-5cbddf4c0a6a")
-		(property "Reference" "#PWR079"
+		(property "Reference" "#PWR0502"
 			(at 20.32 62.23 0)
 			(effects
 				(font
@@ -11072,7 +11186,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR079")
+					(reference "#PWR0502")
 					(unit 1)
 				)
 			)
@@ -11088,7 +11202,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4a2105d4-3137-4468-a451-f61440149d30")
-		(property "Reference" "C42"
+		(property "Reference" "C517"
 			(at 199.39 73.0313 0)
 			(effects
 				(font
@@ -11142,7 +11256,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C42")
+					(reference "C517")
 					(unit 1)
 				)
 			)
@@ -11159,7 +11273,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4bb774d9-1a79-41cc-8ccb-3dd076a96e9d")
-		(property "Reference" "#PWR0132"
+		(property "Reference" "#PWR0508"
 			(at 43.18 144.78 0)
 			(effects
 				(font
@@ -11209,7 +11323,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0132")
+					(reference "#PWR0508")
 					(unit 1)
 				)
 			)
@@ -11226,7 +11340,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4f92ebbd-2c76-43e3-9fea-a37bbf5224b7")
-		(property "Reference" "#PWR096"
+		(property "Reference" "#PWR0533"
 			(at 204.47 85.09 0)
 			(effects
 				(font
@@ -11276,7 +11390,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR096")
+					(reference "#PWR0533")
 					(unit 1)
 				)
 			)
@@ -11291,7 +11405,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "51a0b7d4-045a-4965-a659-05b8bc18c7b4")
-		(property "Reference" "#PWR0104"
+		(property "Reference" "#PWR0524"
 			(at 125.73 109.22 0)
 			(effects
 				(font
@@ -11341,7 +11455,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0104")
+					(reference "#PWR0524")
 					(unit 1)
 				)
 			)
@@ -11356,7 +11470,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "59a425b7-1d87-4337-872f-5543649c9484")
-		(property "Reference" "12VLED1"
+		(property "Reference" "12VLED501"
 			(at 165.1 123.317 0)
 			(effects
 				(font
@@ -11408,7 +11522,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "12VLED1")
+					(reference "12VLED501")
 					(unit 1)
 				)
 			)
@@ -11424,7 +11538,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5cbadfee-9e38-4722-b7d6-df654b1beb16")
-		(property "Reference" "U10"
+		(property "Reference" "U501"
 			(at 57.8994 72.39 0)
 			(effects
 				(font
@@ -11490,7 +11604,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "U10")
+					(reference "U501")
 					(unit 1)
 				)
 			)
@@ -11506,7 +11620,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5d18fdb9-2197-4910-8e57-9bba949ba6ff")
-		(property "Reference" "L3"
+		(property "Reference" "L501"
 			(at 203.2 58.42 0)
 			(effects
 				(font
@@ -11630,7 +11744,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "L3")
+					(reference "L501")
 					(unit 1)
 				)
 			)
@@ -11646,7 +11760,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "602f293c-1218-47bd-84d1-d8f0f2870688")
-		(property "Reference" "#PWR084"
+		(property "Reference" "#PWR0504"
 			(at 36.83 78.74 0)
 			(effects
 				(font
@@ -11696,7 +11810,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR084")
+					(reference "#PWR0504")
 					(unit 1)
 				)
 			)
@@ -11711,7 +11825,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "60fbbe14-6460-4b9f-aae3-e2ed518c6efa")
-		(property "Reference" "#PWR0105"
+		(property "Reference" "#PWR0525"
 			(at 125.73 118.11 0)
 			(effects
 				(font
@@ -11762,7 +11876,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0105")
+					(reference "#PWR0525")
 					(unit 1)
 				)
 			)
@@ -11777,7 +11891,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "621c5069-9a3c-4f73-9c0a-f2cf41ab0636")
-		(property "Reference" "H1"
+		(property "Reference" "H501"
 			(at 26.67 49.5554 0)
 			(effects
 				(font
@@ -11828,7 +11942,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "H1")
+					(reference "H501")
 					(unit 1)
 				)
 			)
@@ -11843,7 +11957,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6509ae55-3cf0-4a67-843e-b3c32902f510")
-		(property "Reference" "R10"
+		(property "Reference" "R516"
 			(at 170.18 113.1316 90)
 			(effects
 				(font
@@ -11895,7 +12009,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R10")
+					(reference "R516")
 					(unit 1)
 				)
 			)
@@ -11912,7 +12026,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "67e344b7-faf0-4db6-b47a-b90f83ed7fbb")
-		(property "Reference" "#PWR094"
+		(property "Reference" "#PWR0530"
 			(at 176.53 88.9 0)
 			(effects
 				(font
@@ -11962,7 +12076,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR094")
+					(reference "#PWR0530")
 					(unit 1)
 				)
 			)
@@ -11977,7 +12091,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6bbd9af4-0f09-48e9-8b94-03eed7a05e8b")
-		(property "Reference" "#PWR0111"
+		(property "Reference" "#PWR0538"
 			(at 262.89 34.29 0)
 			(effects
 				(font
@@ -12027,7 +12141,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0111")
+					(reference "#PWR0538")
 					(unit 1)
 				)
 			)
@@ -12043,7 +12157,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6d8018e1-ca48-43ba-b62b-7b714648fa0e")
-		(property "Reference" "U9"
+		(property "Reference" "U502"
 			(at 57.8994 120.65 0)
 			(effects
 				(font
@@ -12109,7 +12223,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "U9")
+					(reference "U502")
 					(unit 1)
 				)
 			)
@@ -12125,7 +12239,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6eb9cea1-294a-41ef-9e89-61fb58efb3a1")
-		(property "Reference" "R36"
+		(property "Reference" "R512"
 			(at 130.81 46.99 90)
 			(effects
 				(font
@@ -12177,7 +12291,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R36")
+					(reference "R512")
 					(unit 1)
 				)
 			)
@@ -12193,7 +12307,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6ee8fb6c-a6cb-4af6-8543-6d9fb4304aff")
-		(property "Reference" "R46"
+		(property "Reference" "R510"
 			(at 118.11 36.8299 0)
 			(effects
 				(font
@@ -12247,7 +12361,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R46")
+					(reference "R510")
 					(unit 1)
 				)
 			)
@@ -12262,7 +12376,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "70ece5df-b072-47af-859e-541c1974c4ea")
-		(property "Reference" "C37"
+		(property "Reference" "C504"
 			(at 90.5883 37.4054 0)
 			(effects
 				(font
@@ -12318,7 +12432,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C37")
+					(reference "C504")
 					(unit 1)
 				)
 			)
@@ -12334,7 +12448,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "754526c3-07ed-4009-aa34-8d83debcd277")
-		(property "Reference" "C43"
+		(property "Reference" "C518"
 			(at 204.47 73.0313 0)
 			(effects
 				(font
@@ -12388,7 +12502,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C43")
+					(reference "C518")
 					(unit 1)
 				)
 			)
@@ -12404,7 +12518,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "75de2ece-efb3-4a64-a4c0-c710670c78cf")
-		(property "Reference" "IC1"
+		(property "Reference" "IC501"
 			(at 111.76 162.56 0)
 			(effects
 				(font
@@ -12549,7 +12663,7 @@
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "IC1")
+					(reference "IC501")
 					(unit 1)
 				)
 			)
@@ -12565,7 +12679,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "77854d5f-7e98-484e-bfee-59a9f9c09fa3")
-		(property "Reference" "#PWR081"
+		(property "Reference" "#PWR0509"
 			(at 44.45 43.18 0)
 			(effects
 				(font
@@ -12615,7 +12729,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR081")
+					(reference "#PWR0509")
 					(unit 1)
 				)
 			)
@@ -12630,7 +12744,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "78563d1d-3aa6-4b82-bf59-bbde4d99348a")
-		(property "Reference" "#PWR0108"
+		(property "Reference" "#PWR0536"
 			(at 228.6 46.99 0)
 			(effects
 				(font
@@ -12680,7 +12794,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0108")
+					(reference "#PWR0536")
 					(unit 1)
 				)
 			)
@@ -12697,7 +12811,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "79a65d56-8360-4f7c-b867-79a0a47479be")
-		(property "Reference" "#PWR0112"
+		(property "Reference" "#PWR0529"
 			(at 157.48 125.73 0)
 			(effects
 				(font
@@ -12747,7 +12861,7 @@
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0112")
+					(reference "#PWR0529")
 					(unit 1)
 				)
 			)
@@ -12762,7 +12876,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "79fd8204-b316-4dfe-b28b-6ca3e0915704")
-		(property "Reference" "C45"
+		(property "Reference" "C523"
 			(at 254 25.4 0)
 			(effects
 				(font
@@ -12816,7 +12930,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C45")
+					(reference "C523")
 					(unit 1)
 				)
 			)
@@ -12832,7 +12946,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7a5ce063-b554-4157-b765-a8bec57f5d8e")
-		(property "Reference" "#PWR0107"
+		(property "Reference" "#PWR0523"
 			(at 123.19 154.94 0)
 			(effects
 				(font
@@ -12882,7 +12996,7 @@
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0107")
+					(reference "#PWR0523")
 					(unit 1)
 				)
 			)
@@ -12898,7 +13012,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7af588c4-d6e0-4188-a4ae-3019c327409a")
-		(property "Reference" "#PWR0100"
+		(property "Reference" "#PWR0520"
 			(at 115.57 48.26 0)
 			(effects
 				(font
@@ -12948,7 +13062,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0100")
+					(reference "#PWR0520")
 					(unit 1)
 				)
 			)
@@ -12964,7 +13078,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "80dbc0e2-3bf5-4816-ab7a-df2c2f52f81d")
-		(property "Reference" "U14"
+		(property "Reference" "U506"
 			(at 217.9194 133.35 0)
 			(effects
 				(font
@@ -13030,7 +13144,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "U14")
+					(reference "U506")
 					(unit 1)
 				)
 			)
@@ -13046,7 +13160,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "83936f04-25e0-4034-aad3-47435fc43921")
-		(property "Reference" "R42"
+		(property "Reference" "R514"
 			(at 158.75 98.425 0)
 			(effects
 				(font
@@ -13100,7 +13214,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R42")
+					(reference "R514")
 					(unit 1)
 				)
 			)
@@ -13116,7 +13230,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8510da6a-7c57-4923-8c16-80f312d81352")
-		(property "Reference" "J9"
+		(property "Reference" "J502"
 			(at 48.26 31.1149 90)
 			(effects
 				(font
@@ -13170,7 +13284,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "J9")
+					(reference "J502")
 					(unit 1)
 				)
 			)
@@ -13186,7 +13300,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8936c67a-35ea-4adb-97aa-2e608d3054bf")
-		(property "Reference" "#PWR0101"
+		(property "Reference" "#PWR0535"
 			(at 215.9 163.83 0)
 			(effects
 				(font
@@ -13236,7 +13350,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0101")
+					(reference "#PWR0535")
 					(unit 1)
 				)
 			)
@@ -13251,7 +13365,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8aae4262-7bb3-4fa2-8a59-f1022e352fc3")
-		(property "Reference" "U12"
+		(property "Reference" "U504"
 			(at 106.68 111.76 0)
 			(effects
 				(font
@@ -13323,7 +13437,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "U12")
+					(reference "U504")
 					(unit 1)
 				)
 			)
@@ -13339,7 +13453,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8af1a495-117f-4c97-96e4-f1de5886e530")
-		(property "Reference" "C32"
+		(property "Reference" "C513"
 			(at 187.96 83.1913 0)
 			(effects
 				(font
@@ -13393,7 +13507,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C32")
+					(reference "C513")
 					(unit 1)
 				)
 			)
@@ -13409,7 +13523,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8b475756-4e6d-474e-9d2e-3cbc96d91b6d")
-		(property "Reference" "U11"
+		(property "Reference" "U505"
 			(at 154.94 52.07 0)
 			(effects
 				(font
@@ -13502,7 +13616,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "U11")
+					(reference "U505")
 					(unit 1)
 				)
 			)
@@ -13518,7 +13632,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8e7b437a-d568-4634-a4ca-9ab4da60fc54")
-		(property "Reference" "U16"
+		(property "Reference" "U507"
 			(at 228.6 16.7472 0)
 			(effects
 				(font
@@ -13588,7 +13702,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "U16")
+					(reference "U507")
 					(unit 1)
 				)
 			)
@@ -13604,7 +13718,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8f2135df-660b-43ca-8e48-c1e98084da4e")
-		(property "Reference" "#PWR080"
+		(property "Reference" "#PWR0501"
 			(at 20.32 49.53 0)
 			(effects
 				(font
@@ -13654,7 +13768,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR080")
+					(reference "#PWR0501")
 					(unit 1)
 				)
 			)
@@ -13670,7 +13784,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "949be995-2a1a-4d7e-9baf-cd649c6162dc")
-		(property "Reference" "Q12"
+		(property "Reference" "Q506"
 			(at 257.81 90.17 0)
 			(effects
 				(font
@@ -13821,7 +13935,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "Q12")
+					(reference "Q506")
 					(unit 1)
 				)
 			)
@@ -13837,7 +13951,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "97cc9077-60a8-4a1e-80f6-46d11ae69bdd")
-		(property "Reference" "#PWR092"
+		(property "Reference" "#PWR0505"
 			(at 36.83 127 0)
 			(effects
 				(font
@@ -13887,7 +14001,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR092")
+					(reference "#PWR0505")
 					(unit 1)
 				)
 			)
@@ -13903,7 +14017,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9ce68268-61ce-4a27-89a7-65031ef6a4eb")
-		(property "Reference" "JP2"
+		(property "Reference" "JP501"
 			(at 41.91 20.32 0)
 			(effects
 				(font
@@ -13955,7 +14069,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "JP2")
+					(reference "JP501")
 					(unit 1)
 				)
 			)
@@ -13972,7 +14086,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9cea591a-a715-4c7c-9654-677c3d4d7615")
-		(property "Reference" "#PWR0115"
+		(property "Reference" "#PWR0518"
 			(at 111.76 196.85 0)
 			(effects
 				(font
@@ -14022,7 +14136,7 @@
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0115")
+					(reference "#PWR0518")
 					(unit 1)
 				)
 			)
@@ -14039,7 +14153,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a11d8069-0565-4df4-aba0-a4b5fb879d19")
-		(property "Reference" "#PWR090"
+		(property "Reference" "#PWR0521"
 			(at 120.65 99.06 0)
 			(effects
 				(font
@@ -14089,7 +14203,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR090")
+					(reference "#PWR0521")
 					(unit 1)
 				)
 			)
@@ -14105,7 +14219,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a43280b1-3113-43a6-a096-24a182957b93")
-		(property "Reference" "#PWR085"
+		(property "Reference" "#PWR0506"
 			(at 38.1 172.72 0)
 			(effects
 				(font
@@ -14155,7 +14269,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR085")
+					(reference "#PWR0506")
 					(unit 1)
 				)
 			)
@@ -14171,7 +14285,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a70548c1-203c-4454-863e-b16fb9e9870f")
-		(property "Reference" "#PWR0110"
+		(property "Reference" "#PWR0537"
 			(at 251.46 44.45 0)
 			(effects
 				(font
@@ -14221,7 +14335,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0110")
+					(reference "#PWR0537")
 					(unit 1)
 				)
 			)
@@ -14237,7 +14351,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a895162a-7e1d-4c4d-9168-3048281d1948")
-		(property "Reference" "C33"
+		(property "Reference" "C510"
 			(at 125.73 87.0013 0)
 			(effects
 				(font
@@ -14291,7 +14405,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C33")
+					(reference "C510")
 					(unit 1)
 				)
 			)
@@ -14308,7 +14422,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a946f708-9052-4ec6-91c4-cd61c0f4bec4")
-		(property "Reference" "#PWR099"
+		(property "Reference" "#PWR0534"
 			(at 205.74 34.29 0)
 			(effects
 				(font
@@ -14358,7 +14472,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR099")
+					(reference "#PWR0534")
 					(unit 1)
 				)
 			)
@@ -14374,7 +14488,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "aa31455a-5e35-4918-850c-54e4fefd4831")
-		(property "Reference" "R20"
+		(property "Reference" "R506"
 			(at 100.33 115.57 90)
 			(effects
 				(font
@@ -14426,7 +14540,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R20")
+					(reference "R506")
 					(unit 1)
 				)
 			)
@@ -14442,7 +14556,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "aa69fc20-a375-4ac4-9c40-895038a5cfdf")
-		(property "Reference" "#PWR0113"
+		(property "Reference" "#PWR0527"
 			(at 134.62 132.08 0)
 			(effects
 				(font
@@ -14492,7 +14606,7 @@
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0113")
+					(reference "#PWR0527")
 					(unit 1)
 				)
 			)
@@ -14509,7 +14623,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "ab1e2b80-f503-418d-9f07-fb5f53f8a739")
-		(property "Reference" "#PWR0114"
+		(property "Reference" "#PWR0516"
 			(at 92.71 186.69 0)
 			(effects
 				(font
@@ -14559,7 +14673,7 @@
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0114")
+					(reference "#PWR0516")
 					(unit 1)
 				)
 			)
@@ -14576,7 +14690,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "aefac8db-e980-49d0-93e0-67e1a968f786")
-		(property "Reference" "#PWR0136"
+		(property "Reference" "#PWR0512"
 			(at 55.88 152.4 0)
 			(effects
 				(font
@@ -14626,7 +14740,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0136")
+					(reference "#PWR0512")
 					(unit 1)
 				)
 			)
@@ -14642,7 +14756,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "afc31fda-3bd7-456e-a7ee-1715fb8cf75a")
-		(property "Reference" "C39"
+		(property "Reference" "C514"
 			(at 186.6963 55.88 90)
 			(effects
 				(font
@@ -14694,7 +14808,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C39")
+					(reference "C514")
 					(unit 1)
 				)
 			)
@@ -14710,7 +14824,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b1d509bf-66fa-440a-adbe-fd2165565a24")
-		(property "Reference" "R25"
+		(property "Reference" "R501"
 			(at 81.28 29.2099 0)
 			(effects
 				(font
@@ -14764,7 +14878,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R25")
+					(reference "R501")
 					(unit 1)
 				)
 			)
@@ -14779,7 +14893,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b6a292c1-c238-45b6-bc8e-5ffbaeabdf69")
-		(property "Reference" "C44"
+		(property "Reference" "C519"
 			(at 207.5236 24.9068 0)
 			(effects
 				(font
@@ -14833,7 +14947,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C44")
+					(reference "C519")
 					(unit 1)
 				)
 			)
@@ -14849,7 +14963,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "bdf3cdd9-0dba-4971-8226-d1080ebae60b")
-		(property "Reference" "TP17"
+		(property "Reference" "TP503"
 			(at 102.87 83.185 90)
 			(effects
 				(font
@@ -14900,7 +15014,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "TP17")
+					(reference "TP503")
 					(unit 1)
 				)
 			)
@@ -14916,7 +15030,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "bf101085-555c-492b-a923-4f8efd5441c8")
-		(property "Reference" "R23"
+		(property "Reference" "R507"
 			(at 100.33 123.19 90)
 			(effects
 				(font
@@ -14968,7 +15082,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R23")
+					(reference "R507")
 					(unit 1)
 				)
 			)
@@ -14983,7 +15097,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "bf82b730-dfb1-4309-a9ea-8a1724cd9d51")
-		(property "Reference" "H4"
+		(property "Reference" "H504"
 			(at 45.72 49.5554 0)
 			(effects
 				(font
@@ -15034,7 +15148,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "H4")
+					(reference "H504")
 					(unit 1)
 				)
 			)
@@ -15050,7 +15164,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "bfd2bcdb-85c4-4804-a29c-1c4c2a20d472")
-		(property "Reference" "C31"
+		(property "Reference" "C503"
 			(at 40.64 162.5662 0)
 			(effects
 				(font
@@ -15104,7 +15218,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C31")
+					(reference "C503")
 					(unit 1)
 				)
 			)
@@ -15119,7 +15233,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c558dd18-30d2-4fa8-8315-af26fe3c484f")
-		(property "Reference" "R28"
+		(property "Reference" "R517"
 			(at 253.2167 25.4405 0)
 			(effects
 				(font
@@ -15173,7 +15287,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R28")
+					(reference "R517")
 					(unit 1)
 				)
 			)
@@ -15188,7 +15302,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c9a4e201-4859-4f0b-93e0-a1d9509fe44c")
-		(property "Reference" "C58"
+		(property "Reference" "C511"
 			(at 127.4183 37.4054 0)
 			(effects
 				(font
@@ -15244,7 +15358,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C58")
+					(reference "C511")
 					(unit 1)
 				)
 			)
@@ -15260,7 +15374,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cba66f60-d09d-41a7-9dfa-7c4d11f3717c")
-		(property "Reference" "Q11"
+		(property "Reference" "Q505"
 			(at 257.81 62.23 0)
 			(effects
 				(font
@@ -15411,7 +15525,7 @@
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "Q11")
+					(reference "Q505")
 					(unit 1)
 				)
 			)
@@ -15427,7 +15541,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cc2d656f-59bc-4244-b4c1-c060d8f307e0")
-		(property "Reference" "C38"
+		(property "Reference" "C505"
 			(at 96.52 61.1632 0)
 			(effects
 				(font
@@ -15481,7 +15595,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C38")
+					(reference "C505")
 					(unit 1)
 				)
 			)
@@ -15497,7 +15611,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cd38ffbb-8df0-4a67-b852-7e4f49b72f3f")
-		(property "Reference" "R40"
+		(property "Reference" "R513"
 			(at 152.4 88.9 90)
 			(effects
 				(font
@@ -15549,7 +15663,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R40")
+					(reference "R513")
 					(unit 1)
 				)
 			)
@@ -15566,7 +15680,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cf1c6c6a-4a0a-4390-802f-eb8b38176d12")
-		(property "Reference" "#PWR083"
+		(property "Reference" "#PWR0519"
 			(at 113.03 77.47 0)
 			(effects
 				(font
@@ -15616,7 +15730,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR083")
+					(reference "#PWR0519")
 					(unit 1)
 				)
 			)
@@ -15632,7 +15746,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cf53adf2-81f9-4adf-930b-a33e3c5f76cd")
-		(property "Reference" "C12"
+		(property "Reference" "C507"
 			(at 106.68 123.8313 0)
 			(effects
 				(font
@@ -15686,7 +15800,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C12")
+					(reference "C507")
 					(unit 1)
 				)
 			)
@@ -15702,7 +15816,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d06b15cb-2329-49a0-9f2c-52c2c8d4d3cb")
-		(property "Reference" "#PWR0117"
+		(property "Reference" "#PWR0515"
 			(at 91.44 175.26 0)
 			(effects
 				(font
@@ -15753,7 +15867,7 @@
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0117")
+					(reference "#PWR0515")
 					(unit 1)
 				)
 			)
@@ -15770,7 +15884,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d23f53d3-e817-4dd3-a24e-23650b6395d6")
-		(property "Reference" "#PWR091"
+		(property "Reference" "#PWR0517"
 			(at 100.33 74.93 0)
 			(effects
 				(font
@@ -15820,7 +15934,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR091")
+					(reference "#PWR0517")
 					(unit 1)
 				)
 			)
@@ -15837,7 +15951,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d2b07e8f-efd3-4d69-823c-8b58aadf1eaa")
-		(property "Reference" "#PWR088"
+		(property "Reference" "#PWR0511"
 			(at 55.88 104.14 0)
 			(effects
 				(font
@@ -15887,7 +16001,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR088")
+					(reference "#PWR0511")
 					(unit 1)
 				)
 			)
@@ -15903,7 +16017,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d3a4d630-f7a2-4dfd-9dc0-aa78c2e0e441")
-		(property "Reference" "C41"
+		(property "Reference" "C516"
 			(at 194.31 73.0313 0)
 			(effects
 				(font
@@ -15957,7 +16071,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C41")
+					(reference "C516")
 					(unit 1)
 				)
 			)
@@ -15973,7 +16087,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d545f145-d241-4a37-b13e-253b45f7b26a")
-		(property "Reference" "Q10"
+		(property "Reference" "Q503"
 			(at 57.15 154.94 90)
 			(effects
 				(font
@@ -16028,7 +16142,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "Q10")
+					(reference "Q503")
 					(unit 1)
 				)
 			)
@@ -16043,7 +16157,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d605e58c-665f-4ee8-b214-b95ff23144e7")
-		(property "Reference" "#PWR0103"
+		(property "Reference" "#PWR0522"
 			(at 121.92 140.97 0)
 			(effects
 				(font
@@ -16094,7 +16208,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0103")
+					(reference "#PWR0522")
 					(unit 1)
 				)
 			)
@@ -16110,7 +16224,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d6f545f2-87fb-4792-bb46-df4b568c7ff2")
-		(property "Reference" "U17"
+		(property "Reference" "U508"
 			(at 266.1794 132.08 0)
 			(effects
 				(font
@@ -16176,7 +16290,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "U17")
+					(reference "U508")
 					(unit 1)
 				)
 			)
@@ -16192,7 +16306,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "dee61966-424e-4b2f-9722-d9643e5948e3")
-		(property "Reference" "#PWR087"
+		(property "Reference" "#PWR0514"
 			(at 78.74 48.26 0)
 			(effects
 				(font
@@ -16242,7 +16356,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR087")
+					(reference "#PWR0514")
 					(unit 1)
 				)
 			)
@@ -16258,7 +16372,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e0094cf1-6428-4536-a2b5-82b2c619d36a")
-		(property "Reference" "C40"
+		(property "Reference" "C515"
 			(at 186.6963 63.5 90)
 			(effects
 				(font
@@ -16310,7 +16424,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C40")
+					(reference "C515")
 					(unit 1)
 				)
 			)
@@ -16326,7 +16440,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e16b129d-aad9-49e2-9219-cf7db58c413a")
-		(property "Reference" "R41"
+		(property "Reference" "R515"
 			(at 160.02 88.9 90)
 			(effects
 				(font
@@ -16378,7 +16492,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R41")
+					(reference "R515")
 					(unit 1)
 				)
 			)
@@ -16394,7 +16508,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e4211e42-513c-4f74-b26f-0783a0856e62")
-		(property "Reference" "C34"
+		(property "Reference" "C508"
 			(at 109.22 61.6013 0)
 			(effects
 				(font
@@ -16448,7 +16562,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C34")
+					(reference "C508")
 					(unit 1)
 				)
 			)
@@ -16465,7 +16579,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e4ca3266-b292-43c3-abdf-6711eb4d5655")
-		(property "Reference" "#PWR033"
+		(property "Reference" "#PWR0510"
 			(at 44.45 190.5 0)
 			(effects
 				(font
@@ -16515,7 +16629,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR033")
+					(reference "#PWR0510")
 					(unit 1)
 				)
 			)
@@ -16530,7 +16644,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "eb64a7ff-9e2b-4f73-9c47-1f2f124c0bd6")
-		(property "Reference" "H3"
+		(property "Reference" "H503"
 			(at 39.37 49.5554 0)
 			(effects
 				(font
@@ -16581,7 +16695,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "H3")
+					(reference "H503")
 					(unit 1)
 				)
 			)
@@ -16597,7 +16711,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "eeecf6d5-8af8-4b34-a1fc-0dee94345e97")
-		(property "Reference" "C47"
+		(property "Reference" "C520"
 			(at 209.55 73.0313 0)
 			(effects
 				(font
@@ -16651,7 +16765,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C47")
+					(reference "C520")
 					(unit 1)
 				)
 			)
@@ -16667,7 +16781,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f30a7ba7-0f24-4cc9-838c-c0ceb53d7ff7")
-		(property "Reference" "R26"
+		(property "Reference" "R502"
 			(at 81.28 36.8299 0)
 			(effects
 				(font
@@ -16721,7 +16835,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R26")
+					(reference "R502")
 					(unit 1)
 				)
 			)
@@ -16737,7 +16851,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f5be3c8e-5516-44f4-bde2-8cb4a3cbe2bb")
-		(property "Reference" "R43"
+		(property "Reference" "R503"
 			(at 85.09 73.66 90)
 			(effects
 				(font
@@ -16789,7 +16903,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "R43")
+					(reference "R503")
 					(unit 1)
 				)
 			)
@@ -16806,7 +16920,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f665f735-8c6b-442e-9982-0891bc44731a")
-		(property "Reference" "#PWR093"
+		(property "Reference" "#PWR0513"
 			(at 57.15 198.12 0)
 			(effects
 				(font
@@ -16856,7 +16970,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR093")
+					(reference "#PWR0513")
 					(unit 1)
 				)
 			)
@@ -16872,7 +16986,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f85597e9-e80b-473f-8cf4-def1ea9609c3")
-		(property "Reference" "Q5"
+		(property "Reference" "Q504"
 			(at 111.76 146.05 90)
 			(effects
 				(font
@@ -17020,7 +17134,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "Q5")
+					(reference "Q504")
 					(unit 1)
 				)
 			)
@@ -17036,7 +17150,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f86d55d5-3d03-454b-af35-d972c65ff155")
-		(property "Reference" "#PWR0116"
+		(property "Reference" "#PWR0540"
 			(at 270.51 22.86 0)
 			(effects
 				(font
@@ -17086,7 +17200,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "#PWR0116")
+					(reference "#PWR0540")
 					(unit 1)
 				)
 			)
@@ -17102,7 +17216,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "fab405cf-f70f-4690-9813-95b24512f89a")
-		(property "Reference" "J8"
+		(property "Reference" "J501"
 			(at 36.83 31.1149 90)
 			(effects
 				(font
@@ -17156,7 +17270,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "J8")
+					(reference "J501")
 					(unit 1)
 				)
 			)
@@ -17172,7 +17286,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "fffafd7f-c44b-4948-9017-867a306faca2")
-		(property "Reference" "C29"
+		(property "Reference" "C501"
 			(at 39.37 68.5862 0)
 			(effects
 				(font
@@ -17226,7 +17340,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/150d7a0e-7d8c-4788-bc30-4a3682bf4d09"
-					(reference "C29")
+					(reference "C501")
 					(unit 1)
 				)
 			)

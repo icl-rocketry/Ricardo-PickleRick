@@ -1032,7 +1032,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "293dc264-32cf-4c8f-a212-b5bd1c1bcd9b")
-		(property "Reference" "#PWR0133"
+		(property "Reference" "#PWR0602"
 			(at 160.02 77.47 0)
 			(effects
 				(font
@@ -1082,7 +1082,7 @@
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/6b287ed4-4ddc-456e-af8d-0328553d2aec"
-					(reference "#PWR0133")
+					(reference "#PWR0602")
 					(unit 1)
 				)
 			)
@@ -1098,7 +1098,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "654aa41f-a52b-455b-b119-88d7428a4723")
-		(property "Reference" "#PWR0134"
+		(property "Reference" "#PWR0604"
 			(at 171.45 74.93 0)
 			(effects
 				(font
@@ -1148,7 +1148,7 @@
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/6b287ed4-4ddc-456e-af8d-0328553d2aec"
-					(reference "#PWR0134")
+					(reference "#PWR0604")
 					(unit 1)
 				)
 			)
@@ -1164,7 +1164,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8f85ccf5-ddfa-44af-b6df-389a6748519d")
-		(property "Reference" "J15"
+		(property "Reference" "J601"
 			(at 143.51 74.93 0)
 			(effects
 				(font
@@ -1252,7 +1252,7 @@
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/6b287ed4-4ddc-456e-af8d-0328553d2aec"
-					(reference "J15")
+					(reference "J601")
 					(unit 1)
 				)
 			)
@@ -1268,7 +1268,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a83203f4-0051-46f3-8484-d9811ba1cf6b")
-		(property "Reference" "#PWR0139"
+		(property "Reference" "#PWR0601"
 			(at 111.76 85.09 0)
 			(effects
 				(font
@@ -1318,7 +1318,7 @@
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/6b287ed4-4ddc-456e-af8d-0328553d2aec"
-					(reference "#PWR0139")
+					(reference "#PWR0601")
 					(unit 1)
 				)
 			)
@@ -1334,7 +1334,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "dfa07408-cb77-454b-891c-18ab69b55bb8")
-		(property "Reference" "#PWR0140"
+		(property "Reference" "#PWR0603"
 			(at 162.56 106.68 0)
 			(effects
 				(font
@@ -1384,7 +1384,7 @@
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/6b287ed4-4ddc-456e-af8d-0328553d2aec"
-					(reference "#PWR0140")
+					(reference "#PWR0603")
 					(unit 1)
 				)
 			)
