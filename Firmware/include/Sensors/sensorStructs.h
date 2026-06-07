@@ -88,6 +88,18 @@ namespace SensorStructs
         uint32_t timestamp_us{0};
     };
 
+    struct RTK_t{
+        float x;
+        float y;
+        float z;
+        float u;
+        float v;
+        float w;
+        uint8_t fix_quality{0};
+        bool valid{false};
+        uint32_t timestamp_us{0};
+    };
+
     struct raw_measurements_t
     {
         ACCELGYRO_6AXIS_t accelgyro;
@@ -98,7 +110,7 @@ namespace SensorStructs
         ADC_V_RAIL_t logicrail;
         INA_V_RAIL_t deprail;
         LIDAR_t lidar;
-
+        RTK_t rtk;
         uint64_t system_time;
     };
 

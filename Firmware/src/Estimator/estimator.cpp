@@ -10,7 +10,8 @@ Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus)
       m_gpsLockStartTimeUs(0),
       m_refOrientation(1.0, 0.0, 0.0, 0.0),
       m_ekf(),
-      m_calibrator()
+      m_calibrator(),
+      rtk()
       {};
 
 void Estimator::setup()
@@ -35,7 +36,7 @@ void Estimator::setup()
         m_calibrator.getHighGBiases(),
         m_calibrator.getMagRef()
     );
-
+    rtk.setup();
 };
 
 void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
@@ -61,6 +62,9 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             m_ekf.setHome(
                 m_calibrator.getSetHomeRef()
             );
+            if (rtk.hasMeasurement()) {
+                rtk.setHome(rtk.getPositionRaw());
+            }
             m_settingHome = false;
             m_homeSet = true;
         } else {
@@ -107,6 +111,8 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
         m_state.filteredAccel = accel_filt;
         m_state.filteredGyro = gyro_filt;
 
+        SensorStructs::RTK_t rtk_measurement;
+        rtk.update(rtk_measurement);
 
         // Feed filtered low-g accel + gyro into EKF
         m_ekf.update(
@@ -116,7 +122,8 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             raw_sensors.mag,
             raw_sensors.baro,
             raw_sensors.gps,
-            raw_sensors.lidar
+            raw_sensors.lidar,
+            rtk_measurement
         );
     }
     updateState();
@@ -135,6 +142,11 @@ void Estimator::setHome()
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Set Home started");
 
 };
+
+std::function<void(packetptr_t)> Estimator::registerRTK()
+{
+    return rtk.getThisNetworkCallback();
+}
 
 void Estimator::updateAutoHome(const SensorStructs::GPS_t& gps)
 {

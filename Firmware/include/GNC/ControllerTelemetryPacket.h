@@ -70,6 +70,8 @@ class ControllerTelemetryPacket : public RnpPacket{
 
         std::string stringify() const;
 
+        static std::string csvHeader();
+
         // float x_input;
         // float y_input;
         // float z_input;

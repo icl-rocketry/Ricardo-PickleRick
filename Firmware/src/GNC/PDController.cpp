@@ -11,14 +11,15 @@ void PDController::setup()
     // m_rEng is COM -> thrust centre in body frame (m). Tune ry/rz for attitude-only lateral drift:
     // with rx < 0, negative body-y drift -> make ry more negative; positive body-y drift -> make ry more positive.
     // negative body-z drift -> make rz more negative; positive body-z drift -> make rz more positive.
-    m_rEng << -0.235f, -0.0007f, 0.015f; //centre of mass to center of thrust in body frame
+    // m_rEng << -0.235f, -0.0007f, 0.015f; //centre of mass to center of thrust in body frame
+    m_rEng << -0.235f, -0.01f, 0.0075f;
     m_mass = 1.32f;
 
     m_K_p << 0.0f, 2.0f, 1.5f; // attitude body control gains (roll, pitch, yaw)
     m_K_d << 7.0f, 0.45f, 0.5f;
 
-    m_K_p_pos << 0.0f, 0.0f, 0.8f;   // NED position control gains
-    m_K_d_pos << 1.0f, 1.0f, 1.1f; //based on gps velocity 
+    m_K_p_pos << 0.0f, 0.0f, 0.5f;   // NED position control gains
+    m_K_d_pos << 0.0f, 0.0f, 1.0f; //based on gps velocity 
     m_K_i_pos << 0.0f, 0.0f, 0.05f;
 
     m_pos_int.setZero();
@@ -63,9 +64,7 @@ void PDController::update(Eigen::Quaterniond q,
 {
     m_batt_V = batt_V;
     m_batt_fresh = batt_fresh;
-
     q.normalize();
-
     updatePositionControl(position, velocity);
     updateThrustDirectionErrors(q);
     updateDesiredForce(q);
@@ -201,21 +200,22 @@ void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
     //send to telemetry
     const double total_error_rad = std::asin(std::clamp(e_world.norm(), 0.0, 1.0));
     const double pitch_error_rad = std::atan2(desired_body.z(), desired_body.x());
-    const double yaw_error_rad   = std::atan2(desired_body.y(), desired_body.x());
+    const Eigen::Matrix3d R = q.toRotationMatrix();
+    const double roll_error_rad = -std::atan2(R(2, 1), R(2, 2));
 
     m_thrust_vector_error_deg << static_cast<float>(total_error_rad * RAD_TO_DEG),
                                  static_cast<float>(pitch_error_rad * RAD_TO_DEG),
-                                 static_cast<float>(yaw_error_rad * RAD_TO_DEG);
+                                 static_cast<float>(roll_error_rad * RAD_TO_DEG);
 
-    // No control about thrust axis (body x)
-    m_dir_error_body(0) = 0.0f;
+    // TEMP flat-board test: feed roll-angle error into the yaw channel.
+    m_dir_error_body(0) = static_cast<float>(roll_error_rad);
+    m_dir_error_body(2) = m_dir_error_body(0);
 }
 
 void PDController::updateMcmd(const Eigen::Vector3f& angular_rates)
 {
     Eigen::Vector3f rates_error = -angular_rates; //desired rates are 0 so it is negative
     m_euler_error = m_dir_error_body;//send the errors to telemetry for debugging
-    m_dir_error_body(0) = 0.0f; //no roll angle error since its only a D controller
     m_M_cmd =
         -m_K_p.cwiseProduct(m_dir_error_body)
         -m_K_d.cwiseProduct(rates_error);    
@@ -227,7 +227,7 @@ void PDController::updateDesiredForce(const Eigen::Quaterniond& q)
 
     const float Fx_target = m_position_control_enabled ? m_Fx_cmd_outer : NOMINAL_FX_N;
    // m_Fx_cmd = std::clamp(Fx_target / cos_tilt, 0.0f, MAX_THRUST_N); //tilt compensation enabled i.e. Fx body increases when tilted to maintain the same vertical thrust
-    m_Fx_cmd = std::clamp(Fx_target, 0.0f, MAX_THRUST_N); //tilt compensation disabled
+    m_Fx_cmd = std::clamp(Fx_target, 0.0f, MAX_THRUST_N); //tilt compensation disabled, will lead to better lateral control at the cost of vertical control when tilted
 }
 void PDController::updateOutputValues()
 {
@@ -253,7 +253,7 @@ void PDController::updateOutputValues()
     if (m_batt_fresh && m_batt_V > MIN_VALID_BATT_V)
     {
         const float raw_voltage_scale = NOMINAL_BATT_V / m_batt_V;
-        voltage_scale = 1.0f + VOLTAGE_COMP_GAIN * (raw_voltage_scale - 1.0f);
+        voltage_scale = powf(raw_voltage_scale, VOLTAGE_SCALE_EXPONENT);
         voltage_scale = std::clamp(voltage_scale, MIN_VOLTAGE_SCALE, MAX_VOLTAGE_SCALE);
     }
     m_voltage_scale = voltage_scale;
@@ -274,6 +274,10 @@ void PDController::updateOutputValues()
    
     float thrust_top = std::clamp(base_thrust + roll_mix, 0.0f, 100.0f);
     float thrust_bottom = std::clamp(base_thrust - roll_mix, 0.0f, 100.0f);
+
+    //--------Thrust Linerisation----------------- 
+    thrust_top = 100.0f * powf(thrust_top/ 100.0f, THRUST_EXPONENT);
+    thrust_bottom = 100.0f * powf(thrust_bottom / 100.0f, THRUST_EXPONENT);
 
     //Sending values to telemetry 
     m_roll_mix = roll_mix; //send the roll mix to telemetry for debugging

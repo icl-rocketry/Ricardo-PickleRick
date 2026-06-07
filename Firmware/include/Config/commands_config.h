@@ -36,6 +36,8 @@ namespace Commands
                                                                 ID::Telemetry,
                                                                 ID::Sensors,
                                                                 ID::Estimator, 
+                                                                ID::Mag_Telemetry,
+                                                                ID::Calibrate_Mag_Full,
                                                                 ID::Enter_Landing, 
                                                                 ID::Enter_Flight,
                                                             };

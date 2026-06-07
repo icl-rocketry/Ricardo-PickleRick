@@ -41,7 +41,8 @@ public:
                 const SensorStructs::MAG_3AXIS_t& mag,
                 const SensorStructs::BARO_t&  baro,
                 const SensorStructs::GPS_t&   gps,
-                const SensorStructs::LIDAR_t& lidar
+                const SensorStructs::LIDAR_t& lidar,
+                const SensorStructs::RTK_t&   rtk
             );
     void setHome(const SensorStructs::home_ref_t& setHome_ref);
 
@@ -80,10 +81,12 @@ private:
     uint32_t m_lastBaroCorrectionTime = 0;
     uint32_t m_lastGpsCorrectionTime = 0;
     uint32_t m_lastLidarCorrectionTime = 0;
+    uint32_t m_lastRtkCorrectionTime = 0;
     uint32_t m_lastMagMeasurementTime = 0;
     uint32_t m_lastBaroMeasurementTime = 0;
     uint32_t m_lastGpsMeasurementTime = 0;
     uint32_t m_lastLidarMeasurementTime = 0;
+    uint32_t m_lastRtkMeasurementTime = 0;
     float m_covariancePredictDt = 0.0f;
     uint8_t m_nextCorrectionIndex = 0;
 
@@ -127,19 +130,31 @@ private:
     static inline const Eigen::Vector3f SIGMA_BA_LOW{5e-4f, 5e-4f, 5e-4f};     // m/s² how much the bias can change per second (low-g accel bias)
 
     static inline const Eigen::Vector3f SIGMA_ALPHA{0.8f, 0.03f, 0.02f};  // rad/s 
-    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.18f, 0.6f, 1.2f};
-    static constexpr float SIGMA_MAG        = 0.2f;     // was 0.01
+    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.18f, 0.6f, 1.0f};
+    // static inline const Eigen::Vector3f SIGMA_ALPHA{0.01f, 0.01f, 0.01f};  // rad/s 
+    // static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.01f, 0.01f, 0.01f};
+    static constexpr float SIGMA_MAG        = 0.5f;     // was 0.01
 
     static constexpr float SIGMA_T          = 20.0f;      // K
     static constexpr float SIGMA_P          = 100.0f;    // Pa
 
     static constexpr float SIGMA_VEL        = 0.1f;      // m/s — tune to your GPS spec
+    static constexpr float SIGMA_RTK_GPS_POS      = 2.5f;   // m, NMEA fix quality 1
+    static constexpr float SIGMA_RTK_GPS_VEL      = 0.5f;   // m/s
+    static constexpr float SIGMA_RTK_DGPS_POS     = 0.5f;   // m, NMEA fix quality 2
+    static constexpr float SIGMA_RTK_DGPS_VEL     = 0.25f;  // m/s
+    static constexpr float SIGMA_RTK_FIXED_POS    = 0.05f;  // m, NMEA fix quality 4
+    static constexpr float SIGMA_RTK_FIXED_VEL    = 0.1f;   // m/s
+    static constexpr float SIGMA_RTK_FLOAT_POS    = 0.2f;   // m, NMEA fix quality 5
+    static constexpr float SIGMA_RTK_FLOAT_VEL    = 0.15f;  // m/s
+    static constexpr float SIGMA_RTK_UNKNOWN_POS  = 1.0f;   // m
+    static constexpr float SIGMA_RTK_UNKNOWN_VEL  = 0.5f;   // m/s
     static constexpr float SIGMA_LIDAR     = 0.1f;      // m — conservative, datasheet ±6cm @ 0-3m
     static constexpr float LIDAR_MAX_RANGE = 8.0f;      // m — TF-Luna rated range
     //------Measurement flags--------------------------------------------
-    static constexpr bool USE_GPS_POSITION = false;
-    static constexpr bool USE_GPS_VELOCITY_DIRECT = true;
-    static constexpr bool USE_ACCEL_FOR_VELOCITY = false;
+    static constexpr bool USE_GPS_POSITION = true;
+    static constexpr bool USE_GPS_VELOCITY_DIRECT = false;
+    static constexpr bool USE_ACCEL_FOR_VELOCITY = true;
 
     void predict(   const float nominal_dt,
                     const float covariance_dt,
@@ -153,12 +168,14 @@ private:
                                 const SensorStructs::MAG_3AXIS_t& mag,
                                 const SensorStructs::BARO_t& baro,
                                 const SensorStructs::GPS_t& gps,
-                                const SensorStructs::LIDAR_t& lidar);
+                                const SensorStructs::LIDAR_t& lidar,
+                                const SensorStructs::RTK_t& rtk);
     void updateMag(const Eigen::Vector3f& z_meas_raw);
     void updateLowGAccel(const Eigen::Vector3f& z_accel);
     void updateBaro(const float pressure, const float temperature);
     void updateGPS(const SensorStructs::GPS_t& gps);
     void updateLidar(const SensorStructs::LIDAR_t& lidar);
+    void updateRTK(const SensorStructs::RTK_t& rtk);
 
     
     // ── Atmospheric model constants ───────────────────────────────────────────

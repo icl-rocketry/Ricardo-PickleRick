@@ -14,6 +14,10 @@ bool TelemetryLogger::initialize(std::unique_ptr<WrappedFile> file,std::function
 
     if (file == nullptr){return false;};
     _file = std::move(file);
+    std::string header_string = TelemetryLogframe::csvHeader();
+    std::vector<uint8_t> header_bytes(header_string.begin(),header_string.end());
+    _file->append(header_bytes);
+
     initialized=true;
     return true;
 }

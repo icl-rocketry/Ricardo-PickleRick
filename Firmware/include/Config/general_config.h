@@ -16,7 +16,13 @@ namespace GeneralConfig{
 
     // When false, throttle profile values are desired thrust percent.
     // When true, throttle profile values are demanded thrust in Newtons.
-    static constexpr bool ThrottleRampProfileCommandsThrustNewtons = true;
-};
+    static constexpr bool ThrottleRampProfileCommandsThrustNewtons = false;
 
+    // Fallback location used to compute the magnetometer reference when GPS
+    // position is unavailable or the stored reference is invalid.
+    //this is referenced to the location of Olis house in London 
+    static constexpr double FALLBACK_MAG_REF_LAT_DEG = 51.5750;
+    static constexpr double FALLBACK_MAG_REF_LON_DEG = -0.1453;
+    static constexpr float  FALLBACK_MAG_REF_ALT_M   = 100.0f; //altitude above sea level 
+};
 

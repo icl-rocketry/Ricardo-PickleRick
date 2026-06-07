@@ -55,7 +55,16 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::snr,
                 &TelemetryPacket::lidar_dist,
                 &TelemetryPacket::lidar_amp,
-                &TelemetryPacket::lidar_temp
+                &TelemetryPacket::lidar_temp,
+                &TelemetryPacket::rtk_x,
+                &TelemetryPacket::rtk_y,
+                &TelemetryPacket::rtk_z,
+                &TelemetryPacket::rtk_u,
+                &TelemetryPacket::rtk_v,
+                &TelemetryPacket::rtk_w,
+                &TelemetryPacket::rtk_fix_quality,
+                &TelemetryPacket::rtk_valid,
+                &TelemetryPacket::rtk_timestamp_us
             );
             return ret;
         }
@@ -114,11 +123,17 @@ class TelemetryPacket : public RnpPacket{
         uint16_t lidar_amp;   // signal strength
         float    lidar_temp;  // degrees Celsius
 
+        //rtk
+        float rtk_x, rtk_y, rtk_z; // position NED (m)
+        float rtk_u, rtk_v, rtk_w; // velocity NED (m/s)
+        uint8_t rtk_fix_quality;
+        uint8_t rtk_valid;
+        uint32_t rtk_timestamp_us;
+
 
         static constexpr size_t size(){
             return getSerializer().member_size();
         }
 
 };
-
 

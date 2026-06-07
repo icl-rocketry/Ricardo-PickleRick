@@ -34,8 +34,11 @@ void EKF::setup(const Eigen::Vector3f& gyro_bias,
 {
     m_x.setZero();
 
-    // Initialise quaternion to identity [1, 0, 0, 0]
-    m_x(6) = 1.0f;
+    // Initialise quaternion to identity [1, 0, 0, 0], rotated 90deg to the rocket orientation 
+    m_x(6) = 0.70710678f;  // q0
+    m_x(7) = 0.0f;         // q1
+    m_x(8) = 0.70710678f;  // q2
+    m_x(9) = 0.0f;         // q3
 
     // Seed bias states from calibration
     m_x.segment<3>(10) = accel_bias;
@@ -49,10 +52,12 @@ void EKF::setup(const Eigen::Vector3f& gyro_bias,
     m_lastBaroCorrectionTime = 0;
     m_lastGpsCorrectionTime = 0;
     m_lastLidarCorrectionTime = 0;
+    m_lastRtkCorrectionTime = 0;
     m_lastMagMeasurementTime = 0;
     m_lastBaroMeasurementTime = 0;
     m_lastGpsMeasurementTime = 0;
     m_lastLidarMeasurementTime = 0;
+    m_lastRtkMeasurementTime = 0;
     m_covariancePredictDt = 0.0f;
     m_nextCorrectionIndex = 0;
 
@@ -78,7 +83,8 @@ void EKF::update(   const Eigen::Vector3f         gyro,
                     const SensorStructs::MAG_3AXIS_t& mag,
                     const SensorStructs::BARO_t&  baro,
                     const SensorStructs::GPS_t&   gps,
-                    const SensorStructs::LIDAR_t& lidar
+                    const SensorStructs::LIDAR_t& lidar,
+                    const SensorStructs::RTK_t&   rtk
                 )
 {
     const uint32_t now = micros();  // use micros not millis for better dt resolution
@@ -104,7 +110,7 @@ void EKF::update(   const Eigen::Vector3f         gyro,
         return;
     }
 
-    runScheduledCorrection(now, accel, mag, baro, gps, lidar);
+    runScheduledCorrection(now, accel, mag, baro, gps, lidar, rtk);
 }
 
 void EKF::setHome(const SensorStructs::home_ref_t& setHome_ref) 
@@ -240,6 +246,7 @@ void EKF::predict(  const float nominal_dt,
 
 
     // ── Full F and Q matrices (16×16) ─────────────────────────────────────────
+    // F is the Jacobian of the process model 
     m_F.setZero();
     m_F.block<3,3>(0,0)   = I3;
     m_F.block<3,3>(0,3)   = dt * I3;       // position depends on velocity
@@ -250,7 +257,7 @@ void EKF::predict(  const float nominal_dt,
     m_F.block<4,3>(6,13)  = -G_w;          // gyro bias cross term
     m_F.block<3,3>(3,10)  = -R_body_to_ned * dt;
     m_F.block<3,3>(0,10)  = -0.5f * R_body_to_ned * dt2;
-
+    // Q is the process noise covariance — how much we trust the process model (vs measurements)
     m_Q.setZero();
     m_Q.block<6,6>(0,0)   = m_Q_trans;
     m_Q.block<4,4>(6,6)   = m_Q_att;
@@ -325,12 +332,13 @@ void EKF::runScheduledCorrection(const uint32_t now,
                                  const SensorStructs::MAG_3AXIS_t& mag,
                                  const SensorStructs::BARO_t& baro,
                                  const SensorStructs::GPS_t& gps,
-                                 const SensorStructs::LIDAR_t& lidar)
+                                 const SensorStructs::LIDAR_t& lidar,
+                                 const SensorStructs::RTK_t& rtk)
 {
-    for (uint8_t i = 0; i < 5; i++)
+    for (uint8_t i = 0; i < 6; i++)
     {
         const uint8_t correction = m_nextCorrectionIndex;
-        m_nextCorrectionIndex = (m_nextCorrectionIndex + 1) % 5;
+        m_nextCorrectionIndex = (m_nextCorrectionIndex + 1) % 6;
 
         switch (correction)
         {
@@ -372,6 +380,17 @@ void EKF::runScheduledCorrection(const uint32_t now,
                 }
                 break;
             case 4:
+                if (rtk.valid &&
+                    rtk.timestamp_us != 0 &&
+                    rtk.timestamp_us != m_lastRtkMeasurementTime &&
+                    timerDue(now, m_lastRtkCorrectionTime, TimingConfig::EKF::GPS_CORRECTION_DELTA_US))
+                {
+                    updateRTK(rtk);
+                    m_lastRtkMeasurementTime = rtk.timestamp_us;
+                    return;
+                }
+                break;
+            case 5:
                 if (lidar.timestamp_us != 0 &&
                     lidar.timestamp_us != m_lastLidarMeasurementTime &&
                     timerDue(now, m_lastLidarCorrectionTime, TimingConfig::EKF::LIDAR_CORRECTION_DELTA_US))
@@ -651,6 +670,82 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
     m_P_temp.noalias() = m_IKH * m_P;
     m_P.noalias()      = m_P_temp * m_IKH.transpose();
     m_P_temp.noalias() = K_gps * R_gps * K_gps.transpose();
+    m_P               += m_P_temp;
+    m_P_temp           = m_P + m_P.transpose();
+    m_P                = 0.5f * m_P_temp;
+}
+
+void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
+{
+    using Mat6 = Eigen::Matrix<float, 6, 6>;
+    using Vec6 = Eigen::Matrix<float, 6, 1>;
+
+    if (!rtk.valid) { return; }
+
+    const Eigen::Vector3f z_pos(rtk.x, rtk.y, rtk.z);
+    const Eigen::Vector3f z_vel(rtk.u, rtk.v, rtk.w);
+    if (!z_pos.allFinite() || !z_vel.allFinite()) { return; }
+
+    Vec6 innovation;
+    innovation.segment<3>(0) = z_pos - m_x.segment<3>(0);
+    innovation.segment<3>(3) = z_vel - m_x.segment<3>(3);
+
+    Eigen::Matrix<float, 6, 16> H_rtk = Eigen::Matrix<float, 6, 16>::Zero();
+    H_rtk.block<3,3>(0,0) = Eigen::Matrix3f::Identity();
+    H_rtk.block<3,3>(3,3) = Eigen::Matrix3f::Identity();
+
+    float sigma_pos = SIGMA_RTK_UNKNOWN_POS;
+    float sigma_vel = SIGMA_RTK_UNKNOWN_VEL;
+    switch (rtk.fix_quality)
+    {
+        case 1:
+            sigma_pos = SIGMA_RTK_GPS_POS;
+            sigma_vel = SIGMA_RTK_GPS_VEL;
+            break;
+        case 2:
+            sigma_pos = SIGMA_RTK_DGPS_POS;
+            sigma_vel = SIGMA_RTK_DGPS_VEL;
+            break;
+        case 4:
+            sigma_pos = SIGMA_RTK_FIXED_POS;
+            sigma_vel = SIGMA_RTK_FIXED_VEL;
+            break;
+        case 5:
+            sigma_pos = SIGMA_RTK_FLOAT_POS;
+            sigma_vel = SIGMA_RTK_FLOAT_VEL;
+            break;
+        default:
+            break;
+    }
+
+    Mat6 R_rtk = Mat6::Zero();
+    R_rtk.block<3,3>(0,0) = (sigma_pos * sigma_pos) * Eigen::Matrix3f::Identity();
+    R_rtk.block<3,3>(3,3) = (sigma_vel * sigma_vel) * Eigen::Matrix3f::Identity();
+
+    const Mat6 S = H_rtk * m_P * H_rtk.transpose() + R_rtk;
+    const Eigen::Matrix<float, 16, 6> K_rtk = m_P * H_rtk.transpose() * S.ldlt().solve(Mat6::Identity());
+
+    m_x += K_rtk * innovation;
+    m_h.segment<3>(8) = m_x.segment<3>(0);
+    m_h.segment<3>(11) = m_x.segment<3>(3);
+    m_y.segment<3>(8) = innovation.segment<3>(0);
+    m_y.segment<3>(11) = innovation.segment<3>(3);
+
+    Eigen::Vector4f q_new = m_x.segment<4>(6);
+    const float q_norm = q_new.norm();
+    if (!std::isfinite(q_norm) || q_norm < 1e-9f)
+        m_x.segment<4>(6) = Eigen::Vector4f(1.0f, 0.0f, 0.0f, 0.0f);
+    else
+    {
+        q_new /= q_norm;
+        if (q_new(0) < 0) q_new = -q_new;
+        m_x.segment<4>(6) = q_new;
+    }
+
+    m_IKH.noalias()    = Eigen::Matrix<float,16,16>::Identity() - K_rtk * H_rtk;
+    m_P_temp.noalias() = m_IKH * m_P;
+    m_P.noalias()      = m_P_temp * m_IKH.transpose();
+    m_P_temp.noalias() = K_rtk * R_rtk * K_rtk.transpose();
     m_P               += m_P_temp;
     m_P_temp           = m_P + m_P.transpose();
     m_P                = 0.5f * m_P_temp;

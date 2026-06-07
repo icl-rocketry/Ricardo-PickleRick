@@ -22,6 +22,7 @@ namespace Services{
         HITL = 3,
         Controller = 30,
         PowerMonitor = 31,
+        RTK = 6
     };
 
 };

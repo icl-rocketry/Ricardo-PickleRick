@@ -226,6 +226,8 @@ void System::systemSetup()
     controller.setup();
     networkmanager.registerService(static_cast<uint8_t>(Services::ID::Controller),controller.getThisNetworkCallback());
 
+    networkmanager.registerService(static_cast<uint8_t>(Services::ID::RTK), estimator.registerRTK());
+
     // initialize statemachine with preflight state
     statemachine.initalize(std::make_unique<Preflight>(*this));
 

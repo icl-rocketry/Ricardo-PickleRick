@@ -59,21 +59,24 @@ class PDController
         Eigen::Vector4f m_output_values;
 
         static constexpr float MAX_GIMBAL_DEG = 15.0f;
-        static constexpr float MAX_THRUST_N   = 25.5f;
-        static constexpr float MAX_ROLL_MIX   = 8.0f; //was 8
+        static constexpr float MAX_THRUST_N   = 28.0f;
+        static constexpr float MAX_ROLL_MIX   = 8.0f; 
         static constexpr float ROLL_MIX_OFFSET = 2.7f;
         static constexpr float NOMINAL_FX_N = 13.24;
 
         //battery stuff
-        float m_batt_V = 15.6f;
+        float m_batt_V = 15.6f;//initialise
         bool m_batt_fresh = false;
         float m_voltage_scale = 1.0f;
 
         static constexpr float NOMINAL_BATT_V = 15.6f; //measured voltage of a fully loaded pack under load
+        static constexpr float VOLTAGE_SCALE_EXPONENT = 0.95; //exponent for voltage scaling curve, higher means more aggressive scaling at lower voltages
         static constexpr float MIN_VALID_BATT_V = 12.0f;
-        static constexpr float MIN_VOLTAGE_SCALE = 0.83f; 
-        static constexpr float MAX_VOLTAGE_SCALE = 1.07f;
-        static constexpr float VOLTAGE_COMP_GAIN = 0.8f; //increase to compensate for voltage sag more
+        static constexpr float MIN_VOLTAGE_SCALE = 0.8f; 
+        static constexpr float MAX_VOLTAGE_SCALE = 1.1f;
+
+        //Thrust linearisation model
+        static constexpr float THRUST_EXPONENT = 0.7f; //
         
 
         float m_Fx_cmd = 0.0f;

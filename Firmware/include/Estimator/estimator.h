@@ -11,6 +11,7 @@
 #include "Config/timing_config.h"
 #include "Sensors/sensors.h"
 #include "Sensors/sensorStructs.h"
+#include "Sensors/RTKpoller.h"
 
 #include "Estimator/ekf.h"
 #include "Estimator/calibrator.h"
@@ -41,6 +42,8 @@ class Estimator{
         
         bool isHomeSet() { return m_homeSet; };
         const SensorStructs::state_t& getData() { return m_state; };
+        void getRTKData(SensorStructs::RTK_t& data) { rtk.update(data); };
+        std::function<void(packetptr_t)> registerRTK();
 
         
     private:
@@ -57,6 +60,7 @@ class Estimator{
         
         EKF m_ekf;    
         Calibrator m_calibrator;
+        RTKPoller rtk;
         
         FirstOrderLowpass  m_accel_lpf_x;
         FirstOrderLowpass  m_accel_lpf_y;

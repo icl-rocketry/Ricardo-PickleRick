@@ -36,6 +36,8 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 
     auto raw_sensors = system.sensors.getData();
     auto estimation = system.estimator.getData();
+    SensorStructs::RTK_t rtk_data;
+    system.estimator.getRTKData(rtk_data);
     telemetry.header.type = 101;
     telemetry.header.source = system.networkmanager.getAddress();
 
@@ -99,6 +101,16 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
     telemetry.lidar_dist = raw_sensors.lidar.dist;
     telemetry.lidar_amp  = raw_sensors.lidar.amp;
     telemetry.lidar_temp = raw_sensors.lidar.temp;
+
+    telemetry.rtk_x = rtk_data.x;
+    telemetry.rtk_y = rtk_data.y;
+    telemetry.rtk_z = rtk_data.z;
+    telemetry.rtk_u = rtk_data.u;
+    telemetry.rtk_v = rtk_data.v;
+    telemetry.rtk_w = rtk_data.w;
+    telemetry.rtk_fix_quality = rtk_data.fix_quality;
+    telemetry.rtk_valid = rtk_data.valid ? 1 : 0;
+    telemetry.rtk_timestamp_us = rtk_data.timestamp_us;
 
     system.networkmanager.sendPacket(telemetry);
 }

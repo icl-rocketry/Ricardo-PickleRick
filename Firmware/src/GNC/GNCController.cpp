@@ -6,6 +6,7 @@
 
 #include <libriccore/riccorelogging.h>
 
+// ------------Code for the throttling tests-----------------
 namespace {
 struct ThrottleProfileStep {
     float demand;
@@ -14,12 +15,7 @@ struct ThrottleProfileStep {
 
 constexpr ThrottleProfileStep kThrottleProfile[] = {
     //check in general config whether the demand is in Newtons or in power percent and convert accordingly in the code below
-    {12.7f, 8000},  {0.0f, 40000},
-    {12.8f, 8000},  {0.0f, 40000},
-    {12.9f, 8000},  {0.0f, 40000},
-    {13.0f, 8000},  {0.0f, 40000},
-    {13.1f, 8000},  {0.0f, 40000},
-    {13.2f, 8000},  {0.0f, 40000},
+    {13.0f, 20000},  {0.0f, 8000},
     {1.0f, 8000},   {0.0f, 40000},
 };
 
@@ -29,6 +25,8 @@ constexpr uint8_t kThrottleProfileStepCount =
 constexpr float kThrottleProfileNominalBattV = 15.600f;
 constexpr float kThrottleProfileVoltageExponent = 0.95f;
 constexpr float kThrottleProfileMinValidBattV = 12.0f;
+constexpr float kThrottleProfileMinVoltageScale = 0.8f;
+constexpr float kThrottleProfileMaxVoltageScale = 1.1f;
 constexpr float kThrottleProfileMaxThrustN = 31.1f;
 constexpr float kThrottleProfileThrustLinearisationExponent = 0.7f;
 
@@ -39,8 +37,11 @@ float calculateThrottleProfileVoltageScale(float filtered_battery_voltage, bool 
         return 1.0f;
     }
 
-    return powf(kThrottleProfileNominalBattV / filtered_battery_voltage,
-                kThrottleProfileVoltageExponent);
+    return std::clamp(
+        powf(kThrottleProfileNominalBattV / filtered_battery_voltage,
+             kThrottleProfileVoltageExponent),
+        kThrottleProfileMinVoltageScale,
+        kThrottleProfileMaxVoltageScale);
 }
 
 float clampThrottlePercent(float command)
@@ -74,6 +75,8 @@ float desiredThrustPercentToPwmPercent(float desired_thrust_percent)
                          kThrottleProfileThrustLinearisationExponent);
 }
 }
+
+
 
 void GNCController::setup() {
 
@@ -173,8 +176,8 @@ void GNCController::updateThrottleProfileTest(bool actuate)
     }
 
     m_voltage_scale = calculateThrottleProfileVoltageScale(m_batt_V, m_batt_fresh);
-    const float linearised_pwm_percent = desiredThrustPercentToPwmPercent(desired_thrust_percent);
-    const float command = clampThrottlePercent(linearised_pwm_percent * m_voltage_scale);
+    const float compensated_thrust_percent = clampThrottlePercent(desired_thrust_percent * m_voltage_scale);
+    const float command = desiredThrustPercentToPwmPercent(compensated_thrust_percent);
 
     m_output << 0.0f, 0.0f, command, command;
 

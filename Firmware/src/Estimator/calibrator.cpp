@@ -1,4 +1,5 @@
 #include "Estimator/calibrator.h"
+#include "Config/general_config.h"
 
 void Calibrator::setup()
 {
@@ -73,7 +74,10 @@ void Calibrator::computeCalibration()
         computeMagRef(lat, lon, alt);
         m_calibration_quality = 2;
     } else {
-        computeMagRef(51.5074, -0.1278, 0.0f);
+        computeMagRef(
+            GeneralConfig::FALLBACK_MAG_REF_LAT_DEG,
+            GeneralConfig::FALLBACK_MAG_REF_LON_DEG,
+            GeneralConfig::FALLBACK_MAG_REF_ALT_M);
         m_calibration_quality = 1;
     }
 
@@ -278,7 +282,10 @@ void Calibrator::loadCalibration()
     {
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
             "Calibrator - stored mag ref invalid, using London default");
-        computeMagRef(51.5750f, -0.1453f, 0.0f);
+        computeMagRef(
+            GeneralConfig::FALLBACK_MAG_REF_LAT_DEG,
+            GeneralConfig::FALLBACK_MAG_REF_LON_DEG,
+            GeneralConfig::FALLBACK_MAG_REF_ALT_M);
         m_calibration_quality = 1;
     }
 
@@ -314,7 +321,10 @@ void Calibrator::backupCalibration()
     m_hay_bias = 0.0f;
     m_haz_bias = 0.0f;
 
-    computeMagRef(51.5750f, -0.1453f, 0.0f);
+    computeMagRef(
+        GeneralConfig::FALLBACK_MAG_REF_LAT_DEG,
+        GeneralConfig::FALLBACK_MAG_REF_LON_DEG,
+        GeneralConfig::FALLBACK_MAG_REF_ALT_M);
 
     m_calibration_quality = 0;
 }

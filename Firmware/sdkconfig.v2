@@ -604,17 +604,6 @@ CONFIG_ARDUINO_SELECTIVE_LittleFS=y
 # end of Arduino Configuration
 
 #
-# ESP Speech Recognition
-#
-CONFIG_MODEL_IN_FLASH=y
-# CONFIG_MODEL_IN_SDCARD is not set
-# CONFIG_USE_AFE is not set
-# CONFIG_USE_NSNET is not set
-# CONFIG_USE_WAKENET is not set
-# CONFIG_USE_MULTINET is not set
-# end of ESP Speech Recognition
-
-#
 # ESP RainMaker Config
 #
 # CONFIG_ESP_RMAKER_NO_CLAIM is not set
