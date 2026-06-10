@@ -61,7 +61,7 @@ class PDController
         static constexpr float MAX_GIMBAL_DEG = 15.0f;
         static constexpr float MAX_THRUST_N   = 28.0f;
         static constexpr float MAX_ROLL_MIX   = 8.0f; 
-        static constexpr float ROLL_MIX_OFFSET = 2.7f;
+        static constexpr float ROLL_MIX_OFFSET = 3.2f; //if it is rolling in +ve x direction 
         static constexpr float NOMINAL_FX_N = 13.24;
 
         //battery stuff

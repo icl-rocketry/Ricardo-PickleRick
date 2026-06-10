@@ -104,53 +104,58 @@ void System::reportPerformance()
         return;
     }
 
-    const uint32_t avg_fast = fast_path_count ? fast_path_time_us / fast_path_count : 0;
-    const uint32_t avg_sensor_fast = fast_path_count ? sensor_fast_time_us / fast_path_count : 0;
-    const uint32_t avg_estimator = fast_path_count ? estimator_time_us / fast_path_count : 0;
-    const uint32_t avg_slow_sensor = slow_sensor_count ? slow_sensor_time_us / slow_sensor_count : 0;
-    const uint32_t avg_power = power_monitor_count ? power_monitor_time_us / power_monitor_count : 0;
-    const uint32_t avg_log = log_path_count ? log_path_time_us / log_path_count : 0;
+    // If uncommented, outputs fast-loop performance counters over serial:
+    // loop Hz, average/max total fast path time, IMU update time, EKF update time,
+    // slow sensor path time, power monitor time, and log path time in microseconds.
+    // const uint32_t avg_fast = fast_path_count ? fast_path_time_us / fast_path_count : 0;
+    // const uint32_t avg_sensor_fast = fast_path_count ? sensor_fast_time_us / fast_path_count : 0;
+    // const uint32_t avg_estimator = fast_path_count ? estimator_time_us / fast_path_count : 0;
+    // const uint32_t avg_slow_sensor = slow_sensor_count ? slow_sensor_time_us / slow_sensor_count : 0;
+    // const uint32_t avg_power = power_monitor_count ? power_monitor_time_us / power_monitor_count : 0;
+    // const uint32_t avg_log = log_path_count ? log_path_time_us / log_path_count : 0;
+    // Serial.printf(
+    //     "PERF hz=%lu fast_avg/max=%lu/%luus imu_avg/max=%lu/%luus ekf_avg/max=%lu/%luus slow_avg/max=%lu/%luus power_avg/max=%lu/%luus log_avg/max=%lu/%luus\n",
+    //     static_cast<unsigned long>(fast_path_count),
+    //     static_cast<unsigned long>(avg_fast),
+    //     static_cast<unsigned long>(max_fast_path_time_us),
+    //     static_cast<unsigned long>(avg_sensor_fast),
+    //     static_cast<unsigned long>(max_sensor_fast_time_us),
+    //     static_cast<unsigned long>(avg_estimator),
+    //     static_cast<unsigned long>(max_estimator_time_us),
+    //     static_cast<unsigned long>(avg_slow_sensor),
+    //     static_cast<unsigned long>(max_slow_sensor_time_us),
+    //     static_cast<unsigned long>(avg_power),
+    //     static_cast<unsigned long>(max_power_monitor_time_us),
+    //     static_cast<unsigned long>(avg_log),
+    //     static_cast<unsigned long>(max_log_path_time_us)
+    // );
 
-    const uint32_t avg_gps = gps_update_count ? gps_update_time_us / gps_update_count : 0;
-    const uint32_t avg_baro = baro_update_count ? baro_update_time_us / baro_update_count : 0;
-    const uint32_t avg_mag = mag_update_count ? mag_update_time_us / mag_update_count : 0;
-    const uint32_t avg_rail = rail_update_count ? rail_update_time_us / rail_update_count : 0;
-    const uint32_t avg_lidar = lidar_update_count ? lidar_update_time_us / lidar_update_count : 0;
-
-    Serial.printf(
-        "PERF hz=%lu fast_avg/max=%lu/%luus imu_avg/max=%lu/%luus ekf_avg/max=%lu/%luus slow_avg/max=%lu/%luus power_avg/max=%lu/%luus log_avg/max=%lu/%luus\n",
-        static_cast<unsigned long>(fast_path_count),
-        static_cast<unsigned long>(avg_fast),
-        static_cast<unsigned long>(max_fast_path_time_us),
-        static_cast<unsigned long>(avg_sensor_fast),
-        static_cast<unsigned long>(max_sensor_fast_time_us),
-        static_cast<unsigned long>(avg_estimator),
-        static_cast<unsigned long>(max_estimator_time_us),
-        static_cast<unsigned long>(avg_slow_sensor),
-        static_cast<unsigned long>(max_slow_sensor_time_us),
-        static_cast<unsigned long>(avg_power),
-        static_cast<unsigned long>(max_power_monitor_time_us),
-        static_cast<unsigned long>(avg_log),
-        static_cast<unsigned long>(max_log_path_time_us)
-    );
-    Serial.printf(
-        "PERF slow gps=%lu avg/max=%lu/%luus baro=%lu avg/max=%lu/%luus mag=%lu avg/max=%lu/%luus rails=%lu avg/max=%lu/%luus lidar=%lu avg/max=%lu/%luus\n",
-        static_cast<unsigned long>(gps_update_count),
-        static_cast<unsigned long>(avg_gps),
-        static_cast<unsigned long>(max_gps_update_time_us),
-        static_cast<unsigned long>(baro_update_count),
-        static_cast<unsigned long>(avg_baro),
-        static_cast<unsigned long>(max_baro_update_time_us),
-        static_cast<unsigned long>(mag_update_count),
-        static_cast<unsigned long>(avg_mag),
-        static_cast<unsigned long>(max_mag_update_time_us),
-        static_cast<unsigned long>(rail_update_count),
-        static_cast<unsigned long>(avg_rail),
-        static_cast<unsigned long>(max_rail_update_time_us),
-        static_cast<unsigned long>(lidar_update_count),
-        static_cast<unsigned long>(avg_lidar),
-        static_cast<unsigned long>(max_lidar_update_time_us)
-    );
+    // If uncommented, outputs slow sensor performance counters over serial:
+    // GPS, barometer, magnetometer, rail monitor, and lidar update counts plus
+    // average/max update time for each sensor class in microseconds.
+    // const uint32_t avg_gps = gps_update_count ? gps_update_time_us / gps_update_count : 0;
+    // const uint32_t avg_baro = baro_update_count ? baro_update_time_us / baro_update_count : 0;
+    // const uint32_t avg_mag = mag_update_count ? mag_update_time_us / mag_update_count : 0;
+    // const uint32_t avg_rail = rail_update_count ? rail_update_time_us / rail_update_count : 0;
+    // const uint32_t avg_lidar = lidar_update_count ? lidar_update_time_us / lidar_update_count : 0;
+    // Serial.printf(
+    //     "PERF slow gps=%lu avg/max=%lu/%luus baro=%lu avg/max=%lu/%luus mag=%lu avg/max=%lu/%luus rails=%lu avg/max=%lu/%luus lidar=%lu avg/max=%lu/%luus\n",
+    //     static_cast<unsigned long>(gps_update_count),
+    //     static_cast<unsigned long>(avg_gps),
+    //     static_cast<unsigned long>(max_gps_update_time_us),
+    //     static_cast<unsigned long>(baro_update_count),
+    //     static_cast<unsigned long>(avg_baro),
+    //     static_cast<unsigned long>(max_baro_update_time_us),
+    //     static_cast<unsigned long>(mag_update_count),
+    //     static_cast<unsigned long>(avg_mag),
+    //     static_cast<unsigned long>(max_mag_update_time_us),
+    //     static_cast<unsigned long>(rail_update_count),
+    //     static_cast<unsigned long>(avg_rail),
+    //     static_cast<unsigned long>(max_rail_update_time_us),
+    //     static_cast<unsigned long>(lidar_update_count),
+    //     static_cast<unsigned long>(avg_lidar),
+    //     static_cast<unsigned long>(max_lidar_update_time_us)
+    // );
 
     perf_report_time = now_ms;
     fast_path_count = 0;
@@ -192,7 +197,14 @@ void System::systemSetup()
 
     Serial.setRxBufferSize(GeneralConfig::SerialRxSize);
     Serial.begin(GeneralConfig::SerialBaud);
-  
+    delay(200);
+    // If uncommented, outputs the configured serial baud rate and hardware version
+    // after the serial port has been initialized.
+    // Serial.printf(
+    //     "PICKLE DEBUG serial alive: baud=%d hardware_version=%d\n",
+    //     GeneralConfig::SerialBaud,
+    //     HARDWARE_VERSION
+    // );
 
     setupPins();
     // intialize i2c interface
@@ -236,10 +248,6 @@ void System::systemSetup()
 void System::systemUpdate()
 {
     const uint32_t current_time = micros();
-    static uint32_t ekf_debug_last_us = 0;
-    static uint32_t ekf_debug_count = 0;
-    static uint32_t ekf_debug_total_time_us = 0;
-    static uint32_t ekf_debug_max_time_us = 0;
 
     if (prev_estimator_update_time == 0)
     {
@@ -625,6 +633,16 @@ void System::configureNetwork()
     
     networkmanager.setRoutingTable(flightRouting);
     networkmanager.updateBaseTable(); // save the new base table
+    // If uncommented, outputs the pickle network address, RTK service id, and
+    // the expected Chad RTK source addresses used while checking routing.
+    // Serial.printf(
+    //     "RTK DEBUG network address check: pickle_addr=%u rtk_service=%u chad_servo_addr=102 chad_prop_addr=103\n",
+    //     networkmanager.getAddress(),
+    //     static_cast<uint8_t>(Services::ID::RTK)
+    // );
+    // If uncommented, outputs the expected RTK packet source, destination, and
+    // destination service assumptions used for Chad RTK packets.
+    // Serial.println("RTK DEBUG expected Chad RTK packets: source=102 or 103, destination=pickle_addr, destination_service=6");
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(flightRouting.printTable().str());
 };
 

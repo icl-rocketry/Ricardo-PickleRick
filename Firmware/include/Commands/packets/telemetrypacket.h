@@ -33,6 +33,7 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::longitude,
                 &TelemetryPacket::altitude,
                 &TelemetryPacket::sat,
+                &TelemetryPacket::gps_updated,
                 &TelemetryPacket::ax,
                 &TelemetryPacket::ay,
                 &TelemetryPacket::az,
@@ -103,6 +104,7 @@ class TelemetryPacket : public RnpPacket{
         int32_t latitude,longitude;
         float altitude;
         uint8_t sat;
+        uint8_t gps_updated;
         //imu
         float ax, ay, az; // acceleration (g's)
         float h_ax,h_ay,h_az;// high g accel (g's)
@@ -136,4 +138,3 @@ class TelemetryPacket : public RnpPacket{
         }
 
 };
-

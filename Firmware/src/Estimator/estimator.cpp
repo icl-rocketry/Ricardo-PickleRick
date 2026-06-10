@@ -62,7 +62,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             m_ekf.setHome(
                 m_calibrator.getSetHomeRef()
             );
-            if (rtk.hasMeasurement()) {
+            if (rtk.hasFix()) {
                 rtk.setHome(rtk.getPositionRaw());
             }
             m_settingHome = false;

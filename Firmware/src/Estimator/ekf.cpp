@@ -24,6 +24,17 @@ namespace
 
         return true;
     }
+
+    bool correctionDueNow(const uint32_t now, uint32_t& previous, const uint32_t period)
+    {
+        if (previous == 0 || now - previous >= period)
+        {
+            previous = now;
+            return true;
+        }
+
+        return false;
+    }
 }
 
 void EKF::setup(const Eigen::Vector3f& gyro_bias, 
@@ -381,13 +392,19 @@ void EKF::runScheduledCorrection(const uint32_t now,
                 break;
             case 4:
                 if (rtk.valid &&
+                    rtk.fix_quality != 0 &&
                     rtk.timestamp_us != 0 &&
-                    rtk.timestamp_us != m_lastRtkMeasurementTime &&
-                    timerDue(now, m_lastRtkCorrectionTime, TimingConfig::EKF::GPS_CORRECTION_DELTA_US))
+                    rtk.timestamp_us != m_lastRtkMeasurementTime)
                 {
-                    updateRTK(rtk);
+                    const bool fresh = now - rtk.timestamp_us <= TimingConfig::EKF::RTK_CORRECTION_MAX_AGE_US;
+                    if (fresh && correctionDueNow(now, m_lastRtkCorrectionTime, TimingConfig::EKF::RTK_CORRECTION_DELTA_US))
+                    {
+                        updateRTK(rtk);
+                        m_lastRtkMeasurementTime = rtk.timestamp_us;
+                        return;
+                    }
+
                     m_lastRtkMeasurementTime = rtk.timestamp_us;
-                    return;
                 }
                 break;
             case 5:
@@ -680,7 +697,7 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
     using Mat6 = Eigen::Matrix<float, 6, 6>;
     using Vec6 = Eigen::Matrix<float, 6, 1>;
 
-    if (!rtk.valid) { return; }
+    if (!rtk.valid || rtk.fix_quality == 0) { return; }
 
     const Eigen::Vector3f z_pos(rtk.x, rtk.y, rtk.z);
     const Eigen::Vector3f z_vel(rtk.u, rtk.v, rtk.w);

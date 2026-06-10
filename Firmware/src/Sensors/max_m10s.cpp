@@ -116,16 +116,20 @@ void MAX_M10S::update(SensorStructs::GPS_t& data)
         uint16_t chunk = (avail > I2C_CHUNK) ? I2C_CHUNK : avail;
         uint16_t got   = readStream(buf, chunk);
         if (got == 0) { break; } // also prevents an infinite loop
-        for (uint16_t i = 0; i < got; ++i) 
-        { 
-            parseByte(buf[i]); { newPvt = true; }
+        for (uint16_t i = 0; i < got; ++i)
+        {
+            if (parseByte(buf[i])) { newPvt = true; }
         }
         avail -= got;
     }
 
+    if (!newPvt) { return; }
+
     data.sat      = _pvt.numSV;
-    
-    if (!_pvt.valid || !_pvt.valid) { return; }
+    data.fix      = static_cast<uint8_t>(_pvt.fixType);
+    data.valid    = _pvt.valid && _pvt.gnssFixOk;
+
+    if (!_pvt.valid) { return; }
 
     data.latitude      = _pvt.lat;
     data.longitude      = _pvt.lon;
@@ -137,8 +141,6 @@ void MAX_M10S::update(SensorStructs::GPS_t& data)
 
     data.hAcc     = static_cast<float>(_pvt.hAcc)    * 1e-3f;
     data.vAcc     = static_cast<float>(_pvt.vAcc)    * 1e-3f;
-    data.fix      = static_cast<uint8_t>(_pvt.fixType);
-    data.valid    = _pvt.gnssFixOk;
     data.updated  = true;
     data.timestamp_us = micros();
 }

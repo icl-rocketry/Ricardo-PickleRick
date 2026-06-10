@@ -53,6 +53,7 @@ namespace TimingConfig
         constexpr uint32_t MAG_CORRECTION_RATE_HZ = 10;
         constexpr uint32_t BARO_CORRECTION_RATE_HZ = 10;
         constexpr uint32_t GPS_CORRECTION_RATE_HZ = 10; //sensor configured to this
+        constexpr uint32_t RTK_CORRECTION_RATE_HZ = 1;
         constexpr uint32_t LIDAR_CORRECTION_RATE_HZ = 20;
 
         constexpr uint32_t COVARIANCE_UPDATE_DELTA_US = periodUsFromHz(COVARIANCE_UPDATE_RATE_HZ);
@@ -60,6 +61,8 @@ namespace TimingConfig
         constexpr uint32_t MAG_CORRECTION_DELTA_US = periodUsFromHz(MAG_CORRECTION_RATE_HZ);
         constexpr uint32_t BARO_CORRECTION_DELTA_US = periodUsFromHz(BARO_CORRECTION_RATE_HZ);
         constexpr uint32_t GPS_CORRECTION_DELTA_US = periodUsFromHz(GPS_CORRECTION_RATE_HZ);
+        constexpr uint32_t RTK_CORRECTION_DELTA_US = periodUsFromHz(RTK_CORRECTION_RATE_HZ);
+        constexpr uint32_t RTK_CORRECTION_MAX_AGE_US = RTK_CORRECTION_DELTA_US / 4UL;
         constexpr uint32_t LIDAR_CORRECTION_DELTA_US = periodUsFromHz(LIDAR_CORRECTION_RATE_HZ);
     }
 

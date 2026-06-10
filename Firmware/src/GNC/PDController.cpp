@@ -12,15 +12,19 @@ void PDController::setup()
     // with rx < 0, negative body-y drift -> make ry more negative; positive body-y drift -> make ry more positive.
     // negative body-z drift -> make rz more negative; positive body-z drift -> make rz more positive.
     // m_rEng << -0.235f, -0.0007f, 0.015f; //centre of mass to center of thrust in body frame
-    m_rEng << -0.235f, -0.01f, 0.0075f;
+    m_rEng << -0.235f, -0.005f, 0.01f;
     m_mass = 1.32f;
 
-    m_K_p << 0.0f, 2.0f, 1.5f; // attitude body control gains (roll, pitch, yaw)
-    m_K_d << 7.0f, 0.45f, 0.5f;
+    m_K_p << 0.0f, 2.5f, 2.0f; // attitude body control gains (roll, pitch, yaw)
+    m_K_d << 7.0f, 0.8f, 0.9f;
 
+    // m_K_p_pos << 0.2f, 0.3f, 0.5f;   // NED position control gains
+    // m_K_d_pos << 0.9f, 0.9f, 1.0f; 
+    // m_K_i_pos << 0.01f, 0.01f, 0.04f;
     m_K_p_pos << 0.0f, 0.0f, 0.5f;   // NED position control gains
-    m_K_d_pos << 0.0f, 0.0f, 1.0f; //based on gps velocity 
-    m_K_i_pos << 0.0f, 0.0f, 0.05f;
+    m_K_d_pos << 0.0f, 0.0f, 1.0f; 
+    m_K_i_pos << 0.0f, 0.0f, 0.04f;
+
 
     m_pos_int.setZero();
     m_pos_des << 0.0f, 0.0f, 0.0f;  // need new function to set this externally if you want to move around
@@ -200,22 +204,21 @@ void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
     //send to telemetry
     const double total_error_rad = std::asin(std::clamp(e_world.norm(), 0.0, 1.0));
     const double pitch_error_rad = std::atan2(desired_body.z(), desired_body.x());
-    const Eigen::Matrix3d R = q.toRotationMatrix();
-    const double roll_error_rad = -std::atan2(R(2, 1), R(2, 2));
+    const double yaw_error_rad   = std::atan2(desired_body.y(), desired_body.x());
 
     m_thrust_vector_error_deg << static_cast<float>(total_error_rad * RAD_TO_DEG),
                                  static_cast<float>(pitch_error_rad * RAD_TO_DEG),
-                                 static_cast<float>(roll_error_rad * RAD_TO_DEG);
+                                 static_cast<float>(yaw_error_rad * RAD_TO_DEG);
 
-    // TEMP flat-board test: feed roll-angle error into the yaw channel.
-    m_dir_error_body(0) = static_cast<float>(roll_error_rad);
-    m_dir_error_body(2) = m_dir_error_body(0);
+    // No control about thrust axis (body x)
+    m_dir_error_body(0) = 0.0f;
 }
 
 void PDController::updateMcmd(const Eigen::Vector3f& angular_rates)
 {
     Eigen::Vector3f rates_error = -angular_rates; //desired rates are 0 so it is negative
     m_euler_error = m_dir_error_body;//send the errors to telemetry for debugging
+    m_dir_error_body(0) = 0.0f; //no roll angle error since its only a D controller
     m_M_cmd =
         -m_K_p.cwiseProduct(m_dir_error_body)
         -m_K_d.cwiseProduct(rates_error);    

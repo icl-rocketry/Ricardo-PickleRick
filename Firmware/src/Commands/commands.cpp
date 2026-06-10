@@ -94,6 +94,7 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
     telemetry.longitude = raw_sensors.gps.longitude;
     telemetry.altitude  = raw_sensors.gps.altitude;
     telemetry.sat       = raw_sensors.gps.sat;
+    telemetry.gps_updated = raw_sensors.gps.updated ? 1 : 0;
     
     telemetry.system_status = system.systemstatus.getStatus();
     telemetry.system_time = millis();

@@ -16,12 +16,15 @@ void TFLuna::setup()
     {
         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_LIDAR, "TF-Luna not found at 0x10");
         RicCoreLogging::log<LOG_TARGET>("TF-Luna init failed");
-        Serial.printf("TF-Luna init failed: addr=0x%02X i2c_status=%u\n", _address, status);
+        // If uncommented, outputs the TF-Luna I2C address and endTransmission
+        // status code when initialization cannot find the device.
+        // Serial.printf("TF-Luna init failed: addr=0x%02X i2c_status=%u\n", _address, status);
         return;
     }
     _setup_ok = true;
     RicCoreLogging::log<LOG_TARGET>("TF-Luna initialized");
-    Serial.printf("TF-Luna initialized: addr=0x%02X\n", _address);
+    // If uncommented, outputs the TF-Luna I2C address after successful setup.
+    // Serial.printf("TF-Luna initialized: addr=0x%02X\n", _address);
 }
 
 void TFLuna::update(SensorStructs::LIDAR_t& data)
@@ -39,9 +42,11 @@ void TFLuna::update(SensorStructs::LIDAR_t& data)
         {
             _last_read_fail_log_ms = now_ms;
             RicCoreLogging::log<LOG_TARGET>("TF-Luna read failed");
-            Serial.printf("TF-Luna read failed: addr=0x%02X count=%lu\n",
-                          _address,
-                          static_cast<unsigned long>(_read_fail_count));
+            // If uncommented, outputs the TF-Luna I2C address and cumulative
+            // read failure count, rate-limited to once per second.
+            // Serial.printf("TF-Luna read failed: addr=0x%02X count=%lu\n",
+            //               _address,
+            //               static_cast<unsigned long>(_read_fail_count));
         }
         return;
     }
@@ -50,7 +55,9 @@ void TFLuna::update(SensorStructs::LIDAR_t& data)
     {
         _setup_ok = true;
         RicCoreLogging::log<LOG_TARGET>("TF-Luna read recovered");
-        Serial.printf("TF-Luna read recovered: addr=0x%02X\n", _address);
+        // If uncommented, outputs the TF-Luna I2C address when reads recover
+        // after a previous failure.
+        // Serial.printf("TF-Luna read recovered: addr=0x%02X\n", _address);
     }
 
     data.dist  = static_cast<uint16_t>(buf[0]) | (static_cast<uint16_t>(buf[1]) << 8);
@@ -63,22 +70,19 @@ void TFLuna::update(SensorStructs::LIDAR_t& data)
     data.valid = (data.amp >= AMP_MIN) && (data.amp != AMP_OVEREXPOSURE);
     data.timestamp_us = micros();
 
-    const uint32_t now_ms = millis();
-    if (now_ms - _last_read_ok_log_ms >= 1000)
-    {
-        _last_read_ok_log_ms = now_ms;
-        // Serial.printf("TF-Luna read ok: dist=%u amp=%u temp=%.2f valid=%u raw=%02X %02X %02X %02X %02X %02X\n",
-        //               data.dist,
-        //               data.amp,
-        //               data.temp,
-        //               data.valid ? 1 : 0,
-        //               buf[0],
-        //               buf[1],
-        //               buf[2],
-        //               buf[3],
-        //               buf[4],
-        //               buf[5]);
-    }
+    // If uncommented, outputs a successful TF-Luna read: distance, amplitude,
+    // temperature, validity flag, and the six raw register bytes.
+    // Serial.printf("TF-Luna read ok: dist=%u amp=%u temp=%.2f valid=%u raw=%02X %02X %02X %02X %02X %02X\n",
+    //               data.dist,
+    //               data.amp,
+    //               data.temp,
+    //               data.valid ? 1 : 0,
+    //               buf[0],
+    //               buf[1],
+    //               buf[2],
+    //               buf[3],
+    //               buf[4],
+    //               buf[5]);
 }
 
 bool TFLuna::readRegisters(uint8_t reg, uint8_t* buf, uint8_t len)
