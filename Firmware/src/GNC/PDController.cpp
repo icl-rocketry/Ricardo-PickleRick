@@ -12,18 +12,18 @@ void PDController::setup()
     // with rx < 0, negative body-y drift -> make ry more negative; positive body-y drift -> make ry more positive.
     // negative body-z drift -> make rz more negative; positive body-z drift -> make rz more positive.
     // m_rEng << -0.235f, -0.0007f, 0.015f; //centre of mass to center of thrust in body frame
-    m_rEng << -0.235f, -0.005f, 0.01f;
+    m_rEng << -0.235f, -0.006f, 0.01f;
     m_mass = 1.32f;
 
     m_K_p << 0.0f, 2.5f, 2.0f; // attitude body control gains (roll, pitch, yaw)
     m_K_d << 7.0f, 0.8f, 0.9f;
 
-    // m_K_p_pos << 0.2f, 0.3f, 0.5f;   // NED position control gains
-    // m_K_d_pos << 0.9f, 0.9f, 1.0f; 
-    // m_K_i_pos << 0.01f, 0.01f, 0.04f;
-    m_K_p_pos << 0.0f, 0.0f, 0.5f;   // NED position control gains
-    m_K_d_pos << 0.0f, 0.0f, 1.0f; 
-    m_K_i_pos << 0.0f, 0.0f, 0.04f;
+    m_K_p_pos << 0.1f, 0.1f, 0.3f;   // NED position control gains
+    m_K_d_pos << 1.4f, 1.2f, 1.0f; 
+    m_K_i_pos << 0.0f, 0.0f, 0.01f;
+    // m_K_p_pos << 0.0f, 0.0f, 0.3f;   // NED position control gains
+    // m_K_d_pos << 0.0f, 0.0f, 1.0f; 
+    // m_K_i_pos << 0.0f, 0.0f, 0.04f;
 
 
     m_pos_int.setZero();

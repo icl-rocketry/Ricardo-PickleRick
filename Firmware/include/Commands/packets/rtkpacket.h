@@ -19,7 +19,8 @@ class RTKPacket : public RnpPacket{
                 &RTKPacket::u_input,
                 &RTKPacket::v_input,
                 &RTKPacket::w_input,
-                &RTKPacket::fix_quality
+                &RTKPacket::fix_quality,
+                &RTKPacket::wifi_connected
             );
 
             return ret;
@@ -43,6 +44,7 @@ class RTKPacket : public RnpPacket{
         float v_input;
         float w_input;
         uint8_t fix_quality;
+        uint8_t wifi_connected;
 
         static constexpr size_t size(){
             return getSerializer().member_size();

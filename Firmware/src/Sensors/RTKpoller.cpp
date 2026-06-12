@@ -9,6 +9,7 @@ void RTKPoller::setup()
     v_input = 0.0f;
     w_input = 0.0f;
     fix_quality = 0;
+    wifi_connected = false;
     m_homeSet = false;
     m_valid = false;
     m_timestamp_us = 0;
@@ -24,6 +25,7 @@ void RTKPoller::update(SensorStructs::RTK_t &data)
     data.v = v_input;
     data.w = w_input;
     data.fix_quality = fix_quality;
+    data.wifi_connected = wifi_connected;
     data.valid = m_valid && m_homeSet;
     data.timestamp_us = m_timestamp_us;
 }
@@ -101,11 +103,19 @@ void RTKPoller::handlecommand(packetptr_t packetptr)
     if (serializedData.size() != RTKPacket::size()) {
         // If uncommented, outputs the received RTK body size and expected RTK
         // body size before dropping a wrong-sized packet.
-        // Serial.printf(
-        //     "RTK DEBUG drop: wrong body size got=%u expected=%u\n",
-        //     static_cast<unsigned>(serializedData.size()),
-        //     static_cast<unsigned>(RTKPacket::size())
-        // );
+        Serial.printf(
+            "RTK DEBUG drop: wrong body size got=%u expected=%u\n",
+            static_cast<unsigned>(serializedData.size()),
+            static_cast<unsigned>(RTKPacket::size())
+        );
+        Serial.printf(
+            "RTK DEBUG packet vector=%u header_size=%u header.packet_len=%u body=%u expected=%u\n",
+            static_cast<unsigned>(packetptr->packet.size()),
+            static_cast<unsigned>(packetptr->header.size()),
+            static_cast<unsigned>(packetptr->header.packet_len),
+            static_cast<unsigned>(serializedData.size()),
+            static_cast<unsigned>(RTKPacket::size())
+        );
         return;
     }
 
@@ -117,6 +127,7 @@ void RTKPoller::handlecommand(packetptr_t packetptr)
     v_input = rtkdata.v_input;
     w_input = rtkdata.w_input;
     fix_quality = rtkdata.fix_quality;
+    wifi_connected = rtkdata.wifi_connected != 0;
     m_timestamp_us = micros();
     m_valid = true;
 

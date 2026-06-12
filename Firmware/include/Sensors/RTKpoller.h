@@ -30,6 +30,7 @@ public:
     float v_input = 0.0f;
     float w_input = 0.0f;
     uint8_t fix_quality = 0;
+    bool wifi_connected = false;
     float x_home = 0.0f;
     float y_home = 0.0f;
     float z_home = 0.0f;

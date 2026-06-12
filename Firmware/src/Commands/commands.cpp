@@ -110,6 +110,7 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
     telemetry.rtk_v = rtk_data.v;
     telemetry.rtk_w = rtk_data.w;
     telemetry.rtk_fix_quality = rtk_data.fix_quality;
+    telemetry.rtk_wifi_connected = rtk_data.wifi_connected ? 1 : 0;
     telemetry.rtk_valid = rtk_data.valid ? 1 : 0;
     telemetry.rtk_timestamp_us = rtk_data.timestamp_us;
 

@@ -64,6 +64,7 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::rtk_v,
                 &TelemetryPacket::rtk_w,
                 &TelemetryPacket::rtk_fix_quality,
+                &TelemetryPacket::rtk_wifi_connected,
                 &TelemetryPacket::rtk_valid,
                 &TelemetryPacket::rtk_timestamp_us
             );
@@ -129,6 +130,7 @@ class TelemetryPacket : public RnpPacket{
         float rtk_x, rtk_y, rtk_z; // position NED (m)
         float rtk_u, rtk_v, rtk_w; // velocity NED (m/s)
         uint8_t rtk_fix_quality;
+        uint8_t rtk_wifi_connected;
         uint8_t rtk_valid;
         uint32_t rtk_timestamp_us;
 

@@ -711,6 +711,14 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
     H_rtk.block<3,3>(0,0) = Eigen::Matrix3f::Identity();
     H_rtk.block<3,3>(3,3) = Eigen::Matrix3f::Identity();
 
+    if (!USE_RTK_VERTICAL)
+    {
+        innovation(2) = 0.0f;
+        innovation(5) = 0.0f;
+        H_rtk.row(2).setZero();
+        H_rtk.row(5).setZero();
+    }
+
     float sigma_pos = SIGMA_RTK_UNKNOWN_POS;
     float sigma_vel = SIGMA_RTK_UNKNOWN_VEL;
     switch (rtk.fix_quality)
@@ -740,7 +748,13 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
     R_rtk.block<3,3>(3,3) = (sigma_vel * sigma_vel) * Eigen::Matrix3f::Identity();
 
     const Mat6 S = H_rtk * m_P * H_rtk.transpose() + R_rtk;
-    const Eigen::Matrix<float, 16, 6> K_rtk = m_P * H_rtk.transpose() * S.ldlt().solve(Mat6::Identity());
+    Eigen::Matrix<float, 16, 6> K_rtk = m_P * H_rtk.transpose() * S.ldlt().solve(Mat6::Identity());
+
+    if (!USE_RTK_VERTICAL)
+    {
+        K_rtk.row(2).setZero();
+        K_rtk.row(5).setZero();
+    }
 
     m_x += K_rtk * innovation;
     m_h.segment<3>(8) = m_x.segment<3>(0);

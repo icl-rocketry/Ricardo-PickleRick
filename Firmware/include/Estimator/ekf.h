@@ -155,7 +155,8 @@ private:
     //------Measurement flags--------------------------------------------
     static constexpr bool USE_GPS_POSITION = false;
     static constexpr bool USE_GPS_VELOCITY_DIRECT = false;
-    static constexpr bool USE_ACCEL_FOR_VELOCITY = false;
+    static constexpr bool USE_ACCEL_FOR_VELOCITY = true;
+    static constexpr bool USE_RTK_VERTICAL = true;
 
     void predict(   const float nominal_dt,
                     const float covariance_dt,

@@ -96,6 +96,7 @@ namespace SensorStructs
         float v;
         float w;
         uint8_t fix_quality{0};
+        bool wifi_connected{false};
         bool valid{false};
         uint32_t timestamp_us{0};
     };
