@@ -98,6 +98,7 @@ namespace SensorStructs
         uint8_t fix_quality{0};
         bool wifi_connected{false};
         bool valid{false};
+        uint32_t gnss_time_of_day_ms{0};
         uint32_t timestamp_us{0};
     };
 

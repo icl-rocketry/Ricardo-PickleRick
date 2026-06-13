@@ -1,4 +1,5 @@
 #include "Sensors/RTKpoller.h"
+#include "Config/timing_config.h"
 
 void RTKPoller::setup()
 {
@@ -10,6 +11,7 @@ void RTKPoller::setup()
     w_input = 0.0f;
     fix_quality = 0;
     wifi_connected = false;
+    gnss_time_of_day_ms = 0;
     m_homeSet = false;
     m_valid = false;
     m_timestamp_us = 0;
@@ -17,6 +19,7 @@ void RTKPoller::setup()
 
 void RTKPoller::update(SensorStructs::RTK_t &data)
 {
+    const uint32_t now_us = micros();
     const Eigen::Vector3f position = getPosition();
     data.x = position.x();
     data.y = position.y();
@@ -26,8 +29,26 @@ void RTKPoller::update(SensorStructs::RTK_t &data)
     data.w = w_input;
     data.fix_quality = fix_quality;
     data.wifi_connected = wifi_connected;
-    data.valid = m_valid && m_homeSet;
+    data.valid = m_homeSet && hasFreshMeasurement(now_us);
+    data.gnss_time_of_day_ms = gnss_time_of_day_ms;
     data.timestamp_us = m_timestamp_us;
+}
+
+bool RTKPoller::hasMeasurement() const
+{
+    return hasFreshMeasurement(micros());
+}
+
+bool RTKPoller::hasFix() const
+{
+    return hasMeasurement() && fix_quality != 0;
+}
+
+bool RTKPoller::hasFreshMeasurement(const uint32_t now_us) const
+{
+    return m_valid &&
+           m_timestamp_us != 0 &&
+           now_us - m_timestamp_us <= TimingConfig::EKF::RTK_CORRECTION_MAX_AGE_US;
 }
 
 std::function<void(packetptr_t)> RTKPoller::getThisNetworkCallback()
@@ -128,6 +149,7 @@ void RTKPoller::handlecommand(packetptr_t packetptr)
     w_input = rtkdata.w_input;
     fix_quality = rtkdata.fix_quality;
     wifi_connected = rtkdata.wifi_connected != 0;
+    gnss_time_of_day_ms = rtkdata.gnss_time_of_day_ms;
     m_timestamp_us = micros();
     m_valid = true;
 

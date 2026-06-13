@@ -21,8 +21,8 @@ public:
     std::function<void(packetptr_t)> getThisNetworkCallback();
     Eigen::Vector3f getPosition();
     Eigen::Vector3f getPositionRaw();
-    bool hasMeasurement() const { return m_valid; }
-    bool hasFix() const { return m_valid && fix_quality != 0; }
+    bool hasMeasurement() const;
+    bool hasFix() const;
     float x_input = 0.0f;
     float y_input = 0.0f;
     float z_input = 0.0f;
@@ -31,6 +31,7 @@ public:
     float w_input = 0.0f;
     uint8_t fix_quality = 0;
     bool wifi_connected = false;
+    uint32_t gnss_time_of_day_ms = 0;
     float x_home = 0.0f;
     float y_home = 0.0f;
     float z_home = 0.0f;
@@ -42,6 +43,7 @@ private:
     uint32_t m_timestamp_us = 0;
 
     void handlecommand(packetptr_t packetptr);
+    bool hasFreshMeasurement(uint32_t now_us) const;
 
     RTKPacket rtkdata;
 };

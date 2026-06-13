@@ -12,14 +12,14 @@ void PDController::setup()
     // with rx < 0, negative body-y drift -> make ry more negative; positive body-y drift -> make ry more positive.
     // negative body-z drift -> make rz more negative; positive body-z drift -> make rz more positive.
     // m_rEng << -0.235f, -0.0007f, 0.015f; //centre of mass to center of thrust in body frame
-    m_rEng << -0.235f, -0.006f, 0.01f;
+    m_rEng << -0.235f, -0.006f, 0.011f;
     m_mass = 1.32f;
 
     m_K_p << 0.0f, 2.5f, 2.0f; // attitude body control gains (roll, pitch, yaw)
     m_K_d << 7.0f, 0.8f, 0.9f;
 
-    m_K_p_pos << 0.1f, 0.1f, 0.3f;   // NED position control gains
-    m_K_d_pos << 1.4f, 1.2f, 1.0f; 
+    m_K_p_pos << 0.15f, 0.15f, 0.2f;   // NED position control gains
+    m_K_d_pos << 0.8f, 0.8f, 1.0f; 
     m_K_i_pos << 0.0f, 0.0f, 0.01f;
     // m_K_p_pos << 0.0f, 0.0f, 0.3f;   // NED position control gains
     // m_K_d_pos << 0.0f, 0.0f, 1.0f; 
@@ -35,7 +35,7 @@ void PDController::setup()
     m_euler_error.setZero();
     m_thrust_vector_error_deg.setZero();
     m_max_vel       = 1.0f;                  // m/s — conservative
-    m_max_tilt_rad  = 15.0f * M_PI / 180.0f; // 15° max tilt command
+    m_max_tilt_rad  = MAX_POSITION_TILT_RAD;
     m_last_update_us = 0;
 
     m_position_control_enabled = true;      // arm explicitly
@@ -138,7 +138,7 @@ void PDController::updatePositionControl(const Eigen::Vector3f& position,
     a_des += Eigen::Vector3f(0.0f, 0.0f, -GRAVITY);
 
     // ── Convert acceleration command to thrust vector ────────────────────
-    Eigen::Vector3f F_des_world = m_mass * a_des;
+    Eigen::Vector3f F_des_world = limitPositionTiltRequest(m_mass * a_des);
     float F_mag = F_des_world.norm();
 
     if (F_mag < 1e-3f) {
@@ -147,25 +147,6 @@ void PDController::updatePositionControl(const Eigen::Vector3f& position,
     } else {
         Eigen::Vector3f dir = F_des_world / F_mag;
 
-        const float cos_tilt = -dir(2);
-        const float cos_max  = std::cos(m_max_tilt_rad);
-
-        if (cos_tilt < cos_max) {
-        Eigen::Vector3f horiz(dir(0), dir(1), 0.0f);
-        const float h_norm = horiz.norm();
-
-        if (h_norm > 1e-6f) {
-        horiz *= std::sin(m_max_tilt_rad) / h_norm;
-        }
-        else
-        {
-            horiz.setZero();
-        }
-
-        dir << horiz(0), horiz(1), -std::cos(m_max_tilt_rad);
-        dir.normalize();
-        }
-
         m_thrust_dir_world_des = dir;
         m_Fx_cmd_outer = std::clamp(F_mag, 0.0f, MAX_THRUST_N);
     }
@@ -173,6 +154,27 @@ void PDController::updatePositionControl(const Eigen::Vector3f& position,
     // Telemetry
     m_pos_err_dbg = pos_err;
     m_vel_err_dbg = vel_err;
+}
+
+Eigen::Vector3f PDController::limitPositionTiltRequest(const Eigen::Vector3f& force_world) const
+{
+    Eigen::Vector3f limited_force = force_world;
+
+    const float upward_force = std::max(-limited_force(2), 0.0f);
+    limited_force(2) = -upward_force;
+
+    const float max_horizontal_force = upward_force * std::tan(m_max_tilt_rad);
+    const float horizontal_force = limited_force.head<2>().norm();
+
+    if (horizontal_force > max_horizontal_force) {
+        if (horizontal_force > 1e-6f) {
+            limited_force.head<2>() *= max_horizontal_force / horizontal_force;
+        } else {
+            limited_force.head<2>().setZero();
+        }
+    }
+
+    return limited_force;
 }
 
 void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
@@ -223,13 +225,10 @@ void PDController::updateMcmd(const Eigen::Vector3f& angular_rates)
         -m_K_p.cwiseProduct(m_dir_error_body)
         -m_K_d.cwiseProduct(rates_error);    
 }
-void PDController::updateDesiredForce(const Eigen::Quaterniond& q)
+void PDController::updateDesiredForce(const Eigen::Quaterniond&)
 {
-    const float sin_tilt = std::clamp(m_dir_error_body.norm(), 0.0f, 0.95f);
-    const float cos_tilt = std::clamp(std::sqrt(1.0f - sin_tilt * sin_tilt), 0.5f, 1.0f);
-
     const float Fx_target = m_position_control_enabled ? m_Fx_cmd_outer : NOMINAL_FX_N;
-   // m_Fx_cmd = std::clamp(Fx_target / cos_tilt, 0.0f, MAX_THRUST_N); //tilt compensation enabled i.e. Fx body increases when tilted to maintain the same vertical thrust
+    // Tilt compensation is intentionally disabled; Fx is not increased as attitude error grows.
     m_Fx_cmd = std::clamp(Fx_target, 0.0f, MAX_THRUST_N); //tilt compensation disabled, will lead to better lateral control at the cost of vertical control when tilted
 }
 void PDController::updateOutputValues()

@@ -42,6 +42,7 @@ class PDController
         void updateMcmd(const Eigen::Vector3f& angular_rates);
         void updateOutputValues();
         void updateDesiredForce(const Eigen::Quaterniond& q);
+        Eigen::Vector3f limitPositionTiltRequest(const Eigen::Vector3f& force_world) const;
         unsigned long m_previousSampleTime;
 
         Eigen::Vector3f m_K_p;
@@ -61,6 +62,8 @@ class PDController
         static constexpr float MAX_GIMBAL_DEG = 15.0f;
         static constexpr float MAX_THRUST_N   = 28.0f;
         static constexpr float MAX_ROLL_MIX   = 8.0f; 
+        static constexpr float MAX_POSITION_TILT_DEG = 4.0f;
+        static constexpr float MAX_POSITION_TILT_RAD = MAX_POSITION_TILT_DEG * DEG_TO_RAD;
         static constexpr float ROLL_MIX_OFFSET = 3.2f; //if it is rolling in +ve x direction 
         static constexpr float NOMINAL_FX_N = 13.24;
 

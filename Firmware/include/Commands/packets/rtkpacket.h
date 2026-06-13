@@ -20,7 +20,8 @@ class RTKPacket : public RnpPacket{
                 &RTKPacket::v_input,
                 &RTKPacket::w_input,
                 &RTKPacket::fix_quality,
-                &RTKPacket::wifi_connected
+                &RTKPacket::wifi_connected,
+                &RTKPacket::gnss_time_of_day_ms
             );
 
             return ret;
@@ -45,6 +46,7 @@ class RTKPacket : public RnpPacket{
         float w_input;
         uint8_t fix_quality;
         uint8_t wifi_connected;
+        uint32_t gnss_time_of_day_ms;
 
         static constexpr size_t size(){
             return getSerializer().member_size();

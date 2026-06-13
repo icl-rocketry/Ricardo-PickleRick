@@ -144,7 +144,7 @@ private:
     static constexpr float SIGMA_RTK_GPS_VEL      = 0.5f;   // m/s
     static constexpr float SIGMA_RTK_DGPS_POS     = 0.5f;   // m, NMEA fix quality 2
     static constexpr float SIGMA_RTK_DGPS_VEL     = 0.25f;  // m/s
-    static constexpr float SIGMA_RTK_FIXED_POS    = 0.05f;  // m, NMEA fix quality 4
+    static constexpr float SIGMA_RTK_FIXED_POS    = 0.1f;  // m, NMEA fix quality 4
     static constexpr float SIGMA_RTK_FIXED_VEL    = 0.1f;   // m/s
     static constexpr float SIGMA_RTK_FLOAT_POS    = 0.2f;   // m, NMEA fix quality 5
     static constexpr float SIGMA_RTK_FLOAT_VEL    = 0.15f;  // m/s
@@ -157,6 +157,7 @@ private:
     static constexpr bool USE_GPS_VELOCITY_DIRECT = false;
     static constexpr bool USE_ACCEL_FOR_VELOCITY = true;
     static constexpr bool USE_RTK_VERTICAL = true;
+    static constexpr bool USE_RTK_VELOCITY = false;
 
     void predict(   const float nominal_dt,
                     const float covariance_dt,

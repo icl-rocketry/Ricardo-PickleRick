@@ -397,14 +397,18 @@ void EKF::runScheduledCorrection(const uint32_t now,
                     rtk.timestamp_us != m_lastRtkMeasurementTime)
                 {
                     const bool fresh = now - rtk.timestamp_us <= TimingConfig::EKF::RTK_CORRECTION_MAX_AGE_US;
-                    if (fresh && correctionDueNow(now, m_lastRtkCorrectionTime, TimingConfig::EKF::RTK_CORRECTION_DELTA_US))
+                    if (!fresh)
+                    {
+                        m_lastRtkMeasurementTime = rtk.timestamp_us;
+                        break;
+                    }
+
+                    if (correctionDueNow(now, m_lastRtkCorrectionTime, TimingConfig::EKF::RTK_CORRECTION_DELTA_US))
                     {
                         updateRTK(rtk);
                         m_lastRtkMeasurementTime = rtk.timestamp_us;
                         return;
                     }
-
-                    m_lastRtkMeasurementTime = rtk.timestamp_us;
                 }
                 break;
             case 5:
@@ -700,16 +704,22 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
     if (!rtk.valid || rtk.fix_quality == 0) { return; }
 
     const Eigen::Vector3f z_pos(rtk.x, rtk.y, rtk.z);
-    const Eigen::Vector3f z_vel(rtk.u, rtk.v, rtk.w);
-    if (!z_pos.allFinite() || !z_vel.allFinite()) { return; }
+    if (!z_pos.allFinite()) { return; }
 
-    Vec6 innovation;
+    Vec6 innovation = Vec6::Zero();
     innovation.segment<3>(0) = z_pos - m_x.segment<3>(0);
-    innovation.segment<3>(3) = z_vel - m_x.segment<3>(3);
 
     Eigen::Matrix<float, 6, 16> H_rtk = Eigen::Matrix<float, 6, 16>::Zero();
     H_rtk.block<3,3>(0,0) = Eigen::Matrix3f::Identity();
-    H_rtk.block<3,3>(3,3) = Eigen::Matrix3f::Identity();
+
+    if (USE_RTK_VELOCITY)
+    {
+        const Eigen::Vector3f z_vel(rtk.u, rtk.v, rtk.w);
+        if (!z_vel.allFinite()) { return; }
+
+        innovation.segment<3>(3) = z_vel - m_x.segment<3>(3);
+        H_rtk.block<3,3>(3,3) = Eigen::Matrix3f::Identity();
+    }
 
     if (!USE_RTK_VERTICAL)
     {
