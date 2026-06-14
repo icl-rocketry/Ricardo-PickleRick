@@ -134,4 +134,5 @@ private:
     // Max bytes to pull per readStream() call (Wire buffer is 32 bytes on AVR,
     // 128 on ESP32 — use a safe chunk size for burst reads)
     static constexpr uint8_t I2C_CHUNK = 32;
+    static constexpr uint8_t I2C_CHUNKS_PER_UPDATE = 2;
 };

@@ -102,16 +102,16 @@ void MAX_M10S::update(SensorStructs::GPS_t& data)
 {
     data.updated = false;
 
-    // Ask the module how many bytes it has queued, then pull them all and
-    // feed each one through the parser.  parseByte() triggers unpackPvt()
-    // internally the moment a valid NAV-PVT frame completes.
+    // Service a bounded amount of the queued stream each call. The parser state
+    // persists, so a NAV-PVT frame may complete over multiple updates.
     uint16_t avail = bytesAvailable();
     if (avail == 0) { return; }
 
     uint8_t buf[I2C_CHUNK];
 
     bool newPvt = false;
-    while (avail > 0)
+    uint8_t chunks_read = 0;
+    while (avail > 0 && chunks_read < I2C_CHUNKS_PER_UPDATE)
     {
         uint16_t chunk = (avail > I2C_CHUNK) ? I2C_CHUNK : avail;
         uint16_t got   = readStream(buf, chunk);
@@ -121,6 +121,7 @@ void MAX_M10S::update(SensorStructs::GPS_t& data)
             if (parseByte(buf[i])) { newPvt = true; }
         }
         avail -= got;
+        chunks_read++;
     }
 
     if (!newPvt) { return; }

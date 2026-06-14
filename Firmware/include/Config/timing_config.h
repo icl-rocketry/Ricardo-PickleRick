@@ -20,7 +20,7 @@ namespace TimingConfig
     namespace Scheduler
     {
         constexpr uint32_t TELEMETRY_LOG_RATE_HZ = 100;
-        constexpr uint32_t ESTIMATOR_UPDATE_RATE_HZ = 120;
+        constexpr uint32_t ESTIMATOR_UPDATE_RATE_HZ = 150;
         constexpr uint32_t POWER_MONITOR_UPDATE_RATE_HZ = 50;
         constexpr uint32_t ESTIMATOR_LOG_RATE_HZ = 100;
 
@@ -33,7 +33,7 @@ namespace TimingConfig
     namespace Estimator
     {
         //filter settings
-        constexpr uint32_t UPDATE_RATE_HZ = Scheduler::ESTIMATOR_UPDATE_RATE_HZ;
+        constexpr uint32_t UPDATE_RATE_HZ = 130; //based on debug output, even though EKF rate is set to 150hz
         constexpr float FILTER_SAMPLE_RATE_HZ = static_cast<float>(UPDATE_RATE_HZ);
         constexpr float ACCEL_CUTOFF_HZ = 20.0f;
         constexpr float GYRO_CUTOFF_HZ = 30.0f;
@@ -63,7 +63,7 @@ namespace TimingConfig
         constexpr uint32_t GPS_CORRECTION_DELTA_US = periodUsFromHz(GPS_CORRECTION_RATE_HZ);
         constexpr uint32_t RTK_CORRECTION_DELTA_US = periodUsFromHz(RTK_CORRECTION_RATE_HZ);
         constexpr uint32_t RTK_CORRECTION_MAX_AGE_US = RTK_CORRECTION_DELTA_US * 2UL; // tolerate one missed packet
-        constexpr uint32_t DELAYED_MEASUREMENT_HISTORY_US = 500000UL;
+        constexpr uint32_t DELAYED_MEASUREMENT_HISTORY_US = 300000UL;
         constexpr uint32_t LIDAR_CORRECTION_DELTA_US = periodUsFromHz(LIDAR_CORRECTION_RATE_HZ);
     }
 
