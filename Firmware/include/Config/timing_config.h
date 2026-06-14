@@ -63,6 +63,7 @@ namespace TimingConfig
         constexpr uint32_t GPS_CORRECTION_DELTA_US = periodUsFromHz(GPS_CORRECTION_RATE_HZ);
         constexpr uint32_t RTK_CORRECTION_DELTA_US = periodUsFromHz(RTK_CORRECTION_RATE_HZ);
         constexpr uint32_t RTK_CORRECTION_MAX_AGE_US = RTK_CORRECTION_DELTA_US * 2UL; // tolerate one missed packet
+        constexpr uint32_t DELAYED_MEASUREMENT_HISTORY_US = 500000UL;
         constexpr uint32_t LIDAR_CORRECTION_DELTA_US = periodUsFromHz(LIDAR_CORRECTION_RATE_HZ);
     }
 

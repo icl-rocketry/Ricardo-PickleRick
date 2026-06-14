@@ -62,6 +62,7 @@ namespace SensorStructs
         uint8_t fix;            // gps fix type
         bool    updated;        // flag if gps values have been updated
         bool    valid;
+        uint32_t gnss_time_of_day_ms{0};
         uint32_t timestamp_us{0};
     };
 
@@ -99,6 +100,7 @@ namespace SensorStructs
         bool wifi_connected{false};
         bool valid{false};
         uint32_t gnss_time_of_day_ms{0};
+        uint32_t measurement_timestamp_us{0};
         uint32_t timestamp_us{0};
     };
 
@@ -155,6 +157,7 @@ namespace SensorStructs
         uint8_t calibration_quality;
         
         Eigen::Vector3f gpsPosition;            // (m)                                  (NED)
+        uint32_t rtkDelayUs;                    // (us) local receive/update time minus RTK measurement epoch
 
         Eigen::Vector3f expectedMagReading;     // (unit direction vector)              (body)
         Eigen::Vector3f expectedAccelReading;   // (m/s^2)                              (body)

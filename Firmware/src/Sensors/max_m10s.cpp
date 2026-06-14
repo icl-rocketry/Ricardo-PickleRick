@@ -142,6 +142,7 @@ void MAX_M10S::update(SensorStructs::GPS_t& data)
     data.hAcc     = static_cast<float>(_pvt.hAcc)    * 1e-3f;
     data.vAcc     = static_cast<float>(_pvt.vAcc)    * 1e-3f;
     data.updated  = true;
+    data.gnss_time_of_day_ms = _pvt.iTOW;
     data.timestamp_us = micros();
 }
 
@@ -440,6 +441,7 @@ bool MAX_M10S::parseByte(uint8_t b)
 }
 
 // NAV-PVT byte offsets (interface description UBX-21035062, section NAV-PVT):
+//   0- 3  iTOW        GNSS time of week / time of day (ms)
 //  20     fixType
 //  21     flags       bit0 = gnssFixOk
 //  23     numSV
@@ -473,6 +475,7 @@ void MAX_M10S::unpackPvt()
                (uint32_t)_payload[o+0];
     };
 
+    _pvt.iTOW      = u32(0);
     _pvt.fixType   = static_cast<GnssFix>(_payload[20]);
     _pvt.gnssFixOk = (_payload[21] & 0x01) != 0;
     _pvt.numSV     = _payload[23];

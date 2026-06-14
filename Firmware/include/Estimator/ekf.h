@@ -2,11 +2,14 @@
 
 #include <Eigen/Dense>
 #include <ArduinoJson.h>
+#include <array>
+#include <cstddef>
 #include <string>
 
 #include <libriccore/riccorelogging.h>
 #include <librrc/Helpers/jsonconfighelper.h>
 
+#include "Config/timing_config.h"
 #include "Config/types.h"
 #include "Config/systemflags_config.h"
 #include "Sensors/sensors.h"
@@ -71,6 +74,7 @@ public:
     float           lidarInnovation()   const { return m_y(14); }
 
     Eigen::Vector3f gpsPosition()   const { return m_gps_position; }
+    uint32_t rtkDelayUs() const { return m_lastRtkDelayUs; }
 
 
 private:
@@ -158,6 +162,46 @@ private:
     static constexpr bool USE_ACCEL_FOR_VELOCITY = true;
     static constexpr bool USE_RTK_VERTICAL = true;
     static constexpr bool USE_RTK_VELOCITY = false;
+    static constexpr uint64_t GNSS_DAY_US = 86400ULL * 1000000ULL;
+    static constexpr size_t HISTORY_SAMPLE_COUNT =
+        (TimingConfig::EKF::DELAYED_MEASUREMENT_HISTORY_US /
+         TimingConfig::Scheduler::ESTIMATOR_UPDATE_DELTA_US) + 8;
+
+    struct CorrectionScheduleState
+    {
+        uint32_t lastAccelCorrectionTime{0};
+        uint32_t lastMagCorrectionTime{0};
+        uint32_t lastBaroCorrectionTime{0};
+        uint32_t lastGpsCorrectionTime{0};
+        uint32_t lastLidarCorrectionTime{0};
+        uint32_t lastRtkCorrectionTime{0};
+        uint32_t lastMagMeasurementTime{0};
+        uint32_t lastBaroMeasurementTime{0};
+        uint32_t lastGpsMeasurementTime{0};
+        uint32_t lastLidarMeasurementTime{0};
+        uint32_t lastRtkMeasurementTime{0};
+        uint8_t nextCorrectionIndex{0};
+    };
+
+    struct HistorySample
+    {
+        bool valid{false};
+        uint32_t timestamp_us{0};
+        float dt{0.0f};
+        float covariance_dt{0.0f};
+        bool propagate_covariance{false};
+        Eigen::Vector3f gyro{0.0f, 0.0f, 0.0f};
+        Eigen::Vector3f accel{0.0f, 0.0f, 0.0f};
+        Eigen::Vector3f h_accel{0.0f, 0.0f, 0.0f};
+        SensorStructs::MAG_3AXIS_t mag{};
+        SensorStructs::BARO_t baro{};
+        SensorStructs::GPS_t gps{};
+        SensorStructs::LIDAR_t lidar{};
+        SensorStructs::RTK_t rtk{};
+        Eigen::Matrix<float, 16, 1> x;
+        Eigen::Matrix<float, 16, 16> P;
+        CorrectionScheduleState schedule;
+    };
 
     void predict(   const float nominal_dt,
                     const float covariance_dt,
@@ -172,7 +216,31 @@ private:
                                 const SensorStructs::BARO_t& baro,
                                 const SensorStructs::GPS_t& gps,
                                 const SensorStructs::LIDAR_t& lidar,
-                                const SensorStructs::RTK_t& rtk);
+                                const SensorStructs::RTK_t& rtk,
+                                bool allow_rtk);
+    bool handleRtkCorrection(uint32_t now, const SensorStructs::RTK_t& rtk);
+    bool fuseDelayedRTK(const SensorStructs::RTK_t& rtk, uint32_t now);
+    void updateGnssTimeOffset(const SensorStructs::GPS_t& gps);
+    bool gnssTimeOfDayToLocalUs(uint32_t gnss_time_of_day_ms, uint32_t now, uint32_t& local_us) const;
+    void resetHistory();
+    void saveHistorySample(uint32_t now,
+                           float dt,
+                           float covariance_dt,
+                           bool propagate_covariance,
+                           const Eigen::Vector3f& gyro,
+                           const Eigen::Vector3f& accel,
+                           const Eigen::Vector3f& h_accel,
+                           const SensorStructs::MAG_3AXIS_t& mag,
+                           const SensorStructs::BARO_t& baro,
+                           const SensorStructs::GPS_t& gps,
+                           const SensorStructs::LIDAR_t& lidar,
+                           const SensorStructs::RTK_t& rtk);
+    void overwriteLatestHistoryState();
+    int findHistoryIndexAtOrBefore(uint32_t timestamp_us) const;
+    int latestHistoryIndex() const;
+    int nextHistoryIndex(int index) const;
+    CorrectionScheduleState captureScheduleState() const;
+    void restoreScheduleState(const CorrectionScheduleState& state);
     void updateMag(const Eigen::Vector3f& z_meas_raw);
     void updateLowGAccel(const Eigen::Vector3f& z_accel);
     void updateBaro(const float pressure, const float temperature);
@@ -191,5 +259,11 @@ private:
     static constexpr double GPS_E2      = 0.00669437999014;
 
     Eigen::Vector3f m_gps_position;
+    std::array<HistorySample, HISTORY_SAMPLE_COUNT> m_history{};
+    size_t m_historyHead = 0;
+    size_t m_historyCount = 0;
+    bool m_gnssTimeOffsetValid = false;
+    int64_t m_gnssToLocalOffsetUs = 0;
+    uint32_t m_lastRtkDelayUs = 0;
 
 };

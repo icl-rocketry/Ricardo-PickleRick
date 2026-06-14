@@ -79,6 +79,7 @@ private:
     
     struct PvtCache
     {
+        uint32_t iTOW;          // GPS time of week / time of day in ms
         int32_t  lat;           // deg * 1e-7
         int32_t  lon;           // deg * 1e-7
         int32_t  hMSL;          // mm above MSL

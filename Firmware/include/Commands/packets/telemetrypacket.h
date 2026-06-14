@@ -66,7 +66,8 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::rtk_fix_quality,
                 &TelemetryPacket::rtk_wifi_connected,
                 &TelemetryPacket::rtk_valid,
-                &TelemetryPacket::rtk_timestamp_us
+                &TelemetryPacket::rtk_timestamp_us,
+                &TelemetryPacket::rtk_delay_us
             );
             return ret;
         }
@@ -133,6 +134,7 @@ class TelemetryPacket : public RnpPacket{
         uint8_t rtk_wifi_connected;
         uint8_t rtk_valid;
         uint32_t rtk_timestamp_us;
+        uint32_t rtk_delay_us;
 
 
         static constexpr size_t size(){

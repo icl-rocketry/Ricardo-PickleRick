@@ -3,6 +3,11 @@
 
 namespace
 {
+    bool timeAtOrAfter(const uint32_t lhs, const uint32_t rhs)
+    {
+        return static_cast<int32_t>(lhs - rhs) >= 0;
+    }
+
     bool timerDue(const uint32_t now, uint32_t& previous, const uint32_t period) //decides whether an update should be made
     {
         if (previous == 0)
@@ -71,6 +76,10 @@ void EKF::setup(const Eigen::Vector3f& gyro_bias,
     m_lastRtkMeasurementTime = 0;
     m_covariancePredictDt = 0.0f;
     m_nextCorrectionIndex = 0;
+    m_gnssTimeOffsetValid = false;
+    m_gnssToLocalOffsetUs = 0;
+    m_lastRtkDelayUs = 0;
+    resetHistory();
 
     // Initial covariance — large uncertainty on everything except quaternion
     m_P.setZero();
@@ -99,6 +108,8 @@ void EKF::update(   const Eigen::Vector3f         gyro,
                 )
 {
     const uint32_t now = micros();  // use micros not millis for better dt resolution
+    updateGnssTimeOffset(gps);
+
     const float dt = (m_lastPredictTime == 0) 
     ? 0.0f 
     : static_cast<float>(now - m_lastPredictTime) * 1e-6f;
@@ -115,13 +126,31 @@ void EKF::update(   const Eigen::Vector3f         gyro,
     }
 
     predict(dt, covariance_dt, propagate_covariance, gyro, accel, h_accel);
+    saveHistorySample(now,
+                      dt,
+                      covariance_dt,
+                      propagate_covariance,
+                      gyro,
+                      accel,
+                      h_accel,
+                      mag,
+                      baro,
+                      gps,
+                      lidar,
+                      rtk);
 
     if (propagate_covariance)
     {
         return;
     }
 
-    runScheduledCorrection(now, accel, mag, baro, gps, lidar, rtk);
+    const bool replayedToNow = handleRtkCorrection(now, rtk);
+    if (!replayedToNow)
+    {
+        runScheduledCorrection(now, accel, mag, baro, gps, lidar, rtk, false);
+    }
+
+    overwriteLatestHistoryState();
 }
 
 void EKF::setHome(const SensorStructs::home_ref_t& setHome_ref) 
@@ -338,13 +367,361 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
 
 }
 
+EKF::CorrectionScheduleState EKF::captureScheduleState() const
+{
+    CorrectionScheduleState state;
+    state.lastAccelCorrectionTime = m_lastAccelCorrectionTime;
+    state.lastMagCorrectionTime = m_lastMagCorrectionTime;
+    state.lastBaroCorrectionTime = m_lastBaroCorrectionTime;
+    state.lastGpsCorrectionTime = m_lastGpsCorrectionTime;
+    state.lastLidarCorrectionTime = m_lastLidarCorrectionTime;
+    state.lastRtkCorrectionTime = m_lastRtkCorrectionTime;
+    state.lastMagMeasurementTime = m_lastMagMeasurementTime;
+    state.lastBaroMeasurementTime = m_lastBaroMeasurementTime;
+    state.lastGpsMeasurementTime = m_lastGpsMeasurementTime;
+    state.lastLidarMeasurementTime = m_lastLidarMeasurementTime;
+    state.lastRtkMeasurementTime = m_lastRtkMeasurementTime;
+    state.nextCorrectionIndex = m_nextCorrectionIndex;
+    return state;
+}
+
+void EKF::restoreScheduleState(const CorrectionScheduleState& state)
+{
+    m_lastAccelCorrectionTime = state.lastAccelCorrectionTime;
+    m_lastMagCorrectionTime = state.lastMagCorrectionTime;
+    m_lastBaroCorrectionTime = state.lastBaroCorrectionTime;
+    m_lastGpsCorrectionTime = state.lastGpsCorrectionTime;
+    m_lastLidarCorrectionTime = state.lastLidarCorrectionTime;
+    m_lastRtkCorrectionTime = state.lastRtkCorrectionTime;
+    m_lastMagMeasurementTime = state.lastMagMeasurementTime;
+    m_lastBaroMeasurementTime = state.lastBaroMeasurementTime;
+    m_lastGpsMeasurementTime = state.lastGpsMeasurementTime;
+    m_lastLidarMeasurementTime = state.lastLidarMeasurementTime;
+    m_lastRtkMeasurementTime = state.lastRtkMeasurementTime;
+    m_nextCorrectionIndex = state.nextCorrectionIndex;
+}
+
+void EKF::resetHistory()
+{
+    for (HistorySample& sample : m_history)
+    {
+        sample.valid = false;
+    }
+    m_historyHead = 0;
+    m_historyCount = 0;
+}
+
+void EKF::saveHistorySample(const uint32_t now,
+                            const float dt,
+                            const float covariance_dt,
+                            const bool propagate_covariance,
+                            const Eigen::Vector3f& gyro,
+                            const Eigen::Vector3f& accel,
+                            const Eigen::Vector3f& h_accel,
+                            const SensorStructs::MAG_3AXIS_t& mag,
+                            const SensorStructs::BARO_t& baro,
+                            const SensorStructs::GPS_t& gps,
+                            const SensorStructs::LIDAR_t& lidar,
+                            const SensorStructs::RTK_t& rtk)
+{
+    HistorySample& sample = m_history[m_historyHead];
+    sample.valid = true;
+    sample.timestamp_us = now;
+    sample.dt = dt;
+    sample.covariance_dt = covariance_dt;
+    sample.propagate_covariance = propagate_covariance;
+    sample.gyro = gyro;
+    sample.accel = accel;
+    sample.h_accel = h_accel;
+    sample.mag = mag;
+    sample.baro = baro;
+    sample.gps = gps;
+    sample.lidar = lidar;
+    sample.rtk = rtk;
+    sample.x = m_x;
+    sample.P = m_P;
+    sample.schedule = captureScheduleState();
+
+    m_historyHead = (m_historyHead + 1) % HISTORY_SAMPLE_COUNT;
+    if (m_historyCount < HISTORY_SAMPLE_COUNT)
+    {
+        m_historyCount++;
+    }
+}
+
+void EKF::overwriteLatestHistoryState()
+{
+    const int latest = latestHistoryIndex();
+    if (latest < 0)
+    {
+        return;
+    }
+
+    HistorySample& sample = m_history[static_cast<size_t>(latest)];
+    sample.x = m_x;
+    sample.P = m_P;
+    sample.schedule = captureScheduleState();
+}
+
+int EKF::latestHistoryIndex() const
+{
+    if (m_historyCount == 0)
+    {
+        return -1;
+    }
+
+    return static_cast<int>((m_historyHead + HISTORY_SAMPLE_COUNT - 1) % HISTORY_SAMPLE_COUNT);
+}
+
+int EKF::nextHistoryIndex(const int index) const
+{
+    if (index < 0)
+    {
+        return -1;
+    }
+
+    const size_t next = (static_cast<size_t>(index) + 1) % HISTORY_SAMPLE_COUNT;
+    if (!m_history[next].valid)
+    {
+        return -1;
+    }
+
+    return static_cast<int>(next);
+}
+
+int EKF::findHistoryIndexAtOrBefore(const uint32_t timestamp_us) const
+{
+    if (m_historyCount == 0)
+    {
+        return -1;
+    }
+
+    const size_t oldest = (m_historyHead + HISTORY_SAMPLE_COUNT - m_historyCount) % HISTORY_SAMPLE_COUNT;
+    int best = -1;
+    for (size_t i = 0; i < m_historyCount; i++)
+    {
+        const size_t index = (oldest + i) % HISTORY_SAMPLE_COUNT;
+        const HistorySample& sample = m_history[index];
+        if (!sample.valid)
+        {
+            continue;
+        }
+
+        if (timeAtOrAfter(timestamp_us, sample.timestamp_us))
+        {
+            best = static_cast<int>(index);
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return best;
+}
+
+void EKF::updateGnssTimeOffset(const SensorStructs::GPS_t& gps)
+{
+    if (!gps.valid || gps.timestamp_us == 0 || gps.gnss_time_of_day_ms == 0)
+    {
+        return;
+    }
+
+    const int64_t gnss_us = static_cast<int64_t>(gps.gnss_time_of_day_ms) * 1000LL;
+    const int64_t candidate_offset = static_cast<int64_t>(gps.timestamp_us) - gnss_us;
+    if (!m_gnssTimeOffsetValid)
+    {
+        m_gnssToLocalOffsetUs = candidate_offset;
+        m_gnssTimeOffsetValid = true;
+        return;
+    }
+
+    int64_t error = candidate_offset - m_gnssToLocalOffsetUs;
+    const int64_t half_day_us = static_cast<int64_t>(GNSS_DAY_US / 2ULL);
+    const int64_t day_us = static_cast<int64_t>(GNSS_DAY_US);
+    while (error > half_day_us)  { error -= day_us; }
+    while (error < -half_day_us) { error += day_us; }
+
+    m_gnssToLocalOffsetUs += error / 8;
+}
+
+bool EKF::gnssTimeOfDayToLocalUs(const uint32_t gnss_time_of_day_ms,
+                                 const uint32_t now,
+                                 uint32_t& local_us) const
+{
+    if (!m_gnssTimeOffsetValid || gnss_time_of_day_ms == 0)
+    {
+        return false;
+    }
+
+    int64_t local = static_cast<int64_t>(gnss_time_of_day_ms) * 1000LL + m_gnssToLocalOffsetUs;
+    const int64_t now64 = static_cast<int64_t>(now);
+    const int64_t half_day_us = static_cast<int64_t>(GNSS_DAY_US / 2ULL);
+    const int64_t day_us = static_cast<int64_t>(GNSS_DAY_US);
+    while (now64 - local > half_day_us) { local += day_us; }
+    while (local - now64 > half_day_us) { local -= day_us; }
+
+    local_us = static_cast<uint32_t>(local);
+    return true;
+}
+
+bool EKF::handleRtkCorrection(const uint32_t now, const SensorStructs::RTK_t& rtk)
+{
+    if (!rtk.valid ||
+        rtk.fix_quality == 0 ||
+        rtk.timestamp_us == 0 ||
+        rtk.timestamp_us == m_lastRtkMeasurementTime)
+    {
+        return false;
+    }
+
+    const bool packet_fresh = now - rtk.timestamp_us <= TimingConfig::EKF::RTK_CORRECTION_MAX_AGE_US;
+    if (!packet_fresh)
+    {
+        m_lastRtkMeasurementTime = rtk.timestamp_us;
+        return false;
+    }
+
+    if (m_lastRtkCorrectionTime != 0 &&
+        now - m_lastRtkCorrectionTime < TimingConfig::EKF::RTK_CORRECTION_DELTA_US)
+    {
+        return false;
+    }
+
+    uint32_t measurement_us = 0;
+    if (gnssTimeOfDayToLocalUs(rtk.gnss_time_of_day_ms, now, measurement_us))
+    {
+        m_lastRtkDelayUs = timeAtOrAfter(now, measurement_us) ? now - measurement_us : 0;
+    }
+    else
+    {
+        m_lastRtkDelayUs = 0;
+    }
+
+    const bool replayed_to_now = fuseDelayedRTK(rtk, now);
+    if (!replayed_to_now)
+    {
+        updateRTK(rtk);
+    }
+
+    m_lastRtkCorrectionTime = now;
+    m_lastRtkMeasurementTime = rtk.timestamp_us;
+    return replayed_to_now;
+}
+
+bool EKF::fuseDelayedRTK(const SensorStructs::RTK_t& rtk, const uint32_t now)
+{
+    uint32_t measurement_us = 0;
+    if (!gnssTimeOfDayToLocalUs(rtk.gnss_time_of_day_ms, now, measurement_us))
+    {
+        return false;
+    }
+
+    if (timeAtOrAfter(measurement_us, now))
+    {
+        return false;
+    }
+
+    if (now - measurement_us > TimingConfig::EKF::DELAYED_MEASUREMENT_HISTORY_US)
+    {
+        return false;
+    }
+
+    const int base_index = findHistoryIndexAtOrBefore(measurement_us);
+    const int latest_index = latestHistoryIndex();
+    if (base_index < 0 || latest_index < 0)
+    {
+        return false;
+    }
+
+    const HistorySample& base = m_history[static_cast<size_t>(base_index)];
+    m_x = base.x;
+    m_P = base.P;
+    restoreScheduleState(base.schedule);
+
+    bool rtk_fused = false;
+    uint32_t current_time = base.timestamp_us;
+    if (timeAtOrAfter(current_time, measurement_us))
+    {
+        SensorStructs::RTK_t delayed_rtk = rtk;
+        delayed_rtk.measurement_timestamp_us = measurement_us;
+        updateRTK(delayed_rtk);
+        rtk_fused = true;
+    }
+
+    int index = base_index;
+    while (index != latest_index)
+    {
+        const int next_index = nextHistoryIndex(index);
+        if (next_index < 0)
+        {
+            break;
+        }
+
+        const HistorySample& sample = m_history[static_cast<size_t>(next_index)];
+        if (!rtk_fused && timeAtOrAfter(sample.timestamp_us, measurement_us))
+        {
+            const uint32_t partial_us = measurement_us - current_time;
+            const float partial_dt = static_cast<float>(partial_us) * 1e-6f;
+            if (partial_dt > 0.0f && partial_dt <= 0.5f)
+            {
+                predict(partial_dt, partial_dt, false, sample.gyro, sample.accel, sample.h_accel);
+            }
+
+            SensorStructs::RTK_t delayed_rtk = rtk;
+            delayed_rtk.measurement_timestamp_us = measurement_us;
+            updateRTK(delayed_rtk);
+            rtk_fused = true;
+
+            const uint32_t remaining_us = sample.timestamp_us - measurement_us;
+            const float remaining_dt = static_cast<float>(remaining_us) * 1e-6f;
+            if (remaining_dt > 0.0f && remaining_dt <= 0.5f)
+            {
+                predict(remaining_dt,
+                        sample.covariance_dt,
+                        sample.propagate_covariance,
+                        sample.gyro,
+                        sample.accel,
+                        sample.h_accel);
+            }
+        }
+        else
+        {
+            predict(sample.dt,
+                    sample.covariance_dt,
+                    sample.propagate_covariance,
+                    sample.gyro,
+                    sample.accel,
+                    sample.h_accel);
+        }
+
+        if (!sample.propagate_covariance)
+        {
+            runScheduledCorrection(sample.timestamp_us,
+                                   sample.accel,
+                                   sample.mag,
+                                   sample.baro,
+                                   sample.gps,
+                                   sample.lidar,
+                                   sample.rtk,
+                                   false);
+        }
+
+        current_time = sample.timestamp_us;
+        index = next_index;
+    }
+
+    return rtk_fused;
+}
+
 void EKF::runScheduledCorrection(const uint32_t now,
                                  const Eigen::Vector3f& accel,
                                  const SensorStructs::MAG_3AXIS_t& mag,
                                  const SensorStructs::BARO_t& baro,
                                  const SensorStructs::GPS_t& gps,
                                  const SensorStructs::LIDAR_t& lidar,
-                                 const SensorStructs::RTK_t& rtk)
+                                 const SensorStructs::RTK_t& rtk,
+                                 const bool allow_rtk)
 {
     for (uint8_t i = 0; i < 6; i++)
     {
@@ -391,7 +768,8 @@ void EKF::runScheduledCorrection(const uint32_t now,
                 }
                 break;
             case 4:
-                if (rtk.valid &&
+                if (allow_rtk &&
+                    rtk.valid &&
                     rtk.fix_quality != 0 &&
                     rtk.timestamp_us != 0 &&
                     rtk.timestamp_us != m_lastRtkMeasurementTime)

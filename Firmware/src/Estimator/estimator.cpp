@@ -115,6 +115,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
         rtk.update(rtk_measurement);
 
         // Feed filtered low-g accel + gyro into EKF
+        const uint32_t ekf_start_us = micros();
         m_ekf.update(
             gyro_filt,
             accel_filt,
@@ -125,6 +126,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             raw_sensors.lidar,
             rtk_measurement
         );
+        recordEkfDebugTiming(ekf_start_us, micros() - ekf_start_us);
     }
     updateState();
 };
@@ -183,6 +185,70 @@ bool Estimator::hasGpsLock(const SensorStructs::GPS_t& gps) const
            gps.hAcc <= 3.0f;
 }
 
+void Estimator::recordEkfDebugTiming(const uint32_t start_us, const uint32_t runtime_us)
+{
+    if (m_ekfDebugReportTimeUs == 0)
+    {
+        m_ekfDebugReportTimeUs = start_us;
+    }
+
+    if (m_ekfDebugPrevStartUs != 0)
+    {
+        const uint32_t period_us = start_us - m_ekfDebugPrevStartUs;
+        m_ekfDebugPeriodTimeUs += period_us;
+        m_ekfDebugPeriodCount++;
+        if (period_us > m_ekfDebugMaxPeriodUs)
+        {
+            m_ekfDebugMaxPeriodUs = period_us;
+        }
+    }
+    m_ekfDebugPrevStartUs = start_us;
+
+    m_ekfDebugRuntimeUs += runtime_us;
+    m_ekfDebugCount++;
+    if (runtime_us > m_ekfDebugMaxRuntimeUs)
+    {
+        m_ekfDebugMaxRuntimeUs = runtime_us;
+    }
+
+    const uint32_t window_us = start_us - m_ekfDebugReportTimeUs;
+    if (window_us < TimingConfig::MICROS_PER_SECOND)
+    {
+        return;
+    }
+
+    const uint32_t rate_x10 = static_cast<uint32_t>(
+        (static_cast<uint64_t>(m_ekfDebugCount) * TimingConfig::MICROS_PER_SECOND * 10ULL + (window_us / 2ULL)) /
+        window_us
+    );
+    const uint32_t avg_period_us = m_ekfDebugPeriodCount
+        ? static_cast<uint32_t>(m_ekfDebugPeriodTimeUs / m_ekfDebugPeriodCount)
+        : 0;
+    const uint32_t avg_runtime_us = m_ekfDebugCount
+        ? static_cast<uint32_t>(m_ekfDebugRuntimeUs / m_ekfDebugCount)
+        : 0;
+
+    Serial.printf(
+        "EKF DEBUG rate=%lu.%luHz target=%luHz period_avg/max=%lu/%luus runtime_avg/max=%lu/%luus calls=%lu\n",
+        static_cast<unsigned long>(rate_x10 / 10UL),
+        static_cast<unsigned long>(rate_x10 % 10UL),
+        static_cast<unsigned long>(TimingConfig::Scheduler::ESTIMATOR_UPDATE_RATE_HZ),
+        static_cast<unsigned long>(avg_period_us),
+        static_cast<unsigned long>(m_ekfDebugMaxPeriodUs),
+        static_cast<unsigned long>(avg_runtime_us),
+        static_cast<unsigned long>(m_ekfDebugMaxRuntimeUs),
+        static_cast<unsigned long>(m_ekfDebugCount)
+    );
+
+    m_ekfDebugReportTimeUs = start_us;
+    m_ekfDebugCount = 0;
+    m_ekfDebugPeriodCount = 0;
+    m_ekfDebugPeriodTimeUs = 0;
+    m_ekfDebugRuntimeUs = 0;
+    m_ekfDebugMaxPeriodUs = 0;
+    m_ekfDebugMaxRuntimeUs = 0;
+}
+
 void Estimator::updateState()
 {
     // ── Orientation ───────────────────────────────────────────────────────────
@@ -210,6 +276,7 @@ void Estimator::updateState()
     m_state.velocity                = m_ekf.velocity();
     m_state.acceleration            = m_ekf.acceleration();
     m_state.gpsPosition             = m_ekf.gpsPosition(); 
+    m_state.rtkDelayUs              = m_ekf.rtkDelayUs();
 
     // ── Expected Readings ─────────────────────────────────────────────────────
     m_state.expectedMagReading      = m_ekf.expectedMagReading();

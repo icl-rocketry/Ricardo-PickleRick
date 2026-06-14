@@ -70,7 +70,17 @@ class Estimator{
         FirstOrderLowpass  m_gyro_lpf_y;
         FirstOrderLowpass  m_gyro_lpf_z;
 
+        uint32_t m_ekfDebugReportTimeUs = 0;
+        uint32_t m_ekfDebugPrevStartUs = 0;
+        uint32_t m_ekfDebugCount = 0;
+        uint32_t m_ekfDebugPeriodCount = 0;
+        uint64_t m_ekfDebugPeriodTimeUs = 0;
+        uint64_t m_ekfDebugRuntimeUs = 0;
+        uint32_t m_ekfDebugMaxPeriodUs = 0;
+        uint32_t m_ekfDebugMaxRuntimeUs = 0;
+
         void updateState();
         void updateAutoHome(const SensorStructs::GPS_t& gps);
+        void recordEkfDebugTiming(uint32_t start_us, uint32_t runtime_us);
         bool hasGpsLock(const SensorStructs::GPS_t& gps) const;
 };
