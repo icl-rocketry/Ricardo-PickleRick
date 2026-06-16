@@ -419,6 +419,7 @@ void GNCController::telemetry_impl(packetptr_t packetptr) {
     telemetry.m_cmd_z = m_pd.getMcmd()(2); //get the pitch moment command for telemetry
     telemetry.m_roll_mix = m_pd.getRollMix(); //get the roll mix for telemetry
     telemetry.m_batt = m_batt_V; //get the battery voltage for telemetry
+    telemetry.m_voltage_scale = m_voltage_scale; //get the voltage compensation scale for telemetry
 
     telemetry.m_pos_err_dbg_x = pos_err(0);
     telemetry.m_pos_err_dbg_y = pos_err(1);

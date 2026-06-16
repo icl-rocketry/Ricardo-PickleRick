@@ -4,10 +4,12 @@
 
 MAX_M10S::MAX_M10S(TwoWire& wire,
                  Types::CoreTypes::SystemStatus_t& systemstatus,
+                 int ppsPin,
                  uint8_t address)
     : _wire(wire),
       _systemstatus(systemstatus),
-      _address(address)
+      _address(address),
+      _ppsPin(ppsPin)
 {
 }
 
@@ -29,6 +31,8 @@ void MAX_M10S::setup()
         
         return;
     }
+
+    setupPpsCapture();
 
     // Drain any startup NMEA the module may already have queued
     delay(500);  // give module more time to boot and queue NMEA
@@ -100,7 +104,9 @@ void MAX_M10S::setup()
 
 void MAX_M10S::update(SensorStructs::GPS_t& data)
 {
+    const uint32_t update_start_us = micros();
     data.updated = false;
+    updatePpsStatus(data, update_start_us);
 
     // Service a bounded amount of the queued stream each call. The parser state
     // persists, so a NAV-PVT frame may complete over multiple updates.
@@ -144,10 +150,107 @@ void MAX_M10S::update(SensorStructs::GPS_t& data)
     data.vAcc     = static_cast<float>(_pvt.vAcc)    * 1e-3f;
     data.updated  = true;
     data.gnss_time_of_day_ms = _pvt.iTOW;
-    data.timestamp_us = micros();
+
+    const uint32_t receive_timestamp_us = micros();
+    data.timestamp_from_pps = timestampFromPps(_pvt.iTOW,
+                                               receive_timestamp_us,
+                                               data.timestamp_us);
+    if (!data.timestamp_from_pps)
+    {
+        data.timestamp_us = receive_timestamp_us;
+    }
+    updatePpsStatus(data, receive_timestamp_us);
 }
 
 // ── Private ───────────────────────────────────────────────────────────────────
+
+// ── PPS capture ───────────────────────────────────────────────────────────────
+
+void MAX_M10S::setupPpsCapture()
+{
+    if (_ppsPin < 0) { return; }
+
+    pinMode(static_cast<uint8_t>(_ppsPin), INPUT);
+    attachInterruptArg(digitalPinToInterrupt(_ppsPin),
+                       ppsRiseHandler,
+                       static_cast<void*>(this),
+                       RISING);
+}
+
+void MAX_M10S::copyPpsSnapshot(uint32_t& timestamp_us, uint32_t& count) const
+{
+    noInterrupts();
+    timestamp_us = _lastPpsTimestampUs;
+    count = _ppsCount;
+    interrupts();
+}
+
+void MAX_M10S::updatePpsStatus(SensorStructs::GPS_t& data, const uint32_t now_us) const
+{
+    uint32_t pps_timestamp_us = 0;
+    uint32_t pps_count = 0;
+    copyPpsSnapshot(pps_timestamp_us, pps_count);
+
+    data.last_pps_timestamp_us = pps_timestamp_us;
+    data.pps_count = pps_count;
+    data.pps_valid = pps_count != 0 && now_us - pps_timestamp_us <= PPS_FRESH_TIMEOUT_US;
+}
+
+bool MAX_M10S::timestampFromPps(const uint32_t gnss_time_of_day_ms,
+                                const uint32_t now_us,
+                                uint32_t& timestamp_us)
+{
+    uint32_t pps_timestamp_us = 0;
+    uint32_t pps_count = 0;
+    copyPpsSnapshot(pps_timestamp_us, pps_count);
+
+    if (pps_count == 0 || now_us - pps_timestamp_us > PPS_FRESH_TIMEOUT_US)
+    {
+        return false;
+    }
+
+    const uint32_t gnss_second_ms = (gnss_time_of_day_ms / 1000UL) * 1000UL;
+    const uint32_t subsecond_us = (gnss_time_of_day_ms - gnss_second_ms) * 1000UL;
+
+    if (_mappedPpsValid && gnss_second_ms == _mappedPpsGnssSecondMs)
+    {
+        timestamp_us = _mappedPpsLocalTimestampUs + subsecond_us;
+        return true;
+    }
+
+    uint32_t pps_epoch_us = pps_timestamp_us;
+    uint32_t candidate_timestamp_us = pps_epoch_us + subsecond_us;
+
+    // A packet for e.g. 900 ms can be parsed just after the next PPS edge.
+    // In that case the latest edge belongs to the next GNSS second.
+    if (static_cast<int32_t>(candidate_timestamp_us - now_us) >
+        static_cast<int32_t>(PPS_FUTURE_TOLERANCE_US))
+    {
+        pps_epoch_us -= PPS_PERIOD_US;
+        candidate_timestamp_us = pps_epoch_us + subsecond_us;
+    }
+
+    if (static_cast<int32_t>(now_us - candidate_timestamp_us) >
+        static_cast<int32_t>(PPS_FRESH_TIMEOUT_US))
+    {
+        return false;
+    }
+
+    _mappedPpsGnssSecondMs = gnss_second_ms;
+    _mappedPpsLocalTimestampUs = pps_epoch_us;
+    _mappedPpsValid = true;
+    timestamp_us = candidate_timestamp_us;
+    return true;
+}
+
+void ARDUINO_ISR_ATTR MAX_M10S::ppsRiseHandler(void* arg)
+{
+    auto* self = static_cast<MAX_M10S*>(arg);
+    if (self == nullptr) { return; }
+
+    self->_lastPpsTimestampUs = micros();
+    self->_ppsCount = self->_ppsCount + 1;
+}
 
 // ── I2C primitives ────────────────────────────────────────────────────────────
 

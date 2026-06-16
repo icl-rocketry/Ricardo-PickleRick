@@ -42,7 +42,7 @@ class Estimator{
         
         bool isHomeSet() { return m_homeSet; };
         const SensorStructs::state_t& getData() { return m_state; };
-        void getRTKData(SensorStructs::RTK_t& data) { rtk.update(data); };
+        void getRTKData(SensorStructs::RTK_t& data);
         std::function<void(packetptr_t)> registerRTK();
 
         
@@ -56,6 +56,8 @@ class Estimator{
         bool m_autoHomePending;
         bool m_autoHomeTriggered;
         uint32_t m_gpsLockStartTimeUs;
+        uint32_t m_lastGpsDebugTimestampUs = 0;
+        uint32_t m_rtkDelayUs = 0;
         Eigen::Quaternionf m_refOrientation;
         
         EKF m_ekf;    
@@ -83,4 +85,5 @@ class Estimator{
         void updateAutoHome(const SensorStructs::GPS_t& gps);
         void recordEkfDebugTiming(uint32_t start_us, uint32_t runtime_us);
         bool hasGpsLock(const SensorStructs::GPS_t& gps) const;
+        uint32_t rtkDelayUs(const SensorStructs::RTK_t& data, uint32_t now_us) const;
 };

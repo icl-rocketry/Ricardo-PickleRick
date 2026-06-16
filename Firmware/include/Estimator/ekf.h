@@ -75,6 +75,7 @@ public:
 
     Eigen::Vector3f gpsPosition()   const { return m_gps_position; }
     uint32_t rtkDelayUs() const { return m_lastRtkDelayUs; }
+    bool applyGnssTimestamp(SensorStructs::RTK_t& rtk, uint32_t now) const;
 
 
 private:
@@ -162,6 +163,8 @@ private:
     static constexpr bool USE_ACCEL_FOR_VELOCITY = true;
     static constexpr bool USE_RTK_VERTICAL = true;
     static constexpr bool USE_RTK_VELOCITY = false;
+    static constexpr uint32_t GNSS_DAY_MS = 86400UL * 1000UL;
+    static constexpr uint32_t GPS_UTC_OFFSET_MS = 18000UL;
     static constexpr uint64_t GNSS_DAY_US = 86400ULL * 1000000ULL;
     static constexpr size_t HISTORY_SAMPLE_COUNT =
         (TimingConfig::EKF::DELAYED_MEASUREMENT_HISTORY_US /
@@ -217,7 +220,10 @@ private:
                                 const SensorStructs::GPS_t& gps,
                                 const SensorStructs::LIDAR_t& lidar,
                                 const SensorStructs::RTK_t& rtk,
+                                bool allow_gps,
                                 bool allow_rtk);
+    bool handleGpsCorrection(uint32_t now, const SensorStructs::GPS_t& gps);
+    bool fuseDelayedGPS(const SensorStructs::GPS_t& gps, uint32_t now);
     bool handleRtkCorrection(uint32_t now, const SensorStructs::RTK_t& rtk);
     bool fuseDelayedRTK(const SensorStructs::RTK_t& rtk, uint32_t now);
     void updateGnssTimeOffset(const SensorStructs::GPS_t& gps);

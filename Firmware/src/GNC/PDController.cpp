@@ -12,14 +12,14 @@ void PDController::setup()
     // with rx < 0, negative body-y drift -> make ry more negative; positive body-y drift -> make ry more positive.
     // negative body-z drift -> make rz more negative; positive body-z drift -> make rz more positive.
     // m_rEng << -0.235f, -0.0007f, 0.015f; //centre of mass to center of thrust in body frame
-    m_rEng << -0.235f, -0.006f, 0.011f;
+    m_rEng << -0.235f, -0.007f, 0.0115f;
     m_mass = 1.32f;
 
     m_K_p << 0.0f, 2.5f, 2.0f; // attitude body control gains (roll, pitch, yaw)
     m_K_d << 7.0f, 0.8f, 0.9f;
 
-    m_K_p_pos << 0.15f, 0.15f, 0.2f;   // NED position control gains
-    m_K_d_pos << 0.8f, 0.8f, 1.0f; 
+    m_K_p_pos << 0.6f, 0.6f, 0.2f;   // NED position control gains
+    m_K_d_pos << 1.7f, 1.7f, 0.9f; 
     m_K_i_pos << 0.0f, 0.0f, 0.01f;
     // m_K_p_pos << 0.0f, 0.0f, 0.3f;   // NED position control gains
     // m_K_d_pos << 0.0f, 0.0f, 1.0f; 
@@ -125,7 +125,8 @@ void PDController::updatePositionControl(const Eigen::Vector3f& position,
     // Integrator
     m_pos_int += pos_err * m_dt;
 
-    const float I_MAX = 5.0f;
+    //anti windup for integrator
+    const float I_MAX = 20.0f;
     m_pos_int = m_pos_int.cwiseMax(-I_MAX).cwiseMin(I_MAX);
 
     Eigen::Vector3f a_des =

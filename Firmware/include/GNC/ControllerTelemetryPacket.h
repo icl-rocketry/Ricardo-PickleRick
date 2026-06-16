@@ -33,6 +33,7 @@ class ControllerTelemetryPacket : public RnpPacket{
                 &ControllerTelemetryPacket::m_cmd_z,
                 &ControllerTelemetryPacket::m_roll_mix,
                 &ControllerTelemetryPacket::m_batt,
+                &ControllerTelemetryPacket::m_voltage_scale,
                 &ControllerTelemetryPacket::m_pos_err_dbg_x,
                 &ControllerTelemetryPacket::m_pos_err_dbg_y,
                 &ControllerTelemetryPacket::m_pos_err_dbg_z,
@@ -102,6 +103,7 @@ class ControllerTelemetryPacket : public RnpPacket{
         float m_cmd_z;
         float m_roll_mix;
         float m_batt;
+        float m_voltage_scale;
         float m_pos_err_dbg_x;
         float m_pos_err_dbg_y;
         float m_pos_err_dbg_z;

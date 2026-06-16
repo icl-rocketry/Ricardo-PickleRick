@@ -14,6 +14,7 @@ class MAX_M10S
 public:
     MAX_M10S(TwoWire& wire,
             Types::CoreTypes::SystemStatus_t& systemstatus,
+            int ppsPin = -1,
             uint8_t address = M10_I2C_ADDR);
 
     void setup();
@@ -29,6 +30,15 @@ private:
     uint16_t readStream(uint8_t* buf, uint16_t len);
     // Send a raw buffer to the module (used to deliver UBX command frames)
     void     writeBytes(const uint8_t* buf, uint16_t len);
+
+    // ── PPS capture ─────────────────────────────────────────────────────────
+    void setupPpsCapture();
+    void copyPpsSnapshot(uint32_t& timestamp_us, uint32_t& count) const;
+    void updatePpsStatus(SensorStructs::GPS_t& data, uint32_t now_us) const;
+    bool timestampFromPps(uint32_t gnss_time_of_day_ms,
+                          uint32_t now_us,
+                          uint32_t& timestamp_us);
+    static void ARDUINO_ISR_ATTR ppsRiseHandler(void* arg);
 
     // ── Config helpers ───────────────────────────────────────────────────────
     void cfgValSetU1(uint32_t keyId, uint8_t  value);
@@ -49,6 +59,12 @@ private:
     TwoWire&                          _wire;
     Types::CoreTypes::SystemStatus_t& _systemstatus;
     uint8_t                           _address;
+    int                               _ppsPin;
+    volatile uint32_t                 _lastPpsTimestampUs = 0;
+    volatile uint32_t                 _ppsCount = 0;
+    uint32_t                          _mappedPpsGnssSecondMs = 0;
+    uint32_t                          _mappedPpsLocalTimestampUs = 0;
+    bool                              _mappedPpsValid = false;
     
     // ── NAV-PVT payload length (interface description UBX-21035062) ──────────────
     static constexpr uint16_t NAV_PVT_LEN = 92;
@@ -130,9 +146,14 @@ private:
     static constexpr uint8_t M10_I2C_ADDR      = 0x42;
     static constexpr uint8_t REG_BYTES_AVAIL_H = 0xFD;
     static constexpr uint8_t REG_DATA_STREAM   = 0xFF;
+
+    // ── PPS timing constants ─────────────────────────────────────────────────
+    static constexpr uint32_t PPS_PERIOD_US = 1000000UL;
+    static constexpr uint32_t PPS_FRESH_TIMEOUT_US = 1500000UL;
+    static constexpr uint32_t PPS_FUTURE_TOLERANCE_US = 5000UL;
     
     // Max bytes to pull per readStream() call (Wire buffer is 32 bytes on AVR,
     // 128 on ESP32 — use a safe chunk size for burst reads)
     static constexpr uint8_t I2C_CHUNK = 32;
-    static constexpr uint8_t I2C_CHUNKS_PER_UPDATE = 2;
+    static constexpr uint8_t I2C_CHUNKS_PER_UPDATE = 4;
 };

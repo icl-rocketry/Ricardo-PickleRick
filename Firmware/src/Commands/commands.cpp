@@ -113,7 +113,7 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
     telemetry.rtk_wifi_connected = rtk_data.wifi_connected ? 1 : 0;
     telemetry.rtk_valid = rtk_data.valid ? 1 : 0;
     telemetry.rtk_timestamp_us = rtk_data.timestamp_us;
-    telemetry.rtk_delay_us = estimation.rtkDelayUs;
+    telemetry.rtk_delay_us = rtk_data.delay_us;
 
     system.networkmanager.sendPacket(telemetry);
 }

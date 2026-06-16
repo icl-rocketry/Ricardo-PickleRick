@@ -64,6 +64,10 @@ namespace SensorStructs
         bool    valid;
         uint32_t gnss_time_of_day_ms{0};
         uint32_t timestamp_us{0};
+        uint32_t last_pps_timestamp_us{0};
+        uint32_t pps_count{0};
+        bool     pps_valid{false};
+        bool     timestamp_from_pps{false};
     };
 
     struct ADC_V_RAIL_t{
@@ -99,9 +103,11 @@ namespace SensorStructs
         uint8_t fix_quality{0};
         bool wifi_connected{false};
         bool valid{false};
+        bool home_set{false};
         uint32_t gnss_time_of_day_ms{0};
         uint32_t measurement_timestamp_us{0};
         uint32_t timestamp_us{0};
+        uint32_t delay_us{0};
     };
 
     struct raw_measurements_t

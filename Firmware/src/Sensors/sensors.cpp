@@ -6,7 +6,7 @@
 
 Sensors::Sensors(SPIClass& spi, TwoWire& I2C, Types::CoreTypes::SystemStatus_t& systemstatus)
     : _systemstatus(systemstatus),
-      gps(I2C, systemstatus),
+      gps(I2C, systemstatus, PinMap::PPS),
       baro(spi, systemstatus, PinMap::BaroCs),
       accelgyro(spi, systemstatus, PinMap::ImuCs_1),
       accel(spi, systemstatus, PinMap::ImuCs_2),

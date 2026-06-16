@@ -41,6 +41,13 @@ private:
     unsigned long m_prev_timestamp = 0;
     bool m_valid = false;
     uint32_t m_timestamp_us = 0;
+    static constexpr uint8_t RTK_DEBUG_DIFF_WINDOW_SIZE = 5;
+    Eigen::Vector3f m_prevRtkDebugPosition{0.0f, 0.0f, 0.0f};
+    float m_rtkDebugDiffWindow[RTK_DEBUG_DIFF_WINDOW_SIZE]{};
+    float m_rtkDebugDiffSum = 0.0f;
+    uint8_t m_rtkDebugDiffIndex = 0;
+    uint8_t m_rtkDebugDiffCount = 0;
+    bool m_havePrevRtkDebugPosition = false;
 
     void handlecommand(packetptr_t packetptr);
     bool hasFreshMeasurement(uint32_t now_us) const;

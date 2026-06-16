@@ -1,4 +1,5 @@
 #include "Estimator/estimator.h"
+#include "Config/debug_config.h"
 
 Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus)
     : m_systemstatus(systemstatus),
@@ -29,6 +30,8 @@ void Estimator::setup()
     m_autoHomePending = false;
     m_autoHomeTriggered = false;
     m_gpsLockStartTimeUs = 0;
+    m_lastGpsDebugTimestampUs = 0;
+    m_rtkDelayUs = 0;
     m_calibrator.setup();
     m_ekf.setup(
         m_calibrator.getGyroBiases(),
@@ -116,6 +119,33 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 
         // Feed filtered low-g accel + gyro into EKF
         const uint32_t ekf_start_us = micros();
+        if constexpr (DebugConfig::GpsLatencyPrintEnabled)
+        {
+            if (raw_sensors.gps.updated &&
+                raw_sensors.gps.timestamp_us != 0 &&
+                raw_sensors.gps.timestamp_us != m_lastGpsDebugTimestampUs)
+            {
+                const uint32_t gps_delay_us = ekf_start_us - raw_sensors.gps.timestamp_us;
+                const uint32_t gps_delay_ms_x10 =
+                    static_cast<int32_t>(gps_delay_us) >= 0
+                        ? static_cast<uint32_t>((static_cast<uint64_t>(gps_delay_us) * 10ULL + 500ULL) / 1000ULL)
+                        : 0;
+                Serial.printf(
+                    "GPS DEBUG delay_ms=%lu.%lu solution_epoch_us=%lu estimator_parse_us=%lu iTOW_ms=%lu pps=%u pps_valid=%u\n",
+                    static_cast<unsigned long>(gps_delay_ms_x10 / 10UL),
+                    static_cast<unsigned long>(gps_delay_ms_x10 % 10UL),
+                    static_cast<unsigned long>(raw_sensors.gps.timestamp_us),
+                    static_cast<unsigned long>(ekf_start_us),
+                    static_cast<unsigned long>(raw_sensors.gps.gnss_time_of_day_ms),
+                    raw_sensors.gps.timestamp_from_pps ? 1U : 0U,
+                    raw_sensors.gps.pps_valid ? 1U : 0U
+                );
+                m_lastGpsDebugTimestampUs = raw_sensors.gps.timestamp_us;
+            }
+        }
+        SensorStructs::RTK_t rtk_timing = rtk_measurement;
+        m_ekf.applyGnssTimestamp(rtk_timing, ekf_start_us);
+        m_rtkDelayUs = rtkDelayUs(rtk_timing, ekf_start_us);
         m_ekf.update(
             gyro_filt,
             accel_filt,
@@ -126,7 +156,10 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             raw_sensors.lidar,
             rtk_measurement
         );
-        recordEkfDebugTiming(ekf_start_us, micros() - ekf_start_us);
+        if constexpr (DebugConfig::EkfTimingPrintEnabled)
+        {
+            recordEkfDebugTiming(ekf_start_us, micros() - ekf_start_us);
+        }
     }
     updateState();
 };
@@ -148,6 +181,15 @@ void Estimator::setHome()
 std::function<void(packetptr_t)> Estimator::registerRTK()
 {
     return rtk.getThisNetworkCallback();
+}
+
+void Estimator::getRTKData(SensorStructs::RTK_t& data)
+{
+    const uint32_t now_us = micros();
+    rtk.update(data);
+    m_ekf.applyGnssTimestamp(data, now_us);
+    data.delay_us = rtkDelayUs(data, now_us);
+    m_rtkDelayUs = data.delay_us;
 }
 
 void Estimator::updateAutoHome(const SensorStructs::GPS_t& gps)
@@ -185,6 +227,17 @@ bool Estimator::hasGpsLock(const SensorStructs::GPS_t& gps) const
            gps.hAcc <= 3.0f;
 }
 
+uint32_t Estimator::rtkDelayUs(const SensorStructs::RTK_t& data, const uint32_t now_us) const
+{
+    if (data.timestamp_us == 0)
+    {
+        return 0;
+    }
+
+    const uint32_t delay_us = now_us - data.timestamp_us;
+    return static_cast<int32_t>(delay_us) >= 0 ? delay_us : 0;
+}
+
 void Estimator::recordEkfDebugTiming(const uint32_t start_us, const uint32_t runtime_us)
 {
     if (m_ekfDebugReportTimeUs == 0)
@@ -217,6 +270,8 @@ void Estimator::recordEkfDebugTiming(const uint32_t start_us, const uint32_t run
         return;
     }
 
+    // Prints EKF loop timing once per second: achieved update rate versus target,
+    // average/max period between calls, average/max EKF runtime, and call count.
     const uint32_t rate_x10 = static_cast<uint32_t>(
         (static_cast<uint64_t>(m_ekfDebugCount) * TimingConfig::MICROS_PER_SECOND * 10ULL + (window_us / 2ULL)) /
         window_us
@@ -227,18 +282,20 @@ void Estimator::recordEkfDebugTiming(const uint32_t start_us, const uint32_t run
     const uint32_t avg_runtime_us = m_ekfDebugCount
         ? static_cast<uint32_t>(m_ekfDebugRuntimeUs / m_ekfDebugCount)
         : 0;
-
-    Serial.printf(
-        "EKF DEBUG rate=%lu.%luHz target=%luHz period_avg/max=%lu/%luus runtime_avg/max=%lu/%luus calls=%lu\n",
-        static_cast<unsigned long>(rate_x10 / 10UL),
-        static_cast<unsigned long>(rate_x10 % 10UL),
-        static_cast<unsigned long>(TimingConfig::Scheduler::ESTIMATOR_UPDATE_RATE_HZ),
-        static_cast<unsigned long>(avg_period_us),
-        static_cast<unsigned long>(m_ekfDebugMaxPeriodUs),
-        static_cast<unsigned long>(avg_runtime_us),
-        static_cast<unsigned long>(m_ekfDebugMaxRuntimeUs),
-        static_cast<unsigned long>(m_ekfDebugCount)
-    );
+    if constexpr (DebugConfig::EkfTimingPrintEnabled)
+    {
+        Serial.printf(
+            "EKF DEBUG rate=%lu.%luHz target=%luHz period_avg/max=%lu/%luus runtime_avg/max=%lu/%luus calls=%lu\n",
+            static_cast<unsigned long>(rate_x10 / 10UL),
+            static_cast<unsigned long>(rate_x10 % 10UL),
+            static_cast<unsigned long>(TimingConfig::Scheduler::ESTIMATOR_UPDATE_RATE_HZ),
+            static_cast<unsigned long>(avg_period_us),
+            static_cast<unsigned long>(m_ekfDebugMaxPeriodUs),
+            static_cast<unsigned long>(avg_runtime_us),
+            static_cast<unsigned long>(m_ekfDebugMaxRuntimeUs),
+            static_cast<unsigned long>(m_ekfDebugCount)
+        );
+    }
 
     m_ekfDebugReportTimeUs = start_us;
     m_ekfDebugCount = 0;
@@ -276,7 +333,7 @@ void Estimator::updateState()
     m_state.velocity                = m_ekf.velocity();
     m_state.acceleration            = m_ekf.acceleration();
     m_state.gpsPosition             = m_ekf.gpsPosition(); 
-    m_state.rtkDelayUs              = m_ekf.rtkDelayUs();
+    m_state.rtkDelayUs              = m_rtkDelayUs;
 
     // ── Expected Readings ─────────────────────────────────────────────────────
     m_state.expectedMagReading      = m_ekf.expectedMagReading();

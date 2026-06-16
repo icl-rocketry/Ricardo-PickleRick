@@ -47,6 +47,7 @@ std::string ControllerTelemetryPacket::csvHeader()
            "m_cmd_z,"
            "m_roll_mix,"
            "m_batt,"
+           "m_voltage_scale,"
            "m_pos_err_dbg_x,"
            "m_pos_err_dbg_y,"
            "m_pos_err_dbg_z,"

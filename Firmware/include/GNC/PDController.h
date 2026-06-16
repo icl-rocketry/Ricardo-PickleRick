@@ -62,9 +62,9 @@ class PDController
         static constexpr float MAX_GIMBAL_DEG = 15.0f;
         static constexpr float MAX_THRUST_N   = 28.0f;
         static constexpr float MAX_ROLL_MIX   = 8.0f; 
-        static constexpr float MAX_POSITION_TILT_DEG = 4.0f;
+        static constexpr float MAX_POSITION_TILT_DEG = 7.0f;
         static constexpr float MAX_POSITION_TILT_RAD = MAX_POSITION_TILT_DEG * DEG_TO_RAD;
-        static constexpr float ROLL_MIX_OFFSET = 3.2f; //if it is rolling in +ve x direction 
+        static constexpr float ROLL_MIX_OFFSET = 3.3f; //if it is rolling in +ve x direction, decrease 
         static constexpr float NOMINAL_FX_N = 13.24;
 
         //battery stuff
@@ -73,10 +73,10 @@ class PDController
         float m_voltage_scale = 1.0f;
 
         static constexpr float NOMINAL_BATT_V = 15.6f; //measured voltage of a fully loaded pack under load
-        static constexpr float VOLTAGE_SCALE_EXPONENT = 0.95; //exponent for voltage scaling curve, higher means more aggressive scaling at lower voltages
+        static constexpr float VOLTAGE_SCALE_EXPONENT = 1.5; //exponent for voltage scaling curve, higher means more aggressive scaling at lower voltages
         static constexpr float MIN_VALID_BATT_V = 12.0f;
         static constexpr float MIN_VOLTAGE_SCALE = 0.8f; 
-        static constexpr float MAX_VOLTAGE_SCALE = 1.1f;
+        static constexpr float MAX_VOLTAGE_SCALE = 1.25f;
 
         //Thrust linearisation model
         static constexpr float THRUST_EXPONENT = 0.7f; //

@@ -25,4 +25,3 @@ namespace GeneralConfig{
     static constexpr double FALLBACK_MAG_REF_LON_DEG = -0.1453;
     static constexpr float  FALLBACK_MAG_REF_ALT_M   = 100.0f; //altitude above sea level 
 };
-
