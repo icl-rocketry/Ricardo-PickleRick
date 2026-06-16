@@ -28,7 +28,7 @@ void Flight::initialize()
     const Eigen::Vector3f start_pos(0.0f, 0.0f, 0.0f); //NED frame
     const Eigen::Vector3f end_pos(0.0f, 0.0f, -0.7f); //NED frame
     const float duration_s = 2.5f;
-    m_trajectory_active = m_position_trajectory.configure(start_pos, end_pos, duration_s);
+    m_trajectory_active = m_position_trajectory.configure(start_pos, end_pos, duration_s, 0.1f);
     m_trajectory_start_ms = millis();
 
     _system.controller.setPositionTarget(start_pos, Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero());
