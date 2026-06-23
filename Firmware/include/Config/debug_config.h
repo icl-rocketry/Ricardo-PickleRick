@@ -5,7 +5,7 @@ namespace DebugConfig
     // Currently active debug/performance prints.
     static constexpr bool PerformancePrintEnabled = false;
     static constexpr bool RtkDiffPrintEnabled = false;
-    static constexpr bool ControllerFramePrintEnabled = false;
+    static constexpr bool ControllerFramePrintEnabled = true;
 
     // Optional debug prints.
     static constexpr bool SerialAlivePrintEnabled = false;

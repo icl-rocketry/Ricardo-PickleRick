@@ -64,6 +64,7 @@ class PDController
         static constexpr float MAX_ROLL_MIX   = 8.0f; 
         static constexpr float MAX_POSITION_TILT_DEG = 20.0f;
         static constexpr float MAX_POSITION_TILT_RAD = MAX_POSITION_TILT_DEG * DEG_TO_RAD;
+        static constexpr float TILT_COMPENSATION_MIN_COS = 0.5f;
         static constexpr float ROLL_MIX_OFFSET = 3.3f; //if it is rolling in +ve x direction, decrease 
         static constexpr float NOMINAL_FX_N = 13.24;
 

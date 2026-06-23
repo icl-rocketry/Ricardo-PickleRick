@@ -366,7 +366,6 @@ void EKF::predict(  const float nominal_dt,
 
 void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
 {
-    using Mat3 = Eigen::Matrix3f;
     using Vec3 = Eigen::Vector3f;
     using Vec4 = Eigen::Vector4f;
 
@@ -374,48 +373,80 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
 
     const Vec3 z_meas = z_meas_raw.normalized();    // data in body
     const Vec3 m_n    = m_mag_ref.normalized();     // ref in NED
-    const float mN = m_n(0), mE = m_n(1), mD = m_n(2);
 
     Vec4 q = m_x.segment<4>(6);
     if (q.norm() < 1e-9f) { q = Vec4(1.0f, 0.0f, 0.0f, 0.0f); }
     else                  { q.normalize(); }
     const float q0 = q(0), q1 = q(1), q2 = q(2), q3 = q(3);
 
-    m_h.segment<3>(0) = Eigen::Quaternionf(q0, q1, q2, q3).toRotationMatrix().transpose() * m_n;
+    Eigen::Quaternionf q_body_to_ned(q0, q1, q2, q3);
+    const Eigen::Matrix3f R_body_to_ned = q_body_to_ned.toRotationMatrix();
 
-    Eigen::Matrix<float, 3, 4> Hq;
-    Hq <<   -2*mD*q2 + 2*mE*q3,    2*mD*q3 + 2*mE*q2,              -2*mD*q0 + 2*mE*q1 - 4*mN*q2,    2*mD*q1 + 2*mE*q0 - 4*mN*q3,
-             2*mD*q1 - 2*mN*q3,    2*mD*q0 - 4*mE*q1 + 2*mN*q2,     2*mD*q3 + 2*mN*q1,              2*mD*q2 - 4*mE*q3 - 2*mN*q0,   
-            -2*mE*q1 + 2*mN*q2,   -4*mD*q1 - 2*mE*q0 + 2*mN*q3,    -4*mD*q2 + 2*mE*q3 + 2*mN*q0,    2*mE*q2 + 2*mN*q1;
-
-    m_H.setZero();
-    m_H.block<3,4>(0,6) = Hq;
-
-    const Mat3 R = (SIGMA_MAG * SIGMA_MAG) * Mat3::Identity();
+    // Keep full-field diagnostics, but only fuse the horizontal heading error.
+    m_h.segment<3>(0) = R_body_to_ned.transpose() * m_n;
     m_y.segment<3>(0) = z_meas - m_h.segment<3>(0);
-    const Mat3 S = m_H * m_P * m_H.transpose() + R;
-    m_K = m_P * m_H.transpose() * S.ldlt().solve(Mat3::Identity());
 
-    m_x += m_K * m_y.segment<3>(0);
+    Vec3 measured_horizontal_ned = R_body_to_ned * z_meas;
+    measured_horizontal_ned.z() = 0.0f;
+    const float measured_horizontal_norm = measured_horizontal_ned.norm();
+    if (!std::isfinite(measured_horizontal_norm) || measured_horizontal_norm < 1e-6f) { return; }
+    measured_horizontal_ned /= measured_horizontal_norm;
 
-    m_IKH.noalias()    = Eigen::Matrix<float,16,16>::Identity() - m_K * m_H;
+    Vec3 reference_horizontal_ned = m_n;
+    reference_horizontal_ned.z() = 0.0f;
+    const float reference_horizontal_norm = reference_horizontal_ned.norm();
+    if (!std::isfinite(reference_horizontal_norm) || reference_horizontal_norm < 1e-6f) { return; }
+    reference_horizontal_ned /= reference_horizontal_norm;
+
+    float dot = measured_horizontal_ned.x() * reference_horizontal_ned.x()
+              + measured_horizontal_ned.y() * reference_horizontal_ned.y();
+    if (dot > 1.0f)  { dot = 1.0f; }
+    if (dot < -1.0f) { dot = -1.0f; }
+
+    const float cross_down = measured_horizontal_ned.x() * reference_horizontal_ned.y()
+                           - measured_horizontal_ned.y() * reference_horizontal_ned.x();
+    const float heading_error = std::atan2(cross_down, dot);
+
+    Eigen::Matrix<float, 1, 16> H_heading = Eigen::Matrix<float, 1, 16>::Zero();
+    const Eigen::Matrix<float, 4, 1> yaw_tangent(
+        -0.5f * q3,
+        -0.5f * q2,
+         0.5f * q1,
+         0.5f * q0
+    );
+    const float yaw_tangent_norm_sq = yaw_tangent.squaredNorm();
+    if (!std::isfinite(yaw_tangent_norm_sq) || yaw_tangent_norm_sq < 1e-9f) { return; }
+
+    H_heading.block<1,4>(0,6) = yaw_tangent.transpose() / yaw_tangent_norm_sq;
+
+    const float R_heading = SIGMA_MAG_HEADING * SIGMA_MAG_HEADING;
+    float heading_variance = (H_heading * m_P * H_heading.transpose())(0, 0);
+    if (!std::isfinite(heading_variance) || heading_variance < 0.0f) {
+        heading_variance = 0.0f;
+    }
+
+    const float S = heading_variance + R_heading;
+    if (!std::isfinite(S) || S < 1e-9f) { return; }
+
+    const Eigen::Matrix<float, 16, 1> K_heading = m_P * H_heading.transpose() / S;
+    const float yaw_correction = (heading_variance / S) * heading_error;
+
+    Eigen::Quaternionf q_new =
+        Eigen::Quaternionf(Eigen::AngleAxisf(yaw_correction, Vec3::UnitZ())) *
+        q_body_to_ned;
+    q_new.normalize();
+    if (q_new.w() < 0.0f) {
+        q_new.coeffs() *= -1.0f;
+    }
+    m_x.segment<4>(6) << q_new.w(), q_new.x(), q_new.y(), q_new.z();
+
+    m_IKH.noalias()    = Eigen::Matrix<float,16,16>::Identity() - K_heading * H_heading;
     m_P_temp.noalias() = m_IKH * m_P;
     m_P.noalias()      = m_P_temp * m_IKH.transpose();
-    m_P_temp.noalias() = m_K * R * m_K.transpose();
+    m_P_temp.noalias() = K_heading * R_heading * K_heading.transpose();
     m_P               += m_P_temp;
     m_P_temp           = m_P + m_P.transpose();
     m_P                = 0.5f * m_P_temp;
-
-    Vec4 q_new = m_x.segment<4>(6);
-    const float q_norm = q_new.norm();
-    if (!std::isfinite(q_norm) || q_norm < 1e-9f)
-        m_x.segment<4>(6) = Vec4(1.0f, 0.0f, 0.0f, 0.0f);
-    else
-    {
-        q_new /= q_norm;
-        if (q_new(0) < 0) q_new = -q_new;  // canonical hemisphere
-        m_x.segment<4>(6) = q_new;
-    }
 
 }
 

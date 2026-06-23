@@ -114,6 +114,17 @@ void GNCController::setPositionControlEnabled(bool enabled)
     m_pd.setPositionControlEnabled(enabled);
 }
 
+void GNCController::setManualOutput(const Eigen::Vector4f& output, bool actuate)
+{
+    m_output = output;
+
+    const unsigned long now = millis();
+    if (actuate && now - m_previousSampleTime >= m_actuationDelta) {
+        m_previousSampleTime = now;
+        sendActuationCommands(m_output);
+    }
+}
+
 void GNCController::update(Eigen::Quaterniond q, 
                            Eigen::Vector3f angular_rates, 
                            Eigen::Vector3f position, 

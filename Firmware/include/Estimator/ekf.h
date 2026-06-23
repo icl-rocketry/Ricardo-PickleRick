@@ -142,7 +142,7 @@ private:
     static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.53f, 0.77f, 1.53f};
     // static inline const Eigen::Vector3f SIGMA_ALPHA{0.01f, 0.01f, 0.01f};  // rad/s 
     // static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.01f, 0.01f, 0.01f};
-    static constexpr float SIGMA_MAG        = 0.01f;     // was 0.01
+    static constexpr float SIGMA_MAG_HEADING = 0.1f;   // rad, horizontal mag heading noise
 
     static constexpr float SIGMA_T          = 20.0f;      // K
     static constexpr float SIGMA_P          = 100.0f;    // Pa

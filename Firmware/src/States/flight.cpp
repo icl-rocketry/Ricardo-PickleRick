@@ -5,6 +5,13 @@
 #include "Config/general_config.h"
 #include "Config/loggerhandler_config.h"
 
+namespace {
+Eigen::Vector3f toVector(const FlightTrajectoryConfig::WaypointNed& waypoint)
+{
+    return Eigen::Vector3f(waypoint.north_m, waypoint.east_m, waypoint.down_m);
+}
+}
+
 Flight::Flight(System &system) : 
         State(SYSTEM_FLAG::STATE_FLIGHT, system.systemstatus),
         _system(system) {};
@@ -25,13 +32,14 @@ void Flight::initialize()
         return;
     }
 
-    const Eigen::Vector3f start_pos(0.0f, 0.0f, 0.0f); //NED frame
-    const Eigen::Vector3f end_pos(0.0f, 0.0f, -0.7f); //NED frame
-    const float duration_s = 2.5f;
-    m_trajectory_active = m_position_trajectory.configure(start_pos, end_pos, duration_s, 0.1f);
-    m_trajectory_start_ms = millis();
+    m_trajectory_active = configureTrajectoryLeg(0);
 
-    _system.controller.setPositionTarget(start_pos, Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero());
+    if (m_trajectory_active) {
+        const auto& first_leg = FlightTrajectoryConfig::Legs[m_trajectory_leg_index];
+        _system.controller.setPositionTarget(toVector(first_leg.start_ned_m),
+                                             Eigen::Vector3f::Zero(),
+                                             Eigen::Vector3f::Zero());
+    }
     _system.controller.setPositionControlEnabled(true);//set to true to enable position control
 };
 
@@ -69,7 +77,14 @@ Types::CoreTypes::State_ptr_t Flight::update()
         _system.controller.setPositionTarget(target.position,
                                              target.velocity,
                                              target.acceleration);
-        m_trajectory_active = !target.finished;
+
+        if (target.finished) {
+            if (!configureTrajectoryLeg(m_trajectory_leg_index + 1)) {
+                RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
+                    "Flight trajectory complete: entering landing");
+                return std::make_unique<Landing>(_system);
+            }
+        }
     }
     _system.controller.update(quaternion, angular_rates, position, velocity, true);
 
@@ -80,7 +95,22 @@ void Flight::exit()
 {
     
     State::exit();
-    _system.controller.stop();
     _system.commandhandler.resetCommands();
 
 };
+
+bool Flight::configureTrajectoryLeg(std::size_t leg_index)
+{
+    if (leg_index >= FlightTrajectoryConfig::LegCount) {
+        return false;
+    }
+
+    const auto& leg = FlightTrajectoryConfig::Legs[leg_index];
+    m_trajectory_leg_index = leg_index;
+    m_trajectory_start_ms = millis();
+
+    return m_position_trajectory.configure(toVector(leg.start_ned_m),
+                                           toVector(leg.finish_ned_m),
+                                           leg.duration_s,
+                                           leg.accel_fraction);
+}

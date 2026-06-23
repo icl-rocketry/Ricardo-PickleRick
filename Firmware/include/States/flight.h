@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <memory>
 
 #include <libriccore/fsm/state.h>
@@ -11,6 +12,7 @@
 #include "Config/systemflags_config.h"
 #include "Config/types.h"
 #include "Config/commands_config.h"
+#include "Config/flight_trajectory_config.h"
 
 #include "States/landing.h"
 #include "Trajectory/TrapezoidalTrajectory.h"
@@ -29,8 +31,11 @@ class Flight : public Types::CoreTypes::State_t
         void exit() override;
 
     private:
+        bool configureTrajectoryLeg(std::size_t leg_index);
+
         System& _system;
         Trajectory::TrapezoidalTrajectory m_position_trajectory;
         uint32_t m_trajectory_start_ms = 0;
         bool m_trajectory_active = true;
+        std::size_t m_trajectory_leg_index = 0;
 };

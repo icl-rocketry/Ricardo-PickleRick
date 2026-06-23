@@ -14,20 +14,20 @@ void PDController::setup()
     m_thrust_dir_world_des << 0.0f, 0.0f, -1.0f;
 
     // m_rEng is COM -> thrust centre in body frame (m). Tune ry/rz for attitude-only lateral drift:
-    // with rx < 0, negative body-y drift -> make ry more negative; positive body-y drift -> make ry more positive.
-    // negative body-z drift -> make rz more negative; positive body-z drift -> make rz more positive.
-    m_rEng << -0.235f, 0.0f, -0.015f;
+    // with rx < 0, negative body-y drift -> make ry more positive; positive body-y drift -> make ry more negative.
+    // negative body-z drift -> make rz more positive; positive body-z drift -> make rz more negative.
+    m_rEng << -0.235f, 0.008f, -0.008f;
     m_mass = 1.33f;
 
-    m_K_p << 0.0f, 2.5f, 2.0f; // attitude body control gains (roll, pitch, yaw)
-    m_K_d << 7.0f, 0.8f, 0.9f;
+    m_K_p << 0.0f, 2.8f, 2.8f; // attitude body control gains (roll, pitch, yaw)
+    m_K_d << 7.0f, 0.9f, 0.9f;
 
     // m_K_p_pos << 0.6f, 0.5f, 0.3f;   // NED position control gains
     // m_K_d_pos << 1.7f, 1.7f, 0.9f; 
     // m_K_i_pos << 0.005f, 0.005f, 0.02f;
-    m_K_p_pos << 0.0f, 0.0f, 0.4f;   // NED position control gains
-    m_K_d_pos << 0.0f, 0.0f, 0.9f; 
-    m_K_i_pos << 0.00f, 0.00f, 0.0f;
+    m_K_p_pos << 0.75f, 0.75f, 1.0f;   // NED position control gains
+    m_K_d_pos << 2.2f, 2.2f, 2.6f; 
+    m_K_i_pos << 0.015f, 0.015f, 0.015f;
 
 
     m_pos_int.setZero();
@@ -269,11 +269,31 @@ void PDController::updateMcmd(const Eigen::Vector3f& angular_rates)
         + m_K_d.cwiseProduct(rates_error);    
    // m_M_cmd = 0.0f * m_K_p.cwiseProduct(m_dir_error_body) + 0.0f * m_K_d.cwiseProduct(rates_error); //disable attitude control for now, just use position control
 }
-void PDController::updateDesiredForce(const Eigen::Quaterniond&)
+void PDController::updateDesiredForce(const Eigen::Quaterniond& q)
 {
     const float Fx_target = m_position_control_enabled ? m_Fx_cmd_outer : NOMINAL_FX_N;
-    // Tilt compensation is intentionally disabled; Fx is not increased as attitude error grows.
-    m_Fx_cmd = std::clamp(Fx_target, 0.0f, MAX_THRUST_N); //tilt compensation disabled, will lead to better lateral control at the cost of vertical control when tilted
+
+    if (!m_position_control_enabled) {
+        m_Fx_cmd = std::clamp(Fx_target, 0.0f, MAX_THRUST_N);
+        return;
+    }
+
+    Eigen::Vector3d thrust_dir_world_des = m_thrust_dir_world_des.cast<double>();
+    if (thrust_dir_world_des.norm() < 1e-6) {
+        thrust_dir_world_des << 0.0, 0.0, -1.0;
+    }
+    thrust_dir_world_des.normalize();
+
+    const Eigen::Vector3d body_x_world = (q * Eigen::Vector3d::UnitX()).normalized();
+    const Eigen::Vector3d upright_thrust_world(0.0, 0.0, -1.0);
+    const float cos_tilt = std::clamp(
+        static_cast<float>(body_x_world.dot(upright_thrust_world)),
+        TILT_COMPENSATION_MIN_COS,
+        1.0f);
+    const float upward_force_target =
+        std::max(-Fx_target * static_cast<float>(thrust_dir_world_des.z()), 0.0f);
+
+    m_Fx_cmd = std::clamp(upward_force_target / cos_tilt, 0.0f, MAX_THRUST_N);
 }
 void PDController::updateOutputValues()
 {
