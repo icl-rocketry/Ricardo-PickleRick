@@ -106,6 +106,9 @@ private:
     static constexpr float LOW_G_SATURATION  = 7.0f * g; 
     //--Acceleration gating to prevent low-g accel updates
     static constexpr float ACCEL_GATE = 0.8f;  // m/s² how much above and below of g should we accept
+    static constexpr uint16_t ATTITUDE_INIT_SETTLED_SAMPLE_COUNT = 30;
+    static constexpr float ATTITUDE_INIT_ACCEL_GATE = 0.6f;
+    static constexpr float ATTITUDE_INIT_GYRO_MAX_RAD_S = 0.15f;
 
     // ── State and covariance ──────────────────────────────────────────────────
     Eigen::Matrix<float, 16, 1>   m_x;   // state vector
@@ -130,7 +133,7 @@ private:
     Eigen::Matrix<float, 16, 16>  m_P_temp;
 
     // ── Process noise tuning ──────────────────────────────────────────────────
-    static constexpr float SIGMA_JERK       = 0.5f;     // m/s³
+    static constexpr float SIGMA_ACCEL_PROCESS = 1.0f; // m/s², white acceleration process noise
     static inline const Eigen::Vector3f SIGMA_BG {5e-5f, 5e-5f, 5e-5f};     // rad/s 
     static inline const Eigen::Vector3f SIGMA_BA_LOW{5e-4f, 5e-4f, 5e-4f};     // m/s² how much the bias can change per second (low-g accel bias)
 
@@ -139,21 +142,26 @@ private:
     static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.53f, 0.77f, 1.53f};
     // static inline const Eigen::Vector3f SIGMA_ALPHA{0.01f, 0.01f, 0.01f};  // rad/s 
     // static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.01f, 0.01f, 0.01f};
-    static constexpr float SIGMA_MAG        = 0.5f;     // was 0.01
+    static constexpr float SIGMA_MAG        = 0.01f;     // was 0.01
 
     static constexpr float SIGMA_T          = 20.0f;      // K
     static constexpr float SIGMA_P          = 100.0f;    // Pa
 
     static constexpr float SIGMA_VEL        = 0.1f;      // m/s — tune to your GPS spec
-    static constexpr float SIGMA_RTK_GPS_POS      = 2.5f;   // m, NMEA fix quality 1
+    static constexpr float SIGMA_RTK_GPS_POS      = 2.5f;   // m horizontal, NMEA fix quality 1
+    static constexpr float SIGMA_RTK_GPS_HEIGHT   = 5.0f;   // m vertical/height, NMEA fix quality 1
     static constexpr float SIGMA_RTK_GPS_VEL      = 0.5f;   // m/s
-    static constexpr float SIGMA_RTK_DGPS_POS     = 0.5f;   // m, NMEA fix quality 2
+    static constexpr float SIGMA_RTK_DGPS_POS     = 0.5f;   // m horizontal, NMEA fix quality 2
+    static constexpr float SIGMA_RTK_DGPS_HEIGHT  = 1.0f;   // m vertical/height, NMEA fix quality 2
     static constexpr float SIGMA_RTK_DGPS_VEL     = 0.25f;  // m/s
-    static constexpr float SIGMA_RTK_FIXED_POS    = 0.1f;  // m, NMEA fix quality 4
+    static constexpr float SIGMA_RTK_FIXED_POS    = 0.05f;   // m horizontal, NMEA fix quality 4
+    static constexpr float SIGMA_RTK_FIXED_HEIGHT = 0.1f;   // m vertical/height, NMEA fix quality 4
     static constexpr float SIGMA_RTK_FIXED_VEL    = 0.1f;   // m/s
-    static constexpr float SIGMA_RTK_FLOAT_POS    = 0.2f;   // m, NMEA fix quality 5
+    static constexpr float SIGMA_RTK_FLOAT_POS    = 0.2f;   // m horizontal, NMEA fix quality 5
+    static constexpr float SIGMA_RTK_FLOAT_HEIGHT = 0.4f;   // m vertical/height, NMEA fix quality 5
     static constexpr float SIGMA_RTK_FLOAT_VEL    = 0.15f;  // m/s
-    static constexpr float SIGMA_RTK_UNKNOWN_POS  = 1.0f;   // m
+    static constexpr float SIGMA_RTK_UNKNOWN_POS  = 1.0f;   // m horizontal
+    static constexpr float SIGMA_RTK_UNKNOWN_HEIGHT = 2.0f; // m vertical/height
     static constexpr float SIGMA_RTK_UNKNOWN_VEL  = 0.5f;   // m/s
     static constexpr float SIGMA_LIDAR     = 0.1f;      // m — conservative, datasheet ±6cm @ 0-3m
     static constexpr float LIDAR_MAX_RANGE = 8.0f;      // m — TF-Luna rated range
@@ -228,6 +236,12 @@ private:
     bool fuseDelayedRTK(const SensorStructs::RTK_t& rtk, uint32_t now);
     void updateGnssTimeOffset(const SensorStructs::GPS_t& gps);
     bool gnssTimeOfDayToLocalUs(uint32_t gnss_time_of_day_ms, uint32_t now, uint32_t& local_us) const;
+    bool initialiseAttitudeIfSettled(const Eigen::Vector3f& gyro,
+                                     const Eigen::Vector3f& accel,
+                                     const SensorStructs::MAG_3AXIS_t& mag);
+    bool buildInitialAttitude(const Eigen::Vector3f& accel_body,
+                              const Eigen::Vector3f& mag_body,
+                              Eigen::Quaternionf& q_body_to_ned) const;
     void resetHistory();
     void saveHistorySample(uint32_t now,
                            float dt,
@@ -265,6 +279,10 @@ private:
     static constexpr double GPS_E2      = 0.00669437999014;
 
     Eigen::Vector3f m_gps_position;
+    bool m_attitudeInitialised = false;
+    uint16_t m_attitudeInitSampleCount = 0;
+    Eigen::Vector3f m_attitudeInitAccelAccum{0.0f, 0.0f, 0.0f};
+    Eigen::Vector3f m_attitudeInitMagAccum{0.0f, 0.0f, 0.0f};
     std::array<HistorySample, HISTORY_SAMPLE_COUNT> m_history{};
     size_t m_historyHead = 0;
     size_t m_historyCount = 0;

@@ -1,5 +1,7 @@
 #include "Estimator/ekf.h"
+#include "Config/debug_config.h"
 #include "Config/timing_config.h"
+#include <cmath>
 
 namespace
 {
@@ -40,6 +42,13 @@ namespace
 
         return false;
     }
+
+    bool isFiniteVector(const Eigen::Vector3f& v)
+    {
+        return std::isfinite(v.x()) &&
+               std::isfinite(v.y()) &&
+               std::isfinite(v.z());
+    }
 }
 
 void EKF::setup(const Eigen::Vector3f& gyro_bias, 
@@ -50,7 +59,7 @@ void EKF::setup(const Eigen::Vector3f& gyro_bias,
 {
     m_x.setZero();
 
-    // Initialise quaternion to identity [1, 0, 0, 0], rotated 90deg to the rocket orientation 
+    // Fallback attitude until accel+mag startup alignment has settled.
     m_x(6) = 0.70710678f;  // q0
     m_x(7) = 0.0f;         // q1
     m_x(8) = 0.70710678f;  // q2
@@ -79,6 +88,13 @@ void EKF::setup(const Eigen::Vector3f& gyro_bias,
     m_gnssTimeOffsetValid = false;
     m_gnssToLocalOffsetUs = 0;
     m_lastRtkDelayUs = 0;
+    m_attitudeInitialised = false;
+    m_attitudeInitSampleCount = 0;
+    m_attitudeInitAccelAccum.setZero();
+    m_attitudeInitMagAccum.setZero();
+    m_acceleration.setZero();
+    m_angular_rates.setZero();
+    m_gps_position.setZero();
     resetHistory();
 
     // Initial covariance — large uncertainty on everything except quaternion
@@ -109,6 +125,20 @@ void EKF::update(   const Eigen::Vector3f         gyro,
 {
     const uint32_t now = micros();  // use micros not millis for better dt resolution
     updateGnssTimeOffset(gps);
+
+    if (!m_attitudeInitialised)
+    {
+        m_acceleration = accel - m_x.segment<3>(10);
+        m_angular_rates = gyro - m_x.segment<3>(13);
+
+        if (initialiseAttitudeIfSettled(gyro, accel, mag))
+        {
+            m_lastPredictTime = now;
+            m_covariancePredictDt = 0.0f;
+            resetHistory();
+        }
+        return;
+    }
 
     const float dt = (m_lastPredictTime == 0) 
     ? 0.0f 
@@ -273,11 +303,11 @@ void EKF::predict(  const float nominal_dt,
     // ── Translation process noise ────────────────────────────────────────────────
 
     const float dt3 = dt2 * dt;
-    const float qj  = SIGMA_JERK * SIGMA_JERK;
+    const float qa  = SIGMA_ACCEL_PROCESS * SIGMA_ACCEL_PROCESS;
 
     Eigen::Matrix<float, 2, 2> Q_sub;
-    Q_sub << qj * dt3 / 3.0f,  qj * dt2 / 2.0f,
-            qj * dt2 / 2.0f,  qj * dt;
+    Q_sub << qa * dt3 / 3.0f,  qa * dt2 / 2.0f,
+             qa * dt2 / 2.0f,  qa * dt;
 
     // Q_trans = kron(Q_sub, I3) — 6×6
     m_Q_trans.setZero();
@@ -296,6 +326,27 @@ void EKF::predict(  const float nominal_dt,
     m_F.block<3,3>(10,10) = I3;            // accel bias
     m_F.block<3,3>(13,13) = I3;            // gyro bias
     m_F.block<4,3>(6,13)  = -G_w;          // gyro bias cross term
+
+    const float qw = q_new(0), qx = q_new(1), qy = q_new(2), qz = q_new(3);
+    const float ax = m_acceleration(0), ay = m_acceleration(1), az = m_acceleration(2);
+    Eigen::Matrix<float, 3, 4> d_accel_ned_dq;
+    d_accel_ned_dq << -2.0f*qz*ay + 2.0f*qy*az,
+                       2.0f*qy*ay + 2.0f*qz*az,
+                      -4.0f*qy*ax + 2.0f*qx*ay + 2.0f*qw*az,
+                      -4.0f*qz*ax - 2.0f*qw*ay + 2.0f*qx*az,
+
+                       2.0f*qz*ax - 2.0f*qx*az,
+                       2.0f*qy*ax - 4.0f*qx*ay - 2.0f*qw*az,
+                       2.0f*qx*ax + 2.0f*qz*az,
+                       2.0f*qw*ax - 4.0f*qz*ay + 2.0f*qy*az,
+
+                      -2.0f*qy*ax + 2.0f*qx*ay,
+                       2.0f*qz*ax + 2.0f*qw*ay - 4.0f*qx*az,
+                      -2.0f*qw*ax + 2.0f*qz*ay - 4.0f*qy*az,
+                       2.0f*qx*ax + 2.0f*qy*ay;
+
+    m_F.block<3,4>(3,6)   = d_accel_ned_dq * dt;
+    m_F.block<3,4>(0,6)   = 0.5f * d_accel_ned_dq * dt2;
     m_F.block<3,3>(3,10)  = -R_body_to_ned * dt;
     m_F.block<3,3>(0,10)  = -0.5f * R_body_to_ned * dt2;
     // Q is the process noise covariance — how much we trust the process model (vs measurements)
@@ -400,6 +451,166 @@ void EKF::restoreScheduleState(const CorrectionScheduleState& state)
     m_lastLidarMeasurementTime = state.lastLidarMeasurementTime;
     m_lastRtkMeasurementTime = state.lastRtkMeasurementTime;
     m_nextCorrectionIndex = state.nextCorrectionIndex;
+}
+
+bool EKF::initialiseAttitudeIfSettled(const Eigen::Vector3f& gyro,
+                                      const Eigen::Vector3f& accel,
+                                      const SensorStructs::MAG_3AXIS_t& mag)
+{
+    const Eigen::Vector3f rates = gyro - m_x.segment<3>(13);
+    const Eigen::Vector3f accel_body = accel - m_x.segment<3>(10);
+    const Eigen::Vector3f mag_body(mag.mx, mag.my, mag.mz);
+
+    const float accel_norm = accel_body.norm();
+    const float mag_norm = mag_body.norm();
+    const bool settled =
+        isFiniteVector(rates) &&
+        isFiniteVector(accel_body) &&
+        isFiniteVector(mag_body) &&
+        accel_norm > 1e-6f &&
+        std::abs(accel_norm - g) <= ATTITUDE_INIT_ACCEL_GATE &&
+        rates.norm() <= ATTITUDE_INIT_GYRO_MAX_RAD_S &&
+        mag.timestamp_us != 0 &&
+        mag_norm > 1e-6f;
+
+    if (!settled)
+    {
+        m_attitudeInitSampleCount = 0;
+        m_attitudeInitAccelAccum.setZero();
+        m_attitudeInitMagAccum.setZero();
+        return false;
+    }
+
+    m_attitudeInitAccelAccum += accel_body;
+    m_attitudeInitMagAccum += mag_body;
+    m_attitudeInitSampleCount++;
+
+    if (m_attitudeInitSampleCount < ATTITUDE_INIT_SETTLED_SAMPLE_COUNT)
+    {
+        return false;
+    }
+
+    const float sample_count = static_cast<float>(m_attitudeInitSampleCount);
+    const Eigen::Vector3f accel_average = m_attitudeInitAccelAccum / sample_count;
+    const Eigen::Vector3f mag_average = m_attitudeInitMagAccum / sample_count;
+
+    Eigen::Quaternionf q_body_to_ned;
+    if (!buildInitialAttitude(accel_average, mag_average, q_body_to_ned))
+    {
+        m_attitudeInitSampleCount = 0;
+        m_attitudeInitAccelAccum.setZero();
+        m_attitudeInitMagAccum.setZero();
+        return false;
+    }
+
+    m_x.segment<4>(6) << q_body_to_ned.w(),
+                         q_body_to_ned.x(),
+                         q_body_to_ned.y(),
+                         q_body_to_ned.z();
+    m_P.block<4,4>(6,6) = 0.05f * Eigen::Matrix<float,4,4>::Identity();
+
+    const Eigen::Matrix3f R_body_to_ned = q_body_to_ned.toRotationMatrix();
+    m_h.segment<3>(0) = R_body_to_ned.transpose() * m_mag_ref.normalized();
+    m_h.segment<3>(3) = R_body_to_ned.transpose() * Eigen::Vector3f(0.0f, 0.0f, -g)
+                        + m_x.segment<3>(10);
+    m_y.segment<3>(0).setZero();
+    m_y.segment<3>(3).setZero();
+
+    if constexpr (DebugConfig::EkfAttitudeInitPrintEnabled)
+    {
+        Serial.printf(
+            "EKF_ATT_INIT samples=%u accel_body=(%.3f,%.3f,%.3f) mag_body=(%.3f,%.3f,%.3f) "
+            "mag_ref_ned=(%.3f,%.3f,%.3f) body_x_world=(%.3f,%.3f,%.3f) "
+            "body_y_world=(%.3f,%.3f,%.3f) body_z_world=(%.3f,%.3f,%.3f)\n",
+            static_cast<unsigned>(m_attitudeInitSampleCount),
+            accel_average(0), accel_average(1), accel_average(2),
+            mag_average(0), mag_average(1), mag_average(2),
+            m_mag_ref(0), m_mag_ref(1), m_mag_ref(2),
+            R_body_to_ned(0, 0), R_body_to_ned(1, 0), R_body_to_ned(2, 0),
+            R_body_to_ned(0, 1), R_body_to_ned(1, 1), R_body_to_ned(2, 1),
+            R_body_to_ned(0, 2), R_body_to_ned(1, 2), R_body_to_ned(2, 2));
+    }
+
+    m_attitudeInitialised = true;
+    m_attitudeInitSampleCount = 0;
+    m_attitudeInitAccelAccum.setZero();
+    m_attitudeInitMagAccum.setZero();
+    return true;
+}
+
+bool EKF::buildInitialAttitude(const Eigen::Vector3f& accel_body,
+                               const Eigen::Vector3f& mag_body,
+                               Eigen::Quaternionf& q_body_to_ned) const
+{
+    if (!isFiniteVector(accel_body) ||
+        !isFiniteVector(mag_body) ||
+        !isFiniteVector(m_mag_ref))
+    {
+        return false;
+    }
+
+    const float accel_norm = accel_body.norm();
+    const float mag_norm = mag_body.norm();
+    const float mag_ref_norm = m_mag_ref.norm();
+    if (accel_norm < 1e-6f || mag_norm < 1e-6f || mag_ref_norm < 1e-6f)
+    {
+        return false;
+    }
+
+    const Eigen::Vector3f body_up = accel_body / accel_norm;
+    const Eigen::Vector3f ned_up(0.0f, 0.0f, -1.0f);
+    const Eigen::Vector3f mag_unit = mag_body / mag_norm;
+    const Eigen::Vector3f mag_ref_unit = m_mag_ref / mag_ref_norm;
+
+    Eigen::Vector3f body_mag_horizontal =
+        mag_unit - body_up * mag_unit.dot(body_up);
+    Eigen::Vector3f ned_mag_horizontal =
+        mag_ref_unit - ned_up * mag_ref_unit.dot(ned_up);
+
+    const float body_mag_horizontal_norm = body_mag_horizontal.norm();
+    const float ned_mag_horizontal_norm = ned_mag_horizontal.norm();
+    if (body_mag_horizontal_norm < 1e-6f || ned_mag_horizontal_norm < 1e-6f)
+    {
+        return false;
+    }
+
+    body_mag_horizontal /= body_mag_horizontal_norm;
+    ned_mag_horizontal /= ned_mag_horizontal_norm;
+
+    Eigen::Vector3f body_cross = body_up.cross(body_mag_horizontal);
+    Eigen::Vector3f ned_cross = ned_up.cross(ned_mag_horizontal);
+    const float body_cross_norm = body_cross.norm();
+    const float ned_cross_norm = ned_cross.norm();
+    if (body_cross_norm < 1e-6f || ned_cross_norm < 1e-6f)
+    {
+        return false;
+    }
+
+    body_cross /= body_cross_norm;
+    ned_cross /= ned_cross_norm;
+
+    Eigen::Matrix3f body_basis;
+    body_basis.col(0) = body_up;
+    body_basis.col(1) = body_mag_horizontal;
+    body_basis.col(2) = body_cross;
+
+    Eigen::Matrix3f ned_basis;
+    ned_basis.col(0) = ned_up;
+    ned_basis.col(1) = ned_mag_horizontal;
+    ned_basis.col(2) = ned_cross;
+
+    const Eigen::Matrix3f R_body_to_ned = ned_basis * body_basis.transpose();
+    q_body_to_ned = Eigen::Quaternionf(R_body_to_ned);
+    q_body_to_ned.normalize();
+    if (q_body_to_ned.w() < 0.0f)
+    {
+        q_body_to_ned.coeffs() *= -1.0f;
+    }
+
+    return std::isfinite(q_body_to_ned.w()) &&
+           std::isfinite(q_body_to_ned.x()) &&
+           std::isfinite(q_body_to_ned.y()) &&
+           std::isfinite(q_body_to_ned.z());
 }
 
 void EKF::resetHistory()
@@ -1280,24 +1491,29 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
         H_rtk.row(5).setZero();
     }
 
-    float sigma_pos = SIGMA_RTK_UNKNOWN_POS;
+    float sigma_pos_horizontal = SIGMA_RTK_UNKNOWN_POS;
+    float sigma_pos_vertical = SIGMA_RTK_UNKNOWN_HEIGHT;
     float sigma_vel = SIGMA_RTK_UNKNOWN_VEL;
     switch (rtk.fix_quality)
     {
         case 1:
-            sigma_pos = SIGMA_RTK_GPS_POS;
+            sigma_pos_horizontal = SIGMA_RTK_GPS_POS;
+            sigma_pos_vertical = SIGMA_RTK_GPS_HEIGHT;
             sigma_vel = SIGMA_RTK_GPS_VEL;
             break;
         case 2:
-            sigma_pos = SIGMA_RTK_DGPS_POS;
+            sigma_pos_horizontal = SIGMA_RTK_DGPS_POS;
+            sigma_pos_vertical = SIGMA_RTK_DGPS_HEIGHT;
             sigma_vel = SIGMA_RTK_DGPS_VEL;
             break;
         case 4:
-            sigma_pos = SIGMA_RTK_FIXED_POS;
+            sigma_pos_horizontal = SIGMA_RTK_FIXED_POS;
+            sigma_pos_vertical = SIGMA_RTK_FIXED_HEIGHT;
             sigma_vel = SIGMA_RTK_FIXED_VEL;
             break;
         case 5:
-            sigma_pos = SIGMA_RTK_FLOAT_POS;
+            sigma_pos_horizontal = SIGMA_RTK_FLOAT_POS;
+            sigma_pos_vertical = SIGMA_RTK_FLOAT_HEIGHT;
             sigma_vel = SIGMA_RTK_FLOAT_VEL;
             break;
         default:
@@ -1305,7 +1521,9 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
     }
 
     Mat6 R_rtk = Mat6::Zero();
-    R_rtk.block<3,3>(0,0) = (sigma_pos * sigma_pos) * Eigen::Matrix3f::Identity();
+    R_rtk(0,0) = sigma_pos_horizontal * sigma_pos_horizontal;
+    R_rtk(1,1) = sigma_pos_horizontal * sigma_pos_horizontal;
+    R_rtk(2,2) = sigma_pos_vertical * sigma_pos_vertical;
     R_rtk.block<3,3>(3,3) = (sigma_vel * sigma_vel) * Eigen::Matrix3f::Identity();
 
     const Mat6 S = H_rtk * m_P * H_rtk.transpose() + R_rtk;

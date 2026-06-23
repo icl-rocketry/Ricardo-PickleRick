@@ -1,6 +1,11 @@
 #include "GNC/PDController.h"
+#include "Config/debug_config.h"
 #include <algorithm>
 #include <cmath>
+
+namespace {
+constexpr uint32_t CONTROLLER_FRAME_DEBUG_PRINT_PERIOD_MS = 250;
+}
 
 void PDController::setup()
 {
@@ -11,25 +16,31 @@ void PDController::setup()
     // m_rEng is COM -> thrust centre in body frame (m). Tune ry/rz for attitude-only lateral drift:
     // with rx < 0, negative body-y drift -> make ry more negative; positive body-y drift -> make ry more positive.
     // negative body-z drift -> make rz more negative; positive body-z drift -> make rz more positive.
-    // m_rEng << -0.235f, -0.0007f, 0.015f; //centre of mass to center of thrust in body frame
-    m_rEng << -0.235f, -0.0095f, 0.0095f;
-    m_mass = 1.32f;
+    m_rEng << -0.235f, 0.0f, -0.015f;
+    m_mass = 1.33f;
 
     m_K_p << 0.0f, 2.5f, 2.0f; // attitude body control gains (roll, pitch, yaw)
     m_K_d << 7.0f, 0.8f, 0.9f;
 
-    m_K_p_pos << 0.0f, 0.0f, 0.2f;   // NED position control gains
+    // m_K_p_pos << 0.6f, 0.5f, 0.3f;   // NED position control gains
+    // m_K_d_pos << 1.7f, 1.7f, 0.9f; 
+    // m_K_i_pos << 0.005f, 0.005f, 0.02f;
+    m_K_p_pos << 0.0f, 0.0f, 0.4f;   // NED position control gains
     m_K_d_pos << 0.0f, 0.0f, 0.9f; 
-    m_K_i_pos << 0.00f, 0.00f, 0.04f;
-    // m_K_p_pos << 0.0f, 0.0f, 0.3f;   // NED position control gains
-    // m_K_d_pos << 0.0f, 0.0f, 1.0f; 
-    // m_K_i_pos << 0.0f, 0.0f, 0.04f;
+    m_K_i_pos << 0.00f, 0.00f, 0.0f;
 
 
     m_pos_int.setZero();
-    m_pos_des << 0.0f, 0.0f, 0.0f;  // need new function to set this externally if you want to move around
+    m_pos_des << 0.0f, 0.0f, 0.0f; 
     m_vel_des.setZero();
     m_acc_des.setZero();
+    m_position_dbg.setZero();
+    m_velocity_dbg.setZero();
+    m_thrust_dir_world_raw_dbg.setZero();
+    m_thrust_dir_body_des_dbg.setZero();
+    m_body_x_world_dbg.setZero();
+    m_body_y_world_dbg.setZero();
+    m_body_z_world_dbg.setZero();
     m_pos_err_dbg.setZero();
     m_vel_err_dbg.setZero();
     m_euler_error.setZero();
@@ -85,6 +96,13 @@ void PDController::reset()
     m_voltage_scale  = 1.0f;
     m_euler_error.setZero();
     m_thrust_vector_error_deg.setZero();
+    m_position_dbg.setZero();
+    m_velocity_dbg.setZero();
+    m_thrust_dir_world_raw_dbg.setZero();
+    m_thrust_dir_body_des_dbg.setZero();
+    m_body_x_world_dbg.setZero();
+    m_body_y_world_dbg.setZero();
+    m_body_z_world_dbg.setZero();
     m_pos_err_dbg.setZero();
     m_vel_err_dbg.setZero();
 }
@@ -92,6 +110,9 @@ void PDController::reset()
 void PDController::updatePositionControl(const Eigen::Vector3f& position,
     const Eigen::Vector3f& velocity)
 {
+    m_position_dbg = position;
+    m_velocity_dbg = velocity;
+
     // ── dt ───────────────────────────────────────────────────────────────
     const uint32_t now = micros();
 
@@ -111,7 +132,8 @@ void PDController::updatePositionControl(const Eigen::Vector3f& position,
     if (!m_position_control_enabled) {
 
         m_pos_int.setZero();
-        m_thrust_dir_world_des << 0.0f, 0.0f, -1.0f;   // -Z is up in World Frame 
+        m_thrust_dir_world_des << 0.0f, 0.0f, -1.0f;   // -D is up in World Frame 
+        m_thrust_dir_world_raw_dbg = m_thrust_dir_world_des;
         m_Fx_cmd_outer = NOMINAL_FX_N;
         return;
 
@@ -135,26 +157,38 @@ void PDController::updatePositionControl(const Eigen::Vector3f& position,
     + m_K_i_pos.cwiseProduct(m_pos_int)
     + m_K_d_pos.cwiseProduct(vel_err);
 
-    // Gravity compensation: -Z is up
+    // Gravity compensation: -D is up
     a_des += Eigen::Vector3f(0.0f, 0.0f, -GRAVITY);
 
     // ── Convert acceleration command to thrust vector ────────────────────
     Eigen::Vector3f F_des_world = limitPositionTiltRequest(m_mass * a_des);
+    const Eigen::Vector3f F_des_world_raw = F_des_world;
     float F_mag = F_des_world.norm();
+    const float F_mag_raw = F_des_world_raw.norm();
 
     if (F_mag < 1e-3f) {
         m_thrust_dir_world_des << 0.0f, 0.0f, -1.0f;
+        m_thrust_dir_world_raw_dbg = m_thrust_dir_world_des;
         m_Fx_cmd_outer = 0.0f;
     } else {
+        if (F_mag_raw < 1e-3f) {
+            m_thrust_dir_world_raw_dbg << 0.0f, 0.0f, -1.0f;
+        } else {
+            m_thrust_dir_world_raw_dbg = F_des_world_raw / F_mag_raw;
+        }
+
         Eigen::Vector3f dir = F_des_world / F_mag;
 
         m_thrust_dir_world_des = dir;
         m_Fx_cmd_outer = std::clamp(F_mag, 0.0f, MAX_THRUST_N);
     }
-
+    
     // Telemetry
+    m_position_dbg = position;
+    m_velocity_dbg = velocity;
     m_pos_err_dbg = pos_err;
     m_vel_err_dbg = vel_err;
+
 }
 
 Eigen::Vector3f PDController::limitPositionTiltRequest(const Eigen::Vector3f& force_world) const
@@ -183,9 +217,15 @@ void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
     // Body thrust axis = +x_body
     const Eigen::Vector3d thrust_axis_body(1.0, 0.0, 0.0);
 
+    const Eigen::Vector3d body_y_world = q * Eigen::Vector3d::UnitY();
+    const Eigen::Vector3d body_z_world = q * Eigen::Vector3d::UnitZ();
+
     // Current thrust direction in WORLD frame
     Eigen::Vector3d thrust_dir_world = q * thrust_axis_body;
     thrust_dir_world.normalize();
+    m_body_x_world_dbg = thrust_dir_world.cast<float>();
+    m_body_y_world_dbg = body_y_world.cast<float>();
+    m_body_z_world_dbg = body_z_world.cast<float>();
 
     // Desired thrust direction in WORLD frame
     Eigen::Vector3d thrust_dir_world_des = m_thrust_dir_world_des.cast<double>();
@@ -204,6 +244,8 @@ void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
     m_dir_error_body = e_body.cast<float>();
 
     const Eigen::Vector3d desired_body = q.conjugate() * thrust_dir_world_des;
+    m_thrust_dir_body_des_dbg = desired_body.cast<float>();
+
     //send to telemetry
     const double total_error_rad = std::asin(std::clamp(e_world.norm(), 0.0, 1.0));
     const double pitch_error_rad = std::atan2(desired_body.z(), desired_body.x());
@@ -219,12 +261,13 @@ void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
 
 void PDController::updateMcmd(const Eigen::Vector3f& angular_rates)
 {
-    Eigen::Vector3f rates_error = -angular_rates; //desired rates are 0 so it is negative
+    Eigen::Vector3f rates_error = -angular_rates; // desired rates are zero
     m_euler_error = m_dir_error_body;//send the errors to telemetry for debugging
     m_dir_error_body(0) = 0.0f; //no roll angle error since its only a D controller
     m_M_cmd =
-        -m_K_p.cwiseProduct(m_dir_error_body)
-        -m_K_d.cwiseProduct(rates_error);    
+        m_K_p.cwiseProduct(m_dir_error_body)
+        + m_K_d.cwiseProduct(rates_error);    
+   // m_M_cmd = 0.0f * m_K_p.cwiseProduct(m_dir_error_body) + 0.0f * m_K_d.cwiseProduct(rates_error); //disable attitude control for now, just use position control
 }
 void PDController::updateDesiredForce(const Eigen::Quaterniond&)
 {
@@ -247,8 +290,8 @@ void PDController::updateOutputValues()
     F_body(2) = (rz * m_Fx_cmd - m_M_cmd(1)) / rx;
    
     // Convert desired body forces into servo angles and thrust commands.
-    float pitch_servo = -std::atan2(-F_body(2), F_body(0)) * RAD_TO_DEG;
-    float yaw_servo   =  std::atan2( F_body(1), F_body(0)) * RAD_TO_DEG;
+    float pitch_servo =  std::atan2(F_body(2), F_body(0)) * RAD_TO_DEG; //i.e. controlling the pitch of the vehicle 
+    float yaw_servo   =  std::atan2(F_body(1), F_body(0)) * RAD_TO_DEG; //i.e controlling the yaw of the vehicle 
     float base_thrust = sqrtf(F_body(0)*F_body(0) + F_body(1)*F_body(1) + F_body(2)*F_body(2)) * 100.0f / MAX_THRUST_N;
     
     //--------VOLTAGE SCALING-----------------
@@ -270,7 +313,7 @@ void PDController::updateOutputValues()
     //_--------ROLL CONTROL-----------------
     // Roll-rate damping via differential prop throttle.
     // Positive roll_mix: top CW prop up, bottom CCW prop down.
-    float roll_mix = -m_M_cmd(0);
+    float roll_mix = m_M_cmd(0);
     roll_mix *= voltage_scale; //voltage scaling for roll mix 
     roll_mix += ROLL_MIX_OFFSET; //constant trim to counter negative roll bias
     roll_mix = std::clamp(roll_mix, -MAX_ROLL_MIX, MAX_ROLL_MIX);
@@ -282,6 +325,7 @@ void PDController::updateOutputValues()
     thrust_top = 100.0f * powf(thrust_top/ 100.0f, THRUST_EXPONENT);
     thrust_bottom = 100.0f * powf(thrust_bottom / 100.0f, THRUST_EXPONENT);
 
+
     //Sending values to telemetry 
     m_roll_mix = roll_mix; //send the roll mix to telemetry for debugging
     m_f_body = F_body; //send the body forces to telemetry for debugging
@@ -290,4 +334,35 @@ void PDController::updateOutputValues()
                        yaw_servo,
                        thrust_top,
                        thrust_bottom;
+
+    if constexpr (DebugConfig::ControllerFramePrintEnabled)
+    {
+        static uint32_t last_controller_frame_debug_print_ms = 0;
+        const uint32_t now_ms = millis();
+        if (now_ms - last_controller_frame_debug_print_ms >= CONTROLLER_FRAME_DEBUG_PRINT_PERIOD_MS) {
+            last_controller_frame_debug_print_ms = now_ms;
+            Serial.printf(
+                "CTRL_FRAME "
+                "pos_ned=(%.3f,%.3f,%.3f) target_ned=(%.3f,%.3f,%.3f) err_ned=(%.3f,%.3f,%.3f) "
+                "thrust_world_raw=(%.3f,%.3f,%.3f) thrust_world_cmd=(%.3f,%.3f,%.3f) "
+                "body_x_world=(%.3f,%.3f,%.3f) body_y_world=(%.3f,%.3f,%.3f) body_z_world=(%.3f,%.3f,%.3f) "
+                "thrust_body_des=(%.3f,%.3f,%.3f) dir_err_body=(%.3f,%.3f,%.3f) "
+                "M_cmd=(%.3f,%.3f,%.3f) F_body=(%.3f,%.3f,%.3f) "
+                "pitch_out=%.3f yaw_out=%.3f servo_top=%.3f servo_bottom=%.3f\n",
+                m_position_dbg(0), m_position_dbg(1), m_position_dbg(2),
+                m_pos_des(0), m_pos_des(1), m_pos_des(2),
+                m_pos_err_dbg(0), m_pos_err_dbg(1), m_pos_err_dbg(2),
+                m_thrust_dir_world_raw_dbg(0), m_thrust_dir_world_raw_dbg(1), m_thrust_dir_world_raw_dbg(2),
+                m_thrust_dir_world_des(0), m_thrust_dir_world_des(1), m_thrust_dir_world_des(2),
+                m_body_x_world_dbg(0), m_body_x_world_dbg(1), m_body_x_world_dbg(2),
+                m_body_y_world_dbg(0), m_body_y_world_dbg(1), m_body_y_world_dbg(2),
+                m_body_z_world_dbg(0), m_body_z_world_dbg(1), m_body_z_world_dbg(2),
+                m_thrust_dir_body_des_dbg(0), m_thrust_dir_body_des_dbg(1), m_thrust_dir_body_des_dbg(2),
+                m_dir_error_body(0), m_dir_error_body(1), m_dir_error_body(2),
+                m_M_cmd(0), m_M_cmd(1), m_M_cmd(2),
+                F_body(0), F_body(1), F_body(2),
+                pitch_servo, yaw_servo,
+                pitch_servo, -yaw_servo);
+        }
+    }
 }

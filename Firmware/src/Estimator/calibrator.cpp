@@ -153,6 +153,19 @@ void Calibrator::computeSetHome()
 
 void Calibrator::computeMagRef(double lat_deg, double lon_deg, float alt_m)
 {
+    if constexpr (GeneralConfig::UseHardcodedMagRef)
+    {
+        const Eigen::Vector3f mag_ref(
+            GeneralConfig::HardcodedMagRefN,
+            GeneralConfig::HardcodedMagRefE,
+            GeneralConfig::HardcodedMagRefD);
+        const Eigen::Vector3f mag_ref_unit = mag_ref.normalized();
+        m_mag_ref_n = mag_ref_unit(0);
+        m_mag_ref_e = mag_ref_unit(1);
+        m_mag_ref_d = mag_ref_unit(2);
+        return;
+    }
+
     // ── IGRF-14 degree-1 coefficients (epoch 2025.0, units: nT) ──────────────
     static constexpr double g10 = -29351.0;
     static constexpr double g11 =  -1411.0;
@@ -275,7 +288,12 @@ void Calibrator::loadCalibration()
     m_mag_ref_n =           pref.getFloat("mrn", 0.0f);
     m_mag_ref_e =           pref.getFloat("mre", 0.0f);
     m_mag_ref_d =           pref.getFloat("mrd", 0.0f);
-        
+
+    if constexpr (GeneralConfig::UseHardcodedMagRef)
+    {
+        computeMagRef(0.0, 0.0, 0.0f);
+    }
+	    
     // Sanity check the loaded ref
     const float norm = Eigen::Vector3f(m_mag_ref_n, m_mag_ref_e, m_mag_ref_d).norm();
     if (norm < 0.9f || norm > 1.1f)

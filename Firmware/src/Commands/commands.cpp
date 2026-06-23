@@ -4,12 +4,51 @@
 #include "Commands/packets/telemetrypacket.h"
 #include "Commands/packets/sensorspacket.h"
 #include "Commands/packets/estimatorpacket.h"
+#include "Config/general_config.h"
 #include "Config/services_config.h"
 #include "States/flight.h"
 #include "States/preflight.h"
 #include "States/landing.h"
 #include "system.h"
 #include <libriccore/riccorelogging.h>
+
+#include <cmath>
+#include <string>
+
+namespace {
+bool flightEntryPositionCheckPassed(System& system)
+{
+    const auto& estimation = system.estimator.getData();
+    const float position_error_m = estimation.position.norm();
+
+    if (!std::isfinite(position_error_m) ||
+        position_error_m >= GeneralConfig::FlightEntryMaxPositionErrorM)
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
+            "Enter flight rejected: position error " +
+            std::to_string(position_error_m) +
+            " m exceeds " +
+            std::to_string(GeneralConfig::FlightEntryMaxPositionErrorM) +
+            " m"
+        );
+        system.systemstatus.newFlag(
+            SYSTEM_FLAG::ERROR_FLIGHTCHECK,
+            "Enter flight rejected: position error too high"
+        );
+        return false;
+    }
+
+    if (system.systemstatus.flagSet(SYSTEM_FLAG::ERROR_FLIGHTCHECK))
+    {
+        system.systemstatus.deleteFlag(
+            SYSTEM_FLAG::ERROR_FLIGHTCHECK,
+            "Enter flight position check passed"
+        );
+    }
+
+    return true;
+}
+}
 
 void Commands::SetHomeCommand(System& system, const RnpPacketSerialized& packet)
 {
@@ -327,6 +366,11 @@ void Commands::EnterPreflightCommand(System& system, const RnpPacketSerialized& 
 
 void Commands::EnterFlightCommand(System& system, const RnpPacketSerialized& packet)
 {
+    if (!flightEntryPositionCheckPassed(system))
+    {
+        return;
+    }
+
     system.statemachine.changeState(std::make_unique<Flight>(system));
 }
 

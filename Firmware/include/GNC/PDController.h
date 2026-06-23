@@ -62,7 +62,7 @@ class PDController
         static constexpr float MAX_GIMBAL_DEG = 15.0f;
         static constexpr float MAX_THRUST_N   = 28.0f;
         static constexpr float MAX_ROLL_MIX   = 8.0f; 
-        static constexpr float MAX_POSITION_TILT_DEG = 7.0f;
+        static constexpr float MAX_POSITION_TILT_DEG = 20.0f;
         static constexpr float MAX_POSITION_TILT_RAD = MAX_POSITION_TILT_DEG * DEG_TO_RAD;
         static constexpr float ROLL_MIX_OFFSET = 3.3f; //if it is rolling in +ve x direction, decrease 
         static constexpr float NOMINAL_FX_N = 13.24;
@@ -107,6 +107,13 @@ class PDController
         static constexpr float GRAVITY = 9.81f;
 
         // Debug telemetry
+        Eigen::Vector3f m_position_dbg;
+        Eigen::Vector3f m_velocity_dbg;
+        Eigen::Vector3f m_thrust_dir_world_raw_dbg;
+        Eigen::Vector3f m_thrust_dir_body_des_dbg;
+        Eigen::Vector3f m_body_x_world_dbg;
+        Eigen::Vector3f m_body_y_world_dbg;
+        Eigen::Vector3f m_body_z_world_dbg;
         Eigen::Vector3f m_pos_err_dbg;
         Eigen::Vector3f m_vel_err_dbg;
 

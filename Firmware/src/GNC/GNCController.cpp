@@ -211,11 +211,11 @@ void GNCController::sendActuationCommands(Eigen::Vector4f actuation_values) {
     changePropPower(0, (int)thrust_top); 
     changePropPower(1, (int)thrust_bottom); 
 
-    float pitch_angle = actuation_values(0); 
-    float yaw_angle = actuation_values(1);
+    float pitch_servo = actuation_values(0); 
+    float yaw_servo = actuation_values(1);
 
-    changeServoAngle(1, -pitch_angle); //top servo
-    changeServoAngle(0, yaw_angle); //bottom servo
+    changeServoAngle(1, pitch_servo); //top servo
+    changeServoAngle(0, -yaw_servo); //bottom servo
     // changeServoAngle(0, pitch_angle); //top servo <- this config is for if the board is rotated
     // changeServoAngle(1, yaw_angle); //bottom servo
 }
@@ -240,11 +240,11 @@ void GNCController::changeServoAngle(int servo, float angle_f) { // angle should
 
     if (servo == 0) { //bottom servo
         des_ser = 10; 
-        angle += 740;
+        angle += 960;
     }
     if (servo == 1) { //top servo
         des_ser = 11; 
-        angle += 860;
+        angle += 880;
     }
 
     SimpleCommandPacket actuate_servo(2, angle); //2 is the fire command
