@@ -877,19 +877,21 @@
 		(fields_autoplaced yes)
 		(uuid "3f8e2dd5-2840-4b97-b9d6-d029a81e7efa")
 		(property "Reference" "D501"
-			(at 87.63 68.5851 90)
+			(at 90.17 67.3149 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify right)
 			)
 		)
-		(property "Value" "CPDV5-3V3UP"
-			(at 90.17 68.5851 90)
+		(property "Value" "CPDV5-3V3UP-HF"
+			(at 90.17 69.8549 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify right)
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-353_SC-70-5"
@@ -1030,7 +1032,7 @@
 				)
 			)
 		)
-		(property "Value" "CPDV5-3V3UP"
+		(property "Value" "CPDV5-3V3UP-HF"
 			(at 102.87 68.85 90)
 			(effects
 				(font
