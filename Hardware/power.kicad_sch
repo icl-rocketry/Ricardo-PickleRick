@@ -13633,15 +13633,15 @@
 		(fields_autoplaced yes)
 		(uuid "8e7b437a-d568-4634-a4ca-9ab4da60fc54")
 		(property "Reference" "U208"
-			(at 228.6 16.7472 0)
+			(at 228.6 15.24 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "SC4215"
-			(at 228.6 19.2841 0)
+		(property "Value" "SC4215ASTRT"
+			(at 228.6 17.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13800,7 +13800,7 @@
 				)
 			)
 		)
-		(property "Footprint" "iclr-hw:SQS850ENT1_GE3"
+		(property "Footprint" "iclr:SQS850ENT1_GE3"
 			(at 248.92 15.57 0)
 			(effects
 				(font
@@ -15390,7 +15390,7 @@
 				)
 			)
 		)
-		(property "Footprint" "iclr-hw:SQS850ENT1_GE3"
+		(property "Footprint" "iclr:SQS850ENT1_GE3"
 			(at 248.92 -12.37 0)
 			(effects
 				(font

@@ -12326,7 +12326,7 @@
 				)
 			)
 		)
-		(property "Footprint" "iclr-hw:JAE_ST1W008S4TR2000"
+		(property "Footprint" "iclr:JAE_ST1W008S4TR2000"
 			(at 252.73 100.076 0)
 			(effects
 				(font
@@ -15087,7 +15087,7 @@
 				)
 			)
 		)
-		(property "Footprint" "iclr-hw:RCLAMP3346PQTNT"
+		(property "Footprint" "iclr:RCLAMP3346PQTNT"
 			(at 160.02 275.26 0)
 			(effects
 				(font
@@ -15886,7 +15886,7 @@
 				)
 			)
 		)
-		(property "Value" "40MHz"
+		(property "Value" "40MHz±10ppm"
 			(at 153.67 124.46 90)
 			(effects
 				(font
@@ -15894,7 +15894,7 @@
 				)
 			)
 		)
-		(property "Footprint" "iclr:Crystal_SMD_2016-4Pin_2.0x1.6mm"
+		(property "Footprint" "Crystal:Crystal_SMD_2016-4Pin_2.0x1.6mm"
 			(at 160.02 132.08 0)
 			(effects
 				(font
