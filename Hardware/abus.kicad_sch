@@ -1,7 +1,7 @@
 (kicad_sch
-	(version 20231120)
+	(version 20250114)
 	(generator "eeschema")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(uuid "b3793e08-ef34-412a-a186-fe199ec2d107")
 	(paper "A4")
 	(lib_symbols
@@ -55,31 +55,7 @@
 			(symbol "CPDV5-3V3UP_1_0_1"
 				(polyline
 					(pts
-						(xy 0 -12.938) (xy 0 -16.51)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
 						(xy -1.03 -13.9125) (xy -0.014 -12.3885) (xy 1.002 -13.9125) (xy -1.03 -13.9125)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.0339 -16.5776) (xy 0.0179 -18.1016) (xy -0.9981 -16.5776) (xy 1.0339 -16.5776)
 					)
 					(stroke
 						(width 0.254)
@@ -104,6 +80,18 @@
 				)
 				(polyline
 					(pts
+						(xy 0 -12.938) (xy 0 -16.51)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
 						(xy 0.748 -11.8805) (xy 1.002 -11.8805) (xy 1.002 -12.3885) (xy -1.03 -12.3885) (xy -1.03 -12.8965)
 						(xy -0.776 -12.8965)
 					)
@@ -113,6 +101,18 @@
 					)
 					(fill
 						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.0339 -16.5776) (xy 0.0179 -18.1016) (xy -0.9981 -16.5776) (xy 1.0339 -16.5776)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type outline)
 					)
 				)
 			)
@@ -128,24 +128,6 @@
 						)
 					)
 					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 3.81 -15.24 180)
-					(length 3.7)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -171,8 +153,6 @@
 						)
 					)
 				)
-			)
-			(symbol "CPDV5-3V3UP_1_2_1"
 				(pin passive line
 					(at 3.81 -15.24 180)
 					(length 3.7)
@@ -184,6 +164,26 @@
 						)
 					)
 					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "CPDV5-3V3UP_1_2_1"
+				(pin passive line
+					(at 0 -8.89 270)
+					(length 4)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -210,8 +210,8 @@
 					)
 				)
 				(pin passive line
-					(at 0 -8.89 270)
-					(length 4)
+					(at 3.81 -15.24 180)
+					(length 3.7)
 					(name ""
 						(effects
 							(font
@@ -219,7 +219,7 @@
 							)
 						)
 					)
-					(number "4"
+					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -228,10 +228,13 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Connector:Conn_01x03_Pin"
 			(pin_names
-				(offset 1.016) hide)
+				(offset 1.016)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -305,9 +308,42 @@
 				)
 			)
 			(symbol "Conn_01x03_Pin_1_1"
+				(rectangle
+					(start 0.8636 2.667)
+					(end 0 2.413)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
 				(polyline
 					(pts
-						(xy 1.27 -2.54) (xy 0.8636 -2.54)
+						(xy 1.27 2.54) (xy 0.8636 2.54)
 					)
 					(stroke
 						(width 0.1524)
@@ -331,7 +367,7 @@
 				)
 				(polyline
 					(pts
-						(xy 1.27 2.54) (xy 0.8636 2.54)
+						(xy 1.27 -2.54) (xy 0.8636 -2.54)
 					)
 					(stroke
 						(width 0.1524)
@@ -339,39 +375,6 @@
 					)
 					(fill
 						(type none)
-					)
-				)
-				(rectangle
-					(start 0.8636 -2.413)
-					(end 0 -2.667)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(rectangle
-					(start 0.8636 0.127)
-					(end 0 -0.127)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(rectangle
-					(start 0.8636 2.667)
-					(end 0 2.413)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type outline)
 					)
 				)
 				(pin passive line
@@ -429,6 +432,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "iclr-hw:CPDV5-3V3UP"
 			(exclude_from_sim no)
@@ -480,31 +484,7 @@
 			(symbol "CPDV5-3V3UP_0_1"
 				(polyline
 					(pts
-						(xy 0 -12.938) (xy 0 -16.51)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
 						(xy -1.03 -13.9125) (xy -0.014 -12.3885) (xy 1.002 -13.9125) (xy -1.03 -13.9125)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.0339 -16.5776) (xy 0.0179 -18.1016) (xy -0.9981 -16.5776) (xy 1.0339 -16.5776)
 					)
 					(stroke
 						(width 0.254)
@@ -529,6 +509,18 @@
 				)
 				(polyline
 					(pts
+						(xy 0 -12.938) (xy 0 -16.51)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
 						(xy 0.748 -11.8805) (xy 1.002 -11.8805) (xy 1.002 -12.3885) (xy -1.03 -12.3885) (xy -1.03 -12.8965)
 						(xy -0.776 -12.8965)
 					)
@@ -538,6 +530,18 @@
 					)
 					(fill
 						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.0339 -16.5776) (xy 0.0179 -18.1016) (xy -0.9981 -16.5776) (xy 1.0339 -16.5776)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type outline)
 					)
 				)
 			)
@@ -553,24 +557,6 @@
 						)
 					)
 					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 3.81 -15.24 180)
-					(length 3.7)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -596,8 +582,6 @@
 						)
 					)
 				)
-			)
-			(symbol "CPDV5-3V3UP_2_1"
 				(pin passive line
 					(at 3.81 -15.24 180)
 					(length 3.7)
@@ -609,6 +593,26 @@
 						)
 					)
 					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "CPDV5-3V3UP_2_1"
+				(pin passive line
+					(at 0 -8.89 270)
+					(length 4)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -635,8 +639,8 @@
 					)
 				)
 				(pin passive line
-					(at 0 -8.89 270)
-					(length 4)
+					(at 3.81 -15.24 180)
+					(length 3.7)
 					(name ""
 						(effects
 							(font
@@ -644,7 +648,7 @@
 							)
 						)
 					)
-					(number "4"
+					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -653,12 +657,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:GND"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -749,6 +758,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 	)
 	(wire
@@ -866,7 +876,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3f8e2dd5-2840-4b97-b9d6-d029a81e7efa")
-		(property "Reference" "D18"
+		(property "Reference" "D501"
 			(at 87.63 68.5851 90)
 			(effects
 				(font
@@ -874,7 +884,7 @@
 				)
 			)
 		)
-		(property "Value" "~"
+		(property "Value" "CPDV5-3V3UP"
 			(at 90.17 68.5851 90)
 			(effects
 				(font
@@ -928,9 +938,9 @@
 			(uuid "4bd321e1-27c5-41a4-84e6-cd51fde6de3c")
 		)
 		(instances
-			(project ""
+			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/f8ca6ebe-a1b7-4d27-a7e8-9fa3d73c83bf"
-					(reference "D18")
+					(reference "D501")
 					(unit 2)
 				)
 			)
@@ -946,7 +956,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4018883c-f394-4b3d-bf49-59ea1d1f4e9a")
-		(property "Reference" "#PWR011"
+		(property "Reference" "#PWR0503"
 			(at 119.38 81.28 0)
 			(effects
 				(font
@@ -994,9 +1004,9 @@
 			(uuid "5cd09a1d-d478-48b2-abc8-06f0edadeb46")
 		)
 		(instances
-			(project ""
+			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/f8ca6ebe-a1b7-4d27-a7e8-9fa3d73c83bf"
-					(reference "#PWR011")
+					(reference "#PWR0503")
 					(unit 1)
 				)
 			)
@@ -1012,7 +1022,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9271a7b2-3197-4460-9240-952e923de503")
-		(property "Reference" "D18"
+		(property "Reference" "D501"
 			(at 105.41 68.85 90)
 			(effects
 				(font
@@ -1020,7 +1030,7 @@
 				)
 			)
 		)
-		(property "Value" "~"
+		(property "Value" "CPDV5-3V3UP"
 			(at 102.87 68.85 90)
 			(effects
 				(font
@@ -1074,9 +1084,9 @@
 			(uuid "d23e7cc8-59e7-41fa-b0a7-903e58d5b853")
 		)
 		(instances
-			(project ""
+			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/f8ca6ebe-a1b7-4d27-a7e8-9fa3d73c83bf"
-					(reference "D18")
+					(reference "D501")
 					(unit 1)
 				)
 			)
@@ -1092,7 +1102,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a16257f1-3b0b-4605-ab78-11c0cfcd94b2")
-		(property "Reference" "#PWR016"
+		(property "Reference" "#PWR0501"
 			(at 92.71 85.09 0)
 			(effects
 				(font
@@ -1140,9 +1150,9 @@
 			(uuid "a6d5a399-9287-4589-97cc-7462a6e806e6")
 		)
 		(instances
-			(project ""
+			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/f8ca6ebe-a1b7-4d27-a7e8-9fa3d73c83bf"
-					(reference "#PWR016")
+					(reference "#PWR0501")
 					(unit 1)
 				)
 			)
@@ -1158,7 +1168,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a2089530-5cba-4127-b12d-cd8c53cb26e3")
-		(property "Reference" "#PWR0106"
+		(property "Reference" "#PWR0502"
 			(at 100.33 86.36 0)
 			(effects
 				(font
@@ -1208,7 +1218,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/f8ca6ebe-a1b7-4d27-a7e8-9fa3d73c83bf"
-					(reference "#PWR0106")
+					(reference "#PWR0502")
 					(unit 1)
 				)
 			)
@@ -1224,7 +1234,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f2a623b4-a5f2-4aa6-b2e3-f7371a5716ec")
-		(property "Reference" "J13"
+		(property "Reference" "J501"
 			(at 130.81 67.3099 0)
 			(effects
 				(font
@@ -1279,9 +1289,9 @@
 			(uuid "a74e35f4-9849-4d40-89aa-030a71728609")
 		)
 		(instances
-			(project ""
+			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/f8ca6ebe-a1b7-4d27-a7e8-9fa3d73c83bf"
-					(reference "J13")
+					(reference "J501")
 					(unit 1)
 				)
 			)

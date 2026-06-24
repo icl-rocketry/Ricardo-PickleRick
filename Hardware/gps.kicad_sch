@@ -1,13 +1,15 @@
 (kicad_sch
-	(version 20231120)
+	(version 20250114)
 	(generator "eeschema")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(uuid "d76cf043-6450-4c67-a43c-5586d96e9f86")
 	(paper "A4")
 	(lib_symbols
 		(symbol "Connector:Conn_Coaxial"
 			(pin_names
-				(offset 1.016) hide)
+				(offset 1.016)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -36,7 +38,7 @@
 					(hide yes)
 				)
 			)
-			(property "Datasheet" " ~"
+			(property "Datasheet" "~"
 				(at 0 0 0)
 				(effects
 					(font
@@ -73,18 +75,6 @@
 				)
 			)
 			(symbol "Conn_Coaxial_0_1"
-				(arc
-					(start -1.778 -0.508)
-					(mid 0.222 -1.808)
-					(end 1.778 0)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
 				(polyline
 					(pts
 						(xy -2.54 0) (xy -0.508 0)
@@ -97,12 +87,24 @@
 						(type none)
 					)
 				)
-				(polyline
-					(pts
-						(xy 0 -2.54) (xy 0 -1.778)
-					)
+				(arc
+					(start -1.778 0.508)
+					(mid 0.222 1.8083)
+					(end 1.778 0)
 					(stroke
-						(width 0)
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 1.778 0)
+					(mid 0.222 -1.808)
+					(end -1.778 -0.508)
+					(stroke
+						(width 0.254)
 						(type default)
 					)
 					(fill
@@ -120,12 +122,12 @@
 						(type none)
 					)
 				)
-				(arc
-					(start 1.778 0)
-					(mid 0.222 1.8083)
-					(end -1.778 0.508)
+				(polyline
+					(pts
+						(xy 0 -2.54) (xy 0 -1.778)
+					)
 					(stroke
-						(width 0.254)
+						(width 0)
 						(type default)
 					)
 					(fill
@@ -171,11 +173,16 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Connector:TestPoint"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0.762) hide)
+				(offset 0.762)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -273,9 +280,12 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Device:C"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(offset 0.254)
 			)
@@ -348,7 +358,7 @@
 			(symbol "C_0_1"
 				(polyline
 					(pts
-						(xy -2.032 -0.762) (xy 2.032 -0.762)
+						(xy -2.032 0.762) (xy 2.032 0.762)
 					)
 					(stroke
 						(width 0.508)
@@ -360,7 +370,7 @@
 				)
 				(polyline
 					(pts
-						(xy -2.032 0.762) (xy 2.032 0.762)
+						(xy -2.032 -0.762) (xy 2.032 -0.762)
 					)
 					(stroke
 						(width 0.508)
@@ -409,9 +419,12 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Device:R"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(offset 0)
 			)
@@ -530,9 +543,12 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Device:SparkGap"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(offset 0)
 			)
@@ -664,6 +680,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "RF_GPS:MAX-M8Q"
 			(exclude_from_sim no)
@@ -744,71 +761,17 @@
 				)
 			)
 			(symbol "MAX-M8Q_1_1"
-				(pin power_in line
-					(at 0 -17.78 90)
-					(length 2.54)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -17.78 90)
-					(length 2.54) hide
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "10"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
 				(pin input line
-					(at 15.24 0 180)
+					(at -15.24 10.16 0)
 					(length 2.54)
-					(name "RF_IN"
+					(name "RXD"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "11"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -17.78 90)
-					(length 2.54) hide
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "12"
+					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -817,52 +780,16 @@
 					)
 				)
 				(pin output line
-					(at 15.24 5.08 180)
+					(at -15.24 7.62 0)
 					(length 2.54)
-					(name "LNA_EN"
+					(name "TXD"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "13"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_out line
-					(at 5.08 17.78 270)
-					(length 2.54)
-					(name "VCC_RF"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "14"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 15.24 -11.43 180)
-					(length 2.54)
-					(name "VIO_SEL"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "15"
+					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -907,78 +834,6 @@
 					)
 				)
 				(pin input line
-					(at -15.24 -7.62 0)
-					(length 2.54)
-					(name "~{SAFEBOOT}"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "18"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at -15.24 7.62 0)
-					(length 2.54)
-					(name "TXD"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -15.24 10.16 0)
-					(length 2.54)
-					(name "RXD"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 15.24 -7.62 180)
-					(length 2.54)
-					(name "TIMEPULSE"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
 					(at -15.24 -5.08 0)
 					(length 2.54)
 					(name "EXTINT"
@@ -996,17 +851,53 @@
 						)
 					)
 				)
-				(pin power_in line
-					(at 0 17.78 270)
+				(pin input line
+					(at -15.24 -7.62 0)
 					(length 2.54)
-					(name "V_BCKP"
+					(name "~{SAFEBOOT}"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "6"
+					(number "18"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -15.24 -10.16 0)
+					(length 2.54)
+					(name "~{RESET}"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "9"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -5.08 17.78 270)
+					(length 2.54)
+					(name "VCC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "8"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1033,16 +924,108 @@
 					)
 				)
 				(pin power_in line
-					(at -5.08 17.78 270)
+					(at 0 17.78 270)
 					(length 2.54)
-					(name "VCC"
+					(name "V_BCKP"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "8"
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -17.78 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -17.78 90)
+					(length 2.54)
+					(hide yes)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "10"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -17.78 90)
+					(length 2.54)
+					(hide yes)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "12"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_out line
+					(at 5.08 17.78 270)
+					(length 2.54)
+					(name "VCC_RF"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "14"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 15.24 5.08 180)
+					(length 2.54)
+					(name "LNA_EN"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "13"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1051,16 +1034,52 @@
 					)
 				)
 				(pin input line
-					(at -15.24 -10.16 0)
+					(at 15.24 0 180)
 					(length 2.54)
-					(name "~{RESET}"
+					(name "RF_IN"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "9"
+					(number "11"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 15.24 -7.62 180)
+					(length 2.54)
+					(name "TIMEPULSE"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at 15.24 -11.43 180)
+					(length 2.54)
+					(name "VIO_SEL"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "15"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1069,6 +1088,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:+3V3"
 			(power)
@@ -1146,7 +1166,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 0) (xy 0 2.54)
+						(xy 0 2.54) (xy 0.762 1.27)
 					)
 					(stroke
 						(width 0)
@@ -1158,7 +1178,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
+						(xy 0 0) (xy 0 2.54)
 					)
 					(stroke
 						(width 0)
@@ -1172,7 +1192,8 @@
 			(symbol "+3V3_1_1"
 				(pin power_in line
 					(at 0 0 90)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "+3V3"
 						(effects
 							(font
@@ -1189,6 +1210,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:GND"
 			(power)
@@ -1268,7 +1290,8 @@
 			(symbol "GND_1_1"
 				(pin power_in line
 					(at 0 0 270)
-					(length 0) hide
+					(length 0)
+					(hide yes)
 					(name "GND"
 						(effects
 							(font
@@ -1285,9 +1308,12 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "pspice:INDUCTOR"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(offset 0)
 			)
@@ -1348,20 +1374,8 @@
 			)
 			(symbol "INDUCTOR_0_1"
 				(arc
-					(start -2.54 0)
+					(start -5.08 0)
 					(mid -3.81 1.2645)
-					(end -5.08 0)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(arc
-					(start 0 0)
-					(mid -1.27 1.2645)
 					(end -2.54 0)
 					(stroke
 						(width 0)
@@ -1372,8 +1386,8 @@
 					)
 				)
 				(arc
-					(start 2.54 0)
-					(mid 1.27 1.2645)
+					(start -2.54 0)
+					(mid -1.27 1.2645)
 					(end 0 0)
 					(stroke
 						(width 0)
@@ -1384,9 +1398,21 @@
 					)
 				)
 				(arc
-					(start 5.08 0)
-					(mid 3.81 1.2645)
+					(start 0 0)
+					(mid 1.27 1.2645)
 					(end 2.54 0)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 2.54 0)
+					(mid 3.81 1.2645)
+					(end 5.08 0)
 					(stroke
 						(width 0)
 						(type default)
@@ -1434,7 +1460,40 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
+	)
+	(text "5% or lower"
+		(exclude_from_sim no)
+		(at 158.115 71.755 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "5dbd7b38-bc6e-4ef9-bc0e-194d5867f506")
+	)
+	(text "0x42"
+		(exclude_from_sim no)
+		(at 124.714 75.692 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "6b6a7761-d487-443f-82d0-4c7dadbb5d4d")
+	)
+	(text "10ohm, 5%, 0.25W"
+		(exclude_from_sim no)
+		(at 134.62 64.77 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "84f54aff-9eba-457f-9d3a-c42ef6f27f31")
 	)
 	(junction
 		(at 156.21 58.42)
@@ -1748,38 +1807,6 @@
 		)
 		(uuid "cb55a003-63d8-4514-be41-8661b907e75e")
 	)
-	(text "5% or lower"
-		(exclude_from_sim no)
-		(at 158.115 71.755 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "5dbd7b38-bc6e-4ef9-bc0e-194d5867f506")
-	)
-	(text "0x42"
-		(exclude_from_sim no)
-		(at 124.714 75.692 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "6b6a7761-d487-443f-82d0-4c7dadbb5d4d")
-	)
-	(text "10ohm, 5%, 0.25W"
-		(exclude_from_sim no)
-		(at 134.62 64.77 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "84f54aff-9eba-457f-9d3a-c42ef6f27f31")
-	)
 	(hierarchical_label "RXD"
 		(shape input)
 		(at 116.84 86.36 180)
@@ -1844,7 +1871,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "25f4fa44-cb6f-42c4-a03e-4c715d804ebf")
-		(property "Reference" "#PWR0125"
+		(property "Reference" "#PWR0404"
 			(at 166.37 64.77 0)
 			(effects
 				(font
@@ -1894,7 +1921,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
-					(reference "#PWR0125")
+					(reference "#PWR0404")
 					(unit 1)
 				)
 			)
@@ -1909,7 +1936,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "35a26a9d-76d9-4639-87b8-4af470ce5c40")
-		(property "Reference" "J10"
+		(property "Reference" "J401"
 			(at 158.0134 46.0502 90)
 			(effects
 				(font
@@ -1934,7 +1961,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" " ~"
+		(property "Datasheet" "~"
 			(at 156.21 52.07 0)
 			(effects
 				(font
@@ -1961,7 +1988,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
-					(reference "J10")
+					(reference "J401")
 					(unit 1)
 				)
 			)
@@ -1976,7 +2003,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "74e84d5e-e8cf-4643-bb3b-a7ecd39a6fef")
-		(property "Reference" "#PWR0119"
+		(property "Reference" "#PWR0402"
 			(at 139.7 125.73 0)
 			(effects
 				(font
@@ -2026,7 +2053,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
-					(reference "#PWR0119")
+					(reference "#PWR0402")
 					(unit 1)
 				)
 			)
@@ -2037,12 +2064,12 @@
 		(at 118.11 106.68 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "765637ac-b392-4de9-bfe2-ec35604f0b7c")
-		(property "Reference" "TP15"
+		(property "Reference" "TP401"
 			(at 114.808 100.33 90)
 			(effects
 				(font
@@ -2091,7 +2118,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
-					(reference "TP15")
+					(reference "TP401")
 					(unit 1)
 				)
 			)
@@ -2102,12 +2129,12 @@
 		(at 161.29 58.42 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7dc99627-a407-4420-8aa3-53c976eb3639")
-		(property "Reference" "E1"
+		(property "Reference" "E401"
 			(at 161.29 53.34 0)
 			(effects
 				(font
@@ -2157,9 +2184,9 @@
 			(uuid "aec4a65b-7e4f-4520-90a0-46c774b6eae2")
 		)
 		(instances
-			(project ""
+			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
-					(reference "E1")
+					(reference "E401")
 					(unit 1)
 				)
 			)
@@ -2174,7 +2201,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "88f03e64-faf3-4392-9576-b29439fa9881")
-		(property "Reference" "#PWR0118"
+		(property "Reference" "#PWR0401"
 			(at 134.62 76.2 0)
 			(effects
 				(font
@@ -2224,7 +2251,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
-					(reference "#PWR0118")
+					(reference "#PWR0401")
 					(unit 1)
 				)
 			)
@@ -2239,7 +2266,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "bb9c112a-ded0-4e18-8d45-6d2301495c3e")
-		(property "Reference" "L4"
+		(property "Reference" "L401"
 			(at 157.3276 66.1416 90)
 			(effects
 				(font
@@ -2302,7 +2329,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
-					(reference "L4")
+					(reference "L401")
 					(unit 1)
 				)
 			)
@@ -2317,7 +2344,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d1dcdb97-f24c-43cf-9ec3-d81bdd13a120")
-		(property "Reference" "R30"
+		(property "Reference" "R401"
 			(at 148.59 70.9422 90)
 			(effects
 				(font
@@ -2325,7 +2352,7 @@
 				)
 			)
 		)
-		(property "Value" "10"
+		(property "Value" "10Ω"
 			(at 148.59 73.2536 90)
 			(effects
 				(font
@@ -2369,7 +2396,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
-					(reference "R30")
+					(reference "R401")
 					(unit 1)
 				)
 			)
@@ -2384,7 +2411,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d1feac6b-cc9c-4990-8c1b-1b8cd9a03ddd")
-		(property "Reference" "C49"
+		(property "Reference" "C401"
 			(at 164.211 78.8416 0)
 			(effects
 				(font
@@ -2438,7 +2465,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
-					(reference "C49")
+					(reference "C401")
 					(unit 1)
 				)
 			)
@@ -2453,7 +2480,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "efee86fd-0273-4ed4-89f9-60b7c1cf5b39")
-		(property "Reference" "U19"
+		(property "Reference" "U401"
 			(at 149.86 80.01 0)
 			(effects
 				(font
@@ -2553,7 +2580,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
-					(reference "U19")
+					(reference "U401")
 					(unit 1)
 				)
 			)
@@ -2568,7 +2595,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "fc5c15e9-f9e2-4397-9931-2c38ca0e6c3e")
-		(property "Reference" "#PWR0120"
+		(property "Reference" "#PWR0403"
 			(at 161.29 92.71 0)
 			(effects
 				(font
@@ -2618,7 +2645,7 @@
 		(instances
 			(project "PickleRick"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55/53a382a5-9123-45f3-a2e9-3b2de6ca541d"
-					(reference "#PWR0120")
+					(reference "#PWR0403")
 					(unit 1)
 				)
 			)
