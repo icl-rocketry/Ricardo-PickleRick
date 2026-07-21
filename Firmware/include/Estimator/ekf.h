@@ -137,7 +137,6 @@ private:
     static inline const Eigen::Vector3f SIGMA_BG {5e-5f, 5e-5f, 5e-5f};     // rad/s 
     static inline const Eigen::Vector3f SIGMA_BA_LOW{5e-4f, 5e-4f, 5e-4f};     // m/s² how much the bias can change per second (low-g accel bias)
 
-   
     static inline const Eigen::Vector3f SIGMA_ALPHA{0.062f, 0.044f, 0.033f};  // rad/s 
     static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.53f, 0.77f, 1.53f};
     // static inline const Eigen::Vector3f SIGMA_ALPHA{0.01f, 0.01f, 0.01f};  // rad/s 
@@ -168,7 +167,7 @@ private:
     //------Measurement flags--------------------------------------------
     static constexpr bool USE_GPS_POSITION = false;
     static constexpr bool USE_GPS_VELOCITY_DIRECT = false;
-    static constexpr bool USE_ACCEL_FOR_VELOCITY = true;
+    static constexpr bool USE_ACCEL_FOR_VELOCITY = true; //set to false if you just want to have the GPS velocity to be used for the vehicle velocity
     static constexpr bool USE_RTK_VERTICAL = true;
     static constexpr bool USE_RTK_VELOCITY = false;
     static constexpr uint32_t GNSS_DAY_MS = 86400UL * 1000UL;

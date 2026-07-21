@@ -46,6 +46,7 @@ class GNCController : public NRCRemoteControllerBase<GNCController>
                     Eigen::Vector3f velocity,
                     bool actuate);
         void updateThrottleProfileTest(bool actuate);
+        void cutEnginePower();
         void stop();
         
        

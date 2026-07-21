@@ -198,6 +198,14 @@ void GNCController::updateThrottleProfileTest(bool actuate)
     }
 }
 
+void GNCController::cutEnginePower()
+{
+    changePropPower(0, 0);
+    changePropPower(1, 0);
+    m_output(2) = 0.0f;
+    m_output(3) = 0.0f;
+}
+
 void GNCController::stop() {
 
     changeServoAngle(0,0);
@@ -255,7 +263,7 @@ void GNCController::changeServoAngle(int servo, float angle_f) { // angle should
     }
     if (servo == 1) { //top servo
         des_ser = 11; 
-        angle += 880;
+        angle += 850;
     }
 
     SimpleCommandPacket actuate_servo(2, angle); //2 is the fire command

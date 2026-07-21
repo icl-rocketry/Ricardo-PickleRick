@@ -37,5 +37,6 @@ class Flight : public Types::CoreTypes::State_t
         Trajectory::TrapezoidalTrajectory m_position_trajectory;
         uint32_t m_trajectory_start_ms = 0;
         bool m_trajectory_active = true;
+        bool m_tilt_power_cut = false;
         std::size_t m_trajectory_leg_index = 0;
 };

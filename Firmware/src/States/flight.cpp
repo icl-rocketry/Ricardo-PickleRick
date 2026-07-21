@@ -23,6 +23,7 @@ void Flight::initialize()
                                             Commands::ID::Telemetry,
                                             Commands::ID::Enter_Landing,
                                           });
+    m_tilt_power_cut = false;
     _system.controller.start();
 
     if (GeneralConfig::ThrottleRampTestEnabled) { //code for the throttle load cell testing
@@ -55,14 +56,24 @@ Types::CoreTypes::State_ptr_t Flight::update()
         _system.controller.updateThrottleProfileTest(true);
         return nullptr;
     }
-   // If the drone is tilted more than 25 degrees from upright, transition to landing state to prevent flyaway
+    if (m_tilt_power_cut) {
+        _system.controller.cutEnginePower();
+        return nullptr;
+    }
+
+    // If the drone is tilted more than 25 degrees from upright, cut engine power to prevent flyaway.
     constexpr float kMaxTiltRad = 25.0f * DEG_TO_RAD;
     const Eigen::Vector3f thrust_axis_world =
         current_Data.orientation.normalized() * Eigen::Vector3f::UnitX();
     const Eigen::Vector3f upright_thrust_world(0.0f, 0.0f, -1.0f);
 
     if (thrust_axis_world.dot(upright_thrust_world) < std::cos(kMaxTiltRad)) {
-        return std::make_unique<Landing>(_system);
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
+            "Tilt safeguard triggered: cutting engine power");
+        _system.controller.setPositionControlEnabled(false);
+        _system.controller.cutEnginePower();
+        m_tilt_power_cut = true;
+        return nullptr;
     }
 
     auto quaternion = current_Data.orientation.cast<double>();
@@ -95,6 +106,9 @@ void Flight::exit()
 {
     
     State::exit();
+    if (m_tilt_power_cut) {
+        _system.controller.stop();
+    }
     _system.commandhandler.resetCommands();
 
 };

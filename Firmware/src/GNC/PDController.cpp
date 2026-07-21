@@ -1,4 +1,5 @@
 #include "GNC/PDController.h"
+#include "Config/controller_config.h"
 #include "Config/debug_config.h"
 #include <algorithm>
 #include <cmath>
@@ -16,18 +17,23 @@ void PDController::setup()
     // m_rEng is COM -> thrust centre in body frame (m). Tune ry/rz for attitude-only lateral drift:
     // with rx < 0, negative body-y drift -> make ry more positive; positive body-y drift -> make ry more negative.
     // negative body-z drift -> make rz more positive; positive body-z drift -> make rz more negative.
-    m_rEng << -0.235f, 0.008f, -0.008f;
-    m_mass = 1.33f;
+    m_rEng << -0.235f, 0.004f, 0.001f;
+    m_mass = 1.36f;
 
-    m_K_p << 0.0f, 2.8f, 2.8f; // attitude body control gains (roll, pitch, yaw)
-    m_K_d << 7.0f, 0.9f, 0.9f;
+    m_K_p << 3.0f, 3.0f, 2.8f; // attitude body control gains (roll, pitch, yaw)
+    m_K_d << 7.0f, 1.0f, 0.9f;
 
-    // m_K_p_pos << 0.6f, 0.5f, 0.3f;   // NED position control gains
-    // m_K_d_pos << 1.7f, 1.7f, 0.9f; 
-    // m_K_i_pos << 0.005f, 0.005f, 0.02f;
-    m_K_p_pos << 0.75f, 0.75f, 1.0f;   // NED position control gains
-    m_K_d_pos << 2.2f, 2.2f, 2.6f; 
-    m_K_i_pos << 0.015f, 0.015f, 0.015f;
+    // m_K_p_pos << 0.5f, 0.5f, 0.45f;   //best so far
+    // m_K_d_pos << 2.6f, 2.6f, 3.3f; 
+    // m_K_i_pos << 0.075f, 0.075f, 0.07f;
+
+    // m_K_p_pos << 0.45f, 0.45f, 1.3f;   // NED position control gains
+    // m_K_d_pos << 2.6f, 2.6f, 3.7f; 
+    // m_K_i_pos << 0.02f, 0.02f, 0.01f;
+
+    m_K_p_pos << 0.3f, 0.3f, 2.5f;   // NED position control gains
+    m_K_d_pos << 2.0f, 2.0f, 3.5f; 
+    m_K_i_pos << 0.0f, 0.0f, 0.0f;
 
 
     m_pos_int.setZero();
@@ -43,6 +49,9 @@ void PDController::setup()
     m_body_z_world_dbg.setZero();
     m_pos_err_dbg.setZero();
     m_vel_err_dbg.setZero();
+    m_roll_zero_body_x_world.setZero();
+    m_roll_zero_body_y_world.setZero();
+    m_roll_zero_valid = false;
     m_euler_error.setZero();
     m_thrust_vector_error_deg.setZero();
     m_max_vel       = 1.0f;                  // m/s — conservative
@@ -95,6 +104,7 @@ void PDController::reset()
     m_Fx_cmd         = 0.0f;
     m_voltage_scale  = 1.0f;
     m_euler_error.setZero();
+    m_pos_int.setZero();
     m_thrust_vector_error_deg.setZero();
     m_position_dbg.setZero();
     m_velocity_dbg.setZero();
@@ -105,6 +115,9 @@ void PDController::reset()
     m_body_z_world_dbg.setZero();
     m_pos_err_dbg.setZero();
     m_vel_err_dbg.setZero();
+    m_roll_zero_body_x_world.setZero();
+    m_roll_zero_body_y_world.setZero();
+    m_roll_zero_valid = false;
 }
 
 void PDController::updatePositionControl(const Eigen::Vector3f& position,
@@ -151,11 +164,16 @@ void PDController::updatePositionControl(const Eigen::Vector3f& position,
     const float I_MAX = 20.0f;
     m_pos_int = m_pos_int.cwiseMax(-I_MAX).cwiseMin(I_MAX);
 
+    Eigen::Vector3f acceleration_feedforward = m_acc_des;
+    if (!ControllerConfig::VerticalAccelerationFeedforwardEnabled) {
+        acceleration_feedforward(2) = 0.0f;
+    }
+
     Eigen::Vector3f a_des =
-    m_acc_des
-    + m_K_p_pos.cwiseProduct(pos_err)
-    + m_K_i_pos.cwiseProduct(m_pos_int)
-    + m_K_d_pos.cwiseProduct(vel_err);
+        acceleration_feedforward
+        + m_K_p_pos.cwiseProduct(pos_err)
+        + m_K_i_pos.cwiseProduct(m_pos_int)
+        + m_K_d_pos.cwiseProduct(vel_err);
 
     // Gravity compensation: -D is up
     a_des += Eigen::Vector3f(0.0f, 0.0f, -GRAVITY);
@@ -214,6 +232,8 @@ Eigen::Vector3f PDController::limitPositionTiltRequest(const Eigen::Vector3f& fo
 
 void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
 {
+    captureRollZeroReference(q);
+
     // Body thrust axis = +x_body
     const Eigen::Vector3d thrust_axis_body(1.0, 0.0, 0.0);
 
@@ -255,15 +275,53 @@ void PDController::updateThrustDirectionErrors(const Eigen::Quaterniond& q)
                                  static_cast<float>(pitch_error_rad * RAD_TO_DEG),
                                  static_cast<float>(yaw_error_rad * RAD_TO_DEG);
 
-    // No control about thrust axis (body x)
-    m_dir_error_body(0) = 0.0f;
+    Eigen::Vector3d roll_zero_x_world = m_roll_zero_body_x_world.cast<double>();
+    Eigen::Vector3d roll_zero_y_world = m_roll_zero_body_y_world.cast<double>();
+    if (roll_zero_x_world.norm() < 1e-6 || roll_zero_y_world.norm() < 1e-6) {
+        roll_zero_x_world = thrust_dir_world;
+        roll_zero_y_world = body_y_world;
+    }
+    roll_zero_x_world.normalize();
+    roll_zero_y_world.normalize();
+
+    const Eigen::Quaterniond zero_to_current_thrust =
+        Eigen::Quaterniond::FromTwoVectors(roll_zero_x_world, thrust_dir_world);
+
+    Eigen::Vector3d roll_reference_y_world = zero_to_current_thrust * roll_zero_y_world;
+    roll_reference_y_world -= thrust_dir_world * roll_reference_y_world.dot(thrust_dir_world);
+
+    Eigen::Vector3d current_y_world = body_y_world;
+    current_y_world -= thrust_dir_world * current_y_world.dot(thrust_dir_world);
+
+    if (roll_reference_y_world.norm() > 1e-6 && current_y_world.norm() > 1e-6) {
+        roll_reference_y_world.normalize();
+        current_y_world.normalize();
+
+        const double roll_error_rad = std::atan2(
+            thrust_dir_world.dot(current_y_world.cross(roll_reference_y_world)),
+            current_y_world.dot(roll_reference_y_world));
+
+        m_dir_error_body(0) = static_cast<float>(roll_error_rad);
+    } else {
+        m_dir_error_body(0) = 0.0f;
+    }
+}
+
+void PDController::captureRollZeroReference(const Eigen::Quaterniond& q)
+{
+    if (m_roll_zero_valid) {
+        return;
+    }
+
+    m_roll_zero_body_x_world = (q * Eigen::Vector3d::UnitX()).normalized().cast<float>();
+    m_roll_zero_body_y_world = (q * Eigen::Vector3d::UnitY()).normalized().cast<float>();
+    m_roll_zero_valid = true;
 }
 
 void PDController::updateMcmd(const Eigen::Vector3f& angular_rates)
 {
     Eigen::Vector3f rates_error = -angular_rates; // desired rates are zero
     m_euler_error = m_dir_error_body;//send the errors to telemetry for debugging
-    m_dir_error_body(0) = 0.0f; //no roll angle error since its only a D controller
     m_M_cmd =
         m_K_p.cwiseProduct(m_dir_error_body)
         + m_K_d.cwiseProduct(rates_error);    
@@ -331,7 +389,7 @@ void PDController::updateOutputValues()
     base_thrust = std::clamp(base_thrust, 0.0f, 100.0f);
 
     //_--------ROLL CONTROL-----------------
-    // Roll-rate damping via differential prop throttle.
+    // Roll angle control and rate damping via differential prop throttle.
     // Positive roll_mix: top CW prop up, bottom CCW prop down.
     float roll_mix = m_M_cmd(0);
     roll_mix *= voltage_scale; //voltage scaling for roll mix 

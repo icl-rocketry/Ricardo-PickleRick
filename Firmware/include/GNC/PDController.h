@@ -39,6 +39,7 @@ class PDController
     private:
         void updatePositionControl(const Eigen::Vector3f& position, const Eigen::Vector3f& velocity);
         void updateThrustDirectionErrors(const Eigen::Quaterniond& q);
+        void captureRollZeroReference(const Eigen::Quaterniond& q);
         void updateMcmd(const Eigen::Vector3f& angular_rates);
         void updateOutputValues();
         void updateDesiredForce(const Eigen::Quaterniond& q);
@@ -65,7 +66,7 @@ class PDController
         static constexpr float MAX_POSITION_TILT_DEG = 20.0f;
         static constexpr float MAX_POSITION_TILT_RAD = MAX_POSITION_TILT_DEG * DEG_TO_RAD;
         static constexpr float TILT_COMPENSATION_MIN_COS = 0.5f;
-        static constexpr float ROLL_MIX_OFFSET = 3.3f; //if it is rolling in +ve x direction, decrease 
+        static constexpr float ROLL_MIX_OFFSET = 3.2f; //if it is rolling in +ve x direction, decrease 
         static constexpr float NOMINAL_FX_N = 13.24;
 
         //battery stuff
@@ -74,13 +75,13 @@ class PDController
         float m_voltage_scale = 1.0f;
 
         static constexpr float NOMINAL_BATT_V = 15.6f; //measured voltage of a fully loaded pack under load
-        static constexpr float VOLTAGE_SCALE_EXPONENT = 1.5; //exponent for voltage scaling curve, higher means more aggressive scaling at lower voltages
+        static constexpr float VOLTAGE_SCALE_EXPONENT = 0.95; //exponent for voltage scaling curve, higher means more aggressive scaling at lower voltages
         static constexpr float MIN_VALID_BATT_V = 12.0f;
         static constexpr float MIN_VOLTAGE_SCALE = 0.8f; 
         static constexpr float MAX_VOLTAGE_SCALE = 1.25f;
 
         //Thrust linearisation model
-        static constexpr float THRUST_EXPONENT = 0.7f; //
+        static constexpr float THRUST_EXPONENT = 0.72f; //
         
 
         float m_Fx_cmd = 0.0f;
@@ -117,5 +118,8 @@ class PDController
         Eigen::Vector3f m_body_z_world_dbg;
         Eigen::Vector3f m_pos_err_dbg;
         Eigen::Vector3f m_vel_err_dbg;
+        Eigen::Vector3f m_roll_zero_body_x_world;
+        Eigen::Vector3f m_roll_zero_body_y_world;
+        bool m_roll_zero_valid = false;
 
 };

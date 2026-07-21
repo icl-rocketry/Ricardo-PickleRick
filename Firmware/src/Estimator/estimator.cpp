@@ -198,7 +198,7 @@ void Estimator::updateAutoHome(const SensorStructs::GPS_t& gps)
         return;
     }
 
-    if (!hasGpsLock(gps)) {
+    if (!hasGpsLock(gps) || !rtk.hasFixed()) {
         m_autoHomePending = false;
         m_gpsLockStartTimeUs = 0;
         return;
@@ -207,14 +207,14 @@ void Estimator::updateAutoHome(const SensorStructs::GPS_t& gps)
     if (!m_autoHomePending) {
         m_autoHomePending = true;
         m_gpsLockStartTimeUs = gps.timestamp_us;
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("GPS lock detected; auto set-home pending");
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("GPS lock and RTK fixed detected; auto set-home pending");
         return;
     }
 
     if (!m_calibrating && gps.timestamp_us - m_gpsLockStartTimeUs >= TimingConfig::Estimator::AUTO_SET_HOME_DELAY_US) {
         m_autoHomeTriggered = true;
         setHome();
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Auto set-home triggered after GPS lock");
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Auto set-home triggered after GPS lock and RTK fixed");
     }
 }
 

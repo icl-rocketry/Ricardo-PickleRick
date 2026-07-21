@@ -150,6 +150,7 @@ void EKF::update(   const Eigen::Vector3f         gyro,
     m_covariancePredictDt += dt;
     const bool propagate_covariance = timerDue(now, m_lastCovarianceUpdateTime, TimingConfig::EKF::COVARIANCE_UPDATE_DELTA_US);
     const float covariance_dt = propagate_covariance ? m_covariancePredictDt : dt;
+
     if (propagate_covariance)
     {
         m_covariancePredictDt = 0.0f;
@@ -174,7 +175,7 @@ void EKF::update(   const Eigen::Vector3f         gyro,
         return;
     }
 
-    const bool gps_replayed_to_now = handleGpsCorrection(now, gps);
+    const bool gps_replayed_to_now = handleGpsCorrection(now, gps); // Fuse fresh GPS, replaying delayed data when possible.
     const bool rtk_replayed_to_now = gps_replayed_to_now ? false : handleRtkCorrection(now, rtk);
     if (!gps_replayed_to_now && !rtk_replayed_to_now)
     {
@@ -209,11 +210,12 @@ void EKF::predict(  const float nominal_dt,
     Vec4 q = m_x.segment<4>(6);
     q.normalize();
     const float q0 = q(0), q1 = q(1), q2 = q(2), q3 = q(3);
-
+    // Angular rates in body frame, corrected for gyro bias
     const float wx = gyro(0) - m_x(13);
     const float wy = gyro(1) - m_x(14);
     const float wz = gyro(2) - m_x(15);
     m_angular_rates << wx, wy, wz;
+    // Angular-rate norm used to normalise Omega; near zero we avoid dividing by it.
     const float w_norm = m_angular_rates.norm();
 
     Mat4 Omega;
@@ -222,19 +224,19 @@ void EKF::predict(  const float nominal_dt,
                 wy, -wz,   0,  wx,
                 wz,  wy, -wx,   0;
 
-    Mat4 F_qq;
+    Mat4 F_qq; // generate the quaternion update matrix for the state transition
     if (w_norm > 1e-9f)
     {
         // exp((dt/2)*omega) [dont need i from e^ix = cosx + isinx for weird maths reasons]
         F_qq =  std::cos(0.5f * w_norm * nominal_dt) * Mat4::Identity()
               + std::sin(0.5f * w_norm * nominal_dt) * (Omega / w_norm);
     }
-    else // to avoid the /0
+    else // to avoid the /0, use first-order Taylor expansion of sin(x)/x ~ 1 for small x
     {
         F_qq = Mat4::Identity() + 0.5f * nominal_dt * Omega;
     }
         
-    m_x.segment<4>(6) = F_qq * q;
+    m_x.segment<4>(6) = F_qq * q; // update quaternion state
     m_x.segment<4>(6).normalize();
 
     // ── Translation update ───────────────────────────────────────────────────────
@@ -244,7 +246,7 @@ void EKF::predict(  const float nominal_dt,
 
     if (accel_norm < LOW_G_SATURATION)          // low-g not saturated
     {
-        m_acceleration = accel - m_x.segment<3>(10);
+        m_acceleration = accel - m_x.segment<3>(10); //take away bias
     }
     else
     {
@@ -256,7 +258,7 @@ void EKF::predict(  const float nominal_dt,
 
     const Eigen::Vector3f g_ned(0.0f, 0.0f, -g);
 
-    const Eigen::Vector3f a_ned = R_body_to_ned * (m_acceleration) - g_ned;
+    const Eigen::Vector3f a_ned = R_body_to_ned * (m_acceleration) - g_ned; 
     const float nominal_dt2 = nominal_dt * nominal_dt;
 
     if (USE_ACCEL_FOR_VELOCITY) {
@@ -303,8 +305,7 @@ void EKF::predict(  const float nominal_dt,
     // ── Translation process noise ────────────────────────────────────────────────
 
     const float dt3 = dt2 * dt;
-    const float qa  = SIGMA_ACCEL_PROCESS * SIGMA_ACCEL_PROCESS;
-
+    const float qa  = SIGMA_ACCEL_PROCESS * SIGMA_ACCEL_PROCESS;// units m^2/s^3, which is the variance of the acceleration noise per unit time
     Eigen::Matrix<float, 2, 2> Q_sub;
     Q_sub << qa * dt3 / 3.0f,  qa * dt2 / 2.0f,
              qa * dt2 / 2.0f,  qa * dt;
@@ -319,7 +320,7 @@ void EKF::predict(  const float nominal_dt,
     // ── Full F and Q matrices (16×16) ─────────────────────────────────────────
     // F is the Jacobian of the process model 
     m_F.setZero();
-    m_F.block<3,3>(0,0)   = I3;
+    m_F.block<3,3>(0,0)   = I3;            // position integrates
     m_F.block<3,3>(0,3)   = dt * I3;       // position depends on velocity
     m_F.block<3,3>(3,3)   = I3;            // velocity integrates
     m_F.block<4,4>(6,6)   = F_qq_cov;      // attitude
@@ -330,8 +331,8 @@ void EKF::predict(  const float nominal_dt,
     const float qw = q_new(0), qx = q_new(1), qy = q_new(2), qz = q_new(3);
     const float ax = m_acceleration(0), ay = m_acceleration(1), az = m_acceleration(2);
     Eigen::Matrix<float, 3, 4> d_accel_ned_dq;
-    d_accel_ned_dq << -2.0f*qz*ay + 2.0f*qy*az,
-                       2.0f*qy*ay + 2.0f*qz*az,
+    d_accel_ned_dq << -2.0f*qz*ay + 2.0f*qy*az, // this shows how each state is affected by an error in the quaternion and vice versa. 
+                       2.0f*qy*ay + 2.0f*qz*az, // The Jacobian is used to propagate the uncertainty in the quaternion to the uncertainty in the acceleration in NED frame.
                       -4.0f*qy*ax + 2.0f*qx*ay + 2.0f*qw*az,
                       -4.0f*qz*ax - 2.0f*qw*ay + 2.0f*qx*az,
 
@@ -345,10 +346,10 @@ void EKF::predict(  const float nominal_dt,
                       -2.0f*qw*ax + 2.0f*qz*ay - 4.0f*qy*az,
                        2.0f*qx*ax + 2.0f*qy*ay;
 
-    m_F.block<3,4>(3,6)   = d_accel_ned_dq * dt;
-    m_F.block<3,4>(0,6)   = 0.5f * d_accel_ned_dq * dt2;
-    m_F.block<3,3>(3,10)  = -R_body_to_ned * dt;
-    m_F.block<3,3>(0,10)  = -0.5f * R_body_to_ned * dt2;
+    m_F.block<3,4>(3,6)   = d_accel_ned_dq * dt; //velocity depends on acceleration and attitude
+    m_F.block<3,4>(0,6)   = 0.5f * d_accel_ned_dq * dt2; // position depends on acceleration and attitude
+    m_F.block<3,3>(3,10)  = -R_body_to_ned * dt; //accelerometer bias a_ned = R * (accel - accel_bias) - g, d a_ned / d accel_bias = -R
+    m_F.block<3,3>(0,10)  = -0.5f * R_body_to_ned * dt2; // accelerometer bias d v_next / d accel_bias = -R * dt
     // Q is the process noise covariance — how much we trust the process model (vs measurements)
     m_Q.setZero();
     m_Q.block<6,6>(0,0)   = m_Q_trans;
@@ -359,7 +360,7 @@ void EKF::predict(  const float nominal_dt,
     // ── Propagate covariance ──────────────────────────────────────────────────
     m_P_temp.noalias() = m_F * m_P;
     m_P.noalias()      = m_P_temp * m_F.transpose() + m_Q;
-    m_P_temp           = m_P + m_P.transpose();
+    m_P_temp           = m_P + m_P.transpose(); // this line is to deal with floating point round off errors 
     m_P                = 0.5f * m_P_temp;
 
 }
@@ -839,7 +840,7 @@ bool EKF::handleGpsCorrection(const uint32_t now, const SensorStructs::GPS_t& gp
         return false;
     }
 
-    const bool in_past = timeAtOrAfter(now, gps.timestamp_us);
+    const bool in_past = timeAtOrAfter(now, gps.timestamp_us); // True when GPS time is not ahead of now.
     const uint32_t delay_us = in_past ? now - gps.timestamp_us : 0;
     const bool fresh = in_past &&
                        delay_us <= TimingConfig::EKF::GPS_CORRECTION_MAX_AGE_US;
@@ -849,15 +850,15 @@ bool EKF::handleGpsCorrection(const uint32_t now, const SensorStructs::GPS_t& gp
         return false;
     }
 
-    if (!correctionDueNow(now, m_lastGpsCorrectionTime, TimingConfig::EKF::GPS_CORRECTION_DELTA_US))
+    if (!correctionDueNow(now, m_lastGpsCorrectionTime, TimingConfig::EKF::GPS_CORRECTION_DELTA_US)) // Rate-limit GPS fusion.
     {
         return false;
     }
 
-    const bool replayed_to_now = fuseDelayedGPS(gps, now);
+    const bool replayed_to_now = fuseDelayedGPS(gps, now); // Rewind, fuse at GPS time, then replay to now.
     if (!replayed_to_now)
     {
-        updateGPS(gps);
+        updateGPS(gps); // Fallback: fuse GPS into the current EKF state.
     }
 
     m_lastGpsCorrectionTime = now;
@@ -868,36 +869,36 @@ bool EKF::handleGpsCorrection(const uint32_t now, const SensorStructs::GPS_t& gp
 bool EKF::fuseDelayedGPS(const SensorStructs::GPS_t& gps, const uint32_t now)
 {
     const uint32_t measurement_us = gps.timestamp_us;
-    if (measurement_us == 0)
+    if (measurement_us == 0) //check the gps reading is valid
     {
         return false;
     }
 
-    if (timeAtOrAfter(measurement_us, now))
+    if (timeAtOrAfter(measurement_us, now)) //check if the GPS is in the future, if so, don't fuse it
     {
         return false;
     }
 
-    if (now - measurement_us > TimingConfig::EKF::DELAYED_MEASUREMENT_HISTORY_US)
+    if (now - measurement_us > TimingConfig::EKF::DELAYED_MEASUREMENT_HISTORY_US) //check if the GPS is too old, if so, don't fuse it
     {
         return false;
     }
 
-    const int base_index = findHistoryIndexAtOrBefore(measurement_us);
-    const int latest_index = latestHistoryIndex();
-    if (base_index < 0 || latest_index < 0)
+    const int base_index = findHistoryIndexAtOrBefore(measurement_us); //find out where in the history the GPS measurement should be fused
+    const int latest_index = latestHistoryIndex(); //find out where the latest history sample is in the history with units of microseconds
+    if (base_index < 0 || latest_index < 0) //check if it is valid to fuse the GPS measurement, if not, don't fuse it
     {
         return false;
     }
 
-    const HistorySample& base = m_history[static_cast<size_t>(base_index)];
-    m_x = base.x;
-    m_P = base.P;
-    restoreScheduleState(base.schedule);
+    const HistorySample& base = m_history[static_cast<size_t>(base_index)]; //get the history sample at the base index, in microseconds
+    m_x = base.x; //find out what the state was at the base index
+    m_P = base.P; // find out what the covariance was at the base 
+    restoreScheduleState(base.schedule); //restore the schedule state at the base index time
 
     bool gps_fused = false;
     uint32_t current_time = base.timestamp_us;
-    if (timeAtOrAfter(current_time, measurement_us))
+    if (timeAtOrAfter(current_time, measurement_us)) // check if the current time is after the GPS measurement time, if so, fuse the GPS measurement
     {
         updateGPS(gps);
         gps_fused = true;
@@ -1240,14 +1241,17 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
     // Smoothly reduce accel trust as |a| moves away from 1g
     const float scale = 1.0f + 3.0f * (accel_error / ACCEL_GATE);
 
-    Vec4 q = m_x.segment<4>(6);
+    Vec4 q = m_x.segment<4>(6); // get the attitude from the predict step
     if (q.norm() < 1e-9f) { q = Vec4(1.0f, 0.0f, 0.0f, 0.0f); }
     else                  { q.normalize(); }
     const float q0 = q(0), q1 = q(1), q2 = q(2), q3 = q(3);
 
-    const Vec3 ba_low = m_x.segment<3>(10);
+    const Vec3 ba_low = m_x.segment<3>(10); //get the bias of the accelerometer
     const Vec3 g_ned(0.0f, 0.0f, -g);
-    m_h.segment<3>(3) = Eigen::Quaternionf(q0, q1, q2, q3).toRotationMatrix().transpose() * g_ned + ba_low;
+
+    m_h.segment<3>(3) = Eigen::Quaternionf(q0, q1, q2, q3).toRotationMatrix().transpose() * g_ned + ba_low; //expected readings
+    m_y.segment<3>(3) = z_accel - m_h.segment<3>(3); //innovation of the accelerometer
+
 
     Eigen::Matrix<float, 3, 4> Hq; // derived assuming (0,0,-1)
     Hq <<    2*q2, -2*q3,   2*q0,  -2*q1,
@@ -1261,16 +1265,16 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
 
     const Mat3 R_base = SIGMA_ACCEL_LOW.cwiseProduct(SIGMA_ACCEL_LOW).asDiagonal(); 
     const Mat3 R = scale * R_base; //here is where we reduce the trust in accel as it moves away from 1g
-    
-    m_y.segment<3>(3) = z_accel - m_h.segment<3>(3);
+
     const Mat3 S = m_H * m_P * m_H.transpose() + R;
     m_K = m_P * m_H.transpose() * S.ldlt().solve(Mat3::Identity());
 
-    m_K.block<6,3>(0,0)  .setZero();   // position/vel
+   
 
-    m_x += m_K * m_y.segment<3>(3);
+    m_K.block<6,3>(0,0).setZero();   // position/vel
+    m_x += m_K * m_y.segment<3>(3); //update the state
 
-    m_IKH.noalias()    = Eigen::Matrix<float,16,16>::Identity() - m_K * m_H;
+    m_IKH.noalias()    = Eigen::Matrix<float,16,16>::Identity() - m_K * m_H; //update the covariance
     m_P_temp.noalias() = m_IKH * m_P;
     m_P.noalias()      = m_P_temp * m_IKH.transpose();
     m_P_temp.noalias() = m_K * R * m_K.transpose();

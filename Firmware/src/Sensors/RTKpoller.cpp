@@ -57,6 +57,11 @@ bool RTKPoller::hasFix() const
     return hasMeasurement() && fix_quality != 0;
 }
 
+bool RTKPoller::hasFixed() const
+{
+    return hasMeasurement() && fix_quality == 4;
+}
+
 bool RTKPoller::hasFreshMeasurement(const uint32_t now_us) const
 {
     return m_valid &&

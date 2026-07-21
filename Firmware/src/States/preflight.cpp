@@ -17,18 +17,13 @@ void Preflight::initialize(){
 
 Types::CoreTypes::State_ptr_t Preflight::update()
 {
-    auto current_Data = _system.estimator.getData(); 
-
     // if (millis() > 5000) { //COMMENT OUT TO DISABLE AUTOSTART
     //     return std::make_unique<Flight>(_system);
     // }
 
-    auto quaternion = current_Data.orientation.cast<double>();
-    auto angular_rates = current_Data.angularRates;
-    auto position = current_Data.position;
-    auto velocity = current_Data.velocity;
     _system.controller.setPositionControlEnabled(false);
-    _system.controller.update(quaternion, angular_rates, position, velocity, false);
+    // Keep downstream motor controllers quiet if the flight computer resets into preflight.
+    _system.controller.setManualOutput(Eigen::Vector4f::Zero(), true);
 
     return nullptr;
 };

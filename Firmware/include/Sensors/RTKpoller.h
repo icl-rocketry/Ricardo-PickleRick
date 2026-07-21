@@ -23,6 +23,7 @@ public:
     Eigen::Vector3f getPositionRaw();
     bool hasMeasurement() const;
     bool hasFix() const;
+    bool hasFixed() const;
     float x_input = 0.0f;
     float y_input = 0.0f;
     float z_input = 0.0f;
