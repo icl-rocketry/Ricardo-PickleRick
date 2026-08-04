@@ -22,6 +22,7 @@ public:
                     std::function<void(std::string_view message)> logcb = nullptr);
 
     void log(ControllerTelemetryPacket& packet);
+    void closeFile();
 
 private:
     std::unique_ptr<WrappedFile> _file;

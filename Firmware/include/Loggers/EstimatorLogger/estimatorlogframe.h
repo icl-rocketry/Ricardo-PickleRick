@@ -52,6 +52,14 @@ private:
             &EstimatorLogframe::y_vn, &EstimatorLogframe::y_ve, &EstimatorLogframe::y_vd, &EstimatorLogframe::y_lidar,
             &EstimatorLogframe::nis_mag, &EstimatorLogframe::nis_accel, &EstimatorLogframe::nis_baro,
             &EstimatorLogframe::nis_gps, &EstimatorLogframe::nis_rtk, &EstimatorLogframe::nis_lidar,
+            &EstimatorLogframe::nis_mag_count, &EstimatorLogframe::nis_accel_count, &EstimatorLogframe::nis_baro_count,
+            &EstimatorLogframe::nis_gps_count, &EstimatorLogframe::nis_rtk_count, &EstimatorLogframe::nis_lidar_count,
+            &EstimatorLogframe::nis_mag_timestamp_us, &EstimatorLogframe::nis_accel_timestamp_us, &EstimatorLogframe::nis_baro_timestamp_us,
+            &EstimatorLogframe::nis_gps_timestamp_us, &EstimatorLogframe::nis_rtk_timestamp_us, &EstimatorLogframe::nis_lidar_timestamp_us,
+            &EstimatorLogframe::nis_mag_reject_reason, &EstimatorLogframe::nis_accel_reject_reason, &EstimatorLogframe::nis_baro_reject_reason,
+            &EstimatorLogframe::nis_gps_reject_reason, &EstimatorLogframe::nis_rtk_reject_reason, &EstimatorLogframe::nis_lidar_reject_reason,
+            &EstimatorLogframe::nis_mag_reject_timestamp_us, &EstimatorLogframe::nis_accel_reject_timestamp_us, &EstimatorLogframe::nis_baro_reject_timestamp_us,
+            &EstimatorLogframe::nis_gps_reject_timestamp_us, &EstimatorLogframe::nis_rtk_reject_timestamp_us, &EstimatorLogframe::nis_lidar_reject_timestamp_us,
             &EstimatorLogframe::p0, &EstimatorLogframe::p1, &EstimatorLogframe::p2, &EstimatorLogframe::p3,
             &EstimatorLogframe::p4, &EstimatorLogframe::p5, &EstimatorLogframe::p6, &EstimatorLogframe::p7,
             &EstimatorLogframe::p8, &EstimatorLogframe::p9, &EstimatorLogframe::p10, &EstimatorLogframe::p11,
@@ -93,6 +101,13 @@ public:
     float y_mx, y_my, y_mz, y_ax, y_ay, y_az, y_bt, y_bp;
     float y_pn, y_pe, y_pd, y_vn, y_ve, y_vd, y_lidar;
     float nis_mag, nis_accel, nis_baro, nis_gps, nis_rtk, nis_lidar;
+    uint32_t nis_mag_count, nis_accel_count, nis_baro_count, nis_gps_count, nis_rtk_count, nis_lidar_count;
+    uint32_t nis_mag_timestamp_us, nis_accel_timestamp_us, nis_baro_timestamp_us;
+    uint32_t nis_gps_timestamp_us, nis_rtk_timestamp_us, nis_lidar_timestamp_us;
+    uint8_t nis_mag_reject_reason, nis_accel_reject_reason, nis_baro_reject_reason;
+    uint8_t nis_gps_reject_reason, nis_rtk_reject_reason, nis_lidar_reject_reason;
+    uint32_t nis_mag_reject_timestamp_us, nis_accel_reject_timestamp_us, nis_baro_reject_timestamp_us;
+    uint32_t nis_gps_reject_timestamp_us, nis_rtk_reject_timestamp_us, nis_lidar_reject_timestamp_us;
     float p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15;
     float controller_batt_V, controller_voltage_scale;
     float controller_thrust_top_cmd, controller_thrust_bottom_cmd;
@@ -116,6 +131,10 @@ public:
                "h_mx,h_my,h_mz,h_ax,h_ay,h_az,h_bt,h_bp,h_pn,h_pe,h_pd,h_vn,h_ve,h_vd,h_lidar,"
                "y_mx,y_my,y_mz,y_ax,y_ay,y_az,y_bt,y_bp,y_pn,y_pe,y_pd,y_vn,y_ve,y_vd,y_lidar,"
                "nis_mag,nis_accel,nis_baro,nis_gps,nis_rtk,nis_lidar,"
+               "nis_mag_count,nis_accel_count,nis_baro_count,nis_gps_count,nis_rtk_count,nis_lidar_count,"
+               "nis_mag_timestamp_us,nis_accel_timestamp_us,nis_baro_timestamp_us,nis_gps_timestamp_us,nis_rtk_timestamp_us,nis_lidar_timestamp_us,"
+               "nis_mag_reject_reason,nis_accel_reject_reason,nis_baro_reject_reason,nis_gps_reject_reason,nis_rtk_reject_reason,nis_lidar_reject_reason,"
+               "nis_mag_reject_timestamp_us,nis_accel_reject_timestamp_us,nis_baro_reject_timestamp_us,nis_gps_reject_timestamp_us,nis_rtk_reject_timestamp_us,nis_lidar_reject_timestamp_us,"
                "P_pn,P_pe,P_pd,P_vn,P_ve,P_vd,P_q0,P_q1,P_q2,P_q3,P_bax,P_bay,P_baz,P_bgx,P_bgy,P_bgz,"
                "controller_batt_V,controller_voltage_scale,controller_thrust_top_cmd,controller_thrust_bottom_cmd,"
                "controller_fx_cmd,controller_fx_cmd_outer,controller_position_control_enabled,"

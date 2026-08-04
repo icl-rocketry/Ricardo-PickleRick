@@ -60,8 +60,8 @@ class PDController
         Eigen::Vector3f m_dir_error_body;
         Eigen::Vector4f m_output_values;
 
-        static constexpr float MAX_GIMBAL_DEG = 15.0f;
-        static constexpr float MAX_THRUST_N   = 29.0f;
+        static constexpr float MAX_GIMBAL_DEG = 20.0f;
+        static constexpr float MAX_THRUST_N   = 30.0f;
         static constexpr float MAX_ROLL_MIX   = 8.0f; 
         static constexpr float MAX_POSITION_TILT_DEG = 15.0f;
         static constexpr float MAX_POSITION_TILT_RAD = MAX_POSITION_TILT_DEG * DEG_TO_RAD;

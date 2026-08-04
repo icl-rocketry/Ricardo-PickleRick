@@ -78,6 +78,30 @@ public:
     float gpsNis() const { return m_gpsNis; }
     float rtkNis() const { return m_rtkNis; }
     float lidarNis() const { return m_lidarNis; }
+    uint32_t magNisCount() const { return m_magNisCount; }
+    uint32_t accelNisCount() const { return m_accelNisCount; }
+    uint32_t baroNisCount() const { return m_baroNisCount; }
+    uint32_t gpsNisCount() const { return m_gpsNisCount; }
+    uint32_t rtkNisCount() const { return m_rtkNisCount; }
+    uint32_t lidarNisCount() const { return m_lidarNisCount; }
+    uint32_t magNisTimestampUs() const { return m_magNisTimestampUs; }
+    uint32_t accelNisTimestampUs() const { return m_accelNisTimestampUs; }
+    uint32_t baroNisTimestampUs() const { return m_baroNisTimestampUs; }
+    uint32_t gpsNisTimestampUs() const { return m_gpsNisTimestampUs; }
+    uint32_t rtkNisTimestampUs() const { return m_rtkNisTimestampUs; }
+    uint32_t lidarNisTimestampUs() const { return m_lidarNisTimestampUs; }
+    uint8_t magNisRejectReason() const { return static_cast<uint8_t>(m_magNisRejectReason); }
+    uint8_t accelNisRejectReason() const { return static_cast<uint8_t>(m_accelNisRejectReason); }
+    uint8_t baroNisRejectReason() const { return static_cast<uint8_t>(m_baroNisRejectReason); }
+    uint8_t gpsNisRejectReason() const { return static_cast<uint8_t>(m_gpsNisRejectReason); }
+    uint8_t rtkNisRejectReason() const { return static_cast<uint8_t>(m_rtkNisRejectReason); }
+    uint8_t lidarNisRejectReason() const { return static_cast<uint8_t>(m_lidarNisRejectReason); }
+    uint32_t magNisRejectTimestampUs() const { return m_magNisRejectTimestampUs; }
+    uint32_t accelNisRejectTimestampUs() const { return m_accelNisRejectTimestampUs; }
+    uint32_t baroNisRejectTimestampUs() const { return m_baroNisRejectTimestampUs; }
+    uint32_t gpsNisRejectTimestampUs() const { return m_gpsNisRejectTimestampUs; }
+    uint32_t rtkNisRejectTimestampUs() const { return m_rtkNisRejectTimestampUs; }
+    uint32_t lidarNisRejectTimestampUs() const { return m_lidarNisRejectTimestampUs; }
     Eigen::Matrix<float, 16, 1> covarianceDiagonal() const { return m_P.diagonal(); }
 
     Eigen::Vector3f gpsPosition()   const { return m_gps_position; }
@@ -99,6 +123,15 @@ private:
     uint32_t m_lastGpsMeasurementTime = 0;
     uint32_t m_lastLidarMeasurementTime = 0;
     uint32_t m_lastRtkMeasurementTime = 0;
+    uint32_t m_lastRtkMeasurementEpochMs = 0;
+    // These live-input watermarks are deliberately not part of the rewindable
+    // schedule state. They prevent an out-of-sequence replay from making an
+    // already-consumed sensor packet look new again.
+    uint32_t m_lastHandledGpsTimestampUs = 0;
+    uint32_t m_lastFusedGpsTimestampUs = 0;
+    uint32_t m_lastHandledRtkTimestampUs = 0;
+    uint32_t m_lastHandledRtkEpochMs = 0;
+    uint32_t m_lastFusedRtkTimestampUs = 0;
     float m_covariancePredictDt = 0.0f;
     uint8_t m_nextCorrectionIndex = 0;
 
@@ -128,6 +161,35 @@ private:
     float m_gpsNis{-1.0f};
     float m_rtkNis{-1.0f};
     float m_lidarNis{-1.0f};
+    uint32_t m_magNisCount{0};
+    uint32_t m_accelNisCount{0};
+    uint32_t m_baroNisCount{0};
+    uint32_t m_gpsNisCount{0};
+    uint32_t m_rtkNisCount{0};
+    uint32_t m_lidarNisCount{0};
+    uint32_t m_magNisTimestampUs{0};
+    uint32_t m_accelNisTimestampUs{0};
+    uint32_t m_baroNisTimestampUs{0};
+    uint32_t m_gpsNisTimestampUs{0};
+    uint32_t m_rtkNisTimestampUs{0};
+    uint32_t m_lidarNisTimestampUs{0};
+    SensorStructs::NisRejectReason m_magNisRejectReason{SensorStructs::NisRejectReason::NOT_CALCULATED_YET};
+    SensorStructs::NisRejectReason m_accelNisRejectReason{SensorStructs::NisRejectReason::NOT_CALCULATED_YET};
+    SensorStructs::NisRejectReason m_baroNisRejectReason{SensorStructs::NisRejectReason::NOT_CALCULATED_YET};
+    SensorStructs::NisRejectReason m_gpsNisRejectReason{SensorStructs::NisRejectReason::NOT_CALCULATED_YET};
+    SensorStructs::NisRejectReason m_rtkNisRejectReason{SensorStructs::NisRejectReason::NOT_CALCULATED_YET};
+    SensorStructs::NisRejectReason m_lidarNisRejectReason{SensorStructs::NisRejectReason::NOT_CALCULATED_YET};
+    uint32_t m_magNisRejectTimestampUs{0};
+    uint32_t m_accelNisRejectTimestampUs{0};
+    uint32_t m_baroNisRejectTimestampUs{0};
+    uint32_t m_gpsNisRejectTimestampUs{0};
+    uint32_t m_rtkNisRejectTimestampUs{0};
+    uint32_t m_lidarNisRejectTimestampUs{0};
+    // NIS is published once per physical measurement. Historical replay may
+    // recompute a correction, but must not make its diagnostics look new.
+    uint32_t m_lastGpsNisMeasurementTime{0};
+    uint32_t m_lastRtkNisMeasurementTime{0};
+    uint32_t m_lastLidarNisMeasurementTime{0};
     
 
     Eigen::Matrix<float, 16, 16>  m_F;      // state transition
@@ -146,18 +208,18 @@ private:
     Eigen::Matrix<float, 16, 16>  m_P_temp;
 
     // ── Process noise tuning ──────────────────────────────────────────────────
-    static constexpr float SIGMA_ACCEL_PROCESS = 1.0f; // m/s², white acceleration process noise
+    static constexpr float SIGMA_ACCEL_PROCESS = 0.5f; // m/s², white acceleration process noise
     static inline const Eigen::Vector3f SIGMA_BG {5e-5f, 5e-5f, 5e-5f};     // rad/s 
     static inline const Eigen::Vector3f SIGMA_BA_LOW{5e-4f, 5e-4f, 5e-4f};     // m/s² how much the bias can change per second (low-g accel bias)
 
     static inline const Eigen::Vector3f SIGMA_ALPHA{0.062f, 0.044f, 0.033f};  // rad/s 
-    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.53f, 0.77f, 1.53f};
+    static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.4f, 0.7f, 1.3f};
     // static inline const Eigen::Vector3f SIGMA_ALPHA{0.01f, 0.01f, 0.01f};  // rad/s 
     // static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.01f, 0.01f, 0.01f};
-    static constexpr float SIGMA_MAG_HEADING = 0.1f;   // rad, horizontal mag heading noise
+    static constexpr float SIGMA_MAG_HEADING = 0.2f;   // rad, horizontal mag heading noise
 
-    static constexpr float SIGMA_T          = 20.0f;      // K
-    static constexpr float SIGMA_P          = 100.0f;    // Pa
+    static constexpr float SIGMA_T          = 3.0f;      // K
+    static constexpr float SIGMA_P          = 12.0f;    // Pa
 
     static constexpr float SIGMA_VEL        = 0.1f;      // m/s — tune to your GPS spec
     static constexpr float SIGMA_RTK_GPS_POS      = 2.5f;   // m horizontal, NMEA fix quality 1
@@ -203,6 +265,7 @@ private:
         uint32_t lastGpsMeasurementTime{0};
         uint32_t lastLidarMeasurementTime{0};
         uint32_t lastRtkMeasurementTime{0};
+        uint32_t lastRtkMeasurementEpochMs{0};
         uint8_t nextCorrectionIndex{0};
     };
 

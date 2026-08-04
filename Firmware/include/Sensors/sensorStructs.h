@@ -11,6 +11,23 @@ definition of structs used within sensor classes
 
 namespace SensorStructs
 {
+    // Logged as uint8_t in estimatorlog.txt. NONE means the most recent NIS
+    // calculation succeeded; other values describe the latest rejected attempt.
+    enum class NisRejectReason : uint8_t
+    {
+        NONE = 0,
+        NOT_CALCULATED_YET = 1,
+        INVALID_MEASUREMENT = 2,
+        INVALID_REFERENCE = 3,
+        ACCELERATION_GATE = 4,
+        SENSOR_QUALITY_GATE = 5,
+        STALE_MEASUREMENT = 6,
+        FUTURE_MEASUREMENT = 7,
+        NO_HOME_REFERENCE = 8,
+        OUT_OF_RANGE = 9,
+        NUMERIC_FAILURE = 10,
+        NIS_DISABLED = 11
+    };
 
     struct ACCELGYRO_6AXIS_t{
         float ax; // (m/s^2)
@@ -105,8 +122,8 @@ namespace SensorStructs
         bool valid{false};
         bool home_set{false};
         uint32_t gnss_time_of_day_ms{0};
-        uint32_t measurement_timestamp_us{0};
-        uint32_t timestamp_us{0};
+        uint32_t measurement_timestamp_us{0}; // GNSS epoch mapped onto the local micros() clock
+        uint32_t timestamp_us{0};             // local packet receive time; unchanged by GNSS mapping
         uint32_t delay_us{0};
     };
 
@@ -189,6 +206,30 @@ namespace SensorStructs
         float gpsNis{-1.0f};
         float rtkNis{-1.0f};
         float lidarNis{-1.0f};
+        uint32_t magNisCount{0};
+        uint32_t accelNisCount{0};
+        uint32_t baroNisCount{0};
+        uint32_t gpsNisCount{0};
+        uint32_t rtkNisCount{0};
+        uint32_t lidarNisCount{0};
+        uint32_t magNisTimestampUs{0};
+        uint32_t accelNisTimestampUs{0};
+        uint32_t baroNisTimestampUs{0};
+        uint32_t gpsNisTimestampUs{0};
+        uint32_t rtkNisTimestampUs{0};
+        uint32_t lidarNisTimestampUs{0};
+        uint8_t magNisRejectReason{static_cast<uint8_t>(NisRejectReason::NOT_CALCULATED_YET)};
+        uint8_t accelNisRejectReason{static_cast<uint8_t>(NisRejectReason::NOT_CALCULATED_YET)};
+        uint8_t baroNisRejectReason{static_cast<uint8_t>(NisRejectReason::NOT_CALCULATED_YET)};
+        uint8_t gpsNisRejectReason{static_cast<uint8_t>(NisRejectReason::NOT_CALCULATED_YET)};
+        uint8_t rtkNisRejectReason{static_cast<uint8_t>(NisRejectReason::NOT_CALCULATED_YET)};
+        uint8_t lidarNisRejectReason{static_cast<uint8_t>(NisRejectReason::NOT_CALCULATED_YET)};
+        uint32_t magNisRejectTimestampUs{0};
+        uint32_t accelNisRejectTimestampUs{0};
+        uint32_t baroNisRejectTimestampUs{0};
+        uint32_t gpsNisRejectTimestampUs{0};
+        uint32_t rtkNisRejectTimestampUs{0};
+        uint32_t lidarNisRejectTimestampUs{0};
 
         // Diagonal of the 16-state EKF covariance, in state-vector order.
         Eigen::Matrix<float, 16, 1> covarianceDiagonal;

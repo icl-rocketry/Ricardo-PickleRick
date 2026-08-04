@@ -31,6 +31,7 @@ class TelemetryLogger : public LoggerBase
          * @param logframe 
          */
         void log(TelemetryLogframe& logframe);
+        void closeFile();
 
     private:
 

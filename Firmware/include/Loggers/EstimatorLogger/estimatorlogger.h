@@ -22,6 +22,7 @@ public:
                     std::function<void(std::string_view message)> logcb = nullptr);
 
     void log(EstimatorLogframe& logframe);
+    void closeFile();
 
 private:
     static constexpr size_t BUFFERED_FRAMES = 20;

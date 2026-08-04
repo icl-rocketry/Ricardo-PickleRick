@@ -10,6 +10,11 @@ namespace
         return static_cast<int32_t>(lhs - rhs) >= 0;
     }
 
+    bool timeAfter(const uint32_t lhs, const uint32_t rhs)
+    {
+        return static_cast<int32_t>(lhs - rhs) > 0;
+    }
+
     bool timerDue(const uint32_t now, uint32_t& previous, const uint32_t period) //decides whether an update should be made
     {
         if (previous == 0)
@@ -83,6 +88,12 @@ void EKF::setup(const Eigen::Vector3f& gyro_bias,
     m_lastGpsMeasurementTime = 0;
     m_lastLidarMeasurementTime = 0;
     m_lastRtkMeasurementTime = 0;
+    m_lastRtkMeasurementEpochMs = 0;
+    m_lastHandledGpsTimestampUs = 0;
+    m_lastFusedGpsTimestampUs = 0;
+    m_lastHandledRtkTimestampUs = 0;
+    m_lastHandledRtkEpochMs = 0;
+    m_lastFusedRtkTimestampUs = 0;
     m_covariancePredictDt = 0.0f;
     m_nextCorrectionIndex = 0;
     m_gnssTimeOffsetValid = false;
@@ -103,6 +114,41 @@ void EKF::setup(const Eigen::Vector3f& gyro_bias,
     m_gpsNis = -1.0f;
     m_rtkNis = -1.0f;
     m_lidarNis = -1.0f;
+    m_magNisCount = 0;
+    m_accelNisCount = 0;
+    m_baroNisCount = 0;
+    m_gpsNisCount = 0;
+    m_rtkNisCount = 0;
+    m_lidarNisCount = 0;
+    m_magNisTimestampUs = 0;
+    m_accelNisTimestampUs = 0;
+    m_baroNisTimestampUs = 0;
+    m_gpsNisTimestampUs = 0;
+    m_rtkNisTimestampUs = 0;
+    m_lidarNisTimestampUs = 0;
+    m_magNisRejectReason = SensorStructs::NisRejectReason::NOT_CALCULATED_YET;
+    m_accelNisRejectReason = SensorStructs::NisRejectReason::NOT_CALCULATED_YET;
+    m_baroNisRejectReason = SensorStructs::NisRejectReason::NOT_CALCULATED_YET;
+    m_gpsNisRejectReason = SensorStructs::NisRejectReason::NOT_CALCULATED_YET;
+    m_rtkNisRejectReason = SensorStructs::NisRejectReason::NOT_CALCULATED_YET;
+    m_lidarNisRejectReason = SensorStructs::NisRejectReason::NOT_CALCULATED_YET;
+    m_magNisRejectTimestampUs = 0;
+    m_accelNisRejectTimestampUs = 0;
+    m_baroNisRejectTimestampUs = 0;
+    m_gpsNisRejectTimestampUs = 0;
+    m_rtkNisRejectTimestampUs = 0;
+    m_lidarNisRejectTimestampUs = 0;
+    m_lastGpsNisMeasurementTime = 0;
+    m_lastRtkNisMeasurementTime = 0;
+    m_lastLidarNisMeasurementTime = 0;
+    if constexpr (!TimingConfig::EKF::GPS_CORRECTION_ENABLED)
+    {
+        m_gpsNisRejectReason = SensorStructs::NisRejectReason::NIS_DISABLED;
+    }
+    if constexpr (!TimingConfig::EKF::LIDAR_CORRECTION_ENABLED)
+    {
+        m_lidarNisRejectReason = SensorStructs::NisRejectReason::NIS_DISABLED;
+    }
     resetHistory();
 
     // Initial covariance — large uncertainty on everything except quaternion
@@ -178,16 +224,17 @@ void EKF::update(   const Eigen::Vector3f         gyro,
                       lidar,
                       rtk);
 
-    if (propagate_covariance)
+    bool gps_replayed_to_now = false;
+    if constexpr (TimingConfig::EKF::GPS_CORRECTION_ENABLED)
     {
-        return;
+        gps_replayed_to_now = handleGpsCorrection(now, gps); // Fuse fresh GPS, replaying delayed data when possible.
     }
-
-    const bool gps_replayed_to_now = handleGpsCorrection(now, gps); // Fuse fresh GPS, replaying delayed data when possible.
     const bool rtk_replayed_to_now = gps_replayed_to_now ? false : handleRtkCorrection(now, rtk);
     if (!gps_replayed_to_now && !rtk_replayed_to_now)
     {
-        runScheduledCorrection(now, accel, mag, baro, gps, lidar, rtk, true, false);
+        // GPS and RTK enter through their delayed-measurement handlers above.
+        // The normal scheduler only services the remaining sensors.
+        runScheduledCorrection(now, accel, mag, baro, gps, lidar, rtk, false, false);
     }
 
     overwriteLatestHistoryState();
@@ -378,7 +425,18 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
     using Vec3 = Eigen::Vector3f;
     using Vec4 = Eigen::Vector4f;
 
-    if (z_meas_raw.norm() < 1e-9f || m_mag_ref.norm() < 1e-9f) { return; }
+    if (!isFiniteVector(z_meas_raw) || z_meas_raw.norm() < 1e-9f)
+    {
+        m_magNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
+        m_magNisRejectTimestampUs = micros();
+        return;
+    }
+    if (!isFiniteVector(m_mag_ref) || m_mag_ref.norm() < 1e-9f)
+    {
+        m_magNisRejectReason = SensorStructs::NisRejectReason::INVALID_REFERENCE;
+        m_magNisRejectTimestampUs = micros();
+        return;
+    }
 
     const Vec3 z_meas = z_meas_raw.normalized();    // data in body
     const Vec3 m_n    = m_mag_ref.normalized();     // ref in NED
@@ -398,13 +456,23 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
     Vec3 measured_horizontal_ned = R_body_to_ned * z_meas;
     measured_horizontal_ned.z() = 0.0f;
     const float measured_horizontal_norm = measured_horizontal_ned.norm();
-    if (!std::isfinite(measured_horizontal_norm) || measured_horizontal_norm < 1e-6f) { return; }
+    if (!std::isfinite(measured_horizontal_norm) || measured_horizontal_norm < 1e-6f)
+    {
+        m_magNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
+        m_magNisRejectTimestampUs = micros();
+        return;
+    }
     measured_horizontal_ned /= measured_horizontal_norm;
 
     Vec3 reference_horizontal_ned = m_n;
     reference_horizontal_ned.z() = 0.0f;
     const float reference_horizontal_norm = reference_horizontal_ned.norm();
-    if (!std::isfinite(reference_horizontal_norm) || reference_horizontal_norm < 1e-6f) { return; }
+    if (!std::isfinite(reference_horizontal_norm) || reference_horizontal_norm < 1e-6f)
+    {
+        m_magNisRejectReason = SensorStructs::NisRejectReason::INVALID_REFERENCE;
+        m_magNisRejectTimestampUs = micros();
+        return;
+    }
     reference_horizontal_ned /= reference_horizontal_norm;
 
     float dot = measured_horizontal_ned.x() * reference_horizontal_ned.x()
@@ -424,7 +492,12 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
          0.5f * q0
     );
     const float yaw_tangent_norm_sq = yaw_tangent.squaredNorm();
-    if (!std::isfinite(yaw_tangent_norm_sq) || yaw_tangent_norm_sq < 1e-9f) { return; }
+    if (!std::isfinite(yaw_tangent_norm_sq) || yaw_tangent_norm_sq < 1e-9f)
+    {
+        m_magNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
+        m_magNisRejectTimestampUs = micros();
+        return;
+    }
 
     H_heading.block<1,4>(0,6) = yaw_tangent.transpose() / yaw_tangent_norm_sq;
 
@@ -435,8 +508,17 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
     }
 
     const float S = heading_variance + R_heading;
-    if (!std::isfinite(S) || S < 1e-9f) { return; }
+    if (!std::isfinite(S) || S < 1e-9f)
+    {
+        m_magNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
+        m_magNisRejectTimestampUs = micros();
+        return;
+    }
     m_magNis = heading_error * heading_error / S;
+    ++m_magNisCount;
+    m_magNisTimestampUs = micros();
+    m_magNisRejectReason = SensorStructs::NisRejectReason::NONE;
+    m_magNisRejectTimestampUs = 0;
 
     const Eigen::Matrix<float, 16, 1> K_heading = m_P * H_heading.transpose() / S;
     const float yaw_correction = (heading_variance / S) * heading_error;
@@ -474,6 +556,7 @@ EKF::CorrectionScheduleState EKF::captureScheduleState() const
     state.lastGpsMeasurementTime = m_lastGpsMeasurementTime;
     state.lastLidarMeasurementTime = m_lastLidarMeasurementTime;
     state.lastRtkMeasurementTime = m_lastRtkMeasurementTime;
+    state.lastRtkMeasurementEpochMs = m_lastRtkMeasurementEpochMs;
     state.nextCorrectionIndex = m_nextCorrectionIndex;
     return state;
 }
@@ -491,6 +574,7 @@ void EKF::restoreScheduleState(const CorrectionScheduleState& state)
     m_lastGpsMeasurementTime = state.lastGpsMeasurementTime;
     m_lastLidarMeasurementTime = state.lastLidarMeasurementTime;
     m_lastRtkMeasurementTime = state.lastRtkMeasurementTime;
+    m_lastRtkMeasurementEpochMs = state.lastRtkMeasurementEpochMs;
     m_nextCorrectionIndex = state.nextCorrectionIndex;
 }
 
@@ -836,7 +920,6 @@ bool EKF::applyGnssTimestamp(SensorStructs::RTK_t& rtk, const uint32_t now) cons
         return false;
     }
 
-    rtk.timestamp_us = measurement_us;
     rtk.measurement_timestamp_us = measurement_us;
     return true;
 }
@@ -844,7 +927,7 @@ bool EKF::applyGnssTimestamp(SensorStructs::RTK_t& rtk, const uint32_t now) cons
 bool EKF::handleGpsCorrection(const uint32_t now, const SensorStructs::GPS_t& gps)
 {
     if (gps.timestamp_us == 0 ||
-        gps.timestamp_us == m_lastGpsMeasurementTime)
+        gps.timestamp_us == m_lastHandledGpsTimestampUs)
     {
         return false;
     }
@@ -855,7 +938,12 @@ bool EKF::handleGpsCorrection(const uint32_t now, const SensorStructs::GPS_t& gp
                        delay_us <= TimingConfig::EKF::GPS_CORRECTION_MAX_AGE_US;
     if (!fresh)
     {
+        m_gpsNisRejectReason = in_past
+            ? SensorStructs::NisRejectReason::STALE_MEASUREMENT
+            : SensorStructs::NisRejectReason::FUTURE_MEASUREMENT;
+        m_gpsNisRejectTimestampUs = micros();
         m_lastGpsMeasurementTime = gps.timestamp_us;
+        m_lastHandledGpsTimestampUs = gps.timestamp_us;
         return false;
     }
 
@@ -872,6 +960,12 @@ bool EKF::handleGpsCorrection(const uint32_t now, const SensorStructs::GPS_t& gp
 
     m_lastGpsCorrectionTime = now;
     m_lastGpsMeasurementTime = gps.timestamp_us;
+    m_lastHandledGpsTimestampUs = gps.timestamp_us;
+    if (m_lastFusedGpsTimestampUs == 0 ||
+        timeAfter(gps.timestamp_us, m_lastFusedGpsTimestampUs))
+    {
+        m_lastFusedGpsTimestampUs = gps.timestamp_us;
+    }
     return replayed_to_now;
 }
 
@@ -900,7 +994,7 @@ bool EKF::fuseDelayedGPS(const SensorStructs::GPS_t& gps, const uint32_t now)
         return false;
     }
 
-    const HistorySample& base = m_history[static_cast<size_t>(base_index)]; //get the history sample at the base index, in microseconds
+    HistorySample& base = m_history[static_cast<size_t>(base_index)]; //get the history sample at the base index, in microseconds
     m_x = base.x; //find out what the state was at the base index
     m_P = base.P; // find out what the covariance was at the base 
     restoreScheduleState(base.schedule); //restore the schedule state at the base index time
@@ -911,6 +1005,14 @@ bool EKF::fuseDelayedGPS(const SensorStructs::GPS_t& gps, const uint32_t now)
     {
         updateGPS(gps);
         gps_fused = true;
+        // Persist the correction identity at the point where it enters history.
+        // Otherwise a later RTK rewind can start from a GPS-corrected state but
+        // see a pre-GPS schedule and apply the same GPS sample again.
+        m_lastGpsCorrectionTime = measurement_us;
+        m_lastGpsMeasurementTime = gps.timestamp_us;
+        base.x = m_x;
+        base.P = m_P;
+        base.schedule = captureScheduleState();
     }
 
     int index = base_index;
@@ -922,7 +1024,7 @@ bool EKF::fuseDelayedGPS(const SensorStructs::GPS_t& gps, const uint32_t now)
             break;
         }
 
-        const HistorySample& sample = m_history[static_cast<size_t>(next_index)];
+        HistorySample& sample = m_history[static_cast<size_t>(next_index)];
         if (!gps_fused && timeAtOrAfter(sample.timestamp_us, measurement_us))
         {
             const uint32_t partial_us = measurement_us - current_time;
@@ -934,6 +1036,8 @@ bool EKF::fuseDelayedGPS(const SensorStructs::GPS_t& gps, const uint32_t now)
 
             updateGPS(gps);
             gps_fused = true;
+            m_lastGpsCorrectionTime = measurement_us;
+            m_lastGpsMeasurementTime = gps.timestamp_us;
 
             const uint32_t remaining_us = sample.timestamp_us - measurement_us;
             const float remaining_dt = static_cast<float>(remaining_us) * 1e-6f;
@@ -957,18 +1061,26 @@ bool EKF::fuseDelayedGPS(const SensorStructs::GPS_t& gps, const uint32_t now)
                     sample.h_accel);
         }
 
-        if (!sample.propagate_covariance)
-        {
-            runScheduledCorrection(sample.timestamp_us,
-                                   sample.accel,
-                                   sample.mag,
-                                   sample.baro,
-                                   sample.gps,
-                                   sample.lidar,
-                                   sample.rtk,
-                                   false,
-                                   false);
-        }
+        // Replay every scheduler opportunity. The live path no longer skips
+        // correction work when covariance propagation is due, so doing so here
+        // would erase corrections (and disproportionately starve lidar).
+        runScheduledCorrection(sample.timestamp_us,
+                               sample.accel,
+                               sample.mag,
+                               sample.baro,
+                               sample.gps,
+                               sample.lidar,
+                               sample.rtk,
+                               false,
+                               true);
+
+        // Persist the replayed state at every history timestamp. A later
+        // delayed correction may rewind to any of these samples; leaving an
+        // intermediate sample unchanged would discard corrections applied by
+        // this replay.
+        sample.x = m_x;
+        sample.P = m_P;
+        sample.schedule = captureScheduleState();
 
         current_time = sample.timestamp_us;
         index = next_index;
@@ -979,35 +1091,66 @@ bool EKF::fuseDelayedGPS(const SensorStructs::GPS_t& gps, const uint32_t now)
 
 bool EKF::handleRtkCorrection(const uint32_t now, const SensorStructs::RTK_t& rtk)
 {
-    if (!rtk.valid ||
-        !rtk.home_set ||
-        rtk.fix_quality == 0 ||
-        rtk.timestamp_us == 0)
+    if (!rtk.valid || rtk.fix_quality == 0)
+    {
+        m_rtkNisRejectReason = SensorStructs::NisRejectReason::SENSOR_QUALITY_GATE;
+        m_rtkNisRejectTimestampUs = micros();
+        return false;
+    }
+    if (!rtk.home_set)
+    {
+        m_rtkNisRejectReason = SensorStructs::NisRejectReason::NO_HOME_REFERENCE;
+        m_rtkNisRejectTimestampUs = micros();
+        return false;
+    }
+    if (rtk.timestamp_us == 0)
     {
         return false;
     }
 
+    const bool duplicate_source = rtk.timestamp_us == m_lastHandledRtkTimestampUs;
+    const bool duplicate_epoch = rtk.gnss_time_of_day_ms != 0 &&
+                                 rtk.gnss_time_of_day_ms == m_lastHandledRtkEpochMs;
+    if (duplicate_source || duplicate_epoch)
+    {
+        // A sender can retransmit the same GNSS epoch with a new local receive
+        // timestamp. Advance the source watermark without fusing it again.
+        if (m_lastHandledRtkTimestampUs == 0 ||
+            timeAfter(rtk.timestamp_us, m_lastHandledRtkTimestampUs))
+        {
+            m_lastHandledRtkTimestampUs = rtk.timestamp_us;
+        }
+        return false;
+    }
+
     SensorStructs::RTK_t timestamped_rtk = rtk;
-    applyGnssTimestamp(timestamped_rtk, now);
-    const bool duplicate = timestamped_rtk.timestamp_us != 0 &&
-                           timestamped_rtk.timestamp_us == m_lastRtkMeasurementTime;
-    const uint32_t delay_us = timestamped_rtk.timestamp_us != 0
-        ? now - timestamped_rtk.timestamp_us
+    const bool has_measurement_time = applyGnssTimestamp(timestamped_rtk, now);
+    const uint32_t correction_timestamp_us = has_measurement_time
+        ? timestamped_rtk.measurement_timestamp_us
+        : timestamped_rtk.timestamp_us;
+    const uint32_t delay_us = correction_timestamp_us != 0
+        ? now - correction_timestamp_us
         : 0;
-    const bool in_past = timestamped_rtk.timestamp_us != 0 &&
-                         timeAtOrAfter(now, timestamped_rtk.timestamp_us);
+    const bool in_past = correction_timestamp_us != 0 &&
+                         timeAtOrAfter(now, correction_timestamp_us);
     const bool fresh = in_past &&
                        delay_us <= TimingConfig::EKF::RTK_CORRECTION_MAX_AGE_US;
 
-    if (timestamped_rtk.timestamp_us == 0 ||
-        duplicate)
+    if (correction_timestamp_us == 0)
     {
         return false;
     }
 
     if (!fresh)
     {
-        m_lastRtkMeasurementTime = timestamped_rtk.timestamp_us;
+        m_rtkNisRejectReason = in_past
+            ? SensorStructs::NisRejectReason::STALE_MEASUREMENT
+            : SensorStructs::NisRejectReason::FUTURE_MEASUREMENT;
+        m_rtkNisRejectTimestampUs = micros();
+        m_lastRtkMeasurementTime = rtk.timestamp_us;
+        m_lastRtkMeasurementEpochMs = rtk.gnss_time_of_day_ms;
+        m_lastHandledRtkTimestampUs = rtk.timestamp_us;
+        m_lastHandledRtkEpochMs = rtk.gnss_time_of_day_ms;
         return false;
     }
 
@@ -1026,7 +1169,15 @@ bool EKF::handleRtkCorrection(const uint32_t now, const SensorStructs::RTK_t& rt
     }
 
     m_lastRtkCorrectionTime = now;
-    m_lastRtkMeasurementTime = timestamped_rtk.timestamp_us;
+    m_lastRtkMeasurementTime = rtk.timestamp_us;
+    m_lastRtkMeasurementEpochMs = rtk.gnss_time_of_day_ms;
+    m_lastHandledRtkTimestampUs = rtk.timestamp_us;
+    m_lastHandledRtkEpochMs = rtk.gnss_time_of_day_ms;
+    if (m_lastFusedRtkTimestampUs == 0 ||
+        timeAfter(rtk.timestamp_us, m_lastFusedRtkTimestampUs))
+    {
+        m_lastFusedRtkTimestampUs = rtk.timestamp_us;
+    }
     return replayed_to_now;
 }
 
@@ -1055,7 +1206,7 @@ bool EKF::fuseDelayedRTK(const SensorStructs::RTK_t& rtk, const uint32_t now)
         return false;
     }
 
-    const HistorySample& base = m_history[static_cast<size_t>(base_index)];
+    HistorySample& base = m_history[static_cast<size_t>(base_index)];
     m_x = base.x;
     m_P = base.P;
     restoreScheduleState(base.schedule);
@@ -1068,6 +1219,12 @@ bool EKF::fuseDelayedRTK(const SensorStructs::RTK_t& rtk, const uint32_t now)
         delayed_rtk.measurement_timestamp_us = measurement_us;
         updateRTK(delayed_rtk);
         rtk_fused = true;
+        m_lastRtkCorrectionTime = measurement_us;
+        m_lastRtkMeasurementTime = rtk.timestamp_us;
+        m_lastRtkMeasurementEpochMs = rtk.gnss_time_of_day_ms;
+        base.x = m_x;
+        base.P = m_P;
+        base.schedule = captureScheduleState();
     }
 
     int index = base_index;
@@ -1079,7 +1236,7 @@ bool EKF::fuseDelayedRTK(const SensorStructs::RTK_t& rtk, const uint32_t now)
             break;
         }
 
-        const HistorySample& sample = m_history[static_cast<size_t>(next_index)];
+        HistorySample& sample = m_history[static_cast<size_t>(next_index)];
         if (!rtk_fused && timeAtOrAfter(sample.timestamp_us, measurement_us))
         {
             const uint32_t partial_us = measurement_us - current_time;
@@ -1093,6 +1250,9 @@ bool EKF::fuseDelayedRTK(const SensorStructs::RTK_t& rtk, const uint32_t now)
             delayed_rtk.measurement_timestamp_us = measurement_us;
             updateRTK(delayed_rtk);
             rtk_fused = true;
+            m_lastRtkCorrectionTime = measurement_us;
+            m_lastRtkMeasurementTime = rtk.timestamp_us;
+            m_lastRtkMeasurementEpochMs = rtk.gnss_time_of_day_ms;
 
             const uint32_t remaining_us = sample.timestamp_us - measurement_us;
             const float remaining_dt = static_cast<float>(remaining_us) * 1e-6f;
@@ -1116,18 +1276,21 @@ bool EKF::fuseDelayedRTK(const SensorStructs::RTK_t& rtk, const uint32_t now)
                     sample.h_accel);
         }
 
-        if (!sample.propagate_covariance)
-        {
-            runScheduledCorrection(sample.timestamp_us,
-                                   sample.accel,
-                                   sample.mag,
-                                   sample.baro,
-                                   sample.gps,
-                                   sample.lidar,
-                                   sample.rtk,
-                                   true,
-                                   false);
-        }
+        runScheduledCorrection(sample.timestamp_us,
+                               sample.accel,
+                               sample.mag,
+                               sample.baro,
+                               sample.gps,
+                               sample.lidar,
+                               sample.rtk,
+                               true,
+                               false);
+
+        // Persist the replayed state at every history timestamp so subsequent
+        // delayed RTK corrections retain all corrections already replayed.
+        sample.x = m_x;
+        sample.P = m_P;
+        sample.schedule = captureScheduleState();
 
         current_time = sample.timestamp_us;
         index = next_index;
@@ -1181,14 +1344,19 @@ void EKF::runScheduledCorrection(const uint32_t now,
                 }
                 break;
             case 3:
-                if (allow_gps &&
-                    gps.timestamp_us != 0 &&
-                    gps.timestamp_us != m_lastGpsMeasurementTime &&
-                    timerDue(now, m_lastGpsCorrectionTime, TimingConfig::EKF::GPS_CORRECTION_DELTA_US))
+                if constexpr (TimingConfig::EKF::GPS_CORRECTION_ENABLED)
                 {
-                    updateGPS(gps);
-                    m_lastGpsMeasurementTime = gps.timestamp_us;
-                    return;
+                    if (allow_gps &&
+                        gps.timestamp_us != 0 &&
+                        m_lastFusedGpsTimestampUs != 0 &&
+                        timeAtOrAfter(m_lastFusedGpsTimestampUs, gps.timestamp_us) &&
+                        gps.timestamp_us != m_lastGpsMeasurementTime &&
+                        timerDue(now, m_lastGpsCorrectionTime, TimingConfig::EKF::GPS_CORRECTION_DELTA_US))
+                    {
+                        updateGPS(gps);
+                        m_lastGpsMeasurementTime = gps.timestamp_us;
+                        return;
+                    }
                 }
                 break;
             case 4:
@@ -1197,12 +1365,17 @@ void EKF::runScheduledCorrection(const uint32_t now,
                     rtk.home_set &&
                     rtk.fix_quality != 0 &&
                     rtk.timestamp_us != 0 &&
-                    rtk.timestamp_us != m_lastRtkMeasurementTime)
+                    m_lastFusedRtkTimestampUs != 0 &&
+                    timeAtOrAfter(m_lastFusedRtkTimestampUs, rtk.timestamp_us) &&
+                    rtk.timestamp_us != m_lastRtkMeasurementTime &&
+                    (rtk.gnss_time_of_day_ms == 0 ||
+                     rtk.gnss_time_of_day_ms != m_lastRtkMeasurementEpochMs))
                 {
                     const bool fresh = now - rtk.timestamp_us <= TimingConfig::EKF::RTK_CORRECTION_MAX_AGE_US;
                     if (!fresh)
                     {
                         m_lastRtkMeasurementTime = rtk.timestamp_us;
+                        m_lastRtkMeasurementEpochMs = rtk.gnss_time_of_day_ms;
                         break;
                     }
 
@@ -1210,18 +1383,22 @@ void EKF::runScheduledCorrection(const uint32_t now,
                     {
                         updateRTK(rtk);
                         m_lastRtkMeasurementTime = rtk.timestamp_us;
+                        m_lastRtkMeasurementEpochMs = rtk.gnss_time_of_day_ms;
                         return;
                     }
                 }
                 break;
             case 5:
-                if (lidar.timestamp_us != 0 &&
-                    lidar.timestamp_us != m_lastLidarMeasurementTime &&
-                    timerDue(now, m_lastLidarCorrectionTime, TimingConfig::EKF::LIDAR_CORRECTION_DELTA_US))
+                if constexpr (TimingConfig::EKF::LIDAR_CORRECTION_ENABLED)
                 {
-                    updateLidar(lidar);
-                    m_lastLidarMeasurementTime = lidar.timestamp_us;
-                    return;
+                    if (lidar.timestamp_us != 0 &&
+                        lidar.timestamp_us != m_lastLidarMeasurementTime &&
+                        timerDue(now, m_lastLidarCorrectionTime, TimingConfig::EKF::LIDAR_CORRECTION_DELTA_US))
+                    {
+                        updateLidar(lidar);
+                        m_lastLidarMeasurementTime = lidar.timestamp_us;
+                        return;
+                    }
                 }
                 break;
             default:
@@ -1238,6 +1415,8 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
 
     const float z_norm = z_accel.norm();
     if (!std::isfinite(z_norm) || z_norm < 1e-6f) {
+        m_accelNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
+        m_accelNisRejectTimestampUs = micros();
         return;
     }
 
@@ -1245,6 +1424,8 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
 
     // Hard reject only when accel is clearly not gravity-dominated
     if (accel_error > ACCEL_GATE) {
+        m_accelNisRejectReason = SensorStructs::NisRejectReason::ACCELERATION_GATE;
+        m_accelNisRejectTimestampUs = micros();
         return;
     }
     // Smoothly reduce accel trust as |a| moves away from 1g
@@ -1277,6 +1458,18 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
 
     const Mat3 S = m_H * m_P * m_H.transpose() + R;
     m_accelNis = m_y.segment<3>(3).dot(S.ldlt().solve(m_y.segment<3>(3)));
+    ++m_accelNisCount;
+    m_accelNisTimestampUs = micros();
+    if (std::isfinite(m_accelNis))
+    {
+        m_accelNisRejectReason = SensorStructs::NisRejectReason::NONE;
+        m_accelNisRejectTimestampUs = 0;
+    }
+    else
+    {
+        m_accelNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
+        m_accelNisRejectTimestampUs = m_accelNisTimestampUs;
+    }
     m_K = m_P * m_H.transpose() * S.ldlt().solve(Mat3::Identity());
 
    
@@ -1340,6 +1533,18 @@ void EKF::updateBaro(const float pressure, const float temperature)
     // ── Kalman gain (16×2) ────────────────────────────────────────────────────
     const Mat2 S = H_baro * m_P * H_baro.transpose() + R_baro;
     m_baroNis = m_y.segment<2>(6).dot(S.ldlt().solve(m_y.segment<2>(6)));
+    ++m_baroNisCount;
+    m_baroNisTimestampUs = micros();
+    if (std::isfinite(m_baroNis))
+    {
+        m_baroNisRejectReason = SensorStructs::NisRejectReason::NONE;
+        m_baroNisRejectTimestampUs = 0;
+    }
+    else
+    {
+        m_baroNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
+        m_baroNisRejectTimestampUs = m_baroNisTimestampUs;
+    }
     const Eigen::Matrix<float, 16, 2> K_baro = m_P * H_baro.transpose() * S.ldlt().solve(Mat2::Identity());
 
     // ── State update ──────────────────────────────────────────────────────────
@@ -1374,8 +1579,34 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
     using Vec3 = Eigen::Vector3f;
     using Vec6 = Eigen::Matrix<float, 6, 1>;
 
+    const bool publish_nis = gps.timestamp_us != 0 &&
+                             (m_lastGpsNisMeasurementTime == 0 ||
+                              timeAfter(gps.timestamp_us, m_lastGpsNisMeasurementTime));
+    if (publish_nis)
+    {
+        m_lastGpsNisMeasurementTime = gps.timestamp_us;
+    }
+
+    if constexpr (!TimingConfig::EKF::GPS_CORRECTION_ENABLED)
+    {
+        if (publish_nis)
+        {
+            m_gpsNisRejectReason = SensorStructs::NisRejectReason::NIS_DISABLED;
+            m_gpsNisRejectTimestampUs = 0;
+        }
+        return;
+    }
+
     // ── Quality gate ──────────────────────────────────────────────────────────
-    if (!gps.valid || gps.fix < 1 || gps.sat < 4) { return; }
+    if (!gps.valid || gps.fix < 1 || gps.sat < 4)
+    {
+        if (publish_nis)
+        {
+            m_gpsNisRejectReason = SensorStructs::NisRejectReason::SENSOR_QUALITY_GATE;
+            m_gpsNisRejectTimestampUs = micros();
+        }
+        return;
+    }
 
     const bool pos_valid = USE_GPS_POSITION &&
                            std::isfinite(gps.hAcc) &&
@@ -1385,7 +1616,15 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
                            std::isfinite(gps.v_e) &&
                            std::isfinite(gps.v_d);
 
-    if (!pos_valid && !vel_valid) { return; }
+    if (!pos_valid && !vel_valid)
+    {
+        if (publish_nis)
+        {
+            m_gpsNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
+            m_gpsNisRejectTimestampUs = micros();
+        }
+        return;
+    }
 
     if (pos_valid) {
         // ── Convert to radians in double ──────────────────────────────────────
@@ -1426,6 +1665,11 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
         m_y.segment<3>(8).setZero();
         m_y.segment<3>(11) = z_vel - m_h.segment<3>(11);
         m_x.segment<3>(3) = z_vel;
+        if (publish_nis)
+        {
+            m_gpsNisRejectReason = SensorStructs::NisRejectReason::NIS_DISABLED;
+            m_gpsNisRejectTimestampUs = micros();
+        }
         return;
     }
 
@@ -1475,7 +1719,23 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
     }
 
     const Mat6 S    = H_gps * m_P * H_gps.transpose() + R_gps;
-    m_gpsNis = m_y.segment<6>(8).dot(S.ldlt().solve(m_y.segment<6>(8)));
+    const float gps_nis = m_y.segment<6>(8).dot(S.ldlt().solve(m_y.segment<6>(8)));
+    if (publish_nis)
+    {
+        m_gpsNis = gps_nis;
+        ++m_gpsNisCount;
+        m_gpsNisTimestampUs = micros();
+        if (std::isfinite(m_gpsNis))
+        {
+            m_gpsNisRejectReason = SensorStructs::NisRejectReason::NONE;
+            m_gpsNisRejectTimestampUs = 0;
+        }
+        else
+        {
+            m_gpsNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
+            m_gpsNisRejectTimestampUs = m_gpsNisTimestampUs;
+        }
+    }
 
     // ── Kalman gain (16×6) ────────────────────────────────────────────────────
     const Eigen::Matrix<float, 16, 6> K_gps = m_P * H_gps.transpose() * S.ldlt().solve(Mat6::Identity());
@@ -1510,10 +1770,34 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
     using Mat6 = Eigen::Matrix<float, 6, 6>;
     using Vec6 = Eigen::Matrix<float, 6, 1>;
 
-    if (!rtk.valid || rtk.fix_quality == 0) { return; }
+    const bool publish_nis = rtk.timestamp_us != 0 &&
+                             (m_lastRtkNisMeasurementTime == 0 ||
+                              timeAfter(rtk.timestamp_us, m_lastRtkNisMeasurementTime));
+    if (publish_nis)
+    {
+        m_lastRtkNisMeasurementTime = rtk.timestamp_us;
+    }
+
+    if (!rtk.valid || rtk.fix_quality == 0)
+    {
+        if (publish_nis)
+        {
+            m_rtkNisRejectReason = SensorStructs::NisRejectReason::SENSOR_QUALITY_GATE;
+            m_rtkNisRejectTimestampUs = micros();
+        }
+        return;
+    }
 
     const Eigen::Vector3f z_pos(rtk.x, rtk.y, rtk.z);
-    if (!z_pos.allFinite()) { return; }
+    if (!z_pos.allFinite())
+    {
+        if (publish_nis)
+        {
+            m_rtkNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
+            m_rtkNisRejectTimestampUs = micros();
+        }
+        return;
+    }
 
     Vec6 innovation = Vec6::Zero();
     innovation.segment<3>(0) = z_pos - m_x.segment<3>(0);
@@ -1524,7 +1808,15 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
     if (USE_RTK_VELOCITY)
     {
         const Eigen::Vector3f z_vel(rtk.u, rtk.v, rtk.w);
-        if (!z_vel.allFinite()) { return; }
+        if (!z_vel.allFinite())
+        {
+            if (publish_nis)
+            {
+                m_rtkNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
+                m_rtkNisRejectTimestampUs = micros();
+            }
+            return;
+        }
 
         innovation.segment<3>(3) = z_vel - m_x.segment<3>(3);
         H_rtk.block<3,3>(3,3) = Eigen::Matrix3f::Identity();
@@ -1574,7 +1866,23 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
     R_rtk.block<3,3>(3,3) = (sigma_vel * sigma_vel) * Eigen::Matrix3f::Identity();
 
     const Mat6 S = H_rtk * m_P * H_rtk.transpose() + R_rtk;
-    m_rtkNis = innovation.dot(S.ldlt().solve(innovation));
+    const float rtk_nis = innovation.dot(S.ldlt().solve(innovation));
+    if (publish_nis)
+    {
+        m_rtkNis = rtk_nis;
+        ++m_rtkNisCount;
+        m_rtkNisTimestampUs = micros();
+        if (std::isfinite(m_rtkNis))
+        {
+            m_rtkNisRejectReason = SensorStructs::NisRejectReason::NONE;
+            m_rtkNisRejectTimestampUs = 0;
+        }
+        else
+        {
+            m_rtkNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
+            m_rtkNisRejectTimestampUs = m_rtkNisTimestampUs;
+        }
+    }
     Eigen::Matrix<float, 16, 6> K_rtk = m_P * H_rtk.transpose() * S.ldlt().solve(Mat6::Identity());
 
     if (!USE_RTK_VERTICAL)
@@ -1611,12 +1919,64 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
 
 void EKF::updateLidar(const SensorStructs::LIDAR_t& lidar)
 {
+    const bool publish_nis = lidar.timestamp_us != 0 &&
+                             (m_lastLidarNisMeasurementTime == 0 ||
+                              timeAfter(lidar.timestamp_us, m_lastLidarNisMeasurementTime));
+    if (publish_nis)
+    {
+        m_lastLidarNisMeasurementTime = lidar.timestamp_us;
+    }
+
+    if constexpr (!TimingConfig::EKF::LIDAR_CORRECTION_ENABLED)
+    {
+        if (publish_nis)
+        {
+            m_lidarNisRejectReason = SensorStructs::NisRejectReason::NIS_DISABLED;
+            m_lidarNisRejectTimestampUs = 0;
+        }
+        return;
+    }
+
     // Skip if no home reference set, measurement invalid, or out of rated range
     const float h0 = m_setHome_ref.launch_lidar_dist;
-    if (h0 <= 0.0f || !lidar.valid) { return; }
+    if (h0 <= 0.0f)
+    {
+        if (publish_nis)
+        {
+            m_lidarNisRejectReason = SensorStructs::NisRejectReason::NO_HOME_REFERENCE;
+            m_lidarNisRejectTimestampUs = micros();
+        }
+        return;
+    }
+    if (!lidar.valid)
+    {
+        if (publish_nis)
+        {
+            m_lidarNisRejectReason = SensorStructs::NisRejectReason::SENSOR_QUALITY_GATE;
+            m_lidarNisRejectTimestampUs = micros();
+        }
+        return;
+    }
 
     const float z_m = lidar.dist * 0.01f;   // cm → m
-    if (z_m > LIDAR_MAX_RANGE) { return; }
+    if (!std::isfinite(z_m))
+    {
+        if (publish_nis)
+        {
+            m_lidarNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
+            m_lidarNisRejectTimestampUs = micros();
+        }
+        return;
+    }
+    if (z_m > LIDAR_MAX_RANGE)
+    {
+        if (publish_nis)
+        {
+            m_lidarNisRejectReason = SensorStructs::NisRejectReason::OUT_OF_RANGE;
+            m_lidarNisRejectTimestampUs = micros();
+        }
+        return;
+    }
 
     // ── Measurement model ─────────────────────────────────────────────────────
     // At home: pd=0, lidar reads h0. As rocket climbs, pd goes negative, lidar
@@ -1635,7 +1995,23 @@ void EKF::updateLidar(const SensorStructs::LIDAR_t& lidar)
 
     // ── Kalman gain (16×1) ────────────────────────────────────────────────────
     const float S = (H_lidar * m_P * H_lidar.transpose())(0, 0) + R_lidar;
-    m_lidarNis = m_y(14) * m_y(14) / S;
+    const float lidar_nis = m_y(14) * m_y(14) / S;
+    if (publish_nis)
+    {
+        m_lidarNis = lidar_nis;
+        ++m_lidarNisCount;
+        m_lidarNisTimestampUs = micros();
+        if (std::isfinite(m_lidarNis))
+        {
+            m_lidarNisRejectReason = SensorStructs::NisRejectReason::NONE;
+            m_lidarNisRejectTimestampUs = 0;
+        }
+        else
+        {
+            m_lidarNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
+            m_lidarNisRejectTimestampUs = m_lidarNisTimestampUs;
+        }
+    }
     const Eigen::Matrix<float, 16, 1> K_lidar = (m_P * H_lidar.transpose()) / S;
 
     // ── State update ──────────────────────────────────────────────────────────

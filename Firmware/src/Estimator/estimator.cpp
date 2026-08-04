@@ -230,12 +230,15 @@ bool Estimator::hasGpsLock(const SensorStructs::GPS_t& gps) const
 
 uint32_t Estimator::rtkDelayUs(const SensorStructs::RTK_t& data, const uint32_t now_us) const
 {
-    if (data.timestamp_us == 0)
+    const uint32_t measurement_timestamp_us = data.measurement_timestamp_us != 0
+        ? data.measurement_timestamp_us
+        : data.timestamp_us;
+    if (measurement_timestamp_us == 0)
     {
         return 0;
     }
 
-    const uint32_t delay_us = now_us - data.timestamp_us;
+    const uint32_t delay_us = now_us - measurement_timestamp_us;
     return static_cast<int32_t>(delay_us) >= 0 ? delay_us : 0;
 }
 
@@ -357,6 +360,30 @@ void Estimator::updateState()
     m_state.gpsNis                  = m_ekf.gpsNis();
     m_state.rtkNis                  = m_ekf.rtkNis();
     m_state.lidarNis                = m_ekf.lidarNis();
+    m_state.magNisCount             = m_ekf.magNisCount();
+    m_state.accelNisCount           = m_ekf.accelNisCount();
+    m_state.baroNisCount            = m_ekf.baroNisCount();
+    m_state.gpsNisCount             = m_ekf.gpsNisCount();
+    m_state.rtkNisCount             = m_ekf.rtkNisCount();
+    m_state.lidarNisCount           = m_ekf.lidarNisCount();
+    m_state.magNisTimestampUs       = m_ekf.magNisTimestampUs();
+    m_state.accelNisTimestampUs     = m_ekf.accelNisTimestampUs();
+    m_state.baroNisTimestampUs      = m_ekf.baroNisTimestampUs();
+    m_state.gpsNisTimestampUs       = m_ekf.gpsNisTimestampUs();
+    m_state.rtkNisTimestampUs       = m_ekf.rtkNisTimestampUs();
+    m_state.lidarNisTimestampUs     = m_ekf.lidarNisTimestampUs();
+    m_state.magNisRejectReason      = m_ekf.magNisRejectReason();
+    m_state.accelNisRejectReason    = m_ekf.accelNisRejectReason();
+    m_state.baroNisRejectReason     = m_ekf.baroNisRejectReason();
+    m_state.gpsNisRejectReason      = m_ekf.gpsNisRejectReason();
+    m_state.rtkNisRejectReason      = m_ekf.rtkNisRejectReason();
+    m_state.lidarNisRejectReason    = m_ekf.lidarNisRejectReason();
+    m_state.magNisRejectTimestampUs = m_ekf.magNisRejectTimestampUs();
+    m_state.accelNisRejectTimestampUs = m_ekf.accelNisRejectTimestampUs();
+    m_state.baroNisRejectTimestampUs = m_ekf.baroNisRejectTimestampUs();
+    m_state.gpsNisRejectTimestampUs = m_ekf.gpsNisRejectTimestampUs();
+    m_state.rtkNisRejectTimestampUs = m_ekf.rtkNisRejectTimestampUs();
+    m_state.lidarNisRejectTimestampUs = m_ekf.lidarNisRejectTimestampUs();
     m_state.covarianceDiagonal      = m_ekf.covarianceDiagonal();
 
     // ── Calibration ───────────────────────────────────────────────────────────

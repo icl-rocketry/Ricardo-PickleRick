@@ -31,7 +31,7 @@ void PDController::setup()
     // m_K_d_pos << 2.6f, 2.6f, 3.7f; 
     // m_K_i_pos << 0.02f, 0.02f, 0.01f;
 
-    m_K_p_pos << 0.3f, 0.3f, 1.5f;   // NED position control gains
+    m_K_p_pos << 0.5f, 0.5f, 1.3f;   // NED position control gains
     m_K_d_pos << 2.0f, 2.0f, 3.5f; 
     m_K_i_pos << 0.0f, 0.0f, 0.0f;
 

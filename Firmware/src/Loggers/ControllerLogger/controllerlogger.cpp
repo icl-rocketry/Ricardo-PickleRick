@@ -54,3 +54,13 @@ void ControllerLogger::log(ControllerTelemetryPacket& packet)
         }
     }
 }
+
+void ControllerLogger::closeFile()
+{
+    if (_file)
+    {
+        _file->close(false);
+        _file.reset();
+    }
+    initialized = false;
+}

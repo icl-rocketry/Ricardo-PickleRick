@@ -215,8 +215,6 @@ void System::systemSetup()
 
     primarysd.setup();
 
-    initializeLoggers();    
-
     // network interfaces
     radio.setup();
     canbus.setup();
@@ -291,6 +289,12 @@ void System::systemUpdate()
         }
     }
 
+    if (!logging_start_attempted && estimator.isHomeSet())
+    {
+        logging_start_attempted = true;
+        logging_started = initializeLoggers();
+    }
+
     const uint32_t slow_start = micros();
     updateSlowSensors(current_time);
     const uint32_t slow_dt = micros() - slow_start;
@@ -322,6 +326,7 @@ void System::systemUpdate()
         }
     }
 
+    if (logging_started)
     {
         const uint32_t log_start = micros();
         logEstimator();
@@ -332,8 +337,8 @@ void System::systemUpdate()
         {
             max_log_path_time_us = log_dt;
         }
+        logTelemetry();
     }
-    logTelemetry();
 
     if constexpr (DebugConfig::PerformancePrintEnabled)
     {
@@ -442,7 +447,7 @@ void System::loadConfig()
    
 }
 
-void System::initializeLoggers()
+bool System::initializeLoggers()
 {   
     //check if sd card is mounted
     if (primarysd.getState() != StoreBase::STATE::NOMINAL)
@@ -450,7 +455,7 @@ void System::initializeLoggers()
         
         loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(nullptr,networkmanager);
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("SD Init Failed");
-        return;
+        return false;
     }
 
     // Group logs by the firmware build timestamp rather than a boot counter.
@@ -484,9 +489,15 @@ void System::initializeLoggers()
     primarysd.mkdir(log_directory_path);
 
     std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END));
-    std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50); 
+    std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50);
     std::unique_ptr<WrappedFile> estimatorlogfile = primarysd.open(log_directory_path + "/estimatorlog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),10);
     std::unique_ptr<WrappedFile> controllerlogfile = primarysd.open(log_directory_path + "/controller.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),10);
+
+    if (!syslogfile || !telemetrylogfile || !estimatorlogfile || !controllerlogfile)
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Failed to open log files after home set");
+        return false;
+    }
     
     // intialize sys logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(std::move(syslogfile),networkmanager);
@@ -500,7 +511,8 @@ void System::initializeLoggers()
     //initialize controller logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::CONTROLLER>().initialize(std::move(controllerlogfile));
 
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("SD Init Complete");
+    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("SD Init Complete: logging started after home set");
+    return true;
 }
 
 void System::logEstimator()
@@ -601,6 +613,14 @@ void System::logEstimator()
         logframe.y_lidar = state.lidarInnovation;
         logframe.nis_mag = state.magNis; logframe.nis_accel = state.accelNis; logframe.nis_baro = state.baroNis;
         logframe.nis_gps = state.gpsNis; logframe.nis_rtk = state.rtkNis; logframe.nis_lidar = state.lidarNis;
+        logframe.nis_mag_count = state.magNisCount; logframe.nis_accel_count = state.accelNisCount; logframe.nis_baro_count = state.baroNisCount;
+        logframe.nis_gps_count = state.gpsNisCount; logframe.nis_rtk_count = state.rtkNisCount; logframe.nis_lidar_count = state.lidarNisCount;
+        logframe.nis_mag_timestamp_us = state.magNisTimestampUs; logframe.nis_accel_timestamp_us = state.accelNisTimestampUs; logframe.nis_baro_timestamp_us = state.baroNisTimestampUs;
+        logframe.nis_gps_timestamp_us = state.gpsNisTimestampUs; logframe.nis_rtk_timestamp_us = state.rtkNisTimestampUs; logframe.nis_lidar_timestamp_us = state.lidarNisTimestampUs;
+        logframe.nis_mag_reject_reason = state.magNisRejectReason; logframe.nis_accel_reject_reason = state.accelNisRejectReason; logframe.nis_baro_reject_reason = state.baroNisRejectReason;
+        logframe.nis_gps_reject_reason = state.gpsNisRejectReason; logframe.nis_rtk_reject_reason = state.rtkNisRejectReason; logframe.nis_lidar_reject_reason = state.lidarNisRejectReason;
+        logframe.nis_mag_reject_timestamp_us = state.magNisRejectTimestampUs; logframe.nis_accel_reject_timestamp_us = state.accelNisRejectTimestampUs; logframe.nis_baro_reject_timestamp_us = state.baroNisRejectTimestampUs;
+        logframe.nis_gps_reject_timestamp_us = state.gpsNisRejectTimestampUs; logframe.nis_rtk_reject_timestamp_us = state.rtkNisRejectTimestampUs; logframe.nis_lidar_reject_timestamp_us = state.lidarNisRejectTimestampUs;
         logframe.p0 = state.covarianceDiagonal(0); logframe.p1 = state.covarianceDiagonal(1);
         logframe.p2 = state.covarianceDiagonal(2); logframe.p3 = state.covarianceDiagonal(3);
         logframe.p4 = state.covarianceDiagonal(4); logframe.p5 = state.covarianceDiagonal(5);

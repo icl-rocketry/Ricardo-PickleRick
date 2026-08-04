@@ -78,3 +78,14 @@ void EstimatorLogger::flushBuffer()
         }
     }
 }
+
+void EstimatorLogger::closeFile()
+{
+    flushBuffer();
+    if (_file)
+    {
+        _file->close(false);
+        _file.reset();
+    }
+    initialized = false;
+}

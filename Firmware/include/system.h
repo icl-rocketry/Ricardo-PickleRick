@@ -61,7 +61,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void setupPins();
         void configureNetwork();
         void loadConfig();
-        void initializeLoggers();
+        bool initializeLoggers();
         void logEstimator();
         void logTelemetry();
         void configureRadio(JsonObjectConst conf);
@@ -71,6 +71,8 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         static constexpr std::string_view log_path = "/Logs";
         static constexpr std::string_view config_path = "/Config/rml.jsonc";
+        bool logging_start_attempted = false;
+        bool logging_started = false;
         
         uint32_t telemetry_log_delta = TimingConfig::Scheduler::TELEMETRY_LOG_DELTA_US;
         uint32_t prev_telemetry_log_time = 0;

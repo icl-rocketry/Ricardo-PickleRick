@@ -43,3 +43,13 @@ void TelemetryLogger::log(TelemetryLogframe& logframe)
     }
 
 }
+
+void TelemetryLogger::closeFile()
+{
+    if (_file)
+    {
+        _file->close(false);
+        _file.reset();
+    }
+    initialized = false;
+}

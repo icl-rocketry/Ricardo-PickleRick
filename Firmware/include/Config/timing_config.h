@@ -48,6 +48,11 @@ namespace TimingConfig
 
     namespace EKF
     {
+        // Measurement-fusion switches. Sensors continue to be read and logged
+        // when disabled; only their EKF correction steps are bypassed.
+        constexpr bool GPS_CORRECTION_ENABLED = true;
+        constexpr bool LIDAR_CORRECTION_ENABLED = true;
+
         constexpr uint32_t COVARIANCE_UPDATE_RATE_HZ = 100;
         constexpr uint32_t ACCEL_CORRECTION_RATE_HZ = 20;
         constexpr uint32_t MAG_CORRECTION_RATE_HZ = 10;
