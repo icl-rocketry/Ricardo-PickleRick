@@ -116,6 +116,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 
         SensorStructs::RTK_t rtk_measurement;
         rtk.update(rtk_measurement);
+        m_state.rtkUtcTimeOfDayMs = rtk_measurement.gnss_time_of_day_ms;
 
         // Feed filtered low-g accel + gyro into EKF
         const uint32_t ekf_start_us = micros();
@@ -350,6 +351,13 @@ void Estimator::updateState()
     m_state.gpsVelInnovation        = m_ekf.gpsVelInnovation();
     m_state.expectedLidarReading    = m_ekf.expectedLidarReading();
     m_state.lidarInnovation         = m_ekf.lidarInnovation();
+    m_state.magNis                  = m_ekf.magNis();
+    m_state.accelNis                = m_ekf.accelNis();
+    m_state.baroNis                 = m_ekf.baroNis();
+    m_state.gpsNis                  = m_ekf.gpsNis();
+    m_state.rtkNis                  = m_ekf.rtkNis();
+    m_state.lidarNis                = m_ekf.lidarNis();
+    m_state.covarianceDiagonal      = m_ekf.covarianceDiagonal();
 
     // ── Calibration ───────────────────────────────────────────────────────────
     m_state.accelBiases             = m_ekf.accelBias();

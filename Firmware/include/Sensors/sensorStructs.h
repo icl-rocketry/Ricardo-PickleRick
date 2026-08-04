@@ -164,6 +164,7 @@ namespace SensorStructs
         
         Eigen::Vector3f gpsPosition;            // (m)                                  (NED)
         uint32_t rtkDelayUs;                    // (us) local receive/update time minus RTK measurement epoch
+        uint32_t rtkUtcTimeOfDayMs{0};          // (ms since UTC midnight)
 
         Eigen::Vector3f expectedMagReading;     // (unit direction vector)              (body)
         Eigen::Vector3f expectedAccelReading;   // (m/s^2)                              (body)
@@ -179,6 +180,18 @@ namespace SensorStructs
 
         float expectedLidarReading;            // (m)
         float lidarInnovation;                 // (m)
+
+        // Normalized innovation squared (innovation' * S^-1 * innovation).
+        // A negative value means that correction has not run since setup.
+        float magNis{-1.0f};
+        float accelNis{-1.0f};
+        float baroNis{-1.0f};
+        float gpsNis{-1.0f};
+        float rtkNis{-1.0f};
+        float lidarNis{-1.0f};
+
+        // Diagonal of the 16-state EKF covariance, in state-vector order.
+        Eigen::Matrix<float, 16, 1> covarianceDiagonal;
 
 
         Eigen::Vector3f highGBiases;            // (m/s^2)                              (body)

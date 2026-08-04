@@ -61,9 +61,9 @@ class PDController
         Eigen::Vector4f m_output_values;
 
         static constexpr float MAX_GIMBAL_DEG = 15.0f;
-        static constexpr float MAX_THRUST_N   = 28.0f;
+        static constexpr float MAX_THRUST_N   = 29.0f;
         static constexpr float MAX_ROLL_MIX   = 8.0f; 
-        static constexpr float MAX_POSITION_TILT_DEG = 20.0f;
+        static constexpr float MAX_POSITION_TILT_DEG = 15.0f;
         static constexpr float MAX_POSITION_TILT_RAD = MAX_POSITION_TILT_DEG * DEG_TO_RAD;
         static constexpr float TILT_COMPENSATION_MIN_COS = 0.5f;
         static constexpr float ROLL_MIX_OFFSET = 3.2f; //if it is rolling in +ve x direction, decrease 

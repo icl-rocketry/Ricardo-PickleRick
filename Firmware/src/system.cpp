@@ -1,6 +1,8 @@
 #include "system.h"
 #include "Config/debug_config.h"
 
+#include <cstdio>
+
 #ifdef CONFIG_IDF_TARGET_ESP32S3
 static constexpr int VSPI_BUS_NUM = 0;
 static constexpr int HSPI_BUS_NUM = 1;
@@ -451,10 +453,34 @@ void System::initializeLoggers()
         return;
     }
 
-    //open log files
-    //get unique directory for logs
-    std::string log_directory_path = primarysd.generateUniquePath(log_path,"");
-    //make new directory
+    // Group logs by the firmware build timestamp rather than a boot counter.
+    // __DATE__ is "Mmm dd yyyy" and __TIME__ is "hh:mm:ss".
+    static constexpr const char* MONTHS[] = {
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    };
+    uint8_t month = 0;
+    for (uint8_t i = 0; i < 12; ++i)
+    {
+        if (std::string_view(__DATE__, 3) == MONTHS[i])
+        {
+            month = i + 1;
+            break;
+        }
+    }
+    const uint8_t day = static_cast<uint8_t>((__DATE__[4] == ' ' ? 0 : __DATE__[4] - '0') * 10
+                                              + (__DATE__[5] - '0'));
+    char build_directory[32];
+    std::snprintf(build_directory, sizeof(build_directory),
+                  "%c%c%c%c-%02u-%02u_%c%c-%c%c-%c%c",
+                  __DATE__[7], __DATE__[8], __DATE__[9], __DATE__[10],
+                  month, day,
+                  __TIME__[0], __TIME__[1], __TIME__[3], __TIME__[4], __TIME__[6], __TIME__[7]);
+
+    primarysd.mkdir(log_path);
+    const std::string build_log_path = std::string(log_path) + "/" + build_directory;
+    primarysd.mkdir(build_log_path);
+    const std::string log_directory_path = primarysd.generateUniquePath(build_log_path, "log");
     primarysd.mkdir(log_directory_path);
 
     std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END));
@@ -489,9 +515,26 @@ void System::logEstimator()
     if (current_time - prev_estimator_log_time >= estimator_log_delta)
     {
         const SensorStructs::state_t& state = estimator.getData();
-        EstimatorLogframe logframe;
+        const SensorStructs::raw_measurements_t& raw = sensors.getData();
+        EstimatorLogframe logframe{};
 
         logframe.timestamp_us          = esp_timer_get_time();
+        // u-blox iTOW is GPS time-of-week; convert it to UTC time-of-day.
+        static constexpr uint32_t DAY_MS = 86400000UL;
+        static constexpr uint32_t GPS_UTC_LEAP_SECONDS_MS = 18000UL;
+        const uint32_t gps_time_of_day_ms = raw.gps.gnss_time_of_day_ms % DAY_MS;
+        const uint32_t gps_utc_ms = raw.gps.gnss_time_of_day_ms == 0
+            ? 0
+            : (gps_time_of_day_ms + DAY_MS - GPS_UTC_LEAP_SECONDS_MS) % DAY_MS;
+        logframe.gps_utc_hour = gps_utc_ms / 3600000UL;
+        logframe.gps_utc_minute = (gps_utc_ms / 60000UL) % 60UL;
+        logframe.gps_utc_second = static_cast<float>(gps_utc_ms % 60000UL) * 0.001f;
+
+        const uint32_t rtk_utc_ms = state.rtkUtcTimeOfDayMs % DAY_MS;
+        logframe.rtk_utc_hour = rtk_utc_ms / 3600000UL;
+        logframe.rtk_utc_minute = (rtk_utc_ms / 60000UL) % 60UL;
+        logframe.rtk_utc_second = static_cast<float>(rtk_utc_ms % 60000UL) * 0.001f;
+        logframe.estimator_state       = state.estimator_state;
 
         logframe.raw_ax                = state.rawAccel(0);
         logframe.raw_ay                = state.rawAccel(1);
@@ -505,6 +548,67 @@ void System::logEstimator()
         logframe.filtered_gx           = state.filteredGyro(0);
         logframe.filtered_gy           = state.filteredGyro(1);
         logframe.filtered_gz           = state.filteredGyro(2);
+        logframe.raw_hax               = raw.accel.ax;
+        logframe.raw_hay               = raw.accel.ay;
+        logframe.raw_haz               = raw.accel.az;
+        logframe.raw_mx                = raw.mag.mx;
+        logframe.raw_my                = raw.mag.my;
+        logframe.raw_mz                = raw.mag.mz;
+        logframe.raw_baro_temp         = raw.baro.temp;
+        logframe.raw_baro_press        = raw.baro.press;
+        logframe.raw_gps_lat_e7        = raw.gps.latitude;
+        logframe.raw_gps_lon_e7        = raw.gps.longitude;
+        logframe.raw_gps_alt           = raw.gps.altitude;
+        logframe.raw_gps_vn            = raw.gps.v_n;
+        logframe.raw_gps_ve            = raw.gps.v_e;
+        logframe.raw_gps_vd            = raw.gps.v_d;
+        logframe.raw_gps_hacc          = raw.gps.hAcc;
+        logframe.raw_gps_vacc          = raw.gps.vAcc;
+        logframe.raw_gps_sat           = raw.gps.sat;
+        logframe.raw_gps_fix           = raw.gps.fix;
+        logframe.raw_gps_valid         = raw.gps.valid ? 1 : 0;
+        logframe.raw_gps_updated       = raw.gps.updated ? 1 : 0;
+        logframe.raw_gps_timestamp_us  = raw.gps.timestamp_us;
+        logframe.raw_lidar_dist_cm     = raw.lidar.dist;
+        logframe.raw_lidar_amp         = raw.lidar.amp;
+        logframe.raw_lidar_temp        = raw.lidar.temp;
+        logframe.raw_lidar_valid       = raw.lidar.valid ? 1 : 0;
+        logframe.raw_lidar_timestamp_us = raw.lidar.timestamp_us;
+
+        logframe.pn = state.position(0); logframe.pe = state.position(1); logframe.pd = state.position(2);
+        logframe.vn = state.velocity(0); logframe.ve = state.velocity(1); logframe.vd = state.velocity(2);
+        logframe.q0 = state.orientation.w(); logframe.q1 = state.orientation.x();
+        logframe.q2 = state.orientation.y(); logframe.q3 = state.orientation.z();
+        logframe.roll = state.eulerAngles(0); logframe.pitch = state.eulerAngles(1); logframe.yaw = state.eulerAngles(2);
+        logframe.an = state.acceleration(0); logframe.ae = state.acceleration(1); logframe.ad = state.acceleration(2);
+        logframe.bgx = state.gyroBiases(0); logframe.bgy = state.gyroBiases(1); logframe.bgz = state.gyroBiases(2);
+        logframe.bax = state.accelBiases(0); logframe.bay = state.accelBiases(1); logframe.baz = state.accelBiases(2);
+        logframe.gps_pn = state.gpsPosition(0); logframe.gps_pe = state.gpsPosition(1); logframe.gps_pd = state.gpsPosition(2);
+        logframe.rtk_delay_us = state.rtkDelayUs;
+        logframe.calibration_quality = state.calibration_quality;
+
+        logframe.h_mx = state.expectedMagReading(0); logframe.h_my = state.expectedMagReading(1); logframe.h_mz = state.expectedMagReading(2);
+        logframe.h_ax = state.expectedAccelReading(0); logframe.h_ay = state.expectedAccelReading(1); logframe.h_az = state.expectedAccelReading(2);
+        logframe.h_bt = state.expectedBaroReading(0); logframe.h_bp = state.expectedBaroReading(1);
+        logframe.h_pn = state.expectedGpsPosReading(0); logframe.h_pe = state.expectedGpsPosReading(1); logframe.h_pd = state.expectedGpsPosReading(2);
+        logframe.h_vn = state.expectedGpsVelReading(0); logframe.h_ve = state.expectedGpsVelReading(1); logframe.h_vd = state.expectedGpsVelReading(2);
+        logframe.h_lidar = state.expectedLidarReading;
+        logframe.y_mx = state.magInnovation(0); logframe.y_my = state.magInnovation(1); logframe.y_mz = state.magInnovation(2);
+        logframe.y_ax = state.accelInnovation(0); logframe.y_ay = state.accelInnovation(1); logframe.y_az = state.accelInnovation(2);
+        logframe.y_bt = state.baroInnovation(0); logframe.y_bp = state.baroInnovation(1);
+        logframe.y_pn = state.gpsPosInnovation(0); logframe.y_pe = state.gpsPosInnovation(1); logframe.y_pd = state.gpsPosInnovation(2);
+        logframe.y_vn = state.gpsVelInnovation(0); logframe.y_ve = state.gpsVelInnovation(1); logframe.y_vd = state.gpsVelInnovation(2);
+        logframe.y_lidar = state.lidarInnovation;
+        logframe.nis_mag = state.magNis; logframe.nis_accel = state.accelNis; logframe.nis_baro = state.baroNis;
+        logframe.nis_gps = state.gpsNis; logframe.nis_rtk = state.rtkNis; logframe.nis_lidar = state.lidarNis;
+        logframe.p0 = state.covarianceDiagonal(0); logframe.p1 = state.covarianceDiagonal(1);
+        logframe.p2 = state.covarianceDiagonal(2); logframe.p3 = state.covarianceDiagonal(3);
+        logframe.p4 = state.covarianceDiagonal(4); logframe.p5 = state.covarianceDiagonal(5);
+        logframe.p6 = state.covarianceDiagonal(6); logframe.p7 = state.covarianceDiagonal(7);
+        logframe.p8 = state.covarianceDiagonal(8); logframe.p9 = state.covarianceDiagonal(9);
+        logframe.p10 = state.covarianceDiagonal(10); logframe.p11 = state.covarianceDiagonal(11);
+        logframe.p12 = state.covarianceDiagonal(12); logframe.p13 = state.covarianceDiagonal(13);
+        logframe.p14 = state.covarianceDiagonal(14); logframe.p15 = state.covarianceDiagonal(15);
         logframe.controller_batt_V     = controller.getBatteryVoltage();
         logframe.controller_voltage_scale = controller.getVoltageScale();
         logframe.controller_thrust_top_cmd = controller.getCommandedThrustTop();

@@ -17,8 +17,8 @@ void PDController::setup()
     // m_rEng is COM -> thrust centre in body frame (m). Tune ry/rz for attitude-only lateral drift:
     // with rx < 0, negative body-y drift -> make ry more positive; positive body-y drift -> make ry more negative.
     // negative body-z drift -> make rz more positive; positive body-z drift -> make rz more negative.
-    m_rEng << -0.235f, 0.004f, 0.001f;
-    m_mass = 1.36f;
+    m_rEng << -0.235f, 0.006f, 0.0008f;
+    m_mass = 1.422f;
 
     m_K_p << 3.0f, 3.0f, 2.8f; // attitude body control gains (roll, pitch, yaw)
     m_K_d << 7.0f, 1.0f, 0.9f;
@@ -31,7 +31,7 @@ void PDController::setup()
     // m_K_d_pos << 2.6f, 2.6f, 3.7f; 
     // m_K_i_pos << 0.02f, 0.02f, 0.01f;
 
-    m_K_p_pos << 0.3f, 0.3f, 2.5f;   // NED position control gains
+    m_K_p_pos << 0.3f, 0.3f, 1.5f;   // NED position control gains
     m_K_d_pos << 2.0f, 2.0f, 3.5f; 
     m_K_i_pos << 0.0f, 0.0f, 0.0f;
 

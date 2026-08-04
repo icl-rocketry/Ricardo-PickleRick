@@ -72,6 +72,13 @@ public:
     Eigen::Vector3f gpsPosInnovation()  const { return m_y.segment<3>(8);  }
     Eigen::Vector3f gpsVelInnovation()  const { return m_y.segment<3>(11); }
     float           lidarInnovation()   const { return m_y(14); }
+    float magNis() const { return m_magNis; }
+    float accelNis() const { return m_accelNis; }
+    float baroNis() const { return m_baroNis; }
+    float gpsNis() const { return m_gpsNis; }
+    float rtkNis() const { return m_rtkNis; }
+    float lidarNis() const { return m_lidarNis; }
+    Eigen::Matrix<float, 16, 1> covarianceDiagonal() const { return m_P.diagonal(); }
 
     Eigen::Vector3f gpsPosition()   const { return m_gps_position; }
     uint32_t rtkDelayUs() const { return m_lastRtkDelayUs; }
@@ -115,6 +122,12 @@ private:
     Eigen::Matrix<float, 16, 16>  m_P;   // covariance matrix
     Eigen::Matrix<float, 15, 1>   m_h;   // expected sensor reading vector  (mag, accel, baro, gps_pos, gps_vel, lidar)
     Eigen::Matrix<float, 15, 1>   m_y;   // innovation vector               (mag, accel, baro, gps_pos, gps_vel, lidar)
+    float m_magNis{-1.0f};
+    float m_accelNis{-1.0f};
+    float m_baroNis{-1.0f};
+    float m_gpsNis{-1.0f};
+    float m_rtkNis{-1.0f};
+    float m_lidarNis{-1.0f};
     
 
     Eigen::Matrix<float, 16, 16>  m_F;      // state transition

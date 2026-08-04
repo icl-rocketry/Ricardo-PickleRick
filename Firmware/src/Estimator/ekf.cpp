@@ -95,6 +95,14 @@ void EKF::setup(const Eigen::Vector3f& gyro_bias,
     m_acceleration.setZero();
     m_angular_rates.setZero();
     m_gps_position.setZero();
+    m_h.setZero();
+    m_y.setZero();
+    m_magNis = -1.0f;
+    m_accelNis = -1.0f;
+    m_baroNis = -1.0f;
+    m_gpsNis = -1.0f;
+    m_rtkNis = -1.0f;
+    m_lidarNis = -1.0f;
     resetHistory();
 
     // Initial covariance — large uncertainty on everything except quaternion
@@ -428,6 +436,7 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
 
     const float S = heading_variance + R_heading;
     if (!std::isfinite(S) || S < 1e-9f) { return; }
+    m_magNis = heading_error * heading_error / S;
 
     const Eigen::Matrix<float, 16, 1> K_heading = m_P * H_heading.transpose() / S;
     const float yaw_correction = (heading_variance / S) * heading_error;
@@ -1267,6 +1276,7 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
     const Mat3 R = scale * R_base; //here is where we reduce the trust in accel as it moves away from 1g
 
     const Mat3 S = m_H * m_P * m_H.transpose() + R;
+    m_accelNis = m_y.segment<3>(3).dot(S.ldlt().solve(m_y.segment<3>(3)));
     m_K = m_P * m_H.transpose() * S.ldlt().solve(Mat3::Identity());
 
    
@@ -1329,6 +1339,7 @@ void EKF::updateBaro(const float pressure, const float temperature)
 
     // ── Kalman gain (16×2) ────────────────────────────────────────────────────
     const Mat2 S = H_baro * m_P * H_baro.transpose() + R_baro;
+    m_baroNis = m_y.segment<2>(6).dot(S.ldlt().solve(m_y.segment<2>(6)));
     const Eigen::Matrix<float, 16, 2> K_baro = m_P * H_baro.transpose() * S.ldlt().solve(Mat2::Identity());
 
     // ── State update ──────────────────────────────────────────────────────────
@@ -1464,6 +1475,7 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
     }
 
     const Mat6 S    = H_gps * m_P * H_gps.transpose() + R_gps;
+    m_gpsNis = m_y.segment<6>(8).dot(S.ldlt().solve(m_y.segment<6>(8)));
 
     // ── Kalman gain (16×6) ────────────────────────────────────────────────────
     const Eigen::Matrix<float, 16, 6> K_gps = m_P * H_gps.transpose() * S.ldlt().solve(Mat6::Identity());
@@ -1562,6 +1574,7 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
     R_rtk.block<3,3>(3,3) = (sigma_vel * sigma_vel) * Eigen::Matrix3f::Identity();
 
     const Mat6 S = H_rtk * m_P * H_rtk.transpose() + R_rtk;
+    m_rtkNis = innovation.dot(S.ldlt().solve(innovation));
     Eigen::Matrix<float, 16, 6> K_rtk = m_P * H_rtk.transpose() * S.ldlt().solve(Mat6::Identity());
 
     if (!USE_RTK_VERTICAL)
@@ -1622,6 +1635,7 @@ void EKF::updateLidar(const SensorStructs::LIDAR_t& lidar)
 
     // ── Kalman gain (16×1) ────────────────────────────────────────────────────
     const float S = (H_lidar * m_P * H_lidar.transpose())(0, 0) + R_lidar;
+    m_lidarNis = m_y(14) * m_y(14) / S;
     const Eigen::Matrix<float, 16, 1> K_lidar = (m_P * H_lidar.transpose()) / S;
 
     // ── State update ──────────────────────────────────────────────────────────
