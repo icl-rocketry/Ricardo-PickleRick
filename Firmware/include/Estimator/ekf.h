@@ -220,12 +220,13 @@ private:
     static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.4f, 0.7f, 1.3f};
     // static inline const Eigen::Vector3f SIGMA_ALPHA{0.01f, 0.01f, 0.01f};  // rad/s 
     // static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.01f, 0.01f, 0.01f};
-    static constexpr float SIGMA_MAG_HEADING = 0.2f;   // rad, horizontal mag heading noise
+    static constexpr float SIGMA_MAG_HEADING = 0.1f;   // rad, horizontal mag heading noise
 
     static constexpr float SIGMA_T          = 3.0f;      // K
     static constexpr float SIGMA_P          = 12.0f;    // Pa
 
-    static constexpr float SIGMA_VEL        = 0.1f;      // m/s — tune to your GPS spec
+    static constexpr float SIGMA_GPS_VEL_HORIZONTAL = 0.3f; // m/s — north/east GPS velocity
+    static constexpr float SIGMA_GPS_VEL_VERTICAL   = 0.5f; // m/s — down GPS velocity; less trusted due to vertical lag
     static constexpr float SIGMA_RTK_GPS_POS      = 2.5f;   // m horizontal, NMEA fix quality 1
     static constexpr float SIGMA_RTK_GPS_HEIGHT   = 5.0f;   // m vertical/height, NMEA fix quality 1
     static constexpr float SIGMA_RTK_GPS_VEL      = 0.5f;   // m/s

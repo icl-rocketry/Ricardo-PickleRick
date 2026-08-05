@@ -1824,7 +1824,10 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
         m_y.segment<3>(8).setZero();
         m_y.segment<3>(11) = z_vel - m_h.segment<3>(11);
 
-        const Mat3 R_velocity = (SIGMA_VEL * SIGMA_VEL) * Mat3::Identity();
+        Mat3 R_velocity = Mat3::Zero();
+        R_velocity(0,0) = SIGMA_GPS_VEL_HORIZONTAL * SIGMA_GPS_VEL_HORIZONTAL;
+        R_velocity(1,1) = SIGMA_GPS_VEL_HORIZONTAL * SIGMA_GPS_VEL_HORIZONTAL;
+        R_velocity(2,2) = SIGMA_GPS_VEL_VERTICAL * SIGMA_GPS_VEL_VERTICAL;
         const Mat3 S = m_P.block<3,3>(3,3) + R_velocity;
         const Eigen::LDLT<Mat3> S_ldlt(S);
         const Vec3 innovation = m_y.segment<3>(11);
@@ -1865,9 +1868,9 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
     R_gps(0,0) = sigma_ph * sigma_ph;
     R_gps(1,1) = sigma_ph * sigma_ph;
     R_gps(2,2) = sigma_pv * sigma_pv;
-    R_gps(3,3) = SIGMA_VEL * SIGMA_VEL;
-    R_gps(4,4) = SIGMA_VEL * SIGMA_VEL;
-    R_gps(5,5) = SIGMA_VEL * SIGMA_VEL;
+    R_gps(3,3) = SIGMA_GPS_VEL_HORIZONTAL * SIGMA_GPS_VEL_HORIZONTAL;
+    R_gps(4,4) = SIGMA_GPS_VEL_HORIZONTAL * SIGMA_GPS_VEL_HORIZONTAL;
+    R_gps(5,5) = SIGMA_GPS_VEL_VERTICAL * SIGMA_GPS_VEL_VERTICAL;
 
     // ── Jacobian (6×16) ───────────────────────────────────────────────────────
     Eigen::Matrix<float, 6, 16> H_gps = Eigen::Matrix<float, 6, 16>::Zero();
