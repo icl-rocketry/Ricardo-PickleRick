@@ -1,7 +1,6 @@
 #include "system.h"
 #include "Config/debug_config.h"
-
-#include <cstdio>
+#include "firmware_build_id.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32S3
 static constexpr int VSPI_BUS_NUM = 0;
@@ -458,32 +457,8 @@ bool System::initializeLoggers()
         return false;
     }
 
-    // Group logs by the firmware build timestamp rather than a boot counter.
-    // __DATE__ is "Mmm dd yyyy" and __TIME__ is "hh:mm:ss".
-    static constexpr const char* MONTHS[] = {
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    };
-    uint8_t month = 0;
-    for (uint8_t i = 0; i < 12; ++i)
-    {
-        if (std::string_view(__DATE__, 3) == MONTHS[i])
-        {
-            month = i + 1;
-            break;
-        }
-    }
-    const uint8_t day = static_cast<uint8_t>((__DATE__[4] == ' ' ? 0 : __DATE__[4] - '0') * 10
-                                              + (__DATE__[5] - '0'));
-    char build_directory[32];
-    std::snprintf(build_directory, sizeof(build_directory),
-                  "%c%c%c%c-%02u-%02u_%c%c-%c%c-%c%c",
-                  __DATE__[7], __DATE__[8], __DATE__[9], __DATE__[10],
-                  month, day,
-                  __TIME__[0], __TIME__[1], __TIME__[3], __TIME__[4], __TIME__[6], __TIME__[7]);
-
     primarysd.mkdir(log_path);
-    const std::string build_log_path = std::string(log_path) + "/" + build_directory;
+    const std::string build_log_path = std::string(log_path) + "/" + FIRMWARE_BUILD_ID;
     primarysd.mkdir(build_log_path);
     const std::string log_directory_path = primarysd.generateUniquePath(build_log_path, "log");
     primarysd.mkdir(log_directory_path);

@@ -366,6 +366,14 @@ void Commands::EnterPreflightCommand(System& system, const RnpPacketSerialized& 
 
 void Commands::EnterFlightCommand(System& system, const RnpPacketSerialized& packet)
 {
+    if (system.statemachine.getCurrentStateID() == SYSTEM_FLAG::STATE_FLIGHT)
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
+            "Enter flight rejected: already in flight"
+        );
+        return;
+    }
+
     if (!flightEntryPositionCheckPassed(system))
     {
         return;

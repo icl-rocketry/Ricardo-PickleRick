@@ -132,6 +132,7 @@ private:
     uint32_t m_lastHandledRtkTimestampUs = 0;
     uint32_t m_lastHandledRtkEpochMs = 0;
     uint32_t m_lastFusedRtkTimestampUs = 0;
+    uint32_t m_lastAttitudeInitMagMeasurementTime = 0;
     float m_covariancePredictDt = 0.0f;
     uint8_t m_nextCorrectionIndex = 0;
 
@@ -187,6 +188,9 @@ private:
     uint32_t m_lidarNisRejectTimestampUs{0};
     // NIS is published once per physical measurement. Historical replay may
     // recompute a correction, but must not make its diagnostics look new.
+    uint32_t m_lastAccelNisMeasurementTime{0};
+    uint32_t m_lastMagNisMeasurementTime{0};
+    uint32_t m_lastBaroNisMeasurementTime{0};
     uint32_t m_lastGpsNisMeasurementTime{0};
     uint32_t m_lastRtkNisMeasurementTime{0};
     uint32_t m_lastLidarNisMeasurementTime{0};
@@ -212,7 +216,7 @@ private:
     static inline const Eigen::Vector3f SIGMA_BG {5e-5f, 5e-5f, 5e-5f};     // rad/s 
     static inline const Eigen::Vector3f SIGMA_BA_LOW{5e-4f, 5e-4f, 5e-4f};     // m/s² how much the bias can change per second (low-g accel bias)
 
-    static inline const Eigen::Vector3f SIGMA_ALPHA{0.062f, 0.044f, 0.033f};  // rad/s 
+    static inline const Eigen::Vector3f SIGMA_ALPHA{0.1f, 0.05f, 0.05f};  // rad/s
     static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.4f, 0.7f, 1.3f};
     // static inline const Eigen::Vector3f SIGMA_ALPHA{0.01f, 0.01f, 0.01f};  // rad/s 
     // static inline const Eigen::Vector3f SIGMA_ACCEL_LOW{0.01f, 0.01f, 0.01f};
@@ -336,9 +340,9 @@ private:
     int nextHistoryIndex(int index) const;
     CorrectionScheduleState captureScheduleState() const;
     void restoreScheduleState(const CorrectionScheduleState& state);
-    void updateMag(const Eigen::Vector3f& z_meas_raw);
-    void updateLowGAccel(const Eigen::Vector3f& z_accel);
-    void updateBaro(const float pressure, const float temperature);
+    void updateMag(const Eigen::Vector3f& z_meas_raw, uint32_t measurement_time_us);
+    void updateLowGAccel(const Eigen::Vector3f& z_accel, uint32_t measurement_time_us);
+    void updateBaro(float pressure, float temperature, uint32_t measurement_time_us);
     void updateGPS(const SensorStructs::GPS_t& gps);
     void updateLidar(const SensorStructs::LIDAR_t& lidar);
     void updateRTK(const SensorStructs::RTK_t& rtk);

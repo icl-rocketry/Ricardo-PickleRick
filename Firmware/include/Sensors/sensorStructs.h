@@ -26,7 +26,8 @@ namespace SensorStructs
         NO_HOME_REFERENCE = 8,
         OUT_OF_RANGE = 9,
         NUMERIC_FAILURE = 10,
-        NIS_DISABLED = 11
+        NIS_DISABLED = 11,
+        INNOVATION_GATE = 12
     };
 
     struct ACCELGYRO_6AXIS_t{

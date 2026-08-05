@@ -2,6 +2,7 @@
 #include "Config/debug_config.h"
 #include "Config/timing_config.h"
 #include <cmath>
+#include <limits>
 
 namespace
 {
@@ -13,6 +14,59 @@ namespace
     bool timeAfter(const uint32_t lhs, const uint32_t rhs)
     {
         return static_cast<int32_t>(lhs - rhs) > 0;
+    }
+
+    bool isNewMeasurement(const uint32_t timestamp_us, const uint32_t last_timestamp_us)
+    {
+        return timestamp_us != 0 &&
+               (last_timestamp_us == 0 || timeAfter(timestamp_us, last_timestamp_us));
+    }
+
+    bool gnssEpochAfter(const uint32_t epoch_ms, const uint32_t previous_epoch_ms)
+    {
+        constexpr int32_t day_ms = 86400000;
+        constexpr int32_t half_day_ms = day_ms / 2;
+        int32_t delta_ms = static_cast<int32_t>(epoch_ms) -
+                           static_cast<int32_t>(previous_epoch_ms);
+        if (delta_ms < -half_day_ms) { delta_ms += day_ms; }
+        if (delta_ms >  half_day_ms) { delta_ms -= day_ms; }
+        return delta_ms > 0;
+    }
+
+    // 99% upper-tail chi-square thresholds. The active measurement dimension,
+    // rather than the storage-vector size, determines the appropriate gate.
+    float nisGateThreshold(const uint8_t degrees_of_freedom)
+    {
+        switch (degrees_of_freedom)
+        {
+            case 1: return 6.63490f;
+            case 2: return 9.21034f;
+            case 3: return 11.34487f;
+            case 4: return 13.27670f;
+            case 5: return 15.08627f;
+            default: return 16.81189f; // 6 DoF is the largest measurement used here.
+        }
+    }
+
+    template <typename Decomposition, typename Vector>
+    bool calculateNis(const Decomposition& decomposition,
+                      const Vector& innovation,
+                      float& nis)
+    {
+        if (!innovation.allFinite() ||
+            decomposition.info() != Eigen::Success ||
+            !decomposition.isPositive())
+        {
+            nis = std::numeric_limits<float>::quiet_NaN();
+            return false;
+        }
+
+        const Vector normalized_innovation = decomposition.solve(innovation);
+        nis = innovation.dot(normalized_innovation);
+        return decomposition.info() == Eigen::Success &&
+               normalized_innovation.allFinite() &&
+               std::isfinite(nis) &&
+               nis >= 0.0f;
     }
 
     bool timerDue(const uint32_t now, uint32_t& previous, const uint32_t period) //decides whether an update should be made
@@ -94,6 +148,7 @@ void EKF::setup(const Eigen::Vector3f& gyro_bias,
     m_lastHandledRtkTimestampUs = 0;
     m_lastHandledRtkEpochMs = 0;
     m_lastFusedRtkTimestampUs = 0;
+    m_lastAttitudeInitMagMeasurementTime = 0;
     m_covariancePredictDt = 0.0f;
     m_nextCorrectionIndex = 0;
     m_gnssTimeOffsetValid = false;
@@ -139,6 +194,9 @@ void EKF::setup(const Eigen::Vector3f& gyro_bias,
     m_rtkNisRejectTimestampUs = 0;
     m_lidarNisRejectTimestampUs = 0;
     m_lastGpsNisMeasurementTime = 0;
+    m_lastAccelNisMeasurementTime = 0;
+    m_lastMagNisMeasurementTime = 0;
+    m_lastBaroNisMeasurementTime = 0;
     m_lastRtkNisMeasurementTime = 0;
     m_lastLidarNisMeasurementTime = 0;
     if constexpr (!TimingConfig::EKF::GPS_CORRECTION_ENABLED)
@@ -420,21 +478,35 @@ void EKF::predict(  const float nominal_dt,
 
 }
 
-void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
+void EKF::updateMag(const Eigen::Vector3f& z_meas_raw,
+                    const uint32_t measurement_time_us)
 {
     using Vec3 = Eigen::Vector3f;
     using Vec4 = Eigen::Vector4f;
 
+    const bool publish_nis = isNewMeasurement(measurement_time_us,
+                                               m_lastMagNisMeasurementTime);
+    if (publish_nis)
+    {
+        m_lastMagNisMeasurementTime = measurement_time_us;
+    }
+
     if (!isFiniteVector(z_meas_raw) || z_meas_raw.norm() < 1e-9f)
     {
-        m_magNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
-        m_magNisRejectTimestampUs = micros();
+        if (publish_nis)
+        {
+            m_magNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
+            m_magNisRejectTimestampUs = micros();
+        }
         return;
     }
     if (!isFiniteVector(m_mag_ref) || m_mag_ref.norm() < 1e-9f)
     {
-        m_magNisRejectReason = SensorStructs::NisRejectReason::INVALID_REFERENCE;
-        m_magNisRejectTimestampUs = micros();
+        if (publish_nis)
+        {
+            m_magNisRejectReason = SensorStructs::NisRejectReason::INVALID_REFERENCE;
+            m_magNisRejectTimestampUs = micros();
+        }
         return;
     }
 
@@ -458,8 +530,11 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
     const float measured_horizontal_norm = measured_horizontal_ned.norm();
     if (!std::isfinite(measured_horizontal_norm) || measured_horizontal_norm < 1e-6f)
     {
-        m_magNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
-        m_magNisRejectTimestampUs = micros();
+        if (publish_nis)
+        {
+            m_magNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
+            m_magNisRejectTimestampUs = micros();
+        }
         return;
     }
     measured_horizontal_ned /= measured_horizontal_norm;
@@ -469,8 +544,11 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
     const float reference_horizontal_norm = reference_horizontal_ned.norm();
     if (!std::isfinite(reference_horizontal_norm) || reference_horizontal_norm < 1e-6f)
     {
-        m_magNisRejectReason = SensorStructs::NisRejectReason::INVALID_REFERENCE;
-        m_magNisRejectTimestampUs = micros();
+        if (publish_nis)
+        {
+            m_magNisRejectReason = SensorStructs::NisRejectReason::INVALID_REFERENCE;
+            m_magNisRejectTimestampUs = micros();
+        }
         return;
     }
     reference_horizontal_ned /= reference_horizontal_norm;
@@ -494,8 +572,11 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
     const float yaw_tangent_norm_sq = yaw_tangent.squaredNorm();
     if (!std::isfinite(yaw_tangent_norm_sq) || yaw_tangent_norm_sq < 1e-9f)
     {
-        m_magNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
-        m_magNisRejectTimestampUs = micros();
+        if (publish_nis)
+        {
+            m_magNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
+            m_magNisRejectTimestampUs = micros();
+        }
         return;
     }
 
@@ -510,15 +591,35 @@ void EKF::updateMag(const Eigen::Vector3f& z_meas_raw)
     const float S = heading_variance + R_heading;
     if (!std::isfinite(S) || S < 1e-9f)
     {
-        m_magNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
-        m_magNisRejectTimestampUs = micros();
+        if (publish_nis)
+        {
+            m_magNis = std::numeric_limits<float>::quiet_NaN();
+            ++m_magNisCount;
+            m_magNisTimestampUs = micros();
+            m_magNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
+            m_magNisRejectTimestampUs = m_magNisTimestampUs;
+        }
         return;
     }
-    m_magNis = heading_error * heading_error / S;
-    ++m_magNisCount;
-    m_magNisTimestampUs = micros();
-    m_magNisRejectReason = SensorStructs::NisRejectReason::NONE;
-    m_magNisRejectTimestampUs = 0;
+    const float mag_nis = heading_error * heading_error / S;
+    const bool innovation_accepted = std::isfinite(mag_nis) &&
+                                     mag_nis <= nisGateThreshold(1);
+    if (publish_nis)
+    {
+        m_magNis = mag_nis;
+        ++m_magNisCount;
+        m_magNisTimestampUs = micros();
+        m_magNisRejectReason = innovation_accepted
+            ? SensorStructs::NisRejectReason::NONE
+            : (std::isfinite(mag_nis)
+                ? SensorStructs::NisRejectReason::INNOVATION_GATE
+                : SensorStructs::NisRejectReason::NUMERIC_FAILURE);
+        m_magNisRejectTimestampUs = innovation_accepted ? 0 : m_magNisTimestampUs;
+    }
+    if (!innovation_accepted)
+    {
+        return;
+    }
 
     const Eigen::Matrix<float, 16, 1> K_heading = m_P * H_heading.transpose() / S;
     const float yaw_correction = (heading_variance / S) * heading_error;
@@ -582,6 +683,14 @@ bool EKF::initialiseAttitudeIfSettled(const Eigen::Vector3f& gyro,
                                       const Eigen::Vector3f& accel,
                                       const SensorStructs::MAG_3AXIS_t& mag)
 {
+    // The estimator runs faster than the magnetometer. Only let each physical
+    // magnetometer sample contribute once to startup alignment.
+    if (!isNewMeasurement(mag.timestamp_us, m_lastAttitudeInitMagMeasurementTime))
+    {
+        return false;
+    }
+    m_lastAttitudeInitMagMeasurementTime = mag.timestamp_us;
+
     const Eigen::Vector3f rates = gyro - m_x.segment<3>(13);
     const Eigen::Vector3f accel_body = accel - m_x.segment<3>(10);
     const Eigen::Vector3f mag_body(mag.mx, mag.my, mag.mz);
@@ -657,6 +766,8 @@ bool EKF::initialiseAttitudeIfSettled(const Eigen::Vector3f& gyro,
     }
 
     m_attitudeInitialised = true;
+    // Startup alignment already consumed this magnetometer sample.
+    m_lastMagMeasurementTime = m_lastAttitudeInitMagMeasurementTime;
     m_attitudeInitSampleCount = 0;
     m_attitudeInitAccelAccum.setZero();
     m_attitudeInitMagAccum.setZero();
@@ -927,7 +1038,8 @@ bool EKF::applyGnssTimestamp(SensorStructs::RTK_t& rtk, const uint32_t now) cons
 bool EKF::handleGpsCorrection(const uint32_t now, const SensorStructs::GPS_t& gps)
 {
     if (gps.timestamp_us == 0 ||
-        gps.timestamp_us == m_lastHandledGpsTimestampUs)
+        (m_lastHandledGpsTimestampUs != 0 &&
+         !timeAfter(gps.timestamp_us, m_lastHandledGpsTimestampUs)))
     {
         return false;
     }
@@ -1091,35 +1203,45 @@ bool EKF::fuseDelayedGPS(const SensorStructs::GPS_t& gps, const uint32_t now)
 
 bool EKF::handleRtkCorrection(const uint32_t now, const SensorStructs::RTK_t& rtk)
 {
+    if (rtk.timestamp_us == 0)
+    {
+        return false;
+    }
+
+    const bool duplicate_source = m_lastHandledRtkTimestampUs != 0 &&
+                                  !timeAfter(rtk.timestamp_us, m_lastHandledRtkTimestampUs);
+    const bool duplicate_or_old_epoch = rtk.gnss_time_of_day_ms != 0 &&
+                                        m_lastHandledRtkEpochMs != 0 &&
+                                        !gnssEpochAfter(rtk.gnss_time_of_day_ms,
+                                                        m_lastHandledRtkEpochMs);
+    if (duplicate_source || duplicate_or_old_epoch)
+    {
+        // A sender can retransmit a handled GNSS epoch with a new local receive
+        // timestamp. Advance only the source watermark without fusing it again.
+        if (m_lastHandledRtkTimestampUs == 0 ||
+            timeAfter(rtk.timestamp_us, m_lastHandledRtkTimestampUs))
+        {
+            m_lastHandledRtkTimestampUs = rtk.timestamp_us;
+        }
+        return false;
+    }
+
+    // Invalid or unusable packets are consumed too, so a retained packet is
+    // diagnosed once instead of being reconsidered on every estimator tick.
     if (!rtk.valid || rtk.fix_quality == 0)
     {
         m_rtkNisRejectReason = SensorStructs::NisRejectReason::SENSOR_QUALITY_GATE;
         m_rtkNisRejectTimestampUs = micros();
+        m_lastHandledRtkTimestampUs = rtk.timestamp_us;
+        m_lastHandledRtkEpochMs = rtk.gnss_time_of_day_ms;
         return false;
     }
     if (!rtk.home_set)
     {
         m_rtkNisRejectReason = SensorStructs::NisRejectReason::NO_HOME_REFERENCE;
         m_rtkNisRejectTimestampUs = micros();
-        return false;
-    }
-    if (rtk.timestamp_us == 0)
-    {
-        return false;
-    }
-
-    const bool duplicate_source = rtk.timestamp_us == m_lastHandledRtkTimestampUs;
-    const bool duplicate_epoch = rtk.gnss_time_of_day_ms != 0 &&
-                                 rtk.gnss_time_of_day_ms == m_lastHandledRtkEpochMs;
-    if (duplicate_source || duplicate_epoch)
-    {
-        // A sender can retransmit the same GNSS epoch with a new local receive
-        // timestamp. Advance the source watermark without fusing it again.
-        if (m_lastHandledRtkTimestampUs == 0 ||
-            timeAfter(rtk.timestamp_us, m_lastHandledRtkTimestampUs))
-        {
-            m_lastHandledRtkTimestampUs = rtk.timestamp_us;
-        }
+        m_lastHandledRtkTimestampUs = rtk.timestamp_us;
+        m_lastHandledRtkEpochMs = rtk.gnss_time_of_day_ms;
         return false;
     }
 
@@ -1319,27 +1441,25 @@ void EKF::runScheduledCorrection(const uint32_t now,
             case 0:
                 if (timerDue(now, m_lastAccelCorrectionTime, TimingConfig::EKF::ACCEL_CORRECTION_DELTA_US))
                 {
-                    updateLowGAccel(accel);
+                    updateLowGAccel(accel, now);
                     return;
                 }
                 break;
             case 1:
-                if (mag.timestamp_us != 0 &&
-                    mag.timestamp_us != m_lastMagMeasurementTime &&
+                if (isNewMeasurement(mag.timestamp_us, m_lastMagMeasurementTime) &&
                     timerDue(now, m_lastMagCorrectionTime, TimingConfig::EKF::MAG_CORRECTION_DELTA_US))
                 {
-                    updateMag(Eigen::Vector3f(mag.mx, mag.my, mag.mz));
                     m_lastMagMeasurementTime = mag.timestamp_us;
+                    updateMag(Eigen::Vector3f(mag.mx, mag.my, mag.mz), mag.timestamp_us);
                     return;
                 }
                 break;
             case 2:
-                if (baro.timestamp_us != 0 &&
-                    baro.timestamp_us != m_lastBaroMeasurementTime &&
+                if (isNewMeasurement(baro.timestamp_us, m_lastBaroMeasurementTime) &&
                     timerDue(now, m_lastBaroCorrectionTime, TimingConfig::EKF::BARO_CORRECTION_DELTA_US))
                 {
-                    updateBaro(baro.press, baro.temp);
                     m_lastBaroMeasurementTime = baro.timestamp_us;
+                    updateBaro(baro.press, baro.temp, baro.timestamp_us);
                     return;
                 }
                 break;
@@ -1350,11 +1470,11 @@ void EKF::runScheduledCorrection(const uint32_t now,
                         gps.timestamp_us != 0 &&
                         m_lastFusedGpsTimestampUs != 0 &&
                         timeAtOrAfter(m_lastFusedGpsTimestampUs, gps.timestamp_us) &&
-                        gps.timestamp_us != m_lastGpsMeasurementTime &&
+                        isNewMeasurement(gps.timestamp_us, m_lastGpsMeasurementTime) &&
                         timerDue(now, m_lastGpsCorrectionTime, TimingConfig::EKF::GPS_CORRECTION_DELTA_US))
                     {
-                        updateGPS(gps);
                         m_lastGpsMeasurementTime = gps.timestamp_us;
+                        updateGPS(gps);
                         return;
                     }
                 }
@@ -1367,7 +1487,7 @@ void EKF::runScheduledCorrection(const uint32_t now,
                     rtk.timestamp_us != 0 &&
                     m_lastFusedRtkTimestampUs != 0 &&
                     timeAtOrAfter(m_lastFusedRtkTimestampUs, rtk.timestamp_us) &&
-                    rtk.timestamp_us != m_lastRtkMeasurementTime &&
+                    isNewMeasurement(rtk.timestamp_us, m_lastRtkMeasurementTime) &&
                     (rtk.gnss_time_of_day_ms == 0 ||
                      rtk.gnss_time_of_day_ms != m_lastRtkMeasurementEpochMs))
                 {
@@ -1381,9 +1501,9 @@ void EKF::runScheduledCorrection(const uint32_t now,
 
                     if (correctionDueNow(now, m_lastRtkCorrectionTime, TimingConfig::EKF::RTK_CORRECTION_DELTA_US))
                     {
-                        updateRTK(rtk);
                         m_lastRtkMeasurementTime = rtk.timestamp_us;
                         m_lastRtkMeasurementEpochMs = rtk.gnss_time_of_day_ms;
+                        updateRTK(rtk);
                         return;
                     }
                 }
@@ -1391,12 +1511,11 @@ void EKF::runScheduledCorrection(const uint32_t now,
             case 5:
                 if constexpr (TimingConfig::EKF::LIDAR_CORRECTION_ENABLED)
                 {
-                    if (lidar.timestamp_us != 0 &&
-                        lidar.timestamp_us != m_lastLidarMeasurementTime &&
+                    if (isNewMeasurement(lidar.timestamp_us, m_lastLidarMeasurementTime) &&
                         timerDue(now, m_lastLidarCorrectionTime, TimingConfig::EKF::LIDAR_CORRECTION_DELTA_US))
                     {
-                        updateLidar(lidar);
                         m_lastLidarMeasurementTime = lidar.timestamp_us;
+                        updateLidar(lidar);
                         return;
                     }
                 }
@@ -1407,16 +1526,27 @@ void EKF::runScheduledCorrection(const uint32_t now,
     }
 }
 
-void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
+void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel,
+                          const uint32_t measurement_time_us)
 {
     using Mat3 = Eigen::Matrix3f;
     using Vec3 = Eigen::Vector3f;
     using Vec4 = Eigen::Vector4f;
 
+    const bool publish_nis = isNewMeasurement(measurement_time_us,
+                                               m_lastAccelNisMeasurementTime);
+    if (publish_nis)
+    {
+        m_lastAccelNisMeasurementTime = measurement_time_us;
+    }
+
     const float z_norm = z_accel.norm();
     if (!std::isfinite(z_norm) || z_norm < 1e-6f) {
-        m_accelNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
-        m_accelNisRejectTimestampUs = micros();
+        if (publish_nis)
+        {
+            m_accelNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
+            m_accelNisRejectTimestampUs = micros();
+        }
         return;
     }
 
@@ -1424,8 +1554,11 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
 
     // Hard reject only when accel is clearly not gravity-dominated
     if (accel_error > ACCEL_GATE) {
-        m_accelNisRejectReason = SensorStructs::NisRejectReason::ACCELERATION_GATE;
-        m_accelNisRejectTimestampUs = micros();
+        if (publish_nis)
+        {
+            m_accelNisRejectReason = SensorStructs::NisRejectReason::ACCELERATION_GATE;
+            m_accelNisRejectTimestampUs = micros();
+        }
         return;
     }
     // Smoothly reduce accel trust as |a| moves away from 1g
@@ -1457,20 +1590,29 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
     const Mat3 R = scale * R_base; //here is where we reduce the trust in accel as it moves away from 1g
 
     const Mat3 S = m_H * m_P * m_H.transpose() + R;
-    m_accelNis = m_y.segment<3>(3).dot(S.ldlt().solve(m_y.segment<3>(3)));
-    ++m_accelNisCount;
-    m_accelNisTimestampUs = micros();
-    if (std::isfinite(m_accelNis))
+    const Eigen::LDLT<Mat3> S_ldlt(S);
+    const Vec3 innovation = m_y.segment<3>(3);
+    float accel_nis = std::numeric_limits<float>::quiet_NaN();
+    const bool nis_valid = calculateNis(S_ldlt, innovation, accel_nis);
+    const bool innovation_accepted = nis_valid &&
+                                     accel_nis <= nisGateThreshold(3);
+    if (publish_nis)
     {
-        m_accelNisRejectReason = SensorStructs::NisRejectReason::NONE;
-        m_accelNisRejectTimestampUs = 0;
+        m_accelNis = accel_nis;
+        ++m_accelNisCount;
+        m_accelNisTimestampUs = micros();
+        m_accelNisRejectReason = innovation_accepted
+            ? SensorStructs::NisRejectReason::NONE
+            : (nis_valid
+                ? SensorStructs::NisRejectReason::INNOVATION_GATE
+                : SensorStructs::NisRejectReason::NUMERIC_FAILURE);
+        m_accelNisRejectTimestampUs = innovation_accepted ? 0 : m_accelNisTimestampUs;
     }
-    else
+    if (!innovation_accepted)
     {
-        m_accelNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
-        m_accelNisRejectTimestampUs = m_accelNisTimestampUs;
+        return;
     }
-    m_K = m_P * m_H.transpose() * S.ldlt().solve(Mat3::Identity());
+    m_K = m_P * m_H.transpose() * S_ldlt.solve(Mat3::Identity());
 
    
 
@@ -1497,10 +1639,19 @@ void EKF::updateLowGAccel(const Eigen::Vector3f& z_accel)
     }
 };
 
-void EKF::updateBaro(const float pressure, const float temperature)
+void EKF::updateBaro(const float pressure,
+                     const float temperature,
+                     const uint32_t measurement_time_us)
 {
     using Mat2 = Eigen::Matrix<float, 2, 2>;
     using Vec2 = Eigen::Matrix<float, 2, 1>;
+
+    const bool publish_nis = isNewMeasurement(measurement_time_us,
+                                               m_lastBaroNisMeasurementTime);
+    if (publish_nis)
+    {
+        m_lastBaroNisMeasurementTime = measurement_time_us;
+    }
 
     // ── Use launch site as reference ──────────────────────────────────────────
     const float P_ref = m_setHome_ref.launch_pressure;
@@ -1521,7 +1672,6 @@ void EKF::updateBaro(const float pressure, const float temperature)
     H_baro(1, 2) = -dP_dh;
 
     // ── Innovation ────────────────────────────────────────────────────────────
-    Vec2 y;
     m_y(6) = temperature - m_h(6);
     m_y(7) = pressure - m_h(7);
 
@@ -1532,20 +1682,29 @@ void EKF::updateBaro(const float pressure, const float temperature)
 
     // ── Kalman gain (16×2) ────────────────────────────────────────────────────
     const Mat2 S = H_baro * m_P * H_baro.transpose() + R_baro;
-    m_baroNis = m_y.segment<2>(6).dot(S.ldlt().solve(m_y.segment<2>(6)));
-    ++m_baroNisCount;
-    m_baroNisTimestampUs = micros();
-    if (std::isfinite(m_baroNis))
+    const Eigen::LDLT<Mat2> S_ldlt(S);
+    const Vec2 innovation = m_y.segment<2>(6);
+    float baro_nis = std::numeric_limits<float>::quiet_NaN();
+    const bool nis_valid = calculateNis(S_ldlt, innovation, baro_nis);
+    const bool innovation_accepted = nis_valid &&
+                                     baro_nis <= nisGateThreshold(2);
+    if (publish_nis)
     {
-        m_baroNisRejectReason = SensorStructs::NisRejectReason::NONE;
-        m_baroNisRejectTimestampUs = 0;
+        m_baroNis = baro_nis;
+        ++m_baroNisCount;
+        m_baroNisTimestampUs = micros();
+        m_baroNisRejectReason = innovation_accepted
+            ? SensorStructs::NisRejectReason::NONE
+            : (nis_valid
+                ? SensorStructs::NisRejectReason::INNOVATION_GATE
+                : SensorStructs::NisRejectReason::NUMERIC_FAILURE);
+        m_baroNisRejectTimestampUs = innovation_accepted ? 0 : m_baroNisTimestampUs;
     }
-    else
+    if (!innovation_accepted)
     {
-        m_baroNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
-        m_baroNisRejectTimestampUs = m_baroNisTimestampUs;
+        return;
     }
-    const Eigen::Matrix<float, 16, 2> K_baro = m_P * H_baro.transpose() * S.ldlt().solve(Mat2::Identity());
+    const Eigen::Matrix<float, 16, 2> K_baro = m_P * H_baro.transpose() * S_ldlt.solve(Mat2::Identity());
 
     // ── State update ──────────────────────────────────────────────────────────
     m_x += K_baro * m_y.segment<2>(6);
@@ -1664,12 +1823,32 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
         m_h.segment<3>(11) = m_x.segment<3>(3);
         m_y.segment<3>(8).setZero();
         m_y.segment<3>(11) = z_vel - m_h.segment<3>(11);
-        m_x.segment<3>(3) = z_vel;
+
+        const Mat3 R_velocity = (SIGMA_VEL * SIGMA_VEL) * Mat3::Identity();
+        const Mat3 S = m_P.block<3,3>(3,3) + R_velocity;
+        const Eigen::LDLT<Mat3> S_ldlt(S);
+        const Vec3 innovation = m_y.segment<3>(11);
+        float gps_nis = std::numeric_limits<float>::quiet_NaN();
+        const bool nis_valid = calculateNis(S_ldlt, innovation, gps_nis);
+        const bool innovation_accepted = nis_valid &&
+                                         gps_nis <= nisGateThreshold(3);
         if (publish_nis)
         {
-            m_gpsNisRejectReason = SensorStructs::NisRejectReason::NIS_DISABLED;
-            m_gpsNisRejectTimestampUs = micros();
+            m_gpsNis = gps_nis;
+            ++m_gpsNisCount;
+            m_gpsNisTimestampUs = micros();
+            m_gpsNisRejectReason = innovation_accepted
+                ? SensorStructs::NisRejectReason::NONE
+                : (nis_valid
+                    ? SensorStructs::NisRejectReason::INNOVATION_GATE
+                    : SensorStructs::NisRejectReason::NUMERIC_FAILURE);
+            m_gpsNisRejectTimestampUs = innovation_accepted ? 0 : m_gpsNisTimestampUs;
         }
+        if (!innovation_accepted)
+        {
+            return;
+        }
+        m_x.segment<3>(3) = z_vel;
         return;
     }
 
@@ -1718,27 +1897,44 @@ void EKF::updateGPS(const SensorStructs::GPS_t& gps)
         m_y.segment<3>(11).setZero();
     }
 
+    const uint8_t active_measurement_dof =
+        static_cast<uint8_t>((use_pos ? 3U : 0U) + (vel_valid ? 3U : 0U));
+    if (active_measurement_dof == 0)
+    {
+        if (publish_nis)
+        {
+            m_gpsNisRejectReason = SensorStructs::NisRejectReason::INVALID_MEASUREMENT;
+            m_gpsNisRejectTimestampUs = micros();
+        }
+        return;
+    }
+
     const Mat6 S    = H_gps * m_P * H_gps.transpose() + R_gps;
-    const float gps_nis = m_y.segment<6>(8).dot(S.ldlt().solve(m_y.segment<6>(8)));
+    const Eigen::LDLT<Mat6> S_ldlt(S);
+    const Vec6 innovation = m_y.segment<6>(8);
+    float gps_nis = std::numeric_limits<float>::quiet_NaN();
+    const bool nis_valid = calculateNis(S_ldlt, innovation, gps_nis);
+    const bool innovation_accepted = nis_valid &&
+                                     gps_nis <= nisGateThreshold(active_measurement_dof);
     if (publish_nis)
     {
         m_gpsNis = gps_nis;
         ++m_gpsNisCount;
         m_gpsNisTimestampUs = micros();
-        if (std::isfinite(m_gpsNis))
-        {
-            m_gpsNisRejectReason = SensorStructs::NisRejectReason::NONE;
-            m_gpsNisRejectTimestampUs = 0;
-        }
-        else
-        {
-            m_gpsNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
-            m_gpsNisRejectTimestampUs = m_gpsNisTimestampUs;
-        }
+        m_gpsNisRejectReason = innovation_accepted
+            ? SensorStructs::NisRejectReason::NONE
+            : (nis_valid
+                ? SensorStructs::NisRejectReason::INNOVATION_GATE
+                : SensorStructs::NisRejectReason::NUMERIC_FAILURE);
+        m_gpsNisRejectTimestampUs = innovation_accepted ? 0 : m_gpsNisTimestampUs;
+    }
+    if (!innovation_accepted)
+    {
+        return;
     }
 
     // ── Kalman gain (16×6) ────────────────────────────────────────────────────
-    const Eigen::Matrix<float, 16, 6> K_gps = m_P * H_gps.transpose() * S.ldlt().solve(Mat6::Identity());
+    const Eigen::Matrix<float, 16, 6> K_gps = m_P * H_gps.transpose() * S_ldlt.solve(Mat6::Identity());
 
     // ── State update ──────────────────────────────────────────────────────────
     m_x += K_gps * m_y.segment<6>(8);
@@ -1865,25 +2061,39 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
     R_rtk(2,2) = sigma_pos_vertical * sigma_pos_vertical;
     R_rtk.block<3,3>(3,3) = (sigma_vel * sigma_vel) * Eigen::Matrix3f::Identity();
 
+    // Publish the pre-correction prediction and residual even when the gate
+    // rejects the measurement.
+    m_h.segment<3>(8) = m_x.segment<3>(0);
+    m_h.segment<3>(11) = m_x.segment<3>(3);
+    m_y.segment<3>(8) = innovation.segment<3>(0);
+    m_y.segment<3>(11) = innovation.segment<3>(3);
+
     const Mat6 S = H_rtk * m_P * H_rtk.transpose() + R_rtk;
-    const float rtk_nis = innovation.dot(S.ldlt().solve(innovation));
+    const Eigen::LDLT<Mat6> S_ldlt(S);
+    float rtk_nis = std::numeric_limits<float>::quiet_NaN();
+    const bool nis_valid = calculateNis(S_ldlt, innovation, rtk_nis);
+    const uint8_t position_dof = USE_RTK_VERTICAL ? 3U : 2U;
+    const uint8_t active_measurement_dof = static_cast<uint8_t>(
+        position_dof * (USE_RTK_VELOCITY ? 2U : 1U));
+    const bool innovation_accepted = nis_valid &&
+                                     rtk_nis <= nisGateThreshold(active_measurement_dof);
     if (publish_nis)
     {
         m_rtkNis = rtk_nis;
         ++m_rtkNisCount;
         m_rtkNisTimestampUs = micros();
-        if (std::isfinite(m_rtkNis))
-        {
-            m_rtkNisRejectReason = SensorStructs::NisRejectReason::NONE;
-            m_rtkNisRejectTimestampUs = 0;
-        }
-        else
-        {
-            m_rtkNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
-            m_rtkNisRejectTimestampUs = m_rtkNisTimestampUs;
-        }
+        m_rtkNisRejectReason = innovation_accepted
+            ? SensorStructs::NisRejectReason::NONE
+            : (nis_valid
+                ? SensorStructs::NisRejectReason::INNOVATION_GATE
+                : SensorStructs::NisRejectReason::NUMERIC_FAILURE);
+        m_rtkNisRejectTimestampUs = innovation_accepted ? 0 : m_rtkNisTimestampUs;
     }
-    Eigen::Matrix<float, 16, 6> K_rtk = m_P * H_rtk.transpose() * S.ldlt().solve(Mat6::Identity());
+    if (!innovation_accepted)
+    {
+        return;
+    }
+    Eigen::Matrix<float, 16, 6> K_rtk = m_P * H_rtk.transpose() * S_ldlt.solve(Mat6::Identity());
 
     if (!USE_RTK_VERTICAL)
     {
@@ -1892,11 +2102,6 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
     }
 
     m_x += K_rtk * innovation;
-    m_h.segment<3>(8) = m_x.segment<3>(0);
-    m_h.segment<3>(11) = m_x.segment<3>(3);
-    m_y.segment<3>(8) = innovation.segment<3>(0);
-    m_y.segment<3>(11) = innovation.segment<3>(3);
-
     Eigen::Vector4f q_new = m_x.segment<4>(6);
     const float q_norm = q_new.norm();
     if (!std::isfinite(q_norm) || q_norm < 1e-9f)
@@ -1919,9 +2124,8 @@ void EKF::updateRTK(const SensorStructs::RTK_t& rtk)
 
 void EKF::updateLidar(const SensorStructs::LIDAR_t& lidar)
 {
-    const bool publish_nis = lidar.timestamp_us != 0 &&
-                             (m_lastLidarNisMeasurementTime == 0 ||
-                              timeAfter(lidar.timestamp_us, m_lastLidarNisMeasurementTime));
+    const bool publish_nis = isNewMeasurement(lidar.timestamp_us,
+                                               m_lastLidarNisMeasurementTime);
     if (publish_nis)
     {
         m_lastLidarNisMeasurementTime = lidar.timestamp_us;
@@ -1995,22 +2199,28 @@ void EKF::updateLidar(const SensorStructs::LIDAR_t& lidar)
 
     // ── Kalman gain (16×1) ────────────────────────────────────────────────────
     const float S = (H_lidar * m_P * H_lidar.transpose())(0, 0) + R_lidar;
-    const float lidar_nis = m_y(14) * m_y(14) / S;
+    const bool nis_valid = std::isfinite(S) && S > 0.0f && std::isfinite(m_y(14));
+    const float lidar_nis = nis_valid
+        ? m_y(14) * m_y(14) / S
+        : std::numeric_limits<float>::quiet_NaN();
+    const bool innovation_accepted = nis_valid &&
+                                     std::isfinite(lidar_nis) &&
+                                     lidar_nis <= nisGateThreshold(1);
     if (publish_nis)
     {
         m_lidarNis = lidar_nis;
         ++m_lidarNisCount;
         m_lidarNisTimestampUs = micros();
-        if (std::isfinite(m_lidarNis))
-        {
-            m_lidarNisRejectReason = SensorStructs::NisRejectReason::NONE;
-            m_lidarNisRejectTimestampUs = 0;
-        }
-        else
-        {
-            m_lidarNisRejectReason = SensorStructs::NisRejectReason::NUMERIC_FAILURE;
-            m_lidarNisRejectTimestampUs = m_lidarNisTimestampUs;
-        }
+        m_lidarNisRejectReason = innovation_accepted
+            ? SensorStructs::NisRejectReason::NONE
+            : (nis_valid && std::isfinite(lidar_nis)
+                ? SensorStructs::NisRejectReason::INNOVATION_GATE
+                : SensorStructs::NisRejectReason::NUMERIC_FAILURE);
+        m_lidarNisRejectTimestampUs = innovation_accepted ? 0 : m_lidarNisTimestampUs;
+    }
+    if (!innovation_accepted)
+    {
+        return;
     }
     const Eigen::Matrix<float, 16, 1> K_lidar = (m_P * H_lidar.transpose()) / S;
 
