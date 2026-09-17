@@ -38,13 +38,13 @@ namespace PickleRickV3Pins{
     //I2C
     static constexpr int _SDA = 21;
     static constexpr int _SCL = 26;
-    
+
     //SD Storage
     static constexpr int SdCs_1 = 8;
     static constexpr int SdCs_2 = 7;
     static constexpr int SdDet_1 = 5;
     static constexpr int SdDet_2 = 6;
-  
+
     //CAN
     static constexpr int TxCan = 18;
     static constexpr int RxCan = 17;
@@ -54,8 +54,8 @@ namespace PickleRickV3Pins{
     static constexpr int LogicVolt = 2;
     static constexpr int DepVolt = 16;
     static constexpr int DepSwitch = 15;
-    
-    //PCA9634 Mapping 
+
+    //PCA9634 Mapping
     static constexpr int Ch0Fire = 1;
     static constexpr int Ch1Fire = 3;
     static constexpr int Ch2Fire = 5;

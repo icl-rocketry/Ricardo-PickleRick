@@ -5,16 +5,12 @@
 
 enum class SYSTEM_FLAG:uint32_t{
     //state flags
-    STATE_DEBUG = (1 << 0), 
-    STATE_PREFLIGHT = (1 << 1),
-    STATE_LAUNCH = (1 << 2),
-    STATE_FLIGHT = (1 << 3),
-    STATE_RECOVERY = (1 << 4),
-    STATE_SETUP = (1 << 5),
-    STATE_GROUNDSTATION = (1 << 6),
+    STATE_DEBUG = (1 << 0),
+    STATE_DEFAULT = (1 << 1),
+
     //flags
     DEBUG = (1 << 7),
-    //critical messages 
+    //critical messages
     ERROR_SPI = (1 << 8),
     ERROR_I2C = (1 << 9),
     ERROR_SERIAL = (1 << 10),
@@ -34,12 +30,6 @@ enum class SYSTEM_FLAG:uint32_t{
     ERROR_ORIENTATION = (1 << 23),
     //warn
     WARN_BATT = (1 << 24),
-    //FLIGHTPHASES 
-    FLIGHTPHASE_BOOST = (1 << 25),
-    
-    FLIGHTPHASE_COAST = (1 << 26),
-    FLIGHTPHASE_APOGEE = (1 << 27)
-    
 };
 
 using system_flag_t = uint32_t;

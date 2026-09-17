@@ -9,6 +9,11 @@ namespace GeneralConfig{
 
     //I2C frequrency - 4Khz
     static constexpr int I2C_FREQUENCY = 400000;
+
+    enum class NetworkConfig : uint8_t {
+        CHAD_MASTER = 150,
+        CHAD_SLAVE = 151
+    };
 };
 
 

@@ -33,7 +33,7 @@
 #include "adc_vrailmonitor.h"
 #include "ina_vrailmonitor.h"
 
-#if HARDWARE_VERSION != 3  
+#if HARDWARE_VERSION != 3
     #warning "Hardware Version is not 3, INA dep rail monitor will not be initialized!"
 #endif
 
@@ -93,8 +93,8 @@ void Sensors::setup(JsonObjectConst config){
     mag.setup(axesOrderMMC,axesFlipMMC);
     logicrail.setup(logicMaxVoltage,logicLowVoltage,logicMinVoltage);
     deprail.setup(depMaxVoltage,depLowVoltage,depMinVoltage);
-    
-    
+
+
 };
 
 void Sensors::update()
@@ -106,7 +106,7 @@ void Sensors::update()
         }
         return;
     }
-    gps.update(sensors_raw.gps);
+    // gps.update(sensors_raw.gps);
     baro.update(sensors_raw.baro);
     accelgyro.update(sensors_raw.accelgyro);
     accel.update(sensors_raw.accel);
@@ -117,7 +117,7 @@ void Sensors::update()
 
 const SensorStructs::raw_measurements_t& Sensors::getData()
 {
-   
+
     return sensors_raw;
 }
 
@@ -211,7 +211,7 @@ void Sensors::hitlHandler(std::unique_ptr<RnpPacketSerialized> packet_ptr)
             return;
         }
     }
-  
+
 
 }
 

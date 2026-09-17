@@ -4,9 +4,9 @@
  * @brief Implementation of commands for system
  * @version 0.1
  * @date 2023-06-17
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #include "commands.h"
@@ -24,84 +24,12 @@
 
 #include "system.h"
 
-#include "States/launch.h"
-#include "States/preflight.h"
-#include "States/flight.h"
-#include "States/recovery.h"
 #include "States/debug.h"
+#include "States/default.h"
 
 #include "Config/services_config.h"
 
-
-void Commands::LaunchCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	system.statemachine.changeState(std::make_unique<Launch>(system));
-}
-
-void Commands::ResetCommand(System& system, const RnpPacketSerialized& packet) 
-{	
-	system.statemachine.changeState(std::make_unique<Preflight>(system));
-}
-
-void Commands::LaunchAbortCommand(System& system,const  RnpPacketSerialized& packet) 
-{
-	// if(system.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_LAUNCH)){
-	// 	//check if we are in no abort time region
-	// 	//close all valves
-	// 	system.statemachine.changeState(new Preflight(&system));
-	// }else if (system.systemstatus.flagSetOr(SYSTEM_FLAG::STATE_FLIGHT)){
-	// 	//this behaviour needs to be confirmed with recovery 
-	// 	//might be worth waiting for acceleration to be 0 after rocket engine cut
-	// 	system.statemachine.changeState(new Recovery(&system));
-	// }
-	
-	//TODO log
-	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Launch Aborted, Entering Preflight state");
-	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Disarming all engines and deployers");
-	system.enginehandler.disarmComponents();
-	system.deploymenthandler.disarmComponents();
-
-	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Resetting event handler");
-	system.eventhandler.reset();
-	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Reset Ignition Time");
-	system.estimator.setIgnitionTime(0);
-
-	system.statemachine.changeState(std::make_unique<Preflight>(system));
-
-}
-
-void Commands::FlightAbortCommand(System& system, const RnpPacketSerialized& packet)
-{
-	//flight abort
-	//TODO log
-	system.statemachine.changeState(std::make_unique<Recovery>(system));
-	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Flight Aborted, Entering recovery state");
-}
-
-void Commands::SetHomeCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	// if(!system.systemstatus.flagSetOr(SYSTEM_FLAG::DEBUG)){
-	// 	return;
-	// }
-	system.estimator.setHome(system.sensors.getData());
-	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
-	
-}
-
-void Commands::StartLoggingCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	SimpleCommandPacket commandpacket(packet);
-	// system.logcontroller.startLogging((LOG_TYPE)commandpacket.arg);
-}
-
-void Commands::StopLoggingCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	
-	SimpleCommandPacket commandpacket(packet);
-	// system.logcontroller.stopLogging((LOG_TYPE)commandpacket.arg);
-}
-
-void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packet) 
+void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packet)
 {
 	SimpleCommandPacket commandpacket(packet);
 
@@ -116,7 +44,7 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 	telemetry.header.source_service = static_cast<uint8_t>(DEFAULT_SERVICES::COMMAND);
 	telemetry.header.destination = commandpacket.header.source;
 	telemetry.header.destination_service = commandpacket.header.source_service;
-	telemetry.header.uid = commandpacket.header.uid; 
+	telemetry.header.uid = commandpacket.header.uid;
 	telemetry.system_time = millis();
 
 	telemetry.pn = estimator_state.position(0);
@@ -180,107 +108,48 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 	telemetry.dep_voltage = raw_sensors.deprail.volt;
 	telemetry.dep_current = raw_sensors.deprail.current;
 
-
 	telemetry.launch_lat = estimator_state.gps_launch_lat;
 	telemetry.launch_lng = estimator_state.gps_launch_long;
 	telemetry.launch_alt = estimator_state.gps_launch_alt;
 
 	telemetry.system_status = system.systemstatus.getStatus();
-	
-
-	const RadioInterfaceInfo* radioinfo = static_cast<const RadioInterfaceInfo*>(system.radio.getInfo());
-	telemetry.rssi = radioinfo->rssi;
-	telemetry.snr = radioinfo->snr;
-
-
-
-	system.networkmanager.sendPacket(telemetry);
-
-}
-
-//!TEMP
-void Commands::RadioTestCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	SimpleCommandPacket commandpacket(packet);
-
-	RadioTestPacket telemetry;
-
-	telemetry.header.type = 101;
-	telemetry.header.source = system.networkmanager.getAddress();
-	// this is not great as it assumes a single command handler with the same service ID
-	// would be better if we could pass some context through the function paramters so it has an idea who has called it
-	// or make it much clearer that only a single command handler should exist in the system
-	telemetry.header.source_service = static_cast<uint8_t>(DEFAULT_SERVICES::COMMAND);
-	telemetry.header.destination = commandpacket.header.source;
-	telemetry.header.destination_service = commandpacket.header.source_service;
-	telemetry.header.uid = commandpacket.header.uid; 
-	
-	telemetry.system_time = millis();
-	telemetry.system_status = system.systemstatus.getStatus();
-	const RadioInterfaceInfo* radioinfo = static_cast<const RadioInterfaceInfo*>(system.radio.getInfo());
-	telemetry.rssi = radioinfo->rssi;
-	telemetry.packet_rssi = radioinfo->packet_rssi;
-	telemetry.snr = radioinfo->snr;
-	telemetry.packet_snr = radioinfo->packet_snr;
 
 	system.networkmanager.sendPacket(telemetry);
 }
 
-void Commands::PlaySongCommand(System& system, const RnpPacketSerialized& packet) 
+void Commands::ResetOrientationCommand(System& system, const RnpPacketSerialized& packet)
 {
-
-	SimpleCommandPacket commandpacket(packet);
-	system.tunezhandler.play_by_idx(commandpacket.arg);
-}
-
-void Commands::SkipSongCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	system.tunezhandler.skip();
-}
-
-void Commands::ClearSongQueueCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	system.tunezhandler.clear();
-}
-
-void Commands::ResetOrientationCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	
 	system.estimator.resetOrientation();
 	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
 }
 
-void Commands::ResetLocalizationCommand(System& system, const RnpPacketSerialized& packet) 
+void Commands::ResetLocalizationCommand(System& system, const RnpPacketSerialized& packet)
 {
 	system.estimator.resetLocalization();
 	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
 }
 
-void Commands::SetBetaCommand(System& system, const RnpPacketSerialized& packet) 
+void Commands::SetBetaCommand(System& system, const RnpPacketSerialized& packet)
 {
-
 	SimpleCommandPacket commandpacket(packet);
 	float beta = ((float)commandpacket.arg) / 100.0;
 	system.estimator.changeBeta(beta);
 }
 
-void Commands::CalibrateAccelGyroBiasCommand(System& system, const RnpPacketSerialized& packet) 
+void Commands::CalibrateAccelGyroBiasCommand(System& system, const RnpPacketSerialized& packet)
 {
-	
 	system.sensors.calibrateAccelGyro();
 	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
 }
 
-void Commands::CalibrateHighGAccelBiasCommand(System& system, const RnpPacketSerialized& packet) 
+void Commands::CalibrateHighGAccelBiasCommand(System& system, const RnpPacketSerialized& packet)
 {
-	
 	system.sensors.calibrateHighGAccel();
 	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
 }
 
-void Commands::CalibrateMagFullCommand(System& system, const RnpPacketSerialized& packet) 
+void Commands::CalibrateMagFullCommand(System& system, const RnpPacketSerialized& packet)
 {
-
 	//check mag cal (id 10) packet type received
 	if (packet.header.type != 10){
 		//incorrect packet type received do not deserialize
@@ -303,63 +172,20 @@ void Commands::CalibrateBaroCommand(System& system, const RnpPacketSerialized& p
 	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
 }
 
-void Commands::IgnitionCommand(System& system, const RnpPacketSerialized& packet)
+void Commands::EnterDebugCommand(System& system, const RnpPacketSerialized& packet)
 {
-
-	uint32_t currentTime = millis();
-	system.estimator.setIgnitionTime(currentTime); // set igintion time
-	
-	
-}
-
-void Commands::EnterDebugCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	
 	system.statemachine.changeState(std::make_unique<Debug>(system));
-
 }
 
-void Commands::EnterPreflightCommand(System& system, const RnpPacketSerialized& packet) 
+void Commands::ExitDebugCommand(System& system, const RnpPacketSerialized& packet)
 {
-
-	system.statemachine.changeState(std::make_unique<Preflight>(system));
-}
-
-
-void Commands::EnterLaunchCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	system.statemachine.changeState(std::make_unique<Launch>(system));
-}
-
-void Commands::EnterFlightCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	system.statemachine.changeState(std::make_unique<Flight>(system));
-}
-
-void Commands::EnterRecoveryCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	system.statemachine.changeState(std::make_unique<Recovery>(system));
-}
-
-void Commands::ExitDebugCommand(System& system, const RnpPacketSerialized& packet) 
-{
-
 	system.statemachine.changeState(std::make_unique<Debug>(system));
 	system.systemstatus.deleteFlag(SYSTEM_FLAG::DEBUG); // delete system flag to signify exiting debug mode
-	system.statemachine.changeState(std::make_unique<Preflight>(system));
+	system.statemachine.changeState(std::make_unique<Default>(system));
 }
-
-void Commands::LiftoffOverrideCommand(System& system, const RnpPacketSerialized& packet) 
-{
-	system.estimator.setLiftoffTime(millis());
-	system.tunezhandler.play(MelodyLibrary::confirmation); //play sound when complete
-	system.statemachine.changeState(std::make_unique<Flight>(system));
-	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Liftoff Override triggered, Forcing into flight mode!");
-}
-
 
 void Commands::FreeRamCommand(System& system, const RnpPacketSerialized& packet)
-{	
+{
 	/// ESP_LOGI("ch", "%s", "deserialize");
 
 	SimpleCommandPacket commandpacket(packet);
@@ -373,7 +199,7 @@ void Commands::FreeRamCommand(System& system, const RnpPacketSerialized& packet)
 	// this is not great as it assumes a single command handler with the same service ID
 	// would be better if we could pass some context through the function paramters so it has an idea who has called it
 	// or make it much clearer that only a single command handler should exist in the system
-		message.header.source_service = system.commandhandler.getServiceID(); 
+		message.header.source_service = system.commandhandler.getServiceID();
 		message.header.destination_service = packet.header.source_service;
 		message.header.source = packet.header.destination;
 		message.header.destination = packet.header.source;
@@ -383,71 +209,25 @@ void Commands::FreeRamCommand(System& system, const RnpPacketSerialized& packet)
 	else if (commandpacket.arg == 1)
 	{
 		BasicDataPacket<uint32_t,0,105> responsePacket(freeram);
-		responsePacket.header.source_service = system.commandhandler.getServiceID(); 
+		responsePacket.header.source_service = system.commandhandler.getServiceID();
 		responsePacket.header.destination_service = packet.header.source_service;
 		responsePacket.header.source = packet.header.destination;
 		responsePacket.header.destination = packet.header.source;
 		responsePacket.header.uid = packet.header.uid;
-		system.networkmanager.sendPacket(responsePacket);	
+		system.networkmanager.sendPacket(responsePacket);
 	}
-	
+
 }
 
 void Commands::ApogeeOverrideCommand(System& system, const RnpPacketSerialized& packet)
 {
 	SimpleCommandPacket commandpacket(packet);
 
-	system.systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_APOGEE, "Apogee Triggered!");
 	system.estimator.setApogeeTime(millis());
 
-	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Apogee Time Overriden, transitioning to Recovery State!");
-	system.statemachine.changeState(std::make_unique<Recovery>(system));
+	RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Apogee Time Overriden, transitioning to Command State!");
+
+	// TODO: Make this command toaster into command state
+	system.toaster.apogeeDetected();
 }
 
-
-
-//!TEMP
-void Commands::Radio_SetFreq(System& system, const RnpPacketSerialized& packet)
-{
-	SimpleCommandPacket commandpacket(packet);
-
-	long frequency = commandpacket.arg;
-
-	system.radio.setFreq(frequency);
-}
-
-void Commands::Radio_SetBW(System& system, const RnpPacketSerialized& packet)
-{
-	SimpleCommandPacket commandpacket(packet);
-
-	long bandwidth = commandpacket.arg;
-
-	system.radio.setBW(bandwidth);
-}
-
-void Commands::Radio_SetSF(System& system, const RnpPacketSerialized& packet)
-{
-	SimpleCommandPacket commandpacket(packet);
-
-	uint8_t SF = static_cast<uint8_t>(commandpacket.arg);
-
-	system.radio.setSF(SF);
-}
-
-void Commands::Radio_SetPower(System& system, const RnpPacketSerialized& packet)
-{
-	SimpleCommandPacket commandpacket(packet);
-
-	uint8_t Power = static_cast<uint8_t>(commandpacket.arg);
-
-	system.radio.setPower(Power);
-}
-
-void Commands::Radio_SetSYNC(System& system, const RnpPacketSerialized& packet)
-{
-	SimpleCommandPacket commandpacket(packet);
-
-	uint8_t SW = static_cast<uint8_t>(commandpacket.arg);
-
-	system.radio.setSW(SW);
-}

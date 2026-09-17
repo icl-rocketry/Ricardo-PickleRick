@@ -16,7 +16,6 @@
 
 #include "Commands/commands.h"
 
-#include "Network/Interfaces/radio.h"
 #include <libriccore/networkinterfaces/can/canbus.h>
 
 #include "Sensors/sensors.h"
@@ -25,21 +24,10 @@
 
 #include "Sound/tunezHandler.h"
 
-#include "Events/eventHandler.h"
-#include "Deployment/deploymenthandler.h"
-#include "Deployment/PCA9534.h"
-#include "Deployment/PCA9534Gpio.h"
-#include "Engine/enginehandler.h"
 #include "Controller/controllerhandler.h"
 #include "Storage/sdfat_store.h"
 #include "Storage/sdfat_file.h"
 #include "Loggers/TelemetryLogger/telemetrylogframe.h"
-
-#include "States/preflight.h"
-
-
-
-
 
 
 #ifdef CONFIG_IDF_TARGET_ESP32S3
@@ -54,26 +42,11 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    vspi(VSPI_BUS_NUM),
                    hspi(HSPI_BUS_NUM),
                    I2C(0),
-                   radio(hspi,  PinMap::LoraCs, PinMap::LoraReset, PinMap::LoraInt, systemstatus, RADIO_MODE::TURN_TIMEOUT, 2),
                    canbus(systemstatus, PinMap::TxCan, PinMap::RxCan, 3),
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
-                   deploymenthandler(networkmanager, localPyroMap, localServoMap, static_cast<uint8_t>(Services::ID::DeploymentHandler)),
-                   enginehandler(networkmanager, localPyroMap, localServoMap, static_cast<uint8_t>(Services::ID::EngineHandler)),
-                   controllerhandler(enginehandler),
-                   eventhandler(enginehandler, deploymenthandler, networkmanager, localPyroMap, localServoMap),
                    apogeedetect(20),
-                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus),
-                   pyroPinExpander0(0x20,I2C),
-                   pyro0(PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch0Cont),networkmanager),
-                   pyro1(PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch1Cont),networkmanager),
-                   pyro2(PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Cont),networkmanager),
-                   pyro3(PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Cont),networkmanager),
-                   pwmPinExpander0(0x40,I2C,50),
-                   servo0(PCA9685PWM(PinMap::servo0pin,pwmPinExpander0),networkmanager,"srv0"),
-                   servo1(PCA9685PWM(PinMap::servo1pin,pwmPinExpander0),networkmanager,"srv1"),
-                   servo2(PCA9685PWM(PinMap::servo2pin,pwmPinExpander0),networkmanager,"srv2"),
-                   servo3(PCA9685PWM(PinMap::servo3pin,pwmPinExpander0),networkmanager,"srv3")
+                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus)
                    {};
 
 void System::systemSetup()
@@ -81,7 +54,7 @@ void System::systemSetup()
 
     Serial.setRxBufferSize(GeneralConfig::SerialRxSize);
     Serial.begin(GeneralConfig::SerialBaud);
-  
+
 
     setupPins();
     // intialize i2c interface
@@ -91,28 +64,21 @@ void System::systemSetup()
 
     primarysd.setup();
 
-    initializeLoggers();    
+    initializeLoggers();
 
     tunezhandler.setup();
     // network interfaces
-    radio.setup();
     canbus.setup();
 
     // add interfaces to netmanager
     configureNetwork();
 
-    //register pryo services
-    setupLocalPyros();
-    //register servo serv ices
-    setupLocalServos();
-
     loadConfig();
 
     estimator.setup();
 
-    // initialize statemachine with preflight state
-    statemachine.initalize(std::make_unique<Preflight>(*this));
-
+    // initialize statemachine with default state
+    statemachine.initalize(std::make_unique<Default>(*this));
 };
 
 void System::systemUpdate()
@@ -141,52 +107,6 @@ void System::setupI2C()
     I2C.begin(PinMap::_SDA, PinMap::_SCL, GeneralConfig::I2C_FREQUENCY);
 }
 
-void System::setupLocalPyros()
-{
-    if (pyroPinExpander0.setup())
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pyro pin expander alive");
-
-        pyro0.setup();
-        pyro1.setup();
-        pyro2.setup();
-        pyro3.setup();
-        
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro0),pyro0.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro1),pyro1.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro2),pyro2.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Pyro3),pyro3.getThisNetworkCallback());
-    }
-    else
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pyro pin expander failed to respond");
-    }
-
-};
-
-void System::setupLocalServos()
-{
-    if (pwmPinExpander0.setup())
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pwm expander alive");
-
-        servo0.setup();
-        servo1.setup();
-        servo2.setup();
-        servo3.setup();
-        
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Servo0),servo0.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Servo1),servo1.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Servo2),servo2.getThisNetworkCallback());
-        networkmanager.registerService(static_cast<uint8_t>(Services::ID::Servo3),servo3.getThisNetworkCallback());
-    }
-    else
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("I2C pwm expander failed to respond");
-    }
-
-};
-
 void System::setupPins()
 {
     pinMode(PinMap::LoraCs, OUTPUT);
@@ -196,7 +116,7 @@ void System::setupPins()
     pinMode(PinMap::MagCs, OUTPUT);
     pinMode(PinMap::SdCs_1, OUTPUT);
     pinMode(PinMap::SdCs_2, OUTPUT);
-    
+
 
     // initialise cs pins
     digitalWrite(PinMap::LoraCs, HIGH);
@@ -210,7 +130,7 @@ void System::setupPins()
     //! the active current monitor
     #if HARDWARE_VERSION == 3
         pinMode(PinMap::DepSwitch, OUTPUT);
-        digitalWrite(PinMap::DepSwitch, HIGH); 
+        digitalWrite(PinMap::DepSwitch, HIGH);
     #endif
 }
 
@@ -219,7 +139,7 @@ void System::loadConfig()
     DynamicJsonDocument configDoc(16384); //allocate 16kb for config doc MAXSIZE
     DeserializationError jsonError;
     // get wrapped file for config doc -> returns nullptr if cant open
-    
+
 
     //only try load file if sd card is present
     if (primarysd.getState() == StoreBase::STATE::NOMINAL)
@@ -250,19 +170,12 @@ void System::loadConfig()
             RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Error deserializing JSON - " + std::string(jsonError.c_str()));
         }
     }
-    
+
     //enumerate deployers engines controllers and events from config file
     try
     {
-        configureRadio(configDoc.as<JsonObjectConst>()["Radio"]);
         estimator.configure(configDoc.as<JsonObjectConst>()["Estimator"]);
-
         sensors.setup(configDoc.as<JsonObjectConst>()["Sensors"]);
-        deploymenthandler.setup(configDoc.as<JsonObjectConst>()["Deployers"]);
-        enginehandler.setup(configDoc.as<JsonObjectConst>()["Engines"]);
-        controllerhandler.setup(configDoc.as<JsonObjectConst>()["Controllers"]);
-        eventhandler.setup(configDoc.as<JsonObjectConst>()["Events"]);
-
     }
     catch (const std::exception &e)
     {
@@ -270,18 +183,14 @@ void System::loadConfig()
 
          throw e; //continue throwing as we dont want to continue
     }
-   
-    //   //register deployment and engine handler services
-    networkmanager.registerService(static_cast<uint8_t>(Services::ID::DeploymentHandler), deploymenthandler.getThisNetworkCallback());
-    networkmanager.registerService(static_cast<uint8_t>(Services::ID::EngineHandler), enginehandler.getThisNetworkCallback());
 }
 
 void System::initializeLoggers()
-{   
+{
     //check if sd card is mounted
     if (primarysd.getState() != StoreBase::STATE::NOMINAL)
     {
-        
+
         loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(nullptr,networkmanager);
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("SD Init Failed");
         return;
@@ -294,11 +203,11 @@ void System::initializeLoggers()
     primarysd.mkdir(log_directory_path);
 
     std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END));
-    std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50); 
-    
+    std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50);
+
     // intialize sys logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(std::move(syslogfile),networkmanager);
-   
+
     //initialize telemetry logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::TELEMETRY>().initialize(std::move(telemetrylogfile));
 
@@ -310,7 +219,7 @@ void System::logTelemetry()
     if (micros() - prev_telemetry_log_time > telemetry_log_delta)
     {
         // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(uxTaskGetStackHighWaterMark(primarysd.getHandle())));
-        
+
         // std::string logstring = "int:" + std::to_string(usb_serial_jtag_ll_get_intsts_mask());
         // std::stringstream s;
         // s << std::hex << Serial.getRxQueue() <<"\n";
@@ -319,15 +228,7 @@ void System::logTelemetry()
         const SensorStructs::raw_measurements_t& raw_sensors = sensors.getData();
         const SensorStructs::state_t& estimator_state =  estimator.getData();
         TelemetryLogframe logframe;
-        
-        logframe.gps_long = raw_sensors.gps.lng;
-        logframe.gps_lat = raw_sensors.gps.lat;
-        logframe.gps_alt = raw_sensors.gps.alt;
-        logframe.gps_v_n = raw_sensors.gps.v_n;
-        logframe.gps_v_e = raw_sensors.gps.v_e;
-        logframe.gps_v_d = raw_sensors.gps.v_d;
-        logframe.gps_sat = raw_sensors.gps.sat;
-        logframe.gps_fix = raw_sensors.gps.fix;
+
         logframe.ax = raw_sensors.accelgyro.ax;
         logframe.ay = raw_sensors.accelgyro.ay;
         logframe.az = raw_sensors.accelgyro.az;
@@ -365,13 +266,6 @@ void System::logTelemetry()
         logframe.ae = estimator_state.acceleration[1];
         logframe.ad = estimator_state.acceleration[2];
 
-        const RadioInterfaceInfo* radio_info = reinterpret_cast<const RadioInterfaceInfo*>(radio.getInfo());
-
-        logframe.rssi = radio_info->rssi;
-        logframe.packet_rssi = radio_info->packet_rssi;
-        logframe.snr = radio_info->snr;
-        logframe.packet_snr = radio_info->packet_snr;
-
         logframe.timestamp = esp_timer_get_time();
 
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::TELEMETRY>(logframe);
@@ -381,9 +275,8 @@ void System::logTelemetry()
 }
 
 void System::configureNetwork()
-{   
+{
     networkmanager.setNodeType(NODETYPE::HUB);
-    networkmanager.addInterface(&radio);
     networkmanager.addInterface(&canbus);
 
     networkmanager.enableAutoRouteGen(true);
@@ -391,55 +284,24 @@ void System::configureNetwork()
 
     RoutingTable flightRouting;
 
-    #if ROCKET_TABLE
-        flightRouting.setRoute((uint8_t) 5,Route{2,1,{}}); // Rocket GS Pickle
-        flightRouting.setRoute((uint8_t) 20,Route{3,1,{}}); // PDU0
-        flightRouting.setRoute((uint8_t) 21,Route{3,1,{}}); // PDU1
-        flightRouting.setRoute((uint8_t) 30,Route{3,1,{}}); // Recovery F&S
-        flightRouting.setRoute((uint8_t) 14,Route{3,1,{}}); // Solenoid F&S
-        flightRouting.setRoute((uint8_t) 13,Route{3,1,{}}); // E-reg
-        flightRouting.setRoute((uint8_t) 12,Route{3,1,{}}); // Sensor board
-        flightRouting.setRoute((uint8_t) 11,Route{3,1,{}}); // Ox vent
-        flightRouting.setRoute((uint8_t) 10,Route{3,1,{}}); // Engine controller
-        flightRouting.setRoute((uint8_t) 31,Route{3,1,{}}); // Payload deployer
-        flightRouting.setRoute((uint8_t) 40,Route{3,1,{}}); // Camera board
-        flightRouting.setRoute((uint8_t) 41,Route{3,1,{}}); // Canard board
-        flightRouting.setRoute((uint8_t) 3,Route{3,1,{}}); // GSS Chad
-    #elif ROCKET_GS_TABLE
-        flightRouting.setRoute((uint8_t) 2,Route{2,1,{}}); // Rocket Pickle
-        flightRouting.setRoute((uint8_t) 10,Route{2,1,{}}); // Stark
-        flightRouting.setRoute((uint8_t) 12,Route{2,1,{}}); // Sensor board
-        flightRouting.setRoute((uint8_t) 200,Route{3,1,{}}); // Payload GS Pickle
-    #elif PAYLOAD_TABLE
-        flightRouting.setRoute((uint8_t) 6,Route{2,1,{}}); // Payload GS Pickle
-    #elif PAYLOAD_GS_TABLE
-        flightRouting.setRoute((uint8_t) 200,Route{2,1,{}}); // Payload Pickle
-    #endif
-  
+    // Setup USB routing for the grid fin chads
+    flightRouting.setRoute(static_cast<uint8_t>(GeneralConfig::NetworkConfig::CHAD_MASTER),
+        Route {
+            .iface = DEFAULT_INTERFACES::USBSERIAL,
+            .metric = 1,
+            .address = {}
+        }
+    );
+
+    flightRouting.setRoute(static_cast<uint8_t>(GeneralConfig::NetworkConfig::CHAD_SLAVE),
+        Route {
+            .iface = DEFAULT_INTERFACES::USBSERIAL,
+            .metric = 1,
+            .address = {}
+        }
+    );
+
     networkmanager.setRoutingTable(flightRouting);
     networkmanager.updateBaseTable(); // save the new base table
 
 };
-
-void System::configureRadio(JsonObjectConst conf)
-{
-    using namespace LIBRRC::JsonConfigHelper;
-
-    RadioConfig radioConfig = radio.getConfig(); // get default config
-    try
-    {
-        bool override = getIfContains<bool>(conf,"Override",false);
-
-        radioConfig.frequency = getIfContains<long>(conf,"Frequency",radioConfig.frequency);
-        radioConfig.sync_byte = getIfContains<int>(conf,"SyncByte",radioConfig.sync_byte); // default 0xf3
-        radioConfig.bandwidth = getIfContains<long>(conf,"Bandwidth",radioConfig.bandwidth);
-        radioConfig.spreading_factor = getIfContains<int>(conf,"SpreadingFactor",radioConfig.spreading_factor);
-        radioConfig.txPower = getIfContains<int>(conf,"TxPower",radioConfig.txPower);
-        radio.setConfig(radioConfig,override);
-    }
-    catch (const std::exception &e)
-    {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Exception occured while loading flight config! - " + std::string(e.what()));
-        return;
-    }
-}
