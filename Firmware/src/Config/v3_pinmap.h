@@ -27,9 +27,9 @@ namespace PickleRickV3Pins{
     static constexpr int PPS = 39;
 
     //gpio -> doubles as JTAG PINS
-    static constexpr int GPIO0 = 40;
-    static constexpr int GPIO1 = 41;
-    static constexpr int GPIO2 = 42;
+    static constexpr int StepperEnable = 40;
+    static constexpr int EndstopLower = 41;
+    static constexpr int EndstopUpper = 42;
 
     //ABUS
     static constexpr int ABUS_RX = 48;

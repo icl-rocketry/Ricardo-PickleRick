@@ -21,6 +21,8 @@
 
 #include <libriccore/networkinterfaces/can/canbus.h>
 
+#include "Toaster/toaster.h"
+
 #include "Sensors/estimator.h"
 
 #include "Sound/tunezHandler.h"
@@ -30,43 +32,45 @@
 
 class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 {
-    public:
+public:
 
-        System();
+    System();
 
-        void systemSetup();
+    void systemSetup();
 
-        void systemUpdate();
+    void systemUpdate();
 
-        //board communication
-        SPIClass vspi;
-        SPIClass hspi;
-        TwoWire I2C;
+    //board communication
+    SPIClass vspi;
+    SPIClass hspi;
+    TwoWire I2C;
 
-        CanBus<SYSTEM_FLAG> canbus;
+    CanBus<SYSTEM_FLAG> canbus;
 
-        Sensors sensors;
-        Estimator estimator;
+    Sensors sensors;
+    Estimator estimator;
 
-        ApogeeDetect apogeedetect;
+    ApogeeDetect apogeedetect;
 
-        TunezHandler tunezhandler;
+    TunezHandler tunezhandler;
 
-        SdFat_Store primarysd;
+    SdFat_Store primarysd;
 
-    private:
+    Toaster toaster;
 
-        void setupSPI();
-        void setupI2C();
-        void setupPins();
-        void configureNetwork();
-        void initializeLoggers();
-        void logTelemetry();
-        void loadConfig();
+private:
 
-        static constexpr std::string_view log_path = "/Logs";
-        static constexpr std::string_view config_path = "/Config/rml.jsonc";
+    void setupSPI();
+    void setupI2C();
+    void setupPins();
+    void configureNetwork();
+    void initializeLoggers();
+    void logTelemetry();
+    void loadConfig();
 
-        uint32_t telemetry_log_delta = 5000; //200hz
-        uint32_t prev_telemetry_log_time;
+    static constexpr std::string_view log_path = "/Logs";
+    static constexpr std::string_view config_path = "/Config/rml.jsonc";
+
+    uint32_t telemetry_log_delta = 5000; //200hz
+    uint32_t prev_telemetry_log_time;
 };

@@ -13,11 +13,15 @@
  */
 enum class TOASTER_FLAGS : uint32_t
 {
-    // state flags
-    STATE_DEBUG = (1 << 0),
+    // State flags
+    STATE_ZERO = (1 << 0),
     STATE_DEFAULT = (1 << 1),
     STATE_ARMED = (1 << 2),
-    STATE_COMMAND = (1 << 3)
+    STATE_DEPLOY = (1 << 3),
+    STATE_COMMAND = (1 << 4),
+
+    // Error flags
+    ERROR_ZERO_TIMEOUT = (1 << 10)
 };
 
 template <typename TOASTER_FLAGS_T>

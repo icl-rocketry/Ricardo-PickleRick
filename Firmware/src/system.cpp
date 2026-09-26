@@ -24,10 +24,11 @@
 
 #include "Sound/tunezHandler.h"
 
-#include "Controller/controllerhandler.h"
 #include "Storage/sdfat_store.h"
 #include "Storage/sdfat_file.h"
 #include "Loggers/TelemetryLogger/telemetrylogframe.h"
+
+#include "States/default.h"
 
 
 #ifdef CONFIG_IDF_TARGET_ESP32S3
@@ -46,7 +47,8 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
                    apogeedetect(20),
-                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus)
+                   primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus),
+                   toaster(*this, networkmanager, PinMap::StepperEnable, PinMap::EndstopLower, PinMap::EndstopUpper)
                    {};
 
 void System::systemSetup()
@@ -287,7 +289,7 @@ void System::configureNetwork()
     // Setup USB routing for the grid fin chads
     flightRouting.setRoute(static_cast<uint8_t>(GeneralConfig::NetworkConfig::CHAD_MASTER),
         Route {
-            .iface = DEFAULT_INTERFACES::USBSERIAL,
+            .iface = static_cast<uint8_t>(DEFAULT_INTERFACES::USBSERIAL),
             .metric = 1,
             .address = {}
         }
@@ -295,7 +297,7 @@ void System::configureNetwork()
 
     flightRouting.setRoute(static_cast<uint8_t>(GeneralConfig::NetworkConfig::CHAD_SLAVE),
         Route {
-            .iface = DEFAULT_INTERFACES::USBSERIAL,
+            .iface = static_cast<uint8_t>(DEFAULT_INTERFACES::USBSERIAL),
             .metric = 1,
             .address = {}
         }

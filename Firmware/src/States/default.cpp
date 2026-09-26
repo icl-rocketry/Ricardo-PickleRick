@@ -10,7 +10,7 @@
 #include "system.h"
 
 Default::Default(System& system):
-State(SYSTEM_FLAG::STATE_COMMAND, system.systemstatus),
+State(SYSTEM_FLAG::STATE_DEFAULT, system.systemstatus),
 _system(system)
 {};
 

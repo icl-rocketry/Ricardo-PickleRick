@@ -3,17 +3,17 @@
 
 #include <memory>
 
-#include "Config/systemflags_config.h"
+#include "Toaster/types.h"
 #include "system.h"
 
-class Armed : public Types::CoreTypes::State_t
+class Armed : public Types::TOASTER_TYPES::State_t
 {
     public:
         /**
          * @brief Armed state constructor.
          *
          */
-        Armed(System &system);
+        Armed(System &system, Types::TOASTER_TYPES::SystemStatus_t& status);
 
         /**
          * @brief Perform any initialization required for the state
@@ -27,7 +27,7 @@ class Armed : public Types::CoreTypes::State_t
          *
          * @return std::unique_ptr<State>
          */
-        Types::CoreTypes::State_ptr_t update() override;
+        Types::TOASTER_TYPES::State_ptr_t update() override;
 
         /**
          * @brief Exit state actions, cleanup any files opened, save data that kinda thing.
@@ -40,5 +40,6 @@ class Armed : public Types::CoreTypes::State_t
        * @brief Reference to system class
        *
        */
-        System &_system;
+        System& m_system;
+        Types::TOASTER_TYPES::SystemStatus_t& m_status;
 };
