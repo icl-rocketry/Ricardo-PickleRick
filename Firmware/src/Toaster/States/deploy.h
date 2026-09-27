@@ -43,4 +43,5 @@ private:
     Types::TOASTER_TYPES::SystemStatus_t& m_status;
 
     uint64_t m_timeEnterStateMs { 0 };
+    uint64_t m_lastCommandTimeMs { 0 };
 };

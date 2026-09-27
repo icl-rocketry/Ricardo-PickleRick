@@ -68,7 +68,11 @@ void System::systemSetup()
 
     initializeLoggers();
 
+    toaster.setup();
+    networkmanager.registerService(static_cast<uint8_t>(Services::ID::TOASTER), toaster.getThisNetworkCallback());
+
     tunezhandler.setup();
+
     // network interfaces
     canbus.setup();
 
@@ -89,6 +93,7 @@ void System::systemUpdate()
     sensors.update();
     estimator.update(sensors.getData());
     logTelemetry();
+    toaster.update();
 };
 
 void System::setupSPI()
@@ -305,5 +310,4 @@ void System::configureNetwork()
 
     networkmanager.setRoutingTable(flightRouting);
     networkmanager.updateBaseTable(); // save the new base table
-
 };

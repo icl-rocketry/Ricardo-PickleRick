@@ -13,7 +13,7 @@ public:
      * @brief Zero state constructor.
      *
      */
-    Zero(System &system, Types::TOASTER_TYPES::SystemStatus_t& status);
+    Zero(System &system, Types::TOASTER_TYPES::SystemStatus_t& status, bool toDefault = false);
 
     /**
      * @brief Perform any initialization required for the state
@@ -42,6 +42,8 @@ private:
      */
     System& m_system;
     Types::TOASTER_TYPES::SystemStatus_t& m_status;
+
+    const bool m_toDefault;
 
     uint64_t m_lastCommandTimeMs { 0 };
 };

@@ -5,11 +5,13 @@
 #include <librrc/Remote/nrcremoteptap.h>
 #include <Config/services_config.h>
 
-
 #include <librnp/rnp_networkmanager.h>
 #include <librnp/rnp_packet.h>
 #include <libriccore/fsm/statemachine.h>
 #include <libriccore/riccorelogging.h>
+
+#include "Toaster/PID/pid.h"
+#include "Toaster/Packets/telemetry.h"
 
 #include "types.h"
 
@@ -86,7 +88,7 @@ public:
     static constexpr uint32_t STEPPER_COMMAND_TYPE = 51;
 
     using ActuatorCommandPacket = BasicDataPacket<ActuatorCommandPayload, 0, ACTUATOR_COMMAND_TYPE>;
-    using StepperCommandPacket = BasicDataPacket<StepperCommandPayload, 0, ACTUATOR_COMMAND_TYPE>;
+    using StepperCommandPacket = BasicDataPacket<StepperCommandPayload, 0, STEPPER_COMMAND_TYPE>;
 
     // Endstop read methods
     bool upperEndstopReached();
@@ -99,20 +101,9 @@ public:
      */
     void commandTorque(const double torque);
 
+    void updatePIDLog(const PID::Log& pidLog);
+
 protected:
-    // System
-    System& m_system;
-
-    // Networking
-    RnpNetworkManager& m_networkmanager;
-    friend class NRCRemoteActuatorBase;
-    friend class NRCRemoteBase;
-
-    // Motor control
-    const int m_enablePin;
-    const int m_endstopLower;
-    const int m_endstopUpper;
-
     // Remote actuator implementations
 
     /**
@@ -132,25 +123,42 @@ protected:
     void disarm_base();
 
     /**
-     * @brief Execute a command in the Toaster module.
-     *
-     * This command is only implemented for the command state.
-     *
-     * The argument for this command is the bitwise or'ing of the actuator id
-     * and 10x the commanded angle.
-     *
-     * So for actuator id 2, commanded to 39 degrees would be:
-     *      arg = (2 << 16) & 0xffff0000 | (39 * 10) & 0xffff;
-     *
-     * @param arg act_id << 16 | degrees * 10
+     * @brief Execute a command on the toaster module.
      */
     void execute_base(int32_t arg);
+
+    void execute_impl(packetptr_t packetptr);
+
+    void extendedCommandHandler_impl(const NRCPacket::NRC_COMMAND_ID commandID, packetptr_t packetptr);
+
+    double rocketTorqueToAngle(const double torque);
+
+    // System
+    System& m_system;
+
+    // Networking
+    RnpNetworkManager& m_networkmanager;
+    friend class NRCRemoteActuatorBase;
+    friend class NRCRemoteBase;
+
+    // Motor control
+    const int m_enablePin;
+    const int m_endstopLower;
+    const int m_endstopUpper;
+
+    ActuatorCommandPayload actuatorPayload { 0 };
+
+    PID::Log m_pidLog { 0 };
 
     // FSM related stuff
     Types::TOASTER_TYPES::StateMachine_t m_toasterMachine;
     Types::TOASTER_TYPES::SystemStatus_t m_toasterStatus;
 
-    using ToasterCommandData = uint32_t;
-    static constexpr uint32_t TOASTER_COMMAND_TYPE = 50;
-    using ToasterCommandPacket = BasicDataPacket<ToasterCommandData, 0, TOASTER_COMMAND_TYPE>;
+    // Telemetry
+    ToasterTelem m_toasterTelem;
+    PIDTelem m_pidTelem;
+
+    bool m_upperEndstopPressed { false };
+    bool m_lowerEndstopPressed { false };
+    bool m_stepperEnabled { false };
 };

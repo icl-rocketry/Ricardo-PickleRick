@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-// #include <fun
+#include <functional>
 
 /**
  * @brief PID controller.
@@ -10,10 +10,8 @@ class PID {
 public:
     PID(const double kp, const double ki = 0.0, const double kd = 0.0, const double integralLimit = 0.0, const double derivativeLimit = 0.0);
 
-    /**
-     * @brief Setup the PID class for calculation.
-     */
-    void setup(std::function<double(double, double)> errorFunction);
+    void setErrorFunction(std::function<double(double, double)> errorFunction);
+    void setDerivativeFunction(std::function<double(double, double, double)> derivativeFunction);
 
     /**
      * @brief Run an update step on the PID control loop.
@@ -31,9 +29,11 @@ public:
     struct Log {
         double measurement;
         double target;
+        double error;
         double kp;
         double ki;
         double kd;
+        double control;
         uint64_t time;
     };
 
@@ -41,12 +41,18 @@ public:
     const Log& getLog();
 
 private:
+    static double defaultErrorFunction(const double target, const double measurement);
+    static double defaultDerivativeFunction(const double measurement, const double prevMeasurement, const double dt);
+
     const double m_kp;
-    const double m_kd;
     const double m_ki;
+    const double m_kd;
 
     const double m_integralLimit;
     const double m_derivativeLimit;
+
+    std::function<double(double, double)> m_errorFunction { std::bind(defaultErrorFunction, std::placeholders::_1, std::placeholders::_2) };
+    std::function<double(double, double, double)> m_derivativeFunction { std::bind(defaultDerivativeFunction, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) };
 
     double m_prevMeasurement { 0.0 };
     double m_integral { 0.0 };

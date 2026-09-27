@@ -26,7 +26,7 @@ namespace GeneralConfig {
     // ----- Comms configs -----
 
     /// @brief Min delay between commands being set to the actuators.
-    static constexpr uint64_t CommandDeltaMs = 10;
+    static constexpr uint64_t CommandDeltaMs = 500;
 
     enum class NetworkConfig : uint8_t {
         CHAD_MASTER = 150,
@@ -49,6 +49,12 @@ namespace GeneralConfig {
 
     /// @brief PID roll control derivative limit.
     static constexpr double PIDRollDLimit = 10;
+
+    // ----- Actuator configs -----
+
+    static constexpr uint16_t act0ZeroAngle = 900;
+    static constexpr uint16_t act1ZeroAngle = 900;
+    static constexpr uint16_t act2ZeroAngle = 900;
 };
 
 

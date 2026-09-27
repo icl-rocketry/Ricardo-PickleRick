@@ -17,13 +17,23 @@ void Armed::initialize(){
 
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Entered Armed state.");
 
+    // TODO: Only arm at apogee?
+    m_system.toaster.stepperCommand(Toaster::StepperCommandPayload::HOLD);
     m_system.toaster.stepperEnable();
 };
 
 Types::TOASTER_TYPES::State_ptr_t Armed::update(){
+    const auto& measurement = m_system.estimator.getData();
+
     // Check launch conditions
-    if (m_system.estimator.getData().acceleration(2) < -(2*9.81) && m_system.estimator.getData().position(2) < -50) {
+    if (!m_launchDetected && (measurement.acceleration(2) < -(2*9.81) && measurement.position(2) < -50)) {
         m_system.estimator.setLiftoffTime(millis());
+        m_launchDetected = true;
+    }
+
+    // If launched, detect apogee conditions
+    if (m_launchDetected && m_system.apogeedetect.checkApogee(-measurement.position(2), -measurement.velocity(2), millis()).reached) {
+        m_system.estimator.setApogeeTime(millis());
         return std::make_unique<Deploy>(m_system, m_status);
     }
 

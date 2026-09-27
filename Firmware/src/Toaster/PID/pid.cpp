@@ -5,10 +5,16 @@
 PID::PID(const double kp, const double ki, const double kd, const double integralLimit, const double derivativeLimit)
     : m_kp(kp), m_ki(ki), m_kd(kd), m_integralLimit(integralLimit), m_derivativeLimit(derivativeLimit) {}
 
-void PID::setup() {}
+void PID::setErrorFunction(const std::function<double(double, double)> errorFunction) {
+    m_errorFunction = errorFunction;
+}
+
+void PID::setDerivativeFunction(const std::function<double(double, double, double)> derivativeFunction) {
+    m_derivativeFunction = derivativeFunction;
+}
 
 double PID::update(const double target, const double measurement, const double dt) {
-    const double error = target - measurement;
+    const double error = m_errorFunction(target, measurement);
 
     // Proportional term.
     double pOut = m_kp * error;
@@ -30,7 +36,7 @@ double PID::update(const double target, const double measurement, const double d
 
         // Derivative Term
         if (m_updateCount > 0) {
-            double derivative = (measurement - m_prevMeasurement) / dt;
+            double derivative = m_derivativeFunction(measurement, m_prevMeasurement, dt);
 
             // Clamp derivative to prevent jerks in motion from causing massive
             // derivative control
@@ -43,22 +49,25 @@ double PID::update(const double target, const double measurement, const double d
             dOut = -m_kd * derivative;
         }
 
-
         m_prevMeasurement = measurement;
     }
+
+    const double control = pOut + iOut + dOut;
 
     // Update log
     m_log.target = target;
     m_log.measurement = measurement;
+    m_log.error = error;
     m_log.kp = pOut;
     m_log.ki = iOut;
     m_log.kd = dOut;
+    m_log.control = control;
     m_log.time = millis();
 
     m_updateCount++;
 
     // Return total output
-    return pOut + iOut + dOut;
+    return control;
 }
 
 void PID::reset() {
@@ -69,4 +78,12 @@ void PID::reset() {
 
 const PID::Log& PID::getLog() {
     return m_log;
+}
+
+double PID::defaultErrorFunction(const double target, const double measurement) {
+    return target - measurement;
+}
+
+double PID::defaultDerivativeFunction(const double measurement, const double prevMeasurement, const double dt) {
+    return (measurement - prevMeasurement) / dt;
 }

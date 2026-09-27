@@ -38,10 +38,14 @@ public:
     void exit() override;
 
 private:
+    static double angleErrorFunction(const double target, const double measurement);
+    static double angleDerivativeFunction(const double measurement, const double prevMeasurement, const double dt);
+
     /**
      * @brief Reference to system class
      */
     System& m_system;
+    Types::TOASTER_TYPES::SystemStatus_t& m_status;
 
     /**
      * @brief Torque command controller.
@@ -56,4 +60,7 @@ private:
 
     // AngleWrapper<AngleWrapperConfig::RADIANS> m_measurementWrapper;
     // AngleWrapper<AngleWrapperConfig::RADIANS> m_setpointWrapper;
+
+    uint64_t m_lastUpdateTimeMs { 0 };
+    uint64_t m_lastCommandTimeMs { 0 };
 };

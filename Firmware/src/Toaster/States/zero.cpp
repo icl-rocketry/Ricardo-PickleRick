@@ -14,10 +14,11 @@
 
 #include "system.h"
 
-Zero::Zero(System& system, Types::TOASTER_TYPES::SystemStatus_t& status):
+Zero::Zero(System& system, Types::TOASTER_TYPES::SystemStatus_t& status, bool toDefault):
     State(TOASTER_FLAGS::STATE_ZERO, status),
     m_system(system),
-    m_status(status) {};
+    m_status(status),
+    m_toDefault(toDefault) {};
 
 void Zero::initialize(){
     State::initialize();
@@ -33,15 +34,20 @@ void Zero::initialize(){
 Types::TOASTER_TYPES::State_ptr_t Zero::update(){
     // Check endstop first
     if (m_system.toaster.lowerEndstopReached()) {
-        // Transition to armed state
-        return std::make_unique<Armed>(m_system, m_status);
+        // Transition to next state
+        m_system.toaster.stepperCommand(Toaster::StepperCommandPayload::HOLD);
+        m_status.deleteFlag(TOASTER_FLAGS::ERROR_ZERO_TIMEOUT);
+
+        if (m_toDefault) {
+            return std::make_unique<ToasterDefault>(m_system, m_status);
+        } else {
+            return std::make_unique<Armed>(m_system, m_status);
+        }
     }
 
     const uint64_t timeMs = millis();
 
-    if (timeMs - m_lastCommandTimeMs < GeneralConfig::CommandDeltaMs) {
-        return nullptr;
-    } else {
+    if (timeMs - m_lastCommandTimeMs >= GeneralConfig::CommandDeltaMs) {
         m_system.toaster.stepperCommand(Toaster::StepperCommandPayload::RETRACT);
         m_lastCommandTimeMs = timeMs;
     }
@@ -50,13 +56,13 @@ Types::TOASTER_TYPES::State_ptr_t Zero::update(){
     if (millis() - this->time_entered_state > GeneralConfig::MaxZeroTimeMs) {
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Failed to zero the grid fins in time, returning to default.");
         m_status.newFlag(TOASTER_FLAGS::ERROR_ZERO_TIMEOUT);
-        return std::make_unique<Default>(m_system, m_status);
+        m_system.toaster.stepperCommand(Toaster::StepperCommandPayload::HOLD);
+        return std::make_unique<ToasterDefault>(m_system, m_status);
     }
 
     return nullptr;
 };
 
 void Zero::exit(){
-    m_system.toaster.stepperCommand(Toaster::StepperCommandPayload::HOLD);
     Types::TOASTER_TYPES::State_t::exit();
 };

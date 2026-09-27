@@ -8,11 +8,11 @@
 
 #include "system.h"
 
-Default::Default(System& system, Types::TOASTER_TYPES::SystemStatus_t& status):
+ToasterDefault::ToasterDefault(System& system, Types::TOASTER_TYPES::SystemStatus_t& status):
     State(TOASTER_FLAGS::STATE_DEFAULT, status),
     m_system(system) {};
 
-void Default::initialize(){
+void ToasterDefault::initialize(){
     State::initialize();
 
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Entered Default state.");
@@ -20,11 +20,11 @@ void Default::initialize(){
     m_system.toaster.stepperDisable();
 };
 
-Types::TOASTER_TYPES::State_ptr_t Default::update(){
+Types::TOASTER_TYPES::State_ptr_t ToasterDefault::update(){
 
     return nullptr;
 };
 
-void Default::exit(){
+void ToasterDefault::exit(){
     Types::TOASTER_TYPES::State_t::exit();
 };

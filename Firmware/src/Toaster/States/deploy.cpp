@@ -32,13 +32,17 @@ Types::TOASTER_TYPES::State_ptr_t Deploy::update(){
         return std::make_unique<Command>(m_system, m_status);
     }
 
+    const uint64_t timeMs = millis();
+
     // Wait for the deploy delay
-    if (millis() - m_timeEnterStateMs < GeneralConfig::DeployDelayMs) {
+    if (timeMs - m_timeEnterStateMs < GeneralConfig::DeployDelayMs) {
         return nullptr;
     }
 
     // Send grid fin extend command
-    m_system.toaster.stepperCommand(Toaster::StepperCommandPayload::EXTEND);
+    if (timeMs - m_lastCommandTimeMs >= GeneralConfig::CommandDeltaMs) {
+        m_system.toaster.stepperCommand(Toaster::StepperCommandPayload::EXTEND);
+    }
 
     return nullptr;
 };
