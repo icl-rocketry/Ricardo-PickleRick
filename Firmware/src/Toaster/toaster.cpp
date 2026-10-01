@@ -39,11 +39,11 @@ void Toaster::apogeeDetected() {
 }
 
 void Toaster::stepperCommand(const StepperCommandPayload& command) {
-    StepperCommandPacket stepperPacket(command);
+    SimpleCommandPacket stepperPacket(static_cast<uint32_t>(NRCPacket::NRC_COMMAND_ID::EXECUTE), static_cast<int32_t>(command));
     stepperPacket.header.source = m_system.networkmanager.getAddress();
     stepperPacket.header.source_service = static_cast<uint8_t>(Services::ID::TOASTER);
 
-    stepperPacket.header.destination_service = 2;
+    stepperPacket.header.destination_service = 20;
     stepperPacket.header.destination = static_cast<uint8_t>(GeneralConfig::NetworkConfig::CHAD_MASTER);
 
     m_system.networkmanager.sendPacket(stepperPacket);
@@ -106,9 +106,16 @@ bool Toaster::lowerEndstopReached() {
 void Toaster::commandTorque(const double torque) {
     const double angle = rocketTorqueToAngle(torque);
 
-    actuatorPayload.act0Deg = GeneralConfig::act0ZeroAngle + static_cast<uint16_t>(angle * 10.0);
-    actuatorPayload.act1Deg = GeneralConfig::act1ZeroAngle + static_cast<uint16_t>(angle * 10.0);
-    actuatorPayload.act2Deg = GeneralConfig::act2ZeroAngle + static_cast<uint16_t>(angle * 10.0);
+    const uint16_t commandAngle = static_cast<uint16_t>(angle * 10.0);
+
+    const uint16_t commandAngleConstrained = std::clamp(
+        commandAngle,
+        static_cast<uint16_t>(GeneralConfig::act0ZeroAngle - GeneralConfig::actMaxAngle),
+        static_cast<uint16_t>(GeneralConfig::act0ZeroAngle + GeneralConfig::actMaxAngle));
+
+    actuatorPayload.act0Deg = GeneralConfig::act0ZeroAngle + commandAngleConstrained;
+    actuatorPayload.act1Deg = GeneralConfig::act1ZeroAngle + commandAngleConstrained;
+    actuatorPayload.act2Deg = GeneralConfig::act2ZeroAngle + commandAngleConstrained;
 
     actuatorCommand(actuatorPayload);
 }
@@ -117,11 +124,32 @@ void Toaster::updatePIDLog(const PID::Log& pidLog) {
     m_pidLog = pidLog;
 }
 
+void Toaster::sendNetwork(const NRCPacket::NRC_COMMAND_ID& cmd) {
+    SimpleCommandPacket armCommand(static_cast<uint32_t>(cmd), 0);
+    armCommand.header.source = m_system.networkmanager.getAddress();
+    armCommand.header.source_service = static_cast<uint8_t>(Services::ID::TOASTER);
+
+    armCommand.header.destination_service = 10;
+    armCommand.header.destination = static_cast<uint8_t>(GeneralConfig::NetworkConfig::CHAD_MASTER);
+    m_system.networkmanager.sendPacket(armCommand);
+
+    armCommand.header.destination_service = 11;
+    armCommand.header.destination = static_cast<uint8_t>(GeneralConfig::NetworkConfig::CHAD_MASTER);
+    m_system.networkmanager.sendPacket(armCommand);
+
+    armCommand.header.destination_service = 10;
+    armCommand.header.destination = static_cast<uint8_t>(GeneralConfig::NetworkConfig::CHAD_SLAVE);
+    m_system.networkmanager.sendPacket(armCommand);
+
+    m_toasterMachine.changeState(std::make_unique<Armed>(m_system, m_toasterStatus));
+}
+
 void Toaster::arm_base(int32_t arg) {
     switch (arg) {
     case 0: {
         // Transition to armed state
         if (m_toasterMachine.getCurrentStateID() == TOASTER_FLAGS::STATE_DEFAULT) {
+            sendNetwork(NRCPacket::NRC_COMMAND_ID::ARM);
             m_toasterMachine.changeState(std::make_unique<Armed>(m_system, m_toasterStatus));
         } else {
             RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Not in default, cannot arm");
@@ -131,6 +159,7 @@ void Toaster::arm_base(int32_t arg) {
     case 1: {
         // Zero the stepper motor against the endpoint before arming
         if (m_toasterMachine.getCurrentStateID() == TOASTER_FLAGS::STATE_DEFAULT) {
+            sendNetwork(NRCPacket::NRC_COMMAND_ID::ARM);
             m_toasterMachine.changeState(std::make_unique<Zero>(m_system, m_toasterStatus));
         } else {
             RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Not in default, cannot zero");
@@ -150,6 +179,7 @@ void Toaster::arm_base(int32_t arg) {
 }
 
 void Toaster::disarm_base() {
+    sendNetwork(NRCPacket::NRC_COMMAND_ID::DISARM);
     m_toasterMachine.changeState(std::make_unique<ToasterDefault>(m_system, m_toasterStatus));
 }
 

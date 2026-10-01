@@ -84,11 +84,7 @@ public:
     void actuatorCommand(const ActuatorCommandPayload& command);
 
     // Comamnds
-    static constexpr uint32_t ACTUATOR_COMMAND_TYPE = 50;
     static constexpr uint32_t STEPPER_COMMAND_TYPE = 51;
-
-    using ActuatorCommandPacket = BasicDataPacket<ActuatorCommandPayload, 0, ACTUATOR_COMMAND_TYPE>;
-    using StepperCommandPacket = BasicDataPacket<StepperCommandPayload, 0, STEPPER_COMMAND_TYPE>;
 
     // Endstop read methods
     bool upperEndstopReached();
@@ -105,6 +101,8 @@ public:
 
 protected:
     // Remote actuator implementations
+
+    void sendNetwork(const NRCPacket::NRC_COMMAND_ID& cmd);
 
     /**
      * @brief Arm the Toaster module.

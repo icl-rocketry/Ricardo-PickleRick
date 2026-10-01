@@ -36,13 +36,13 @@ namespace GeneralConfig {
     // ----- Control configs -----
 
     /// @brief PID roll control constant gain.
-    static constexpr double PIDRollKP = 5;
+    static constexpr double PIDRollKP = 1;
 
     /// @brief PID roll control integral gain.
-    static constexpr double PIDRollKI = 1;
+    static constexpr double PIDRollKI = 0;
 
     /// @brief PID roll control derivative gain.
-    static constexpr double PIDRollKD = 1;
+    static constexpr double PIDRollKD = 0;
 
     /// @brief PID roll control integral limit.
     static constexpr double PIDRollILimit = 10;
@@ -55,6 +55,8 @@ namespace GeneralConfig {
     static constexpr uint16_t act0ZeroAngle = 900;
     static constexpr uint16_t act1ZeroAngle = 900;
     static constexpr uint16_t act2ZeroAngle = 900;
+
+    static constexpr uint16_t actMaxAngle = 150;
 };
 
 
