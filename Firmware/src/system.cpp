@@ -395,24 +395,54 @@ void System::configureNetwork()
 
     RoutingTable flightRouting;
 
+    /* In order:
+     * 20 - PDU0
+     * 21 - PDU1
+     * 22 - Recovery F&S
+     * 14 - Solenoid F&S
+     * 11 - E-reg 0
+     * 12 - E-reg 1
+     * 13 - Ox vent chad
+     * 10 - Engine controller/Stark
+     * 23 - Crosshair 0
+     * 24 - Crosshair 1
+     */
+    std::vector<uint8_t> rocket_wired_nodes = {20,21,22,14,11,12,13,10,23,24};
+    /* In order:
+     * 3 - GSS Chad 0
+     * 101 - GSS Chad 1
+     * 102 - GSS Chad 2
+     * 100 - GSS PDU
+     * 104 - GSS Sen 0
+     * 105 - GSS Sen 1
+     * 254 - GSS Flint //TODO soham fill this in
+    */
+    std::vector<uint8_t> gss_nodes = {3,101,102,100,104,105,254};
+    std::vector<uint8_t> rocket_wireless_nodes = {5};
     #if ROCKET_TABLE
-        flightRouting.setRoute((uint8_t) 5,Route{2,1,{}}); // Rocket GS Pickle
-        flightRouting.setRoute((uint8_t) 20,Route{3,1,{}}); // PDU0
-        flightRouting.setRoute((uint8_t) 21,Route{3,1,{}}); // PDU1
-        flightRouting.setRoute((uint8_t) 30,Route{3,1,{}}); // Recovery F&S
-        flightRouting.setRoute((uint8_t) 14,Route{3,1,{}}); // Solenoid F&S
-        flightRouting.setRoute((uint8_t) 13,Route{3,1,{}}); // E-reg
-        flightRouting.setRoute((uint8_t) 12,Route{3,1,{}}); // Sensor board
-        flightRouting.setRoute((uint8_t) 11,Route{3,1,{}}); // Ox vent
-        flightRouting.setRoute((uint8_t) 10,Route{3,1,{}}); // Engine controller
-        flightRouting.setRoute((uint8_t) 31,Route{3,1,{}}); // Payload deployer
-        flightRouting.setRoute((uint8_t) 40,Route{3,1,{}}); // Camera board
-        flightRouting.setRoute((uint8_t) 41,Route{3,1,{}}); // Canard board
-        flightRouting.setRoute((uint8_t) 3,Route{3,1,{}}); // GSS Chad
+        for (uint8_t node : rocket_wired_nodes)
+        {
+            flightRouting.setRoute(node,Route{3,1,{}});
+        }
+        //All GSS nodes should be over CAN for the rocket pickle
+        for (uint8_t node : gss_nodes)
+        {
+            flightRouting.setRoute(node,Route{3,1,{}});
+        }
+        for (uint8_t node : rocket_wireless_nodes)
+        {
+            flightRouting.setRoute(node,Route{2,1,{}});
+        }
     #elif ROCKET_GS_TABLE
-        flightRouting.setRoute((uint8_t) 2,Route{2,1,{}}); // Rocket Pickle
-        flightRouting.setRoute((uint8_t) 10,Route{2,1,{}}); // Stark
-        flightRouting.setRoute((uint8_t) 12,Route{2,1,{}}); // Sensor board
+        for (uint8_t node : rocket_wired_nodes)
+        {
+            flightRouting.setRoute(node,Route{2,1,{}});
+        }
+        //All GSS nodes should be over radio for the ground station pickle
+        for (uint8_t node : gss_nodes)
+        {
+            flightRouting.setRoute(node,Route{2,1,{}});
+        }
         flightRouting.setRoute((uint8_t) 200,Route{3,1,{}}); // Payload GS Pickle
     #elif PAYLOAD_TABLE
         flightRouting.setRoute((uint8_t) 6,Route{2,1,{}}); // Payload GS Pickle
