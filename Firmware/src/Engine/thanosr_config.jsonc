@@ -1,0 +1,28 @@
+{
+    "id": 0,
+    "type": "ThanosR",
+    "engine": {
+        "address": 10,
+        "destination_service": 10
+    },
+    "oxServoVentValve": {
+        "address": 11,
+        "destination_service": 10
+    },
+    "oxSolenoidVentValve": {
+        "address": 14,
+        "destination_service": 13
+    },
+    "fuelSolenoidVentValve": {
+        "address": 14,
+        "destination_service": 12
+    },
+    "prssSolenoidVentValve": {
+        "address": 14,
+        "destination_service": 11
+    },
+    "eReg": {
+        "address": 13,
+        "destination_service": 10
+    }
+}
