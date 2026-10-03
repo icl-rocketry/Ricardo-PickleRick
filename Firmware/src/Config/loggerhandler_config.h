@@ -6,6 +6,7 @@
 #include <libriccore/logging/loggers/rnpmessagelogger.h>
 #include <libriccore/logging/loggers/syslogger.h>
 #include "Loggers/TelemetryLogger/telemetrylogger.h"
+#include "Loggers/ApogeeLogger/apogeelogger.h"
 
 
 namespace RicCoreLoggingConfig
@@ -14,10 +15,11 @@ namespace RicCoreLoggingConfig
     {
         SYS, // default system logging
         TELEMETRY,
+        APOGEE,
         COUT // cout logging
     };
 
-    extern std::tuple<SysLogger,TelemetryLogger,CoutLogger> logger_list;
+    extern std::tuple<SysLogger,TelemetryLogger,ApogeeLogger,CoutLogger> logger_list;
 }; 
 
 

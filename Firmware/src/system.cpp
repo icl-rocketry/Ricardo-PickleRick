@@ -295,12 +295,16 @@ void System::initializeLoggers()
 
     std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END));
     std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50); 
+    std::unique_ptr<WrappedFile> apogeelogfile = primarysd.open(log_directory_path + "/apogeelog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50); 
     
     // intialize sys logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(std::move(syslogfile),networkmanager);
    
     //initialize telemetry logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::TELEMETRY>().initialize(std::move(telemetrylogfile));
+
+    //initialize apogee logger
+    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::APOGEE>().initialize(std::move(apogeelogfile));
 
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("SD Init Complete");
 }

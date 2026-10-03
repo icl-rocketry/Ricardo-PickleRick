@@ -137,6 +137,9 @@ private:
 
     static constexpr float alt_threshold = 0; //threshold to detect altitude descent
     static constexpr float alt_min = 100;   // Minimum altitude (m) before apogee detection algorithm works
+
+    static constexpr uint32_t m_logDelta = 20000; // 50Hz, microseconds
+    uint32_t m_prevLogTime{0};
       
     ApogeeInfo _apogeeinfo;                             //create the structure for ApogeeInfo
 

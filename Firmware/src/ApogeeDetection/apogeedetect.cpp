@@ -7,6 +7,7 @@
 #include <Arduino.h>
 
 #include <libriccore/riccorelogging.h>
+#include "Loggers/ApogeeLogger/apogeelogframe.h"
 
 #include <sstream>
 // #include "millis.h"
@@ -59,20 +60,35 @@ const ApogeeInfo &ApogeeDetect::checkApogee(float altitude, float velocity, uint
             quadraticFit((float)prevTime/1000.0, (float)timeSinceEntry/1000.0, prevAltitude, altitude);
 
             _apogeeinfo.time = ((-coeffs(1) / (2 * coeffs(2)))*1000)+initialEntryTime; // maximum from polyinomial using derivative
-            RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(_apogeeinfo.time));
-            RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("coeffs: " + std::to_string(coeffs(0)) + " " + std::to_string(coeffs(1)) + " " + std::to_string(coeffs(2)));
+            float predictedAltitude = coeffs(0) - (std::pow(coeffs(1), 2) / (4 * coeffs(2)));
 
             if ((millis() >= _apogeeinfo.time) && (coeffs(2) < 0) && (millis() > 0) && (altitude > alt_min) && !mlock)
             {
-                _apogeeinfo.altitude = coeffs(0) - (std::pow(coeffs(1), 2) / (4 * coeffs(2)));
-                RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("predicted apogee" + std::to_string(_apogeeinfo.time));
+                _apogeeinfo.altitude = predictedAltitude;
                 // coeffs(2) * std::pow(_apogeeinfo.time,2) + (coeffs(1) * _apogeeinfo.time) + coeffs(0); // evalute 2nd order polynomial
-                RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(altitude - _apogeeinfo.altitude));
                 if ((altitude - _apogeeinfo.altitude) < alt_threshold) // if we have passed apogee and now decending, could put a bound on here too
                 {
                     _apogeeinfo.reached = true;
                     // log apogee time and altitude
                 }
+            }
+
+            if (micros() - m_prevLogTime > m_logDelta)
+            {
+                ApogeeLogframe logframe;
+                logframe.coeff_0 = coeffs(0);
+                logframe.coeff_1 = coeffs(1);
+                logframe.coeff_2 = coeffs(2);
+                logframe.predicted_time = _apogeeinfo.time;
+                logframe.predicted_altitude = predictedAltitude;
+                logframe.altitude = altitude;
+                logframe.altitude_error = altitude - predictedAltitude;
+                logframe.mlock = mlock;
+                logframe.reached = _apogeeinfo.reached;
+                logframe.timestamp = esp_timer_get_time();
+                RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::APOGEE>(logframe);
+
+                m_prevLogTime = esp_timer_get_time();
             }
         }
         prevCheckApogeeTime = millis();
