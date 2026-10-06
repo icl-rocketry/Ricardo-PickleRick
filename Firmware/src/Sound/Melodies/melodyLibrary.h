@@ -21,7 +21,7 @@ namespace MelodyLibrary {
     extern melody_t<99> tetris;
     extern melody_t<169> surprise;
     extern melody_t<224> mario;
-    extern melody_t<257> httyd;
+    extern melody_t<263> httyd;
 
     static const std::array<melody_base_t*,12> songLibrary{
         &Fireflies,

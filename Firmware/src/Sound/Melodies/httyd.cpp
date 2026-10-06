@@ -3,9 +3,14 @@
 #include "pitches.h"
 
 // Generated from iclr.mid — monophonic buzzer arrangement for ESP32
+// Padded first/last notes + trailing REST to work around TunezHandler loop timing
 
-melody_t<257> MelodyLibrary::httyd = {{ {
-{REST,75},
+melody_t<263> MelodyLibrary::httyd = {{ {
+{REST,50},
+{NOTE_D5,200},
+{NOTE_A4,200},
+{NOTE_D5,200},
+{NOTE_E5,200},
 {NOTE_CS5,200},
 {NOTE_A4,200},
 {NOTE_CS5,200},
@@ -77,8 +82,8 @@ melody_t<257> MelodyLibrary::httyd = {{ {
 {REST,25},
 {NOTE_CS6,600},
 {REST,25},
-{NOTE_B5,125},
-{REST,75},
+{NOTE_B5,100},
+{NOTE_A5,100},
 {NOTE_FS5,525},
 {REST,325},
 {NOTE_D5,800},
@@ -126,7 +131,7 @@ melody_t<257> MelodyLibrary::httyd = {{ {
 {NOTE_CS5,200},
 {NOTE_B4,200},
 {NOTE_A4,200},
-{REST,650},
+{NOTE_B4,625},
 {NOTE_A5,200},
 {NOTE_FS5,200},
 {NOTE_GS5,200},
@@ -262,6 +267,8 @@ melody_t<257> MelodyLibrary::httyd = {{ {
 {NOTE_E4,200},
 {NOTE_DS4,200},
 {NOTE_CS4,200},
+{NOTE_B3,200},
+{REST,250},
 } },
 false
 };
