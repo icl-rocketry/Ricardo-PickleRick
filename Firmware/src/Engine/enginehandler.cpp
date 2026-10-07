@@ -17,6 +17,7 @@
 #include "hypnos.h"
 #include "thanos.h"
 #include "thanosr.h"
+#include "toothless.h"
 
 void EngineHandler::update(){ // call update on all engines
     for (auto& engine : *this){
@@ -80,6 +81,13 @@ void EngineHandler::setupIndividual_impl(size_t id, JsonObjectConst engineconfig
     }
     else if (type == "ThanosR"){
         addObject(std::make_unique<ThanosR>(id,
+                                            engineconfig,
+                                            getaddNetworkCallbackFunction(id),
+                                            _networkmanager,
+                                            _serviceID));   
+    }
+    else if (type == "Toothless"){
+        addObject(std::make_unique<Toothless>(id,
                                             engineconfig,
                                             getaddNetworkCallbackFunction(id),
                                             _networkmanager,

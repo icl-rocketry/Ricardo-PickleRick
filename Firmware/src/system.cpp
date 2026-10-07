@@ -104,7 +104,7 @@ void System::systemSetup()
     //register pryo services
     setupLocalPyros();
     //register servo serv ices
-    setupLocalServos();
+    // setupLocalServos();
 
     loadConfig();
 
@@ -415,9 +415,9 @@ void System::configureNetwork()
      * 100 - GSS PDU
      * 104 - GSS Sen 0
      * 105 - GSS Sen 1
-     * 254 - GSS Flint //TODO soham fill this in
+     * 103 - GSS Flint //TODO soham fill this in
     */
-    std::vector<uint8_t> gss_nodes = {3,101,102,100,104,105,254};
+    std::vector<uint8_t> gss_nodes = {3,101,102,100,104,105,103};
     std::vector<uint8_t> rocket_wireless_nodes = {5};
     #if ROCKET_TABLE
         for (uint8_t node : rocket_wired_nodes)

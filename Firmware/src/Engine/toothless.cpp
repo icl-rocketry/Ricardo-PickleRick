@@ -71,7 +71,7 @@ Engine(id, networkmanager, handlerServiceID)
     addComponentNetworkCallback(m_oxEReg.get(),oxERegConf,addNetworkCallbackFunction);
 
     auto fuelERegConf = getIfContains<JsonObjectConst>(engineConfig, "fuelEReg");
-    m_fuelEReg = std::make_unique<NetworkActuator>(5,
+    m_fuelEReg = std::make_unique<NetworkActuator>(6,
                                                 getIfContains<uint8_t>(fuelERegConf, "address"),
                                                 handlerServiceID,
                                                 getIfContains<uint8_t>(fuelERegConf, "destination_service"),
@@ -107,7 +107,7 @@ void Toothless::armEngine()
     m_fuelSolenoidVentValve->arm();
     m_prssSolenoidVentValve->arm();
     m_oxEReg->arm();
-    m_fuelEReg->updateState();
+    m_fuelEReg->arm();
 }
 
 void Toothless::disarmEngine()
@@ -186,8 +186,8 @@ uint8_t Toothless::flightCheck()
     res += m_oxSolenoidVentValve->flightCheck(m_networkRetryInterval, m_componentStateExpiry, "Engine " + std::to_string(getID()) + ": Ox Solenoid");
     res += m_fuelSolenoidVentValve->flightCheck(m_networkRetryInterval, m_componentStateExpiry, "Engine " + std::to_string(getID()) + ": Fuel Solenoid");
     res += m_prssSolenoidVentValve->flightCheck(m_networkRetryInterval, m_componentStateExpiry, "Engine " + std::to_string(getID()) + ": Pressurant Solenoid");
-    res += m_oxEReg->flightCheck(m_networkRetryInterval, m_componentStateExpiry, "Engine " + std::to_string(getID()) + ": E-Reg");
-    res += m_fuelEReg->flightCheck(m_networkRetryInterval, m_componentStateExpiry, "Engine " + std::to_string(getID()) + ": E-Reg");
+    res += m_oxEReg->flightCheck(m_networkRetryInterval, m_componentStateExpiry, "Engine " + std::to_string(getID()) + ": Ox E-Reg");
+    res += m_fuelEReg->flightCheck(m_networkRetryInterval, m_componentStateExpiry, "Engine " + std::to_string(getID()) + ": Fuel E-Reg");
     
     return res;
     
