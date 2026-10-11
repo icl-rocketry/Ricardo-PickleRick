@@ -39,11 +39,13 @@ static constexpr int VSPI_BUS_NUM = VSPI;
 static constexpr int HSPI_BUS_NUM = HSPI;
 #endif
 
+
 System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabledCommands, Serial),
                    vspi(VSPI_BUS_NUM),
                    hspi(HSPI_BUS_NUM),
                    I2C(0),
                    canbus(systemstatus, PinMap::TxCan, PinMap::RxCan, 3),
+                   abus(Serial1, systemstatus, 4, "abus0"),
                    sensors(hspi, I2C, systemstatus),
                    estimator(systemstatus),
                    apogeedetect(20),
@@ -57,6 +59,10 @@ void System::systemSetup()
     Serial.setRxBufferSize(GeneralConfig::SerialRxSize);
     Serial.begin(GeneralConfig::SerialBaud);
 
+    // ABUS Serial to communicate with CHADs,
+    Serial1.setRxBufferSize(GeneralConfig::SerialRxSize);
+    Serial1.begin(GeneralConfig::SerialBaud,SERIAL_8N1,
+        PinMap::ABUS_RX, PinMap::ABUS_TX);
 
     setupPins();
     // intialize i2c interface
@@ -284,7 +290,10 @@ void System::logTelemetry()
 void System::configureNetwork()
 {
     networkmanager.setNodeType(NODETYPE::HUB);
+    
     networkmanager.addInterface(&canbus);
+    networkmanager.addInterface(&abus);
+
 
     networkmanager.enableAutoRouteGen(true);
     networkmanager.setNoRouteAction(NOROUTE_ACTION::DUMP, {1,2});
@@ -294,7 +303,7 @@ void System::configureNetwork()
     // Setup USB routing for the grid fin chads
     flightRouting.setRoute(static_cast<uint8_t>(GeneralConfig::NetworkConfig::CHAD_MASTER),
         Route {
-            .iface = static_cast<uint8_t>(DEFAULT_INTERFACES::USBSERIAL),
+            .iface = static_cast<uint8_t>(abus.getID()),
             .metric = 1,
             .address = {}
         }
@@ -302,7 +311,7 @@ void System::configureNetwork()
 
     flightRouting.setRoute(static_cast<uint8_t>(GeneralConfig::NetworkConfig::CHAD_SLAVE),
         Route {
-            .iface = static_cast<uint8_t>(DEFAULT_INTERFACES::USBSERIAL),
+            .iface = static_cast<uint8_t>(abus.getID()),
             .metric = 1,
             .address = {}
         }

@@ -20,6 +20,7 @@
 #include "Commands/commands.h"
 
 #include <libriccore/networkinterfaces/can/canbus.h>
+#include <libriccore/networkinterfaces/serial/streamserial.h>
 
 #include "Toaster/toaster.h"
 
@@ -46,6 +47,7 @@ public:
     TwoWire I2C;
 
     CanBus<SYSTEM_FLAG> canbus;
+    StreamSerial<SYSTEM_FLAG> abus;
 
     Sensors sensors;
     Estimator estimator;

@@ -30,7 +30,7 @@ void Toaster::update() {
 void Toaster::apogeeDetected() {
     // Ensure module is armed
     if (m_toasterMachine.getCurrentStateID() != TOASTER_FLAGS::STATE_ARMED) {
-        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Toaster not armed, cant deploy.");
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Toaster not armed, can't deploy.");
         return;
     }
 
