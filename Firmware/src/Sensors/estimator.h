@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ArduinoJson.h>
+#include <string_view>
 
 #include "MadgwickAHRS.h"
 
@@ -99,7 +100,7 @@ class Estimator{
 
         Eigen::Vector3f getLinearAcceleration(const float& ax,const float& ay, const float& az);
 
-        void changeEstimatorState(ESTIMATOR_STATE state,std::string logmessage);
+        void changeEstimatorState(ESTIMATOR_STATE state,std::string_view logmessage);
 
         /**
          * @brief generate prediction from localization kf and assign result to state
