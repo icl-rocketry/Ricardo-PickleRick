@@ -311,6 +311,10 @@ void System::initializeLoggers()
 
 void System::logTelemetry()
 {
+    if((primarysd.getError() > 0) && !systemstatus.flagSet(SYSTEM_FLAG::ERROR_SD)){
+        systemstatus.newFlag(SYSTEM_FLAG::ERROR_SD, "SD Card Failed with error: " + std::to_string(primarysd.getError()));
+    };
+    
     if (micros() - prev_telemetry_log_time > telemetry_log_delta)
     {
         // RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(std::to_string(uxTaskGetStackHighWaterMark(primarysd.getHandle())));
