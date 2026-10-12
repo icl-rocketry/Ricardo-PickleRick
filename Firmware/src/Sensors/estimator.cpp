@@ -54,7 +54,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
          if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_GPS) && _systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_BARO))
          {
             // no data so we cant calculate any nav solution
-            changeEstimatorState(ESTIMATOR_STATE::NOSOLUTION, std::string{"no data, cannot compute navigation solution"});
+            changeEstimatorState(ESTIMATOR_STATE::NOSOLUTION, "no data, cannot compute navigation solution");
             return;
          }
 
@@ -67,7 +67,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             {
                
                baroUpdate(raw_sensors.baro.alt);
-               changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_IMU_NO_GPS, std::string{"no IMU and GPS"});
+               changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_IMU_NO_GPS, "no IMU and GPS");
                predictLocalizationKF(dt_seconds);
                return;
             }
@@ -84,7 +84,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
                state.velocity = Eigen::Vector3f{raw_sensors.gps.v_n / 1000.0f,
                                                 raw_sensors.gps.v_e / 1000.0f,
                                                 raw_sensors.gps.v_d / 1000.0f};
-               changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_IMU_NO_BARO, std::string{"no IMU and BARO, raw gps navigation solution"});
+               changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_IMU_NO_BARO, "no IMU and BARO, raw gps navigation solution");
                return;
             }
          }
@@ -99,7 +99,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
             // check that there isnt a bigger error
             if (_homeSet)
             {
-               changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_MAG, std::string{"no mag, heading unreliable"});
+               changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_MAG, "no mag, heading unreliable");
             }
          }
          else
@@ -121,7 +121,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 
       if (!_homeSet)
       {
-         changeEstimatorState(ESTIMATOR_STATE::NO_HOME, std::string{"Home not set, Localization not avaliable"});
+         changeEstimatorState(ESTIMATOR_STATE::NO_HOME, "Home not set, Localization not avaliable");
          return;
       }
 
@@ -130,12 +130,12 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
          if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_BARO))
          {
             // no data so only orientation avalibale
-            changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_GPS_NO_BARO, std::string{"no gps and baro, position and velocity estimates unreliable!"});
+            changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_GPS_NO_BARO, "no gps and baro, position and velocity estimates unreliable!");
             predictLocalizationKF(dt_seconds);
             return;
          }
          // baro only update
-         changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_GPS, std::string{"no gps, N and E positon and velocity estimates unreliable!"});
+         changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_GPS, "no gps, N and E positon and velocity estimates unreliable!");
       }
       else
       {
@@ -153,7 +153,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 
       if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_BARO))
       {
-         changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_BARO, std::string{"no baro"});
+         changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_BARO, "no baro");
       }
       else
       {
@@ -165,7 +165,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
       if (!_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_IMU, SYSTEM_FLAG::ERROR_GPS, SYSTEM_FLAG::ERROR_BARO, SYSTEM_FLAG::ERROR_MAG, SYSTEM_FLAG::ERROR_HACCEL))
       {
          // if there are no errors with sensors then the estimator state must be nominal
-         changeEstimatorState(ESTIMATOR_STATE::NOMINAL, std::string{"all data avaliable, full update"});
+         changeEstimatorState(ESTIMATOR_STATE::NOMINAL, "all data avaliable, full update");
       }
    }
 };

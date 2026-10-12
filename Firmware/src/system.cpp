@@ -104,7 +104,7 @@ void System::systemSetup()
     //register pryo services
     setupLocalPyros();
     //register servo serv ices
-    // setupLocalServos();
+    setupLocalServos();
 
     loadConfig();
 
