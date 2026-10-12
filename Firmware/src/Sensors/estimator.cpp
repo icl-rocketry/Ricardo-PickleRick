@@ -20,7 +20,9 @@ Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus) : _systemst
                                                                        madgwick(0.5f, 0.005f), // beta | gyroscope sample time step (s)
                                                                      //   refOrientation(1.0,0.0,0.0,0.0)
                                                                         refOrientation(0.707,0.0,0.707,0.0)
-                                                                       {};
+                                                                       {
+                                                                        state.estimator_state = static_cast<uint8_t>(ESTIMATOR_STATE::NOMINAL);
+                                                                       };
 
 void Estimator::setup()
 {
@@ -270,13 +272,22 @@ void Estimator::changeEstimatorState(ESTIMATOR_STATE status, std::string logmess
    if (state.estimator_state != static_cast<uint8_t>(status))
    { // check if we already have logged this
       state.estimator_state = static_cast<uint8_t>(status);
-      if (status != ESTIMATOR_STATE::NOMINAL)
+      if (status == ESTIMATOR_STATE::NOMINAL)
       {
-         _systemstatus.newFlag(SYSTEM_FLAG::ERROR_ESTIMATOR, logmessage);
+         _loggedEstimatorStates = 0;
+         if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_ESTIMATOR))
+         {
+            _systemstatus.deleteFlag(SYSTEM_FLAG::ERROR_ESTIMATOR, logmessage);
+         }
       }
-      else if (_systemstatus.flagSetOr(SYSTEM_FLAG::ERROR_ESTIMATOR))
+      else
       {
-         _systemstatus.deleteFlag(SYSTEM_FLAG::ERROR_ESTIMATOR, logmessage);
+         const uint16_t state_bit = static_cast<uint16_t>(1U << static_cast<uint8_t>(status));
+         if ((_loggedEstimatorStates & state_bit) == 0)
+         {
+            _loggedEstimatorStates |= state_bit;
+            _systemstatus.newFlag(SYSTEM_FLAG::ERROR_ESTIMATOR, logmessage);
+         }
       }
    }
 }

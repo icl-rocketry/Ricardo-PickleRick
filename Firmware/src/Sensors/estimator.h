@@ -60,6 +60,7 @@ class Estimator{
         unsigned long update_frequency;
 
         bool _homeSet;
+        uint16_t _loggedEstimatorStates{0};
         
         
         //ORIENTATION ESTIMATION
