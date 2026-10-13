@@ -4,6 +4,7 @@
 
 #include <string_view>
 #include <array>
+#include <memory>
 
 //config includes
 #include "Config/systemflags_config.h"
@@ -36,6 +37,7 @@
 #include "Engine/enginehandler.h"
 #include "Controller/controllerhandler.h"
 #include "Storage/sdfat_store.h"
+#include <libriccore/storage/wrappedfile.h>
 
 #include "ApogeeDetection/apogeedetect.h"
 
@@ -87,6 +89,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void logTelemetry();
         void sampleRadiation();
         void updateRadiationWindow(uint32_t now);
+        void logRadiationEvent(uint64_t timestamp_ms);
 
         /**
          * @brief reads the json radio config from sd card and reconfigures the radio
@@ -103,10 +106,10 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         uint32_t prev_telemetry_log_time;
         uint64_t logging_start_time_us = 0;
         bool radiation_input_high = false;
-        uint64_t pending_radiation_event_timestamp = 0;
         std::array<uint32_t, 10> radiation_counts{};
         uint32_t radiation_window_start_ms = 0;
         uint32_t radiation_count_total = 0;
+        std::unique_ptr<WrappedFile> radiation_event_file;
 
         static constexpr uint32_t radiation_window_duration_ms = 1000;
         static constexpr size_t radiation_average_window_seconds = 10;

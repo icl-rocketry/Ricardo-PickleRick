@@ -57,8 +57,7 @@ private:
             &TelemetryLogframe::snr,
             &TelemetryLogframe::packet_snr,
             &TelemetryLogframe::timestamp,
-            &TelemetryLogframe::radiation_cps,
-            &TelemetryLogframe::radiation_event_timestamp
+            &TelemetryLogframe::radiation_cps
             
            
 
@@ -100,7 +99,6 @@ public:
 
     uint64_t timestamp;
     float radiation_cps;
-    uint64_t radiation_event_timestamp;
 
     std::string stringify()const{
         return getSerializer().stringify(*this) + "\n";

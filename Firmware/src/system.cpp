@@ -1,6 +1,7 @@
 #include "system.h"
 
 #include <memory>
+#include <vector>
 
 #include <ArduinoJson.h>
 
@@ -91,8 +92,8 @@ void System::systemSetup()
 
     primarysd.setup();
 
-    initializeLoggers();    
     logging_start_time_us = esp_timer_get_time();
+    initializeLoggers();
     radiation_window_start_ms = millis();
 
     tunezhandler.setup();
@@ -302,6 +303,7 @@ void System::initializeLoggers()
 
     std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END));
     std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50); 
+    radiation_event_file = primarysd.open(log_directory_path + "/radiation_events.txt",static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END));
     
     // intialize sys logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(std::move(syslogfile),networkmanager);
@@ -381,11 +383,9 @@ void System::logTelemetry()
 
         logframe.timestamp = esp_timer_get_time();
         logframe.radiation_cps = getRadiationCountsPerSecond();
-        logframe.radiation_event_timestamp = pending_radiation_event_timestamp;
 
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::TELEMETRY>(logframe);
 
-        pending_radiation_event_timestamp = 0;
         prev_telemetry_log_time = esp_timer_get_time();
     }
 }
@@ -400,11 +400,34 @@ void System::sampleRadiation()
             ++radiation_counts[(now / radiation_window_duration_ms) %
                                 radiation_average_window_seconds];
             ++radiation_count_total;
-            pending_radiation_event_timestamp =
-                (esp_timer_get_time() - logging_start_time_us) / 1000;
+            logRadiationEvent((esp_timer_get_time() - logging_start_time_us) / 1000);
         }
         radiation_input_high = input_high;
     #endif
+}
+
+void System::logRadiationEvent(uint64_t timestamp_ms)
+{
+    if (radiation_event_file == nullptr)
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
+            "Radiation event log is unavailable");
+        return;
+    }
+
+    const std::string event_string = std::to_string(timestamp_ms) + "\n";
+    const std::vector<uint8_t> event_bytes(event_string.begin(), event_string.end());
+
+    try
+    {
+        radiation_event_file->append(event_bytes);
+    }
+    catch (const std::exception& exception)
+    {
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(
+            "Failed to write radiation event: " + std::string(exception.what()));
+        radiation_event_file.reset();
+    }
 }
 
 void System::updateRadiationWindow(uint32_t now)
