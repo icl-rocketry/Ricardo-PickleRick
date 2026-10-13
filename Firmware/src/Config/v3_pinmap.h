@@ -30,6 +30,7 @@ namespace PickleRickV3Pins{
     static constexpr int GPIO0 = 40;
     static constexpr int GPIO1 = 41;
     static constexpr int GPIO2 = 42;
+    static constexpr int RadiationInput = GPIO0;
 
     //ABUS
     static constexpr int ABUS_RX = 48;

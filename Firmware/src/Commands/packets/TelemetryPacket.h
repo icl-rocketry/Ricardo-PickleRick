@@ -55,7 +55,8 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::system_status,
                 &TelemetryPacket::system_time,
                 &TelemetryPacket::rssi,
-                &TelemetryPacket::snr
+                &TelemetryPacket::snr,
+                &TelemetryPacket::radiation_cps
                 
 
                
@@ -115,6 +116,7 @@ class TelemetryPacket : public RnpPacket{
         //radio details
         int16_t rssi; 
         float snr;
+        float radiation_cps;
 
 
         static constexpr size_t size(){
@@ -122,5 +124,4 @@ class TelemetryPacket : public RnpPacket{
         }
 
 };
-
 

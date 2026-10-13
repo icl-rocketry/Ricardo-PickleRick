@@ -49,6 +49,8 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         void systemUpdate();
 
+        float getRadiationCountsPerSecond() const;
+
         //board communication
         SPIClass vspi;
         SPIClass hspi;
@@ -83,6 +85,8 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         void loadConfig();
         void initializeLoggers();
         void logTelemetry();
+        void sampleRadiation();
+        void updateRadiationWindow(uint32_t now);
 
         /**
          * @brief reads the json radio config from sd card and reconfigures the radio
@@ -97,6 +101,15 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         uint32_t telemetry_log_delta = 5000; //200hz
         uint32_t prev_telemetry_log_time;
+        uint64_t logging_start_time_us = 0;
+        bool radiation_input_high = false;
+        uint64_t pending_radiation_event_timestamp = 0;
+        std::array<uint32_t, 10> radiation_counts{};
+        uint32_t radiation_window_start_ms = 0;
+        uint32_t radiation_count_total = 0;
+
+        static constexpr uint32_t radiation_window_duration_ms = 1000;
+        static constexpr size_t radiation_average_window_seconds = 10;
         
         PCA9534 pyroPinExpander0;
 

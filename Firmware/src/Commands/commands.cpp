@@ -191,6 +191,7 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 	const RadioInterfaceInfo* radioinfo = static_cast<const RadioInterfaceInfo*>(system.radio.getInfo());
 	telemetry.rssi = radioinfo->rssi;
 	telemetry.snr = radioinfo->snr;
+	telemetry.radiation_cps = system.getRadiationCountsPerSecond();
 
 
 

@@ -92,6 +92,8 @@ void System::systemSetup()
     primarysd.setup();
 
     initializeLoggers();    
+    logging_start_time_us = esp_timer_get_time();
+    radiation_window_start_ms = millis();
 
     tunezhandler.setup();
     // network interfaces
@@ -120,6 +122,8 @@ void System::systemUpdate()
     tunezhandler.update();
     sensors.update();
     estimator.update(sensors.getData());
+    updateRadiationWindow(millis());
+    sampleRadiation();
     logTelemetry();
 };
 
@@ -196,6 +200,9 @@ void System::setupPins()
     pinMode(PinMap::MagCs, OUTPUT);
     pinMode(PinMap::SdCs_1, OUTPUT);
     pinMode(PinMap::SdCs_2, OUTPUT);
+    #if HARDWARE_VERSION == 3
+        pinMode(PinMap::RadiationInput, INPUT);
+    #endif
     
 
     // initialise cs pins
@@ -373,11 +380,52 @@ void System::logTelemetry()
         logframe.packet_snr = radio_info->packet_snr;
 
         logframe.timestamp = esp_timer_get_time();
+        logframe.radiation_cps = getRadiationCountsPerSecond();
+        logframe.radiation_event_timestamp = pending_radiation_event_timestamp;
 
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::TELEMETRY>(logframe);
 
+        pending_radiation_event_timestamp = 0;
         prev_telemetry_log_time = esp_timer_get_time();
     }
+}
+
+void System::sampleRadiation()
+{
+    #if HARDWARE_VERSION == 3
+        const bool input_high = digitalRead(PinMap::RadiationInput) == HIGH;
+        if (input_high && !radiation_input_high)
+        {
+            const uint32_t now = millis();
+            ++radiation_counts[(now / radiation_window_duration_ms) %
+                                radiation_average_window_seconds];
+            ++radiation_count_total;
+            pending_radiation_event_timestamp =
+                (esp_timer_get_time() - logging_start_time_us) / 1000;
+        }
+        radiation_input_high = input_high;
+    #endif
+}
+
+void System::updateRadiationWindow(uint32_t now)
+{
+    const uint32_t elapsed_seconds =
+        (now - radiation_window_start_ms) / radiation_window_duration_ms;
+    for (uint32_t i = 0; i < elapsed_seconds; ++i)
+    {
+        radiation_window_start_ms += radiation_window_duration_ms;
+        const size_t expired_bucket =
+            (radiation_window_start_ms / radiation_window_duration_ms) %
+            radiation_average_window_seconds;
+        radiation_count_total -= radiation_counts[expired_bucket];
+        radiation_counts[expired_bucket] = 0;
+    }
+}
+
+float System::getRadiationCountsPerSecond() const
+{
+    return static_cast<float>(radiation_count_total) /
+           static_cast<float>(radiation_average_window_seconds);
 }
 
 void System::configureNetwork()
