@@ -43,4 +43,6 @@ private:
     Types::TOASTER_TYPES::SystemStatus_t& m_status;
 
     bool m_launchDetected { false };
+    bool m_apogeeDetected { false };
+    uint64_t m_apogeeDetectedTime { 0 };
 };

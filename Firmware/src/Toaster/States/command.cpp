@@ -40,7 +40,7 @@ Types::TOASTER_TYPES::State_ptr_t Command::update(){
 
     m_lastUpdateTimeMs = timeMs;
 
-    const double roll = measurement.rocketEulerAngles[0];
+    const double roll = m_system.estimator.getRoll();
     const double targetRoll = m_targetRollGenerator.getRollSetpoint(timeMs - this->time_entered_state);
 
     // Run PID update to get torque (Nm)

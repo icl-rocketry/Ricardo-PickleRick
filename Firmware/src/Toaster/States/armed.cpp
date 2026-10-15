@@ -31,8 +31,14 @@ Types::TOASTER_TYPES::State_ptr_t Armed::update(){
     }
 
     // If launched, detect apogee conditions
-    if (m_launchDetected && m_system.apogeedetect.checkApogee(-measurement.position(2), -measurement.velocity(2), millis()).reached) {
+    if (m_launchDetected && !m_apogeeDetected && m_system.apogeedetect.checkApogee(-measurement.position(2), -measurement.velocity(2), millis()).reached) {
         m_system.estimator.setApogeeTime(millis());
+        m_apogeeDetected = true;
+        m_apogeeDetectedTime = millis();
+    }
+
+    // Check that we have a nominal drogue velocity after 10s
+    if (m_apogeeDetected && (millis() - m_apogeeDetectedTime > 10'000) && (std::abs(measurement.velocity(2)) < 50.0)) {
         return std::make_unique<Deploy>(m_system, m_status);
     }
 

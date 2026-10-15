@@ -19,6 +19,7 @@ void ToasterDefault::initialize(){
 
     m_system.toaster.stepperDisable();
     m_system.toaster.stepperCommand(Toaster::StepperCommandPayload::HOLD);
+    m_system.toaster.actuatorZero();
 };
 
 Types::TOASTER_TYPES::State_ptr_t ToasterDefault::update(){

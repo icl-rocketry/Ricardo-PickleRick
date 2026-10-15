@@ -48,6 +48,7 @@ class Estimator{
 
         const SensorStructs::state_t& getData();
 
+        float getRoll();
 
     private:
         // stateMachine* _sm;//pointer to statemachine object
@@ -120,6 +121,4 @@ class Estimator{
         void setRefOrientation(JsonObjectConst conf);
 
         Eigen::Vector3f quat2rpy(Eigen::Quaternionf quat);
-
-        float getRollAngleDelta();
 };

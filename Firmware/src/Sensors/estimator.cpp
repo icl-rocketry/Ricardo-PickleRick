@@ -222,12 +222,6 @@ void Estimator::updateOrientation()
    state.orientation = madgwick.getOrientation();
    state.eulerAngles = quat2rpy(state.orientation);
 
-   static uint64_t time = 0;
-   if (millis() - time > 1000) {
-      time = millis();
-      RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("quat : x : " + std::to_string(refOrientation.x()) + ", y: " + std::to_string(refOrientation.y()) + ", z: " + std::to_string(refOrientation.z()) + ", w: " + std::to_string(refOrientation.w()));
-   }
-
    state.rocketOrientation = (state.orientation * refOrientation).normalized();
    state.rocketEulerAngles = quat2rpy(state.rocketOrientation);
 
@@ -413,6 +407,12 @@ void Estimator::setRefOrientation(JsonObjectConst conf)
 
 }
 
-float Estimator::getRollAngleDelta() {
-   return 0.0;
+float Estimator::getRoll() {
+   Eigen::Quaternionf quat { state.orientation.w(), state.orientation.x(), 0.0, 0.0 };
+
+   quat.normalize();
+
+   float roll = 2 * std::atan2(quat.w(), quat.x());
+
+   return roll;
 }
