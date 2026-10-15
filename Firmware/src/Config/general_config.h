@@ -29,8 +29,8 @@ namespace GeneralConfig {
     static constexpr uint64_t CommandDeltaMs = 500;
 
     enum class NetworkConfig : uint8_t {
-        CHAD_MASTER = 150,
-        CHAD_SLAVE = 151
+        CHAD_MASTER = 201,
+        CHAD_SLAVE = 202
     };
 
     // ----- Control configs -----
