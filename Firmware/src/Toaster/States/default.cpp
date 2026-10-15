@@ -18,6 +18,7 @@ void ToasterDefault::initialize(){
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Entered Default state.");
 
     m_system.toaster.stepperDisable();
+    m_system.toaster.stepperCommand(Toaster::StepperCommandPayload::HOLD);
 };
 
 Types::TOASTER_TYPES::State_ptr_t ToasterDefault::update(){

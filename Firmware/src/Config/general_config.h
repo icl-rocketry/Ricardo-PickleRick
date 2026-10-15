@@ -16,7 +16,7 @@ namespace GeneralConfig {
 
     /// @brief Delay in milliseconds after the deploy state is
     /// reached before extending the grid fin assembly.
-    static constexpr unsigned int DeployDelayMs = 3000;
+    static constexpr unsigned int DeployDelayMs = 500;
 
     /// @brief The maximal amount of time that the zeroing state will try
     /// to zero the actuator. After this time, if the endstop is not reached

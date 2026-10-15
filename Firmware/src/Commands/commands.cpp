@@ -59,9 +59,9 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 	telemetry.ae = estimator_state.acceleration(1);
 	telemetry.ad = estimator_state.acceleration(2);
 
-	telemetry.roll = estimator_state.eulerAngles(0);
-	telemetry.pitch = estimator_state.eulerAngles(1);
-	telemetry.yaw =estimator_state.eulerAngles(2);
+	// telemetry.roll = estimator_state.eulerAngles(0);
+	// telemetry.pitch = estimator_state.eulerAngles(1);
+	// telemetry.yaw =estimator_state.eulerAngles(2);
 	// telemetry.yaw = estimator_state.tilt;
 
 	telemetry.q0 = estimator_state.orientation.w();
@@ -69,9 +69,9 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 	telemetry.q2 =estimator_state.orientation.y();
 	telemetry.q3 =estimator_state.orientation.z();
 
-	// telemetry.roll = estimator_state.rocketEulerAngles(0);
-	// telemetry.pitch = estimator_state.rocketEulerAngles(1);
-	// telemetry.yaw =estimator_state.rocketEulerAngles(2);
+	telemetry.roll = estimator_state.rocketEulerAngles(0);
+	telemetry.pitch = estimator_state.rocketEulerAngles(1);
+	telemetry.yaw = estimator_state.rocketEulerAngles(2);
 	// // telemetry.yaw = estimator_state.tilt;
 
 	// telemetry.q0 = estimator_state.rocketOrientation.w();

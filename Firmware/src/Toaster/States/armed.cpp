@@ -17,7 +17,6 @@ void Armed::initialize(){
 
     RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Entered Armed state.");
 
-    // TODO: Only arm at apogee?
     m_system.toaster.stepperCommand(Toaster::StepperCommandPayload::HOLD);
     m_system.toaster.stepperEnable();
 };

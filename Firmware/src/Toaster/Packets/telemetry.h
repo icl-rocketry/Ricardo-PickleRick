@@ -90,23 +90,23 @@ public:
         {
             "id": 0,
             "description": "STATE_ZERO"
-        }
+        },
         {
             "id": 1,
             "description": "STATE_DEFAULT"
-        }
+        },
         {
             "id": 2,
             "description": "STATE_ARMED"
-        }
+        },
         {
             "id": 3,
             "description": "STATE_DEPLOY"
-        }
+        },
         {
             "id": 4,
             "description": "STATE_COMMAND"
-        }
+        },
         {
             "id": 10,
             "description": "ERROR_ZERO_TIMEOUT"

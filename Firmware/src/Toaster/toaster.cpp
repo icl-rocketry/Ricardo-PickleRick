@@ -17,14 +17,21 @@ void Toaster::setup() {
     pinMode(m_enablePin, OUTPUT);
     stepperDisable();
 
-    pinMode(m_endstopLower, INPUT);
-    pinMode(m_endstopUpper, INPUT);
+    pinMode(m_endstopLower, INPUT_PULLUP);
+    pinMode(m_endstopUpper, INPUT_PULLUP);
 
     m_networkmanager.registerService(static_cast<uint8_t>(Services::ID::TOASTER), this->getThisNetworkCallback());
 }
 
 void Toaster::update() {
     m_toasterMachine.update();
+
+    static uint64_t time = 0;
+    if (millis() - time > 400)
+    {
+        time = millis();
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Endstops: upper : " + std::to_string(digitalRead(m_endstopUpper)) + " lower : " + std::to_string(digitalRead(m_endstopLower)));
+    }
 }
 
 void Toaster::apogeeDetected() {
@@ -95,12 +102,12 @@ void Toaster::actuatorCommand(const ActuatorCommandPayload& command) {
 
 bool Toaster::upperEndstopReached() {
     m_upperEndstopPressed = digitalRead(m_endstopUpper);
-    return m_upperEndstopPressed;
+    return m_upperEndstopPressed == LOW;
 }
 
 bool Toaster::lowerEndstopReached() {
     m_lowerEndstopPressed = digitalRead(m_endstopLower);
-    return m_lowerEndstopPressed;
+    return m_lowerEndstopPressed == LOW;
 }
 
 void Toaster::commandTorque(const double torque) {
@@ -212,8 +219,8 @@ void Toaster::extendedCommandHandler_impl(const NRCPacket::NRC_COMMAND_ID comman
 
         m_toasterTelem.systemTime = millis();
         m_toasterTelem.systemStatus = m_toasterStatus.getStatus();
-        m_toasterTelem.upperEndtopPressed = m_upperEndstopPressed;
-        m_toasterTelem.lowerEndtopPressed = m_lowerEndstopPressed;
+        m_toasterTelem.upperEndtopPressed = upperEndstopReached();
+        m_toasterTelem.lowerEndtopPressed = lowerEndstopReached();
         m_toasterTelem.act0Position = actuatorPayload.act0Deg;
         m_toasterTelem.act1Position = actuatorPayload.act1Deg;
         m_toasterTelem.act2Position = actuatorPayload.act2Deg;

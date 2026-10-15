@@ -187,7 +187,7 @@ void System::loadConfig()
     //enumerate deployers engines controllers and events from config file
     try
     {
-        estimator.configure(configDoc.as<JsonObjectConst>()["Estimator"]);
+        // estimator.configure(configDoc.as<JsonObjectConst>()["Estimator"]);
         sensors.setup(configDoc.as<JsonObjectConst>()["Sensors"]);
     }
     catch (const std::exception &e)
@@ -290,7 +290,7 @@ void System::logTelemetry()
 void System::configureNetwork()
 {
     networkmanager.setNodeType(NODETYPE::HUB);
-    
+
     networkmanager.addInterface(&canbus);
     networkmanager.addInterface(&abus);
 

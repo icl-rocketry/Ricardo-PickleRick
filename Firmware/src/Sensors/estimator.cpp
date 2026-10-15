@@ -19,7 +19,8 @@ Estimator::Estimator(Types::CoreTypes::SystemStatus_t &systemstatus) : _systemst
                                                                        _homeSet(false),
                                                                        madgwick(0.5f, 0.005f), // beta | gyroscope sample time step (s)
                                                                      //   refOrientation(1.0,0.0,0.0,0.0)
-                                                                        refOrientation(0.707,0.0,0.707,0.0)
+                                                                        refOrientation(0.707, 0.0, 0.0, 0.707)
+                                                                        // refOrientation(0.0,0.0,1.0,0.0)
                                                                        {};
 
 void Estimator::setup()
@@ -64,7 +65,7 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
 
             if (_homeSet) // if no home, this falls thru to the no home
             {
-               
+
                baroUpdate(raw_sensors.baro.alt);
                changeEstimatorState(ESTIMATOR_STATE::PARTIAL_NO_IMU_NO_GPS, "no IMU and GPS");
                predictLocalizationKF(dt_seconds);
@@ -169,6 +170,8 @@ void Estimator::update(const SensorStructs::raw_measurements_t &raw_sensors)
    }
 };
 
+
+
 void Estimator::setHome(const SensorStructs::raw_measurements_t &raw_sensors)
 {
    // record current gps coordinates as home
@@ -215,9 +218,15 @@ void Estimator::updateOrientation()
 {
 
    // update orientation
-   
+
    state.orientation = madgwick.getOrientation();
    state.eulerAngles = quat2rpy(state.orientation);
+
+   static uint64_t time = 0;
+   if (millis() - time > 1000) {
+      time = millis();
+      RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("quat : x : " + std::to_string(refOrientation.x()) + ", y: " + std::to_string(refOrientation.y()) + ", z: " + std::to_string(refOrientation.z()) + ", w: " + std::to_string(refOrientation.w()));
+   }
 
    state.rocketOrientation = (state.orientation * refOrientation).normalized();
    state.rocketEulerAngles = quat2rpy(state.rocketOrientation);
@@ -250,7 +259,7 @@ Eigen::Vector3f Estimator::quat2rpy(Eigen::Quaternionf quat)
    float roll = atan2f(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2);
    float pitch = asinf(-2.0f * (q1*q3 - q0*q2));
    float yaw = atan2f(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3);
-   
+
 
    return Eigen::Vector3f{roll,pitch,yaw};
 }
@@ -332,7 +341,7 @@ void Estimator::predictLocalizationKF(const float &dt)
 
 float Estimator::calculateNutation(const Eigen::Vector3f &euler)
 {
-   //domain of acos is [0,pi] -> tilt angle will always be an absolute value 
+   //domain of acos is [0,pi] -> tilt angle will always be an absolute value
    return acos(cos(euler(1) - (3.1415*0.5)) * cos(euler(2)));
 }
 
@@ -361,11 +370,11 @@ void Estimator::setRefOrientation(JsonObjectConst conf)
          float roll = getIfContains<float>(conf,"roll");
          float pitch = getIfContains<float>(conf,"pitch");
          float yaw = getIfContains<float>(conf,"yaw");
-  
+
          refOrientation = Eigen::AngleAxisf(roll,  Eigen::Vector3f::UnitX())
                               * Eigen::AngleAxisf(pitch,  Eigen::Vector3f::UnitY())
                               * Eigen::AngleAxisf(yaw,  Eigen::Vector3f::UnitZ());
-                              
+
          refOrientation.normalize(); //ensure ref orinetation is normalized
 
       }
@@ -402,4 +411,8 @@ void Estimator::setRefOrientation(JsonObjectConst conf)
 
    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Ref Orientation updated to:" );
 
+}
+
+float Estimator::getRollAngleDelta() {
+   return 0.0;
 }
