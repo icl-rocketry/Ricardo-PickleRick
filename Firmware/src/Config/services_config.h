@@ -23,6 +23,7 @@ namespace Services{
         DeploymentHandler = 4,
         EngineHandler = 5,
         EventHandler = 6,
+        GuidedHandler = 7,
         Pyro0 = 10,
         Pyro1 = 11,
         Pyro2 = 12,

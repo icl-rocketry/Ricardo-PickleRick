@@ -14,6 +14,7 @@ State which deploys chutes after rocket has reached apogee.
 
 #include "Config/systemflags_config.h"
 #include "Config/types.h"
+#include "Config/guided_config.h"
 
 class Recovery : public Types::CoreTypes::State_t
 {

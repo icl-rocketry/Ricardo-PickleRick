@@ -34,6 +34,7 @@
 #include "Deployment/PCA9685.h"
 #include "Deployment/PCA9685PWM.h"
 #include "Engine/enginehandler.h"
+#include "Guided/guidedhandler.h"
 #include "Controller/controllerhandler.h"
 #include "Storage/sdfat_store.h"
 
@@ -62,6 +63,7 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         DeploymentHandler deploymenthandler;
         EngineHandler enginehandler;
+        GuidedHandler guidedhandler;
 
         ControllerHandler controllerhandler;
         EventHandler eventhandler;

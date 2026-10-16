@@ -38,6 +38,8 @@ protected:
 	 */
 	virtual void calculate(const SensorStructs::state_t& estimator_state) = 0;
 
+	virtual void reset() {}; 
+
 	const uint8_t _id;
 
 	Controllable * const _controllable;
@@ -51,6 +53,8 @@ protected:
 	
 
 	uint32_t deltaT;
+
+	bool _wasActive = false;
 
 	
 };

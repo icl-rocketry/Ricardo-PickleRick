@@ -60,7 +60,8 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    estimator(systemstatus),
                    deploymenthandler(networkmanager, localPyroMap, localServoMap, static_cast<uint8_t>(Services::ID::DeploymentHandler)),
                    enginehandler(networkmanager, localPyroMap, localServoMap, static_cast<uint8_t>(Services::ID::EngineHandler)),
-                   controllerhandler(enginehandler),
+                   guidedhandler(networkmanager, localServoMap, static_cast<uint8_t>(Services::ID::GuidedHandler)),
+                   controllerhandler(enginehandler, guidedhandler),
                    eventhandler(enginehandler, deploymenthandler, networkmanager, localPyroMap, localServoMap),
                    apogeedetect(20),
                    primarysd(vspi,PinMap::SdCs_1,SD_SCK_MHZ(20),false,&systemstatus),
@@ -70,7 +71,7 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    pyro2(PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Cont),networkmanager),
                    pyro3(PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Cont),networkmanager),
                    pwmPinExpander0(0x40,I2C,50),
-                   servo0(PCA9685PWM(PinMap::servo0pin,pwmPinExpander0),networkmanager,"srv0"),
+                   servo0(PCA9685PWM(PinMap::servo0pin,pwmPinExpander0),networkmanager,"srv0",500,0,1000,1000,2000,0,1000),
                    servo1(PCA9685PWM(PinMap::servo1pin,pwmPinExpander0),networkmanager,"srv1"),
                    servo2(PCA9685PWM(PinMap::servo2pin,pwmPinExpander0),networkmanager,"srv2"),
                    servo3(PCA9685PWM(PinMap::servo3pin,pwmPinExpander0),networkmanager,"srv3")
@@ -260,6 +261,7 @@ void System::loadConfig()
         sensors.setup(configDoc.as<JsonObjectConst>()["Sensors"]);
         deploymenthandler.setup(configDoc.as<JsonObjectConst>()["Deployers"]);
         enginehandler.setup(configDoc.as<JsonObjectConst>()["Engines"]);
+        guidedhandler.setup(configDoc.as<JsonObjectConst>()["Guided"]);
         controllerhandler.setup(configDoc.as<JsonObjectConst>()["Controllers"]);
         eventhandler.setup(configDoc.as<JsonObjectConst>()["Events"]);
 
@@ -450,12 +452,13 @@ void System::configureNetwork()
         flightRouting.setRoute((uint8_t) 200,Route{3,1,{}}); // Payload GS Pickle
     #elif PAYLOAD_TABLE
         flightRouting.setRoute((uint8_t) 6,Route{2,1,{}}); // Payload GS Pickle
+        flightRouting.setRoute((uint8_t) 51,Route{3,1,{}}); // Payload F&S
     #elif PAYLOAD_GS_TABLE
-        flightRouting.setRoute((uint8_t) 200,Route{2,1,{}}); // Payload Pickle
+        flightRouting.setRoute((uint8_t) 50,Route{2,1,{}}); // Payload Pickle
     #endif
   
-    networkmanager.setRoutingTable(flightRouting);
     networkmanager.updateBaseTable(); // save the new base table
+    networkmanager.setRoutingTable(flightRouting);
 
 };
 

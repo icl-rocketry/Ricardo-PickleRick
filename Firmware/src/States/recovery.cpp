@@ -24,9 +24,17 @@ void Recovery::initialize(){
 Types::CoreTypes::State_ptr_t Recovery::update(){
 
     _system.enginehandler.update();
-    _system.controllerhandler.update(_system.estimator.getData());
+    _system.guidedhandler.update();
     _system.eventhandler.update(_system.estimator.getData());
+    _system.controllerhandler.update(_system.estimator.getData());
     
+    if (_system.estimator.getData().position(2) < GuidedConfig::guided_alt_start && !_system.systemstatus.flagSet(SYSTEM_FLAG::FLIGHTPHASE_GUIDED))
+    {
+        _system.systemstatus.newFlag(SYSTEM_FLAG::FLIGHTPHASE_GUIDED,"Entered Guided Phase");
+        _system.systemstatus.deleteFlag(SYSTEM_FLAG::FLIGHTPHASE_APOGEE);
+        _system.guidedhandler.startAllGuided();
+    }
+
     return nullptr;
 };
 

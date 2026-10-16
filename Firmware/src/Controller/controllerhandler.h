@@ -10,6 +10,7 @@
 #include "controller.h"
 #include "controllable.h"
 #include "Engine/enginehandler.h"
+#include "Guided/guidedhandler.h"
 
 #include <librrc/Handler/configurabledynamichandler.h>
 
@@ -17,9 +18,10 @@
 
 class ControllerHandler : public ConfigurableDynamicHandler<Controller,ControllerHandler>{
     public:
-        ControllerHandler(EngineHandler& enginehandler):
+        ControllerHandler(EngineHandler& enginehandler, GuidedHandler& guidedhandler):
             ConfigurableDynamicHandler([](const std::string& msg){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(msg);}),
-            _enginehandler(enginehandler)
+            _enginehandler(enginehandler),
+            _guidedhandler(guidedhandler)
         {};
 
         void update(const SensorStructs::state_t& estimator_state);
@@ -27,6 +29,7 @@ class ControllerHandler : public ConfigurableDynamicHandler<Controller,Controlle
     protected:
 
         EngineHandler& _enginehandler; // currently only supporting engines but can be expanded later to support controllable fins or more!
+        GuidedHandler& _guidedhandler; // now supporting more!
 
         Controllable* getControllable(JsonObjectConst config);
 
