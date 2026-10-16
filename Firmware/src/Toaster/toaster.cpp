@@ -132,7 +132,7 @@ void Toaster::updatePIDLog(const PID::Log& pidLog) {
 }
 
 void Toaster::sendNetwork(const NRCPacket::NRC_COMMAND_ID& cmd) {
-    SimpleCommandPacket armCommand(static_cast<uint32_t>(cmd), 0);
+    SimpleCommandPacket armCommand(static_cast<uint8_t>(cmd), 0);
     armCommand.header.source = m_system.networkmanager.getAddress();
     armCommand.header.source_service = static_cast<uint8_t>(Services::ID::TOASTER);
 
@@ -169,7 +169,7 @@ void Toaster::arm_base(int32_t arg) {
     }
     case 1: {
         // Zero the stepper motor against the endpoint
-        if (m_toasterMachine.getCurrentStateID() == TOASTER_FLAGS::STATE_DEFAULT) {
+        if (m_toasterMachine.getCurrentStateID() == TOASTER_FLAGS::STATE_ARMED) {
             m_toasterMachine.changeState(std::make_unique<Zero>(m_system, m_toasterStatus));
         } else {
             RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Not in default, cannot zero");
