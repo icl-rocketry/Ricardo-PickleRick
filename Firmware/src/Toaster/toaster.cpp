@@ -151,6 +151,10 @@ void Toaster::sendNetwork(const NRCPacket::NRC_COMMAND_ID& cmd) {
     m_toasterMachine.changeState(std::make_unique<Armed>(m_system, m_toasterStatus));
 }
 
+
+
+
+
 void Toaster::arm_base(int32_t arg) {
     switch (arg) {
     case 0: {
@@ -164,9 +168,8 @@ void Toaster::arm_base(int32_t arg) {
         break;
     }
     case 1: {
-        // Zero the stepper motor against the endpoint before arming
+        // Zero the stepper motor against the endpoint
         if (m_toasterMachine.getCurrentStateID() == TOASTER_FLAGS::STATE_DEFAULT) {
-            sendNetwork(NRCPacket::NRC_COMMAND_ID::ARM);
             m_toasterMachine.changeState(std::make_unique<Zero>(m_system, m_toasterStatus));
         } else {
             RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Not in default, cannot zero");
@@ -175,10 +178,22 @@ void Toaster::arm_base(int32_t arg) {
         break;
     }
     case 2: {
+        // go into command mode if armed
         if (m_toasterMachine.getCurrentStateID() == TOASTER_FLAGS::STATE_ARMED) {
             m_toasterMachine.changeState(std::make_unique<Command>(m_system, m_toasterStatus));
         } else {
             RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Cannot move to command state, Toaster not armed");
+        }
+        break;
+    }
+
+
+    case 3: {
+        // DEBUG deploy gridfins if armed (normally done through state estimator)
+        if (m_toasterMachine.getCurrentStateID() == TOASTER_FLAGS::STATE_ARMED) {
+            m_toasterMachine.changeState(std::make_unique<Deploy>(m_system, m_toasterStatus));
+        } else {
+            RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Cannot move to deploy state, Toaster not armed");
         }
         break;
     }

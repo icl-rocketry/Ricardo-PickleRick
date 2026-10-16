@@ -23,6 +23,7 @@ void Armed::initialize(){
 
 Types::TOASTER_TYPES::State_ptr_t Armed::update(){
     const auto& measurement = m_system.estimator.getData();
+    m_system.toaster.actuatorZero();
 
     // Check launch conditions
     if (!m_launchDetected && (measurement.acceleration(2) < -(2*9.81) && measurement.position(2) < -50)) {
