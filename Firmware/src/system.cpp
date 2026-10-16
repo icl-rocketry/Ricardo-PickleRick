@@ -71,7 +71,7 @@ System::System() : RicCoreSystem(Commands::command_map, Commands::defaultEnabled
                    pyro2(PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch2Cont),networkmanager),
                    pyro3(PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Fire),PCA9534Gpio(pyroPinExpander0,PinMap::Ch3Cont),networkmanager),
                    pwmPinExpander0(0x40,I2C,50),
-                   servo0(PCA9685PWM(PinMap::servo0pin,pwmPinExpander0),networkmanager,"srv0",500,0,1000,1000,2000,0,1000),
+                   servo0(PCA9685PWM(PinMap::servo0pin,pwmPinExpander0),networkmanager,"srv0",1500,500,2500,500,2500,950,1950),
                    servo1(PCA9685PWM(PinMap::servo1pin,pwmPinExpander0),networkmanager,"srv1"),
                    servo2(PCA9685PWM(PinMap::servo2pin,pwmPinExpander0),networkmanager,"srv2"),
                    servo3(PCA9685PWM(PinMap::servo3pin,pwmPinExpander0),networkmanager,"srv3")

@@ -57,25 +57,37 @@ void Griffin::update()
     float dt = (currentTime - _lastUpdateTime) / 1000.0f; // convert to seconds
     _lastUpdateTime = currentTime;
 
-    _dEstimate += _lineRate * _winchSpeed * dt; // integrate winch speed to estimate difference between parafoil lengths
+    const float lineRate = (_winchSpeed >= 0) ? GuidedConfig::winch_line_rate_fwd_mps
+                                              : GuidedConfig::winch_line_rate_rev_mps;
+    _dEstimate += _winchSpeed * lineRate * dt;
 
-    float err = _dTarget - _dEstimate;
-    _speedCmd = err * _kP; 
-    setSpeed(_speedCmd);
+    const float err = _dTarget - _dEstimate;
+    const bool atTarget = std::abs(err) < GuidedConfig::guided_min_speed;
 
-    if (_state.runState == static_cast<uint8_t>(GUIDED_RUN_STATE::STOPPING)){
-        if (_dEstimate < 0.1f && _dEstimate > -0.1f){ // if difference between parafoil lengths is less than 10cm, consider it stopped
-            log("Griffin stopped");
-            _state.runState = static_cast<uint8_t>(GUIDED_RUN_STATE::IDLE);
-        }
-    } else if (_state.runState == static_cast<uint8_t>(GUIDED_RUN_STATE::CONTROLLED)){
-        // normal operation, do nothing
-    } else if (_state.runState == static_cast<uint8_t>(GUIDED_RUN_STATE::SOFT_ABORT)){
-        // soft abort, stop winch
-        _winch->execute(0);
-    } else if (_state.runState == static_cast<uint8_t>(GUIDED_RUN_STATE::HARD_ABORT)){
-        // hard abort, stop winch and vent
-        _winch->execute(0);
+    switch (static_cast<GUIDED_RUN_STATE>(_state.runState))
+    {
+        case GUIDED_RUN_STATE::STOPPING:
+            if (_dEstimate < 0.1f && _dEstimate > -0.1f)
+            {
+                _state.runState = static_cast<uint8_t>(GUIDED_RUN_STATE::IDLE);
+                log("Griffin stopped");
+            }
+            break;
+        case GUIDED_RUN_STATE::CONTROLLED:
+            // normal operation, do nothing
+            break;
+        case GUIDED_RUN_STATE::SOFT_ABORT:
+            // soft abort, stop winch
+            _winch->execute(0);
+            break;
+        case GUIDED_RUN_STATE::HARD_ABORT:
+            if (currentTime - _state.hardAbortTime > GuidedConfig::hard_abort_hold_ms)
+            {
+                endHardAbort();   // → STOPPING, target untouched so it halts where it is
+            }
+            break;
+        default:
+            break;
     }
 
 }
@@ -93,16 +105,26 @@ uint8_t Griffin::flightCheck()
 void Griffin::control(std::vector<float> u)
 {
     if (!isActive()) { return; }
-    if (u.empty() || u.size() < 1) { return; }
+
+    const bool valid = !u.empty() && std::isfinite(u[0]);
+    if (!valid)
+    {
+        return;
+    }
+
+    _dTarget = std::clamp(u[0], -1.f, 1.f) * GuidedConfig::max_differential; // maybe??
+
 };
 
 void Griffin::setSpeed(float speed)
 {
     if (!winchArmed()) { _winchSpeed = 0; return; }        // command would be dropped
 
-    speed = std::clamp(speed, -1.f, 1.f);
-    if (std::abs(speed) < GuidedConfig::guided_min_speed) { _winchSpeed = 0; } // deadband to avoid jitter
+    int32_t us;
+    if (speed > 0)      { us = GuidedConfig::winch_fwd_edge_us + std::lround(speed * (GuidedConfig::winch_fwd_max_us - GuidedConfig::winch_fwd_edge_us)); }  // +400
+    else if (speed < 0) { us = GuidedConfig::winch_rev_edge_us + std::lround(speed * (GuidedConfig::winch_rev_edge_us - GuidedConfig::winch_rev_max_us)); }  // −500
+    else                { us = GuidedConfig::winch_stop_us; }
+    _winchSpeed = us;
+    _winch->execute(us);
 
-    _winchSpeed = speed;
-    _winch->execute(GuidedConfig::guided_zero_speed_angle + static_cast<int32_t>(speed * 1000)); // scale to int32_t for network transmission
 }
