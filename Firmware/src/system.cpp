@@ -296,11 +296,11 @@ void System::configureNetwork()
 
 
     networkmanager.enableAutoRouteGen(true);
-    networkmanager.setNoRouteAction(NOROUTE_ACTION::DUMP, {1,2});
+    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST, {1,3});
 
     RoutingTable flightRouting;
 
-    // Setup USB routing for the grid fin chads
+    // Setup ABUS routing for the grid fin chads
     flightRouting.setRoute(static_cast<uint8_t>(GeneralConfig::NetworkConfig::CHAD_MASTER),
         Route {
             .iface = static_cast<uint8_t>(abus.getID()),
