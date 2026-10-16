@@ -22,7 +22,8 @@ enum class GUIDED_RUN_STATE : uint8_t
     CONTROLLED,
     SOFT_ABORT,
     HARD_ABORT,
-    ERROR
+    ERROR,
+    DEBUG // for demoing actuation
 };
 
 enum class GUIDED_CONNECTION_STATE : uint8_t
@@ -120,6 +121,7 @@ protected:
     virtual void softAbort();
     virtual void hardAbort();
     virtual void reset();
+    virtual void debug();
     virtual void endHardAbort(); // helper function to end hard abort after a set time, can be overridden in derived class if required
 
     /**
@@ -154,7 +156,8 @@ protected:
         START = 1,
         SOFT_ABORT = 2,
         HARD_ABORT = 3,
-        RESET = 4
+        RESET = 4,
+        DEBUG = 5 // for demoing actuation
     };
 
 };

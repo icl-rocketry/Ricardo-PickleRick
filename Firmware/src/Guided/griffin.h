@@ -37,6 +37,14 @@ class Griffin : public Guided
         bool isActive() const override { return _state.runState == static_cast<uint8_t>(GUIDED_RUN_STATE::CONTROLLED); };
         ~Griffin(){};
 
+        enum class DEBUG_PHASE : uint8_t
+        {
+            FWD,
+            PAUSE,
+            REV,
+            DONE
+        };
+
     protected:
 
         void stop() override;
@@ -44,6 +52,7 @@ class Griffin : public Guided
         void softAbort() override;
         void hardAbort() override;
         void reset() override;
+        void debug() override;
 
     private:
 
@@ -54,11 +63,16 @@ class Griffin : public Guided
 
         bool winchArmed() { return !_winch->getState().flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::DISARMED); };
 
+        void startDebug();
+
         float _dTarget = 0.0f; // target difference between parafoil lengths
         float _dEstimate = 0.0f; 
         float _winchSpeed = 0.0f; // last commanded speed to winch, used to estimate difference between parafoil lengths
         float _lineRate;
         uint32_t _lastUpdateTime = 0;
+
+        uint32_t _debugStartTime = 0;
+        DEBUG_PHASE _debugPhase = DEBUG_PHASE::DONE;
 
 
 

@@ -21,10 +21,7 @@ using addNetworkCallbackFunction_t = std::function<void(uint8_t,uint8_t,std::fun
 
 class GuidedHandler : public FlightComponentHandler<Guided,GuidedHandler>{
     public:
-        GuidedHandler(RnpNetworkManager& networkmanager,const Types::LocalServoMap_t& localServoMap,  uint8_t serviceID):
-        FlightComponentHandler(networkmanager,serviceID,[](const std::string& msg){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(msg);}),
-        m_localServoMap(localServoMap)
-        {};
+        GuidedHandler(RnpNetworkManager& networkmanager,const Types::LocalServoMap_t& localServoMap,  uint8_t serviceID);
 
         void update(); 
 

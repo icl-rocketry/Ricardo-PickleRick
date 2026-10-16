@@ -49,6 +49,40 @@ void Griffin::stop()
     _dTarget = 0.0f;
 }
 
+void Griffin::start()
+{
+    Guided::start();
+    if (_state.runState != static_cast<uint8_t>(GUIDED_RUN_STATE::STOPPING)){
+        return;
+    }
+    _dTarget = 0.0f;
+}
+
+void Griffin::softAbort()
+{
+    Guided::softAbort();
+    // get to 0 bank angle
+}
+
+void Griffin::hardAbort()
+{
+    Guided::hardAbort();
+    // get to max bank angle
+}
+
+void Griffin::reset()
+{
+    Guided::reset();
+    _dEstimate = 0.0f;
+    _dTarget = 0.0f;
+    _winchSpeed = 0.0f;
+    _lastUpdateTime = millis();
+}
+
+void Griffin::debug()
+{
+    startDebug();
+}
 
 
 void Griffin::update()
@@ -66,6 +100,12 @@ void Griffin::update()
 
     switch (static_cast<GUIDED_RUN_STATE>(_state.runState))
     {
+        case GUIDED_RUN_STATE::IDLE:
+            // do nothing
+            break;
+        case GUIDED_RUN_STATE::ERROR:
+            // do nothing
+            break;
         case GUIDED_RUN_STATE::STOPPING:
             if (_dEstimate < 0.1f && _dEstimate > -0.1f)
             {
@@ -86,6 +126,33 @@ void Griffin::update()
                 endHardAbort();   // → STOPPING, target untouched so it halts where it is
             }
             break;
+        case GUIDED_RUN_STATE::DEBUG:
+        {
+            const uint32_t t = currentTime - _debugStartTime;
+            
+            DEBUG_PHASE phase;
+            if      (t < GuidedConfig::debug_fwd_ms)                                                                { phase = DEBUG_PHASE::FWD; }
+            else if (t < GuidedConfig::debug_fwd_ms + GuidedConfig::debug_pause_ms)                                 { phase = DEBUG_PHASE::PAUSE; }
+            else if (t < GuidedConfig::debug_fwd_ms + GuidedConfig::debug_pause_ms + GuidedConfig::debug_rev_ms)    { phase = DEBUG_PHASE::REV; }
+            else                                                                                                    { phase = DEBUG_PHASE::DONE; }
+
+            if (phase == _debugPhase) { break; }  // nothing changed
+            _debugPhase = phase;
+
+            switch (phase)
+            {
+                case DEBUG_PHASE::PAUSE: setSpeed(0.0f);          log("Debug wiggle: pause");   break;
+                case DEBUG_PHASE::REV:   setSpeed(-GuidedConfig::debug_speed);  log("Debug wiggle: reverse"); break;
+                case DEBUG_PHASE::DONE:
+                    setSpeed(0.0f);
+                    _state.runState = static_cast<uint8_t>(GUIDED_RUN_STATE::IDLE);
+                    log("Debug wiggle complete, dEstimate=" + std::to_string(_dEstimate));
+                    break;
+                default: break;
+            }
+            break;
+
+        }
         default:
             break;
     }
@@ -124,7 +191,21 @@ void Griffin::setSpeed(float speed)
     if (speed > 0)      { us = GuidedConfig::winch_fwd_edge_us + std::lround(speed * (GuidedConfig::winch_fwd_max_us - GuidedConfig::winch_fwd_edge_us)); }  // +400
     else if (speed < 0) { us = GuidedConfig::winch_rev_edge_us + std::lround(speed * (GuidedConfig::winch_rev_edge_us - GuidedConfig::winch_rev_max_us)); }  // −500
     else                { us = GuidedConfig::winch_stop_us; }
-    _winchSpeed = us;
+    _winchSpeed = speed;
     _winch->execute(us);
 
+}
+
+void Griffin::startDebug()
+{
+    if (_state.runState != static_cast<uint8_t>(GUIDED_RUN_STATE::IDLE) || !winchArmed()) {
+        log("Debug wiggle rejected");
+        return;
+    }
+    _debugStartTime = millis();
+    _debugPhase     = DEBUG_PHASE::FWD;
+    _dEstimate      = 0.0f;
+    setSpeed(GuidedConfig::debug_speed);
+    _state.runState = static_cast<uint8_t>(GUIDED_RUN_STATE::DEBUG);
+    log("Debug wiggle: forward");
 }

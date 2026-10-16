@@ -451,3 +451,21 @@ void Commands::Radio_SetSYNC(System& system, const RnpPacketSerialized& packet)
 
 	system.radio.setSW(SW);
 }
+
+void Commands::GuidedDebugCommand(System& system, const RnpPacketSerialized& packet)
+{
+	SimpleCommandPacket commandpacket(packet);
+
+
+	if (commandpacket.arg == 2)
+	{
+		RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Guided Debug Command Received!");
+
+		SimpleCommandPacket commandpacket(packet);
+		auto f = system.guidedhandler.getActionFunc(static_cast<uint8_t>(commandpacket.arg));
+		if (!f) { return; }
+		system.guidedhandler.armComponents();
+		f(5);
+	}
+
+}

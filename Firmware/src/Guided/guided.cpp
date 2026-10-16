@@ -38,6 +38,11 @@ void Guided::execute(int32_t func){
             reset();
             break;
         }
+        case static_cast<uint8_t>(GUIDED_EXECUTE::DEBUG):
+        {
+            debug();
+            break;
+        }
         default:
         {
             break;
@@ -91,10 +96,20 @@ void Guided::reset(){
     rs = static_cast<uint8_t>(GUIDED_RUN_STATE::IDLE);
 };
 
-Guided::~Guided(){};
+void Guided::debug(){
+    auto& rs = getStatePtr()->runState;
+    if (rs != static_cast<uint8_t>(GUIDED_RUN_STATE::IDLE)){
+        log("Debug ignored");
+        return;
+    }
+    log("Debug Called!");
+    rs = static_cast<uint8_t>(GUIDED_RUN_STATE::DEBUG);
+};
 
 void Guided::endHardAbort(){
     log("Time elapsed, ending hard abort");
     getStatePtr()->runState = static_cast<uint8_t>(GUIDED_RUN_STATE::IDLE); // dont try and change bank angle as no point, should be on ground by now
     getStatePtr()->stopTime = 0;
 };
+
+Guided::~Guided(){};

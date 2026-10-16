@@ -37,6 +37,7 @@ void Debug::initialize(){
                                                Commands::ID::Enter_Launch,
                                                Commands::ID::Enter_Flight,
                                                Commands::ID::Enter_Recovery,
+                                               Commands::ID::Guided_Debug,
                                                Commands::ID::Apogee_Override,
                                                Commands::ID::Exit_Debug},true); 
        
@@ -46,6 +47,7 @@ void Debug::initialize(){
 
 Types::CoreTypes::State_ptr_t Debug::update(){
     
+    _system.guidedhandler.update();
     return nullptr;
 };
 

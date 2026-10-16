@@ -13,6 +13,11 @@
 
 #include "Guided/griffin.h"
 
+GuidedHandler::GuidedHandler(RnpNetworkManager& networkmanager,const Types::LocalServoMap_t& localServoMap,  uint8_t serviceID):
+        FlightComponentHandler(networkmanager,serviceID,[](const std::string& msg){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(msg);}),
+        m_localServoMap(localServoMap)
+        {};
+
 void GuidedHandler::update(){ // call update on all guideds
     for (auto& guided : *this){
         guided->update();
@@ -59,10 +64,10 @@ void GuidedHandler::setupIndividual_impl(size_t id, JsonObjectConst guidedconfig
 
     if (type == "Griffin"){
         addObject(std::make_unique<Griffin>(id,
-                                             guidedconfig,
-                                             getaddNetworkCallbackFunction(id),
-                                             _networkmanager,
-                                                 _serviceID));
+                                            guidedconfig,
+                                            m_localServoMap,
+                                            _networkmanager,
+                                            _serviceID));
     }
     else{
         throw std::runtime_error("Engine of type:" + type + "not implemented!");
