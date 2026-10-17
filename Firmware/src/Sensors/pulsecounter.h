@@ -56,7 +56,7 @@ public:
      * @brief PCNT input filter length, in APB_CLK cycles (80 MHz -> 12.5 ns).
      *        10-bit field, so 1023 is the maximum (~12.8 us).
      */
-    static constexpr uint16_t FILTER_CYCLES = 1000; // ~12.5 us
+    static constexpr uint16_t FILTER_CYCLES = 40; // ~0.5 us
 
     /**
      * @param unit    PCNT unit. Use a different unit per counter; the S3 has four.
@@ -68,9 +68,7 @@ public:
         _pinSig(signalPin),
         _pinEna(enablePin),
         _wraps(0),               
-        _lastWindow(0),          
         _initialized(false),
-        _isrHandle(nullptr),
         _systemstatus(systemstatus)
     {}
 
@@ -86,9 +84,9 @@ public:
          * lctrl/hctrl come before pos/neg in IDF 5.3 - see the header notes. */
         pcnt_config_t config = {};
         config.pulse_gpio_num = static_cast<int>(_pinSig);
-        config.ctrl_gpio_num  = static_cast<int>(_pinEna);
-        config.lctrl_mode     = PCNT_MODE_DISABLE;   // When ctrl pulled low, stop counting
-        config.hctrl_mode     = PCNT_MODE_KEEP;      // When ctrl pulled high, continue counting
+        config.ctrl_gpio_num  = PCNT_PIN_NOT_USED; 
+        config.lctrl_mode     = PCNT_MODE_KEEP;   
+        config.hctrl_mode     = PCNT_MODE_KEEP;   
         config.pos_mode       = PCNT_COUNT_INC;      // rising edge increments
         config.neg_mode       = PCNT_COUNT_DIS;      // falling edge does nothing
         config.counter_h_lim  = HW_LIMIT;            // highest count
@@ -107,21 +105,24 @@ public:
 
         /* Input pin electrical configuration. */
         gpio_set_direction(_pinSig, GPIO_MODE_INPUT);
-        gpio_set_direction(_pinEna, GPIO_MODE_INPUT); 
         gpio_set_intr_type(_pinSig, GPIO_INTR_DISABLE);
-        gpio_set_intr_type(_pinEna, GPIO_INTR_DISABLE); // counting is PCNT's not GPIO's job, so don't let GPIO interrupt
 
         /* Input glitch filter. Covers electrical noise only, not contact bounce. */
         pcnt_set_filter_value(_unit, FILTER_CYCLES);
         pcnt_filter_enable(_unit);
 
-        /* Roll the hardware counter over into software on every H_LIM event. */
-        if (pcnt_isr_register(_isrHandler, this, 0, &_isrHandle) != ESP_OK)
+        esp_err_t err = pcnt_isr_service_install(0);
+        if (err != ESP_OK && err != ESP_ERR_INVALID_STATE)   // INVALID_STATE = already installed, that's fine
         {
             _systemstatus.newFlag(SYSTEM_FLAG::ERROR_Errradi, "pulsecounter init failed 2");
-
             return false;
         }
+        if (pcnt_isr_handler_add(_unit, _isrHandler, this) != ESP_OK)
+        {
+            _systemstatus.newFlag(SYSTEM_FLAG::ERROR_Errradi, "pulsecounter init failed 3");
+            return false;
+        }
+        
         pcnt_event_enable(_unit, PCNT_EVT_H_LIM);  //high limit reroll enabled
         pcnt_intr_enable(_unit);                   //interrupt enabled
 
@@ -145,10 +146,19 @@ public:
      *        counting accuracy since the hardware counts every edge regardless.
      * @return Total rising edges seen since setup()/reset().
      */
-    void update(SensorStructs::PULSE_COUNTER_t data)
+    void update(SensorStructs::PULSE_COUNTER_t& data)
     {
-        _lastWindow = readRaw();
-        data.counts += static_cast<uint64_t>(_lastWindow);
+        uint32_t w1, w2;
+        int16_t raw;
+        do {
+            w1 = _wraps;
+            raw = readRaw();
+            w2 = _wraps;
+        } while (w1 != w2);
+
+        uint64_t total = static_cast<uint64_t>(w1) * HW_LIMIT + static_cast<uint16_t>(raw);
+        if (total < data.counts) { total += HW_LIMIT; } // rollover happened but ISR hasn't run yet
+        data.counts = total;
     }
 
 private:
@@ -157,10 +167,8 @@ private:
     const gpio_num_t    _pinEna;
 
     volatile uint32_t _wraps;       // number of HW_LIMIT rollovers (i.e. num of iterations); written only by the ISR
-    volatile uint32_t _lastWindow;  // pulses in the last update() window (between last update and this); main loop only
 
     bool _initialized;
-    pcnt_isr_handle_t _isrHandle;
     Types::CoreTypes::SystemStatus_t& _systemstatus;
 
 
@@ -200,7 +208,6 @@ private:
         if (status & PCNT_EVT_H_LIM)
         {
             self->_wraps = self->_wraps + 1;
-            pcnt_counter_clear(self->_unit);
         }
     }
 };

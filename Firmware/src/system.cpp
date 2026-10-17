@@ -35,7 +35,7 @@
 #include "Storage/sdfat_file.h"
 #include "Loggers/TelemetryLogger/telemetrylogframe.h"
 
-#include "States/preflight.h"
+#include "States/launch.h"
 
 
 
@@ -112,7 +112,7 @@ void System::systemSetup()
     estimator.setup();
 
     // initialize statemachine with preflight state
-    statemachine.initalize(std::make_unique<Preflight>(*this));
+    statemachine.initalize(std::make_unique<Launch>(*this));
 
 };
 

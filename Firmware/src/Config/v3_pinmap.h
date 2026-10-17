@@ -73,6 +73,9 @@ namespace PickleRickV3Pins{
     static constexpr int servo3pin = 10;
 
     //Pulse Counting
-    static constexpr int signalPin = 45;
-    static constexpr int enablePin = 47;
+    static constexpr int signalPin = 40;
+    static constexpr int enablePin = 41;
+
+    // Camera Enable Pin
+    static constexpr int cameraEnablePin = 42;
 };

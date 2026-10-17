@@ -110,7 +110,7 @@ namespace SensorStructs
     };
 
     struct PULSE_COUNTER_t {
-        uint64_t counts;
+        uint64_t counts = 0;
     };
 
     struct raw_measurements_t

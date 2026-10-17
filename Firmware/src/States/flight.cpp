@@ -28,7 +28,10 @@ void Flight::initialize()
     _system.commandhandler.enableCommands({Commands::ID::Flight_Abort});
     
     _system.tunezhandler.play(MelodyLibrary::pirates,true);
-    
+
+    // mb for this lmao
+    pinMode(PinMap::cameraEnablePin, OUTPUT);
+    digitalWrite(PinMap::cameraEnablePin, HIGH);
 };
 
 Types::CoreTypes::State_ptr_t Flight::update()

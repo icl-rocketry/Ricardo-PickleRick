@@ -31,6 +31,8 @@ void Launch::initialize()
 
     _system.deploymenthandler.armComponents();
     _system.enginehandler.armComponents();
+
+    _system.estimator.setHome(_system.sensors.getData());
 };
 
 Types::CoreTypes::State_ptr_t Launch::update()
