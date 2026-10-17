@@ -39,8 +39,8 @@ enum class SYSTEM_FLAG:uint32_t{
     
     FLIGHTPHASE_COAST = (1 << 26),
     FLIGHTPHASE_APOGEE = (1 << 27),
-    FLIGHTPHASE_GUIDED = (1 << 28)
-    
+    FLIGHTPHASE_GUIDED = (1 << 28),
+    ERROR_Errradi = (1 << 29)
 };
 
 using system_flag_t = uint32_t;

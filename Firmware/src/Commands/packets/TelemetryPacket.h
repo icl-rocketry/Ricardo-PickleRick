@@ -52,6 +52,7 @@ class TelemetryPacket : public RnpPacket{
                 &TelemetryPacket::launch_lat,
                 &TelemetryPacket::launch_lng,
                 &TelemetryPacket::launch_alt,
+                &TelemetryPacket::pulse_count,
                 &TelemetryPacket::system_status,
                 &TelemetryPacket::system_time,
                 &TelemetryPacket::rssi,
@@ -109,6 +110,8 @@ class TelemetryPacket : public RnpPacket{
         //launch site
         float launch_lat,launch_lng;
         long launch_alt;
+        // pulse counter
+        uint64_t pulse_count;
         //system details
         uint32_t system_status;
         uint64_t system_time;

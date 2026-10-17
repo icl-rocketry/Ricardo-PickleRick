@@ -52,6 +52,7 @@ private:
             &TelemetryLogframe::an,
             &TelemetryLogframe::ae,
             &TelemetryLogframe::ad,
+            &TelemetryLogframe::pulse_count,
             &TelemetryLogframe::rssi,
             &TelemetryLogframe::packet_rssi,
             &TelemetryLogframe::snr,
@@ -92,6 +93,8 @@ public:
     float vn,ve,vd;
     //linear acceleration
     float an,ae,ad;
+    // pulse counter
+    uint64_t pulse_count;
     //radio details
     int16_t rssi, packet_rssi;
     float snr, packet_snr;

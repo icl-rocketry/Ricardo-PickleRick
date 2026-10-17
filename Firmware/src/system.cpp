@@ -374,6 +374,7 @@ void System::logTelemetry()
         logframe.an = estimator_state.acceleration[0];
         logframe.ae = estimator_state.acceleration[1];
         logframe.ad = estimator_state.acceleration[2];
+        logframe.pulse_count = raw_sensors.pulse.counts;
 
         const RadioInterfaceInfo* radio_info = reinterpret_cast<const RadioInterfaceInfo*>(radio.getInfo());
 

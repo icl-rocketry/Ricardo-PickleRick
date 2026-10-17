@@ -185,6 +185,8 @@ void Commands::TelemetryCommand(System& system, const RnpPacketSerialized& packe
 	telemetry.launch_lng = estimator_state.gps_launch_long;
 	telemetry.launch_alt = estimator_state.gps_launch_alt;
 
+	telemetry.pulse_count = raw_sensors.pulse.counts;
+
 	telemetry.system_status = system.systemstatus.getStatus();
 	
 

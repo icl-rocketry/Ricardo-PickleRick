@@ -109,6 +109,10 @@ namespace SensorStructs
         int percent;
     };
 
+    struct PULSE_COUNTER_t {
+        uint64_t counts;
+    };
+
     struct raw_measurements_t
     {
         ACCELGYRO_6AXIS_t accelgyro;
@@ -118,6 +122,7 @@ namespace SensorStructs
         GPS_t gps;
         ADC_V_RAIL_t logicrail;
         INA_V_RAIL_t deprail;
+        PULSE_COUNTER_t pulse;
 
         uint64_t system_time;
     };
